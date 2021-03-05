@@ -15,6 +15,74 @@ is the corresponding representation for type C
       c  <--->  r
 """
 
+def allsubsets(S):
+    k  = len(S)
+    for i in range(k+1):
+        for SS in itertools.combinations(S,i):
+            yield SS
+
+
+
+def dualpart2Wrepn(part, rtype):
+    """
+    Assume the orbit is purly even. (the function will not check the condition)
+    """
+    part = sorted([x for x in part if x>0],reverse=True)
+    a, res = divmod(len(part),2)
+    if rtype == 'M' and res == 1:
+        part = part + [0]
+        a = a+1
+    elif rtype == 'C' and res ==1:
+        part = part + [-1]
+        a = a+1
+    elif rtype == 'B' and res ==0:
+        part = part + [0]
+    elif rtype == 'D' and res ==0:
+        # a trick
+        part = part + [-1]
+    RES = []
+    if rtype in 'BD':
+        PPidx = [ i for i in range(a)
+                  if part[2*i+1]>part[2*i+2] and part[2*i+2]>=0]
+    elif rtype in 'CM':
+        PPidx = [i for i in range(a)
+                  if part[2*i]>part[2*i+1] and part[2*i+1]>=0]
+    if rtype in 'BM':
+        if rtype == 'B':
+            otauL, otauR = [],[part[0]//2]
+            part = part[1:]
+        else:
+            otauL, otauR = [],[]
+        for P in allsubsets(PPidx):
+            tauL,tauR = [],[]
+            for i in range(a):
+                if i in P:
+                    tauL.append(part[2*i+1]//2)
+                    tauR.append(part[2*i+0]//2)
+                else:
+                    tauL.append(part[2*i+0]//2)
+                    tauR.append(part[2*i+1]//2)
+            RES.append(reg_W_repn((tuple(otauL+tauL),tuple(otauR+tauR))))
+    elif rtype in 'DC':
+        if rtype == 'D':
+            otauL, otauR = [(part[0]+1)//2],[]
+            part = part[1:]
+        else:
+            otauL, otauR = [],[]
+        for P in allsubsets(PPidx):
+            tauL,tauR = [],[]
+            for i in range(a):
+                if i in P:
+                    tauR.append((part[2*i+1]-1)//2)
+                    tauL.append((part[2*i+0]+1)//2)
+                else:
+                    tauR.append((part[2*i+0]-1)//2)
+                    tauL.append((part[2*i+1]+1)//2)
+            RES.append(reg_W_repn((tuple(otauL+tauL),tuple(otauR+tauR))))
+    return RES
+
+
+
 def S_Wrepn_B(part):
     """
     From special orbit to special representations of the Weyl group of type B
@@ -210,6 +278,24 @@ def S_Wrepns_D(tau):
             Atau.append(reg_tau((tauLL,tauRR)))
     return Atau
 
+
+
+DTSpringer = {
+    'B': (S_Wrepn_B,S_Wrepns_B),
+    'C': (S_Wrepn_C,S_Wrepns_C),
+    'D': (S_Wrepn_D,S_Wrepns_D),
+    'M': (S_Wrepn_M,S_Wrepns_M),
+}
+
+def dualpart2WrepnA(part, rtype):
+    """
+    We do not assum the orbit is purly even.
+    """
+    # gpart is always special
+    gpart  = dualBVW(part,rtype,partrc='c')
+    srepn, grepn = DTSpringer[rtype]
+    RES = tuple(reg_W_repn(tau) for tau in grepn(srepn(gpart)))
+    return RES
 
 def frow_col_list(part):
    """
@@ -487,6 +573,16 @@ def part2drc(partition, rtype = 'D',
                   % (strgpform%gpform(drc), strdualform%dualform(drc)))
     return Adrc
 
+
+def Wrepn2drcs(tau,rtype='D'):
+    """
+    generate the dcr_diag attached to Weyl group representation orbit of type rtype
+    """
+    assert(rtype in DRCRule)
+    spWrepn, AWrepns, steps, strgpform, gpform, strdualform, dualform = DRCRule[rtype]
+    ffun, fparam = steps[0]
+    Adrc = ffun(tau, steps[1:], *fparam)
+    return Adrc
 
 def count_dgms_D_forms(Adrc):
     return count_signs(Adrc, form_D)

@@ -269,7 +269,6 @@ def twist_C_nonspecial(drc):
     if not verify_drc(nspdrc, 'C'):
         print('Invalid nonspecial drc\n original: \n%s\n new:\n%s\n'
               % (str_dgms_C(drc), str_dgms_C(nspdrc)))
-        return None
     return nspdrc
 
 

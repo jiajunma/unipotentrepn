@@ -46,7 +46,7 @@ def reg_part(part, reverse=True):
     part.sort(reverse=reverse)
     return tuple(part)
 
-def reg_W_repn(tau, reverse=False):
+def reg_W_repn(tau, reverse=True):
     """
     Regularize the W_n repn paramterized by bipartition
     """
@@ -208,6 +208,40 @@ def tdualBVW(part):
     respart = springer_repn2part(sstau, rtype = 'C')
     return respart
 
+def sign_twist_Wrepn(tau):
+    return (part_trans(tau[1]), part_trans(tau[0]))
+
+# data for define Barabasch-Vogan duality
+# from the target rtype get
+# (original rtype, special repn rtype, target rtype)
+DTdualBVW= {
+    'C': ('B','B','C'),
+    'B': ('C','C','B'),
+    'D': ('D','D','D'),
+    'M': ('C','D','D'),
+}
+
+def dualBVW(part, rtype, partrc='r'):
+    """
+    The input:
+    (part,rtype) = (a partition, the target root system type)
+    the partition are represented by rows.
+    the output:
+    a partition, represented by rows by default.
+    """
+    # get the root system type of part
+    (otype,stype,rtype) = DTdualBVW[rtype]
+    tau = springer_part2repn(part,otype)
+    stau = repn2specialrepn(tau, stype)
+    sstau = sign_twist_Wrepn(stau)
+    respart = springer_repn2part(sstau, rtype)
+    if partrc == 'r':
+        return respart
+    elif partrc == 'c':
+        return part_trans(respart)
+
+
+
 def tdSPW(part, col=False):
     if col:
         part = part_trans(part)
@@ -235,6 +269,7 @@ def repn2specialrepn(tau, rtype = 'C'):
     
     
 def springer_part2repn(part, rtype='C', partrc='r' ):
+    ## partition are
     if partrc == 'c':
         part = part_trans(part)
     part = sorted(part)
