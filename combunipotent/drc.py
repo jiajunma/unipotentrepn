@@ -1,5 +1,9 @@
+from rich import print
 import itertools
 from copy import copy, deepcopy
+
+from multiset import FrozenMultiset as frozenset
+from multiset import Multiset as multiset
 
 from .tool import *
 
@@ -81,6 +85,8 @@ def dualpart2Wrepn(part, rtype):
             RES.append(reg_W_repn((tuple(otauL+tauL),tuple(otauR+tauR))))
     return RES
 
+def Jind(ssym, r):
+    pass
 
 
 def S_Wrepn_B(part):
@@ -542,7 +548,7 @@ DRCRule = {
     }
 
 
-def part2drc(partition, rtype = 'D', 
+def part2drc(partition, rtype = 'D',
                 report = True,printdig=False, getlist=False,print_Wrepn=False):
     """
     print the dcr_diag attached to Nilpotent orbit of type D
@@ -562,7 +568,110 @@ def part2drc(partition, rtype = 'D',
 
     ffun, fparam = steps[0] 
 
-    Adrc = [drc for tau in Atau for drc in ffun(tau, steps[1:], *fparam) ]
+    ADRC = []
+    for tau in Atau:
+        ADRC.append([drc for drc in ffun(tau, steps[1:], *fparam)])
+    print([len(drctau) for drctau in ADRC])
+    Adrc = [drc for drc in chain(*ADRC)]
+    #print(Adrc)
+    if report:
+        print("Number of drc diagrams: %d"%len(Adrc))
+    if printdig:
+        for drc in Adrc:
+            drc = reg_drc(drc)
+            print("%s"%str_dgms(drc))
+            print("form is %s, dual form is %s\n"
+                  % (strgpform%gpform(drc), strdualform%dualform(drc)))
+    return Adrc
+
+
+DRCRule = {
+    'D': (S_Wrepn_D, S_Wrepns_D, steps_D,
+          r'SO(%d,%d)', gp_form_D, r'SO(%d,%d)', dual_form_D),
+    'C': (S_Wrepn_C, S_Wrepns_C, steps_C,
+          r'Sp(%d)', drc_form_Sp, r'SO(%d,%d)', dual_form_C),
+    'B': (S_Wrepn_B, S_Wrepns_B, steps_B,
+          r'SO(%d,%d)', gp_form_B, r'SO(%d,%d)', dual_form_B),
+    'M': (S_Wrepn_M, S_Wrepns_M, steps_M,
+          r'Mp(%d)', drc_form_Sp, r'Mp(%d)', drc_form_Sp),
+    }
+
+
+def dpart2drc(dpart, rtype = 'D',
+                report = True,printdig=False, getlist=False,print_Wrepn=False):
+    """
+    print the dcr_diag attached to Nilpotent orbit of type D
+    partition: = [C_{2a-1}>=C_{2a-2}... >=C_0>=0] is the list of column lengths of
+                  a type C nilpotent orbits.
+    """
+    assert(rtype in DRCRule)
+    spWrepn, AWrepns, steps, strgpform, gpform, strdualform, dualform = DRCRule[rtype]
+
+    Atau = dualpart2Wrepn(dpart,rtype)
+
+    if report:
+        print("Type %s dual-partition: %s"%(rtype,dpart))
+    if print_Wrepn:
+        print("List of relevent Weyl group representations")
+        print(Atau)
+
+    ffun, fparam = steps[0]
+
+    ADRC = []
+    for tau in Atau:
+        ADRC.append([drc for drc in ffun(tau, steps[1:], *fparam)])
+    print([len(drctau) for drctau in ADRC])
+    Adrc = [drc for drc in chain(*ADRC)]
+    #print(Adrc)
+    if report:
+        print("Number of drc diagrams: %d"%len(Adrc))
+    if printdig:
+        for drc in Adrc:
+            drc = reg_drc(drc)
+            print("%s"%str_dgms(drc))
+            print("form is %s, dual form is %s\n"
+                  % (strgpform%gpform(drc), strdualform%dualform(drc)))
+    return Adrc
+
+
+PBPRULES = {
+    'D': (steps_D,
+          r'SO(%d,%d)', gp_form_D, r'SO(%d,%d)', dual_form_D),
+    'C': (steps_C,
+          r'Sp(%d)', drc_form_Sp, r'SO(%d,%d)', dual_form_C),
+    'B': (steps_B,
+          r'SO(%d,%d)', gp_form_B, r'SO(%d,%d)', dual_form_B),
+    'M': (steps_M,
+          r'Mp(%d)', drc_form_Sp, r'Mp(%d)', drc_form_Sp),
+    }
+
+
+def dpart2pbp(dpart, rtype = 'D',
+                report = True,printdig=False, getlist=False,print_Wrepn=False):
+    """
+    print the dcr_diag attached to Nilpotent orbit of type D
+    partition: = [C_{2a-1}>=C_{2a-2}... >=C_0>=0] is the list of column lengths of
+                  a type C nilpotent orbits.
+    """
+    assert(rtype in DRCRule)
+    steps, strgpform, gpform, strdualform, dualform = PBPRULES[rtype]
+
+    Atau = springer_part2family(dpart,rtype)
+
+    if report:
+        print("Type %s partition: %s"%(rtype,dpart))
+    if print_Wrepn:
+        print("List of relevent Weyl group representations")
+        print(Atau)
+
+    ffun, fparam = steps[0]
+
+    ADRC = []
+    for tau in Atau:
+        ADRC.append([drc for drc in ffun(tau, steps[1:], *fparam)])
+    print([len(drctau) for drctau in ADRC])
+    Adrc = [drc for drc in chain(*ADRC)]
+    #print(Adrc)
     if report:
         print("Number of drc diagrams: %d"%len(Adrc))
     if printdig:

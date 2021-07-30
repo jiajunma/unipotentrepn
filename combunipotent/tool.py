@@ -1,4 +1,4 @@
-from itertools import chain
+from itertools import chain, combinations
 from copy import copy, deepcopy
 
 
@@ -288,6 +288,79 @@ def springer_part2repn(part, rtype='C', partrc='r' ):
     tauR = tuple(eta - i for i, eta in enumerate(pe))
     return (tauL,tauR)
 
+
+def springer_part2family(part, rtype='C', partrc='r',report = False, reverse=True):
+    ## partition are
+    if partrc == 'c':
+        part = part_trans(part)
+    part = sorted(part)
+    if (rtype == 'C' and len(part)%2 == 1) or \
+       (rtype == 'B' and len(part)%2 == 0) or \
+       (rtype == 'D' and len(part)%2 == 1):
+           part.insert(0, 0)
+    pp = [lam+i for i, lam in enumerate(part)]
+    pe, po = [],[]
+    for lam in pp:
+        if lam % 2 == 1:
+            po.append(lam//2)
+        else:
+            pe.append(lam//2)
+    stau = symbol2repn((po,pe))
+
+    ssym = repn2symbol(stau,rtype)
+    Asyms = symbol2family(ssym)
+    res = [symbol2repn(sym,reverse=reverse) for sym in Asyms]
+
+    if report:
+        print('Type %s orbit:'%rtype, part)
+        print('Special repn:',stau)
+        print('Totally %d repns:\n'%len(res),'\n '.join(map(str,res)))
+
+    return res
+
+def springer_dpart2family(part, rtype='C', symbol= False, reverse=True):
+    """
+    Compute the family from dual partition
+    results is a list of W-repns represented by columns lengths.
+    """
+    part = sorted(part)
+    if (rtype == 'C' and len(part)%2 == 1) or \
+       (rtype == 'D' and len(part)%2 == 0) or \
+       (rtype == 'B' and len(part)%2 == 1):
+           part.insert(0, 0)
+    pp = [lam+i for i, lam in enumerate(part)]
+    pe, po = [],[]
+    for lam in pp:
+        if lam % 2 == 1:
+            po.append(lam//2)
+        else:
+            pe.append(lam//2)
+    stau = symbol2repn((po,pe))
+    ssym = repn2symbol(stau, rtype)
+    Asyms = symbol2family((ssym[1],ssym[0]))
+
+    if report:
+        print ('Special repn. %s'%str(stau))
+
+    if symbol:
+        return Asyms
+    else:
+        res = [symbol2repn(sym,reverse=reverse) for sym in Asyms]
+        return res
+
+def symbol2family(sym):
+    symU, symD  = set(sym[0]), set(sym[1])
+    k = len(symU - symD)
+    mm = symU ^ symD
+    cc = symU & symD
+    res = []
+    for uu in combinations(mm,k):
+        uu = set(uu)
+        U = tuple(sorted( uu | cc))
+        D = tuple(sorted((mm-uu)|cc))
+        res.append((U,D))
+    return res
+
 def symbol2specialsymbol(sym):
     return ssymbol2symbol(chain(*sym))
 
@@ -326,7 +399,7 @@ def springer_repn2part(tau, rtype = 'C'):
         """
         Compute the partition
         """
-        olams = [(lam+i)*2+1for i, lam in enumerate(sxi)]
+        olams = [(lam+i)*2+1 for i, lam in enumerate(sxi)]
         elams = [(lam+i)*2 for i, lam in enumerate(seta)]
         part = [lam - i for i, lam in enumerate(sorted(olams+elams))]
         return reg_part(part)
@@ -350,16 +423,65 @@ def springer_repn2part(tau, rtype = 'C'):
         """
         Compute the partition
         """
-        olams = [(lam+i)*2+1for i, lam in enumerate(sxi)]
+        olams = [(lam+i)*2+1 for i, lam in enumerate(sxi)]
         elams = [(lam+i)*2 for i, lam in enumerate(seta)]
         part = [lam - i for i, lam in enumerate(sorted(olams+elams))]
         return reg_part(part)
 
-def symbol2repn(sym, rtype = 'C'):
+def equiv_symbol(sym,l):
+    symU, symL = sym
+    l = max(l,0)
+    symU = tuple(a+l for a in chain(range(-l,0),sorted(symU)))
+    symL = tuple(a+l for a in chain(range(-l,0),sorted(symL)))
+    return (symU, symL)
+
+
+def _J_symbol(sym, n, rtype='C'):
+    """
+    U/L for upper and lower rows. 
+    """
+    l = (n-len(sym[0])-len(sym[1])+1)//2
+    symU, symL = equiv_symbol(sym, l)
+    symU, symL = list(symU),list(symL)
+    i,j = len(symU)-1, len(symL)-1
+    for a in range(n-1):
+        if i>= 0 and j>=0:
+            if symU[i]>=symL[j]:
+                symU[i] = symU[i]+1
+                i = i-1
+            else:
+                symL[j] = symL[j]+1
+                j = j-1
+        elif i<0:
+                symL[j] = symL[j]+1
+                j = j-1
+        elif j<0:
+                symU[i] = symU[i]+1
+                i = i-1
+    res = multiset()
+    if i>= 0 and j>=0 and symU[i]==symL[j]:
+        symU[i] = symU[i]+1
+        res[(tuple(symU),tuple(symL))] = 1
+        symU[i] = symU[i]-1
+        symL[j] = symL[j]+1
+        res[(tuple(symU),tuple(symL))] = 1
+    elif (i>=0 and j<0) or symU[i]>symL[j]:
+        symU[i] = symU[i]+1
+        res[(tuple(symU),tuple(symL))] = 1
+    elif (j>=0 and i<0): 
+        symL[j] = symL[j]+0
+        res[(tuple(symU),tuple(symL))] = 1
+    return res 
+                
+
+
+
+
+def symbol2repn(sym, rtype = 'C', reverse=False):
     symL, symR = sym
     tauL = tuple(lam-i for i, lam in enumerate(symL))
     tauR = tuple(lam-i for i, lam in enumerate(symR))
-    return reg_W_repn((tauL, tauR), reverse=False)
+    return reg_W_repn((tauL, tauR), reverse=reverse)
 
 def repn2symbol(tau, rtype='C'):
     tauL,tauR = reg_W_repn(tau, reverse=False)
@@ -392,4 +514,39 @@ def isspecial_symbol(symb, rtype='C'):
         res = (isspecial_BC(((0, *symL), symR)) or
                isspecial_BC(((0, * symR), symL)))             
         return res
-    
+
+
+
+def part2srepn(part, rtype='C'):
+    tau = springer_part2repn(part,rtype)
+    RES = Wrepn2srepn(tau,rtype)
+    return RES
+
+def Wrepn2srepn(tau, rtype='C'):
+    symb1 = repn2symbol(tau,rtype)
+    symb = symbol2specialsymbol(symb1)
+    res = symbol2repn(symb,rtype)
+    return res
+
+def part2dbcell(part, rtype='C'):
+    tau = springer_part2repn(part,rtype)
+    RES = Wrepn2dbcell(tau,rtype)
+    return RES
+
+def Wrepn2dbcell(tau, rtype='C'):
+    symb1 = repn2symbol(tau,rtype)
+    #print(symb1)
+    (up,down)= symbol2specialsymbol(symb1)
+    DIFF = set(up) ^ set(down)
+    #print(DIFF)
+    cc = set(up) - DIFF
+    uup = set(up) - cc
+    ddown = set(down) - cc
+    RES = []
+    for k in range(len(ddown)+1):
+        for td in combinations(ddown,k):
+            for tu in combinations(uup,k):
+                uu = sorted(uup-set(tu)|set(td)|cc)
+                dd = sorted(ddown-set(td)|set(tu)|cc)
+                RES.append(symbol2repn((uu,dd)))
+    return RES
