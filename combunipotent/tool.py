@@ -25,8 +25,13 @@ def getz(C,idx,default=None):
         return C[idx]
     except IndexError:
         return default
+    except KeyError:
+        return default
 
 def column2row(C):
+    """
+    ==
+    """
     C=sorted(C)
     l= len(C)
     if l>0:

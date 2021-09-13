@@ -4,15 +4,15 @@ from multiset import FrozenMultiset as frozenset
 
 from .tool import *
 
-def getz(C,idx,default=None):
-    """
-    Get the element in C[idx]
-    if idx is out of the range, return the default value.
-    """
-    try:
-        return C[idx]
-    except IndexError:
-        return default
+# def getz(C,idx,default=None):
+#     """
+#     Get the element in C[idx]
+#     if idx is out of the range, return the default value.
+#     """
+#     try:
+#         return C[idx]
+#     except IndexError:
+#         return default
 
 def list_2list_BC(C):
     """
