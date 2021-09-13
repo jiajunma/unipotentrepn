@@ -1,3 +1,7 @@
+# GFM url syntax
+# https://render.githubusercontent.com/render/math?math={math_equation}
+# equation syntax
+
 ```python
 %load_ext autoreload
 %autoreload 2
