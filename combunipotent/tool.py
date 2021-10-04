@@ -122,7 +122,14 @@ def switch_kv(D):
         RD.setdefault(v, []).append(k)
     return RD
 
+def str_part(part, s='*'):
+    part = reg_part(part)
+    return '\n'.join([s*r for r in part])
+
 def BDcollapse(part):
+    """
+    Collapse of partition
+    """
     return partcollapse(part, 0)
 
 
@@ -223,7 +230,7 @@ DTdualBVW= {
     'C': ('B','B','C'),
     'B': ('C','C','B'),
     'D': ('D','D','D'),
-    'M': ('C','D','D'),
+    'M': ('C','D','C'),
 }
 
 def dualBVW(part, rtype, partrc='r'):
@@ -323,7 +330,7 @@ def springer_part2family(part, rtype='C', partrc='r',report = False, reverse=Tru
 
     return res
 
-def springer_dpart2family(part, rtype='C', symbol= False, reverse=True):
+def springer_dpart2family(part, rtype='C', symbol= False, reverse=True, report=True):
     """
     Compute the family from dual partition
     results is a list of W-repns represented by columns lengths.

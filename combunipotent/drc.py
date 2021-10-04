@@ -8,6 +8,11 @@ from multiset import Multiset as multiset
 from .tool import *
 
 """
+In this program rtype is the \star in our paper.
+rtype = B, C, D, M=\widetilde{C}
+
+
+
 In this new version, we dose not use the counting program for type C 
 to deduce the counting for type B
 
@@ -26,10 +31,64 @@ def allsubsets(S):
             yield SS
 
 
+def is_part_valid(part,rtype):
+    """
+    rtype in {B,C,D}
+    """
+    part = reg_part(part)
+    # The total parity must be correct!
+    p = sum(part)%2
+    if (p == 0 and rtype == 'B') or (p == 1 and rtype in 'CD'):
+        return False
+
+    if rtype in 'BD':
+        return part == BDcollapse(part)
+    elif rtype in 'C':
+        return part == Ccollapse(part)
+    else:
+        return False
+
+def split_part(part,rtype):
+    """
+    rtype  = star, which is the type of root system
+    Split partitions into good and bad parts.
+    (part, rtype) --> (gpart, bpart)
+    gpart: Good part
+    bpart: Bad part
+    """
+    part = reg_part(part)
+    if (not is_part_valid(part,rtype)) or (not rtype in 'BCD') :
+        raise TypeError
+    if rtype in 'BD':
+        gpart = (*(r for r in part if r%2 == 1),)
+        bpart = (*(r for r in part if r%2 == 0),)
+    elif rtype == 'C':
+        gpart = (*(r for r in part if r%2 == 0),)
+        bpart = (*(r for r in part if r%2 == 1),)
+    return (gpart, bpart)
+
+def bpart2Wrepn(part,rtype):
+    """
+    Bad parity partition to the Weyl group representation.
+    the function will not check the partition is good or not.
+    rtype in {B,C,D,M}
+    """
+    part = reg_part(part)
+    assert(len(part)%2 == 0)
+    if rtype in 'CD':
+        tauL = tuple(part[i]//2 for i in range(0,len(part), 2))
+        tauR = tuple(part[i]//2 for i in range(0,len(part), 2))
+        return (tauL,tauR)
+    elif rtype in 'BM':
+        tauL = tuple((part[i]+1)//2 for i in range(0,len(part), 2))
+        tauR = tuple((part[i]-1)//2 for i in range(0,len(part),2))
+        return (tauL,tauR)
+
+
 
 def dualpart2Wrepn(part, rtype):
     """
-    Assume the orbit is purly even. (the function will not check the condition)
+    Assume the orbit has good parity. (the function will not check the condition)
     """
     part = sorted([x for x in part if x>0],reverse=True)
     a, res = divmod(len(part),2)
@@ -85,7 +144,124 @@ def dualpart2Wrepn(part, rtype):
             RES.append(reg_W_repn((tuple(otauL+tauL),tuple(otauR+tauR))))
     return RES
 
+
+def dualpart2LC(part, rtype):
+    """
+    Send a dual orbit with good parity to the corresponding Lusztig left cell.
+    Assume the orbit has good parity. (the function will not check the condition)
+    return: a dictionary \wp -> \tau_\wp
+    """
+    part = sorted([x for x in part if x>0],reverse=True)
+    a, res = divmod(len(part),2)
+    if rtype == 'M' and res == 1:
+        part = part + [0]
+        a = a+1
+    elif rtype == 'C' and res ==1:
+        part = part + [-1]
+        a = a+1
+    elif rtype == 'B' and res ==0:
+        part = part + [0]
+    elif rtype == 'D' and res ==0:
+        # a trick
+        part = part + [-1]
+    RES = dict()
+    if rtype in 'BD':
+        PPidx = [ i for i in range(a)
+                  if part[2*i+1]>part[2*i+2] and part[2*i+2]>=0]
+    elif rtype in 'CM':
+        PPidx = [i for i in range(a)
+                  if part[2*i]>part[2*i+1] and part[2*i+1]>=0]
+    if rtype in 'BM':
+        if rtype == 'B':
+            otauL, otauR = [],[part[0]//2]
+            part = part[1:]
+        else:
+            otauL, otauR = [],[]
+        for P in allsubsets(PPidx):
+            tauL,tauR = [],[]
+            for i in range(a):
+                if i in P:
+                    tauL.append(part[2*i+1]//2)
+                    tauR.append(part[2*i+0]//2)
+                else:
+                    tauL.append(part[2*i+0]//2)
+                    tauR.append(part[2*i+1]//2)
+            tauP = reg_W_repn((tuple(otauL+tauL),tuple(otauR+tauR)))
+            RES[frozenset(P)]=  tauP
+    elif rtype in 'DC':
+        if rtype == 'D':
+            otauL, otauR = [(part[0]+1)//2],[]
+            part = part[1:]
+        else:
+            otauL, otauR = [],[]
+        for P in allsubsets(PPidx):
+            tauL,tauR = [],[]
+            for i in range(a):
+                if i in P:
+                    tauR.append((part[2*i+1]-1)//2)
+                    tauL.append((part[2*i+0]+1)//2)
+                else:
+                    tauR.append((part[2*i+0]-1)//2)
+                    tauL.append((part[2*i+1]+1)//2)
+            tauP = reg_W_repn((tuple(otauL+tauL),tuple(otauR+tauR)))
+            RES[frozenset(P)]=  tauP
+    return RES
+
+def LC2pbps(LC,rtype):
+    """
+    Input: dictionary of left repn, root type
+    Output: dictionary of list of pbp in each shape
+    """
+    RES = dict()
+    for PP, tau in LC.items():
+        pbps = [pbp for pbp in Wrepn2pbps(tau,rtype)]
+        RES[PP] = pbps
+    return RES
+
+# Translate a columne for type M.
+transM = str.maketrans('*rscd','*srdc')
+def _tpbpM(C):
+    return C.translate(transM)
+#
+
+def twistpbpup(pbp,p,rtype):
+    pbpL,pbpR = pbp
+    if rtype == 'M':
+        pbppL = tuple(cL if i != p else _tpbpM(pbpR[p]) for i, cL in  enumerate(pbpL))
+        pbppR = tuple(cR if i != p else _tpbpM(pbpL[p]) for i, cR in  enumerate(pbpR))
+        res = (pbppL,pbppR)
+    return res
+
+def printpbplist(pbplist):
+    for pbp in pbplist:
+        print(str_dgms(pbp))
+
+def twistpbpdown(pbp,p,rtype):
+    pbp = reg_drc(pbp)
+    pbpL,pbpR = pbp
+    cols  = max(len(pbpL),len(pbpR))
+    if rtype == 'M':
+        pbppL = tuple(getz(pbpL,i,'') if i != p else _tpbpM(getz(pbpR,p,'')) for i in range(cols))
+        pbppR = tuple(getz(pbpR,i,'') if i != p else _tpbpM(getz(pbpL,p,'')) for i in range(cols))
+        res = reg_drc((pbppL,pbppR))
+    if not verify_drc(res,rtype=rtype):
+        str_dgms(res)
+        raise ValueError('Result in wrong PBP')
+    return reg_drc(res)
+
+def twistdown(pbplist,PP,rtype):
+    p = min(PP, default=-1)
+    downpp = frozenset(PP - set([p]))
+    if p == -1:
+        return frozenset(pbplist),downpp
+    RES = frozenset(twistpbpdown(pbp,p,rtype) for pbp in pbplist)
+    return RES,downpp
+
+
 def Jind(ssym, r):
+    """
+    Not been implemented
+    """
     pass
 
 
@@ -464,6 +640,7 @@ def reg_tau(tau):
     return (tauL,tauR)
 
 
+
 def countdrcform(drc):
     dot = sum(c.count('*') for c in itertools.chain(*drc))
     r = sum(c.count('r') for c in itertools.chain(*drc))
@@ -683,7 +860,7 @@ def dpart2pbp(dpart, rtype = 'D',
     return Adrc
 
 
-def Wrepn2drcs(tau,rtype='D'):
+def Wrepn2pbps(tau,rtype='D'):
     """
     generate the dcr_diag attached to Weyl group representation orbit of type rtype
     """
@@ -692,6 +869,8 @@ def Wrepn2drcs(tau,rtype='D'):
     ffun, fparam = steps[0]
     Adrc = ffun(tau, steps[1:], *fparam)
     return Adrc
+
+Wrepn2drcs=Wrepn2pbps
 
 def count_dgms_D_forms(Adrc):
     return count_signs(Adrc, form_D)
@@ -736,8 +915,8 @@ def str_dgms(drc):
     """
     Format of drc:
     drc = (drcL,drcR)
-    drcL and drcR are string lists
-    drcL = [cl_1, ..., cl_k], 
+    drcL and drcR are string tuples
+    drcL = (cl_1, ..., cl_k),
         each cl_i represents
         the symbol of a column
     """
