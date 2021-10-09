@@ -225,7 +225,7 @@ def _tpbpM(C):
     return C.translate(transM)
 
 
-def testpbptwist(dO,rtype):
+def testpbptwist(dO,rtype, print=print):
     print(r'Let $\mathcal O^\vee$ has rows $%s$'%(list(dO),))
     O = dualBVW(dO,rtype,partrc='c')
     print(r'Then $\mathcal O$ has columns $%s$'%(O,))
@@ -253,8 +253,8 @@ def testpbptwist(dO,rtype):
         print(f"The pbp-up list has $\\wp'=$  {set(pp)} size {len(pbplistu)}")
         #print(PBPlist[PPd])
         #print(pbpdowns)
-        print(frozenset(PBPlist[pp])-frozenset(pbplistu))
-        print(frozenset(pbplistu)-frozenset(PBPlist[pp]))
+        #print(frozenset(PBPlist[pp])-frozenset(pbplistu))
+        #print(frozenset(pbplistu)-frozenset(PBPlist[pp]))
         #printpbplist(pbpdowns)
         print(frozenset(PBPlist[pp])==frozenset(pbplistu))
 
