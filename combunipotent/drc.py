@@ -220,16 +220,62 @@ def LC2pbps(LC,rtype):
 
 # Translate a columne for type M.
 transM = str.maketrans('*rscd','*srdc')
+
 def _tpbpM(C):
     return C.translate(transM)
-#
 
-def twistpbpup(pbp,p,rtype):
+
+def testpbptwist(dO,rtype):
+    print(r'Let $\mathcal O^\vee$ has rows $%s$'%(list(dO),))
+    O = dualBVW(dO,rtype,partrc='c')
+    print(r'Then $\mathcal O$ has columns $%s$'%(O,))
+    WLC = dualpart2LC(dO,rtype)
+
+    for pp, tau in WLC.items():
+        if len(pp)==0:
+            print(f"The special representation (columns) $\\{{\\}}\\mapsto \\tau_s =$ {tau[0]} $\\times$ {tau[1]}.")
+        else:
+            print(f"a non-special representation {set(pp)}$\\mapsto \\tau =$ {tau[0]} $\\times$ {tau[1]}.")
+
+    PBPlist = LC2pbps(WLC,rtype)
+
+    ### Test twist-up
+    for pp in PBPlist:
+        if len(pp)==0:
+            continue
+        p = min(pp, default=-1)
+        print(f"The minimal p is {min(pp,default=-1)}")
+        assert(p!=-1)
+        ppd = frozenset(pp - set([p]))
+        pbplistd= PBPlist[ppd]
+        pbplistu = frozenset(twistpbpup(pbp,p,rtype,report=False) for pbp in pbplistd)
+        print(f"The pbp-down list has $\\wp=$  {set(ppd)} size {len(pbplistd)}")
+        print(f"The pbp-up list has $\\wp'=$  {set(pp)} size {len(pbplistu)}")
+        #print(PBPlist[PPd])
+        #print(pbpdowns)
+        print(frozenset(PBPlist[pp])-frozenset(pbplistu))
+        print(frozenset(pbplistu)-frozenset(PBPlist[pp]))
+        #printpbplist(pbpdowns)
+        print(frozenset(PBPlist[pp])==frozenset(pbplistu))
+
+
+def twistpbpup(pbp,p,rtype, report=False):
+    pbp = reg_drc(pbp)
     pbpL,pbpR = pbp
+    cols  = max(len(pbpL),len(pbpR))
     if rtype == 'M':
-        pbppL = tuple(cL if i != p else _tpbpM(pbpR[p]) for i, cL in  enumerate(pbpL))
-        pbppR = tuple(cR if i != p else _tpbpM(pbpL[p]) for i, cR in  enumerate(pbpR))
+        pbppL = tuple(getz(pbpL,i,'') if i != p else _tpbpM(getz(pbpR,p,'')) for i in range(cols))
+        pbppR = tuple(getz(pbpR,i,'') if i != p else _tpbpM(getz(pbpL,p,'')) for i in range(cols))
         res = (pbppL,pbppR)
+    elif rtype == 'C':
+        # The original columns
+        Lo, Ro = getz(pbpL,p,''), getz(pbpR,p,'')
+        s = len(Ro)-len(Lo)
+        pass
+    if report:
+        report_str = concat_strblocks(str_dgms(pbp),"<==>",str_dgms(res))
+        print(report_str)
+    res = reg_drc(res)
     return res
 
 def printpbplist(pbplist):
