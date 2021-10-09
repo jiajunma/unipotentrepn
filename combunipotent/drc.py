@@ -225,7 +225,7 @@ def _tpbpM(C):
     return C.translate(transM)
 
 
-def testpbptwist(dO,rtype, print=print):
+def testpbptwist(dO,rtype, print=print, report=False):
     print(r'Let $\mathcal O^\vee$ has rows $%s$'%(list(dO),))
     O = dualBVW(dO,rtype,partrc='c')
     print(r'Then $\mathcal O$ has columns $%s$'%(O,))
@@ -248,13 +248,13 @@ def testpbptwist(dO,rtype, print=print):
         assert(p!=-1)
         ppd = frozenset(pp - set([p]))
         pbplistd= PBPlist[ppd]
-        pbplistu = frozenset(twistpbpup(pbp,p,rtype,report=False) for pbp in pbplistd)
-        print(f"The pbp-down list has $\\wp=$  {set(ppd)} size {len(pbplistd)}")
-        print(f"The pbp-up list has $\\wp'=$  {set(pp)} size {len(pbplistu)}")
+        pbplistu = frozenset(twistpbpup(pbp,p,rtype,report=report) for pbp in pbplistd)
+        print(f"The pbp-down list has $\\wp=$  {set(ppd)} size {len(set(pbplistd))}")
+        print(f"The pbp-up list has $\\wp'=$  {set(pp)} size {len(set(pbplistu))}")
         #print(PBPlist[PPd])
         #print(pbpdowns)
-        #print(frozenset(PBPlist[pp])-frozenset(pbplistu))
-        #print(frozenset(pbplistu)-frozenset(PBPlist[pp]))
+        print(frozenset(PBPlist[pp])-frozenset(pbplistu))
+        print(frozenset(pbplistu)-frozenset(PBPlist[pp]))
         #printpbplist(pbpdowns)
         print(frozenset(PBPlist[pp])==frozenset(pbplistu))
 
@@ -269,13 +269,59 @@ def twistpbpup(pbp,p,rtype, report=False):
         res = (pbppL,pbppR)
     elif rtype == 'C':
         # The original columns
+        pbppL = list(getz(pbpL,i,'') if i != p else '' for i in range(cols))
+        pbppR = list(getz(pbpR,i,'') if i != p else '' for i in range(cols))
         Lo, Ro = getz(pbpL,p,''), getz(pbpR,p,'')
+        assert(len(Ro)>0)
         s = len(Ro)-len(Lo)
-        pass
+        x2 = getz(getz(pbpL,p+1,''),len(Lo)-1,'')
+        x3 = Ro[-s-1]
+        Rn = Ro[:-s-1]
+        if x3 == '*':
+            if x2=='r':
+                Ln = Lo[:-1]+'r'*s+'rd'
+                pbppL[p+1] = pbppL[p+1][:-1]+'c'
+            else:
+                Ln = Lo[:-1]+'r'*s+'cd'
+        else:
+            x0= getz(Lo,-2,'')
+            if x0 == 'c':
+                Ln = Lo[:-2]+'r'*(s+1)+'cd'
+            else:
+                Ln = Lo[:-1]+'r'*(s+1)+Lo[-1]
+        if p != 0:
+            LLn = pbppL[p-1]
+            LRn = pbppR[p-1]
+            y0, y2  = Ln[-2], Ln[-1]
+            y1 = LLn[len(Ln)-1]
+            if (y1,y2) == ('r','r'):
+                LLn = LLn[:len(Ln)-2]+'rr'+LLn[len(Ln):]
+                LRn = LRn[:len(Ln)-2]+'ss'+LRn[len(Ln):]
+                Ln = Ln[:len(Ln)-2]+'cd'
+            elif (y1,y2) == ('c','r'):
+                LLn = LLn[:len(Ln)-2]+'rc'+LLn[len(Ln):]
+                LRn = LRn[:len(Ln)-2]+'ss'+LRn[len(Ln):]
+                Ln = Ln[:len(Ln)-2]+'cd'
+            elif (y1,y2) == ('d','r'):
+                LLn = LLn[:len(Ln)-2]+'rd'+LLn[len(Ln):]
+                LRn = LRn[:len(Ln)-2]+'ss'+LRn[len(Ln):]
+                Ln = Ln[:len(Ln)-2]+'cd'
+            elif (y1,y2) == ('d','c'):
+                LLn = LLn[:len(Ln)-2]+'cd'+LLn[len(Ln):]
+                LRn = LRn[:len(Ln)-2]+'ss'+LRn[len(Ln):]
+                Ln = Ln[:len(Ln)-2]+'cd'
+            pbppL[p-1]=LLn
+            pbppR[p-1]=LRn
+        pbppL[p]=Ln
+        pbppR[p]=Rn
+        res = (pbppL, pbppR)
     if report:
         report_str = concat_strblocks(str_dgms(pbp),"<==>",str_dgms(res))
         print(report_str)
     res = reg_drc(res)
+    if not verify_drc(res,rtype=rtype):
+        str_dgms(res)
+        raise ValueError('Result in wrong PBP')
     return res
 
 def printpbplist(pbplist):
