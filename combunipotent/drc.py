@@ -275,7 +275,84 @@ def twistpbpup(pbp,p,rtype, report=False):
         assert(len(Ro)>0)
         s = len(Ro)-len(Lo)
         x2 = getz(getz(pbpL,p+1,''),len(Lo)-1,'')
-        x3 = Ro[-s-1]
+        x1 = Lo[-1]
+        Rn = Ro[:-s-1]
+        if x1 == '*':
+            if x2=='r':
+                Ln = Lo[:-1]+'r'*s+'rd'
+                pbppL[p+1] = pbppL[p+1][:-1]+'c'
+            else:
+                Ln = Lo[:-1]+'r'*s+'cd'
+        else:
+            x0= getz(Lo,-2,'')
+            if x0 == 'c':
+                Ln = Lo[:-2]+'r'*(s+1)+'cd'
+            else:
+                Ln = Lo[:-1]+'r'*(s+1)+Lo[-1]
+        if p != 0:
+            LLn = pbppL[p-1]
+            LRn = pbppR[p-1]
+            if len(LRn) == len(Ln)-1:
+                rs = 1
+            else:
+                rs = 2
+            y0, y2  = Ln[-2], Ln[-1]
+            y1 = LLn[len(Ln)-1]
+            if (y1,y2) == ('r','r'):
+                LLn = LLn[:len(Ln)-2]+'rr'+LLn[len(Ln):]
+                LRn = LRn[:len(Ln)-2]+'s'*rs+LRn[len(Ln):]
+                Ln = Ln[:len(Ln)-2]+'cd'
+            elif (y1,y2) == ('c','r'):
+                LLn = LLn[:len(Ln)-2]+'rc'+LLn[len(Ln):]
+                LRn = LRn[:len(Ln)-2]+'s'*rs+LRn[len(Ln):]
+                Ln = Ln[:len(Ln)-2]+'cd'
+            elif (y1,y2) == ('d','r'):
+                LLn = LLn[:len(Ln)-2]+'rd'+LLn[len(Ln):]
+                LRn = LRn[:len(Ln)-2]+'s'*rs+LRn[len(Ln):]
+                Ln = Ln[:len(Ln)-2]+'cd'
+            elif (y1,y2) == ('d','c'):
+                LLn = LLn[:len(Ln)-2]+'cd'+LLn[len(Ln):]
+                LRn = LRn[:len(Ln)-2]+'s'*rs+LRn[len(Ln):]
+                Ln = Ln[:len(Ln)-2]+'cd'
+            pbppL[p-1]=LLn
+            pbppR[p-1]=LRn
+        pbppL[p]=Ln
+        pbppR[p]=Rn
+        res = (pbppL, pbppR)
+        # print(concat_strblocks(f'p={p}', str_dgms(pbp),"<===>",str_dgms(res)))
+    if report:
+        report_str = concat_strblocks(str_dgms(pbp),"<==>",str_dgms(res))
+        print(report_str)
+    res = reg_drc(res)
+    if not verify_drc(res,rtype=rtype):
+        print(Ro,Rn,s)
+        print(concat_strblocks(f'p={p}', str_dgms(pbp),"<===>",str_dgms(res)))
+        raise ValueError('Result in wrong PBP')
+    return res
+
+def printpbplist(pbplist):
+    for pbp in pbplist:
+        print(str_dgms(pbp))
+
+def twistpbpdown(pbp,p,rtype):
+    pbp = reg_drc(pbp)
+    pbpL,pbpR = pbp
+    cols  = max(len(pbpL),len(pbpR))
+    if rtype == 'M':
+        pbppL = tuple(getz(pbpL,i,'') if i != p else _tpbpM(getz(pbpR,p,'')) for i in range(cols))
+        pbppR = tuple(getz(pbpR,i,'') if i != p else _tpbpM(getz(pbpL,p,'')) for i in range(cols))
+        res = reg_drc((pbppL,pbppR))
+    elif rtype == 'C':
+        # Too complicate
+        # Unfinished!!!
+        pbppL = list(getz(pbpL,i,'') if i != p else '' for i in range(cols))
+        pbppR = list(getz(pbpR,i,'') if i != p else '' for i in range(cols))
+        Lo, Ro = getz(pbpL,p,''), getz(pbpR,p,'')
+        s = len(Lo)-len(Ro)-2
+        assert(s>=0)
+        y1 = getz(getz(pbpL,p,''),len(Lo)-1,'')
+        y1 = getz(getz(pbpL,p,''),len(Lo)-1,'')
+        x2 = Ro[-s-1]
         Rn = Ro[:-s-1]
         if x3 == '*':
             if x2=='r':
@@ -315,27 +392,6 @@ def twistpbpup(pbp,p,rtype, report=False):
         pbppL[p]=Ln
         pbppR[p]=Rn
         res = (pbppL, pbppR)
-    if report:
-        report_str = concat_strblocks(str_dgms(pbp),"<==>",str_dgms(res))
-        print(report_str)
-    res = reg_drc(res)
-    if not verify_drc(res,rtype=rtype):
-        str_dgms(res)
-        raise ValueError('Result in wrong PBP')
-    return res
-
-def printpbplist(pbplist):
-    for pbp in pbplist:
-        print(str_dgms(pbp))
-
-def twistpbpdown(pbp,p,rtype):
-    pbp = reg_drc(pbp)
-    pbpL,pbpR = pbp
-    cols  = max(len(pbpL),len(pbpR))
-    if rtype == 'M':
-        pbppL = tuple(getz(pbpL,i,'') if i != p else _tpbpM(getz(pbpR,p,'')) for i in range(cols))
-        pbppR = tuple(getz(pbpR,i,'') if i != p else _tpbpM(getz(pbpL,p,'')) for i in range(cols))
-        res = reg_drc((pbppL,pbppR))
     if not verify_drc(res,rtype=rtype):
         str_dgms(res)
         raise ValueError('Result in wrong PBP')
