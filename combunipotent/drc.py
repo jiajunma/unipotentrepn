@@ -1,4 +1,5 @@
 from rich import print
+from rich.table import Table
 import itertools
 from copy import copy, deepcopy
 
@@ -799,6 +800,7 @@ def countdrcform(drc):
     
 
 def gp_form_D(drc):
+    #print(drc)
     cplx, cpt1, cpt2, real1, real2  = countdrcform(drc)
     p, q = cplx+real1+real2+cpt1*2, cplx+real1+real2+cpt2*2
     return (p,q)
@@ -922,8 +924,24 @@ DRCRule = {
     }
 
 
+GPSIGN = {
+    'D': gp_form_D,
+    'B': gp_form_B,
+    'C': gp_form_C,
+    'M': gp_form_M,
+}
+
+
+def count_signs(ldrc,rtype):
+    count_fun = lambda drc: GPSIGN[rtype](drc)
+    DD = dict()
+    for drc in ldrc:
+        sgn = count_fun(drc)
+        DD[sgn] = DD.get(sgn,0)+1
+    return DD
+
 def dpart2drc(dpart, rtype = 'D',
-                report = True,printdig=False, getlist=False,print_Wrepn=False):
+                report = True,printdig=False, getlist=True,print_Wrepn=False):
     """
     print the dcr_diag attached to Nilpotent orbit of type D
     partition: = [C_{2a-1}>=C_{2a-2}... >=C_0>=0] is the list of column lengths of
@@ -942,13 +960,33 @@ def dpart2drc(dpart, rtype = 'D',
 
     ffun, fparam = steps[0]
 
-    ADRC = []
+    ADRC = dict()
     for tau in Atau:
-        ADRC.append([drc for drc in ffun(tau, steps[1:], *fparam)])
-    print([len(drctau) for drctau in ADRC])
-    Adrc = [drc for drc in chain(*ADRC)]
+        ADRC[tau] = [drc for drc in ffun(tau, steps[1:], *fparam)]
+    Adrc = [drc for drc in chain(*ADRC.values())]
     #print(Adrc)
     if report:
+        print([(tau,len(drctau)) for tau, drctau in ADRC.items()])
+        Asgns = dict()
+        for tau,drctau in ADRC.items():
+            #print(drctau)
+            Asgns[tau] = count_signs(drctau,rtype)
+        #print(Asgns)
+        sgnkeys = set()
+        for dsigns in Asgns.values():
+            sgnkeys.update(set(dsigns.keys()))
+
+        ## Print the result
+        sgnkeys = [k for k in sgnkeys]
+        tb = Table(" "*20,*[str(k) for k in sgnkeys],min_width=200, show_lines=True)
+        for tau, dsigns in Asgns.items():
+            tb.add_row(str(tau), *[str(dsigns.get(k,0)) for k in sgnkeys])
+        print(tb)
+
+
+        #print(sgnkeys)
+        #print("\t".join([str(k) for k in sgnkeys]))
+            #print(tau)
         print("Number of drc diagrams: %d"%len(Adrc))
     if printdig:
         for drc in Adrc:
@@ -956,7 +994,11 @@ def dpart2drc(dpart, rtype = 'D',
             print("%s"%str_dgms(drc))
             print("form is %s, dual form is %s\n"
                   % (strgpform%gpform(drc), strdualform%dualform(drc)))
-    return Adrc
+
+    if getlist:
+        return Adrc #= [drc for drc in chain(*ADRC.values())]
+    else:
+        return ADRC
 
 
 PBPRULES = {
@@ -1007,6 +1049,10 @@ def dpart2pbp(dpart, rtype = 'D',
                   % (strgpform%gpform(drc), strdualform%dualform(drc)))
     return Adrc
 
+# def sort_sign(ADRC,rtype='D'):
+#     dsgn = dict()
+#     for drc in ADRC:
+#         sgn =
 
 def Wrepn2pbps(tau,rtype='D'):
     """
@@ -1051,12 +1097,7 @@ def compare_sign(Adrc, LS):
     return Esgns
 
 
-def count_signs(Adrc,count_fun):
-    DD = dict()
-    for drc in Adrc:
-        sgn = count_fun(drc)
-        DD[sgn] = DD.get(sgn,0)+1
-    return DD
+
 
 
 def str_dgms(drc):
