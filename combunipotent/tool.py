@@ -228,8 +228,10 @@ def sign_twist_Wrepn(tau):
 # (original rtype, special repn rtype, target rtype)
 DTdualBVW= {
     'C': ('B','B','C'),
+    'CS': ('B','B','C'),
     'B': ('C','C','B'),
     'D': ('D','D','D'),
+    'DS': ('D','D','D'),
     'M': ('C','D','C'),
 }
 

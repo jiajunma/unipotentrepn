@@ -1,4 +1,3 @@
-from rich import print
 from rich.table import Table
 import itertools
 from copy import copy, deepcopy
@@ -7,11 +6,17 @@ from multiset import FrozenMultiset as frozenset
 from multiset import Multiset as multiset
 
 from .tool import *
+from .recursive import countunip
 
-"""
+from rich.console import Console
+
+
+console = Console(width=300,force_jupyter=True)
+print = console.print
+
+r"""
 In this program rtype is the \star in our paper.
 rtype = B, C, D, M=\widetilde{C}
-
 
 
 In this new version, we dose not use the counting program for type C 
@@ -96,22 +101,22 @@ def dualpart2Wrepn(part, rtype):
     if rtype == 'M' and res == 1:
         part = part + [0]
         a = a+1
-    elif rtype == 'C' and res ==1:
+    elif rtype in ['C', 'CS'] and res ==1:
         part = part + [-1]
         a = a+1
     elif rtype == 'B' and res ==0:
         part = part + [0]
-    elif rtype == 'D' and res ==0:
+    elif rtype in ['D','DS'] and res ==0:
         # a trick
         part = part + [-1]
     RES = []
-    if rtype in 'BD':
+    if rtype in ['B','D','DS']:
         PPidx = [ i for i in range(a)
                   if part[2*i+1]>part[2*i+2] and part[2*i+2]>=0]
-    elif rtype in 'CM':
+    elif rtype in ['C','CS','M']:
         PPidx = [i for i in range(a)
                   if part[2*i]>part[2*i+1] and part[2*i+1]>=0]
-    if rtype in 'BM':
+    if rtype in ['B','M']:
         if rtype == 'B':
             otauL, otauR = [],[part[0]//2]
             part = part[1:]
@@ -127,8 +132,8 @@ def dualpart2Wrepn(part, rtype):
                     tauL.append(part[2*i+0]//2)
                     tauR.append(part[2*i+1]//2)
             RES.append(reg_W_repn((tuple(otauL+tauL),tuple(otauR+tauR))))
-    elif rtype in 'DC':
-        if rtype == 'D':
+    elif rtype in ['D','C','DS','CS']:
+        if rtype in ['D','DS']:
             otauL, otauR = [(part[0]+1)//2],[]
             part = part[1:]
         else:
@@ -147,7 +152,7 @@ def dualpart2Wrepn(part, rtype):
 
 
 def dualpart2LC(part, rtype):
-    """
+    r"""
     Send a dual orbit with good parity to the corresponding Lusztig left cell.
     Assume the orbit has good parity. (the function will not check the condition)
     return: a dictionary \wp -> \tau_\wp
@@ -811,10 +816,27 @@ def dual_form_D(drc):
     return (dp,dq)
 
 
+
 def gp_form_C(drc):
-    return sum(len(c) for c in itertools.chain(*drc))
+    n = sum(len(c) for c in itertools.chain(*drc))
+    return n
+
+def gp_form_DS(drc):
+    n = sum(len(c) for c in itertools.chain(*drc))
+    return (n,n)
+
+def gp_form_CS(drc):
+    cplx, cpt1, cpt2, real1, real2  = countdrcform(drc)
+    dp, dq = cplx+real1+real2+cpt1*2, cplx+real1+real2+cpt2*2
+    return (dp,dq)
+
+
+def gp_form_C_signature(drc):
+    n = gp_form_C(drc)
+    return (n,n)
 
 gp_form_M = gp_form_C
+gp_form_M_signature = gp_form_C_signature
 
 def dual_form_C(drc):
     cplx, real1, real2, cpt1, cpt2  = countdrcform(drc)
@@ -860,19 +882,27 @@ steps_M  =[
     (fill_r, ('r', SWdgm)),
     (fill_rdot, ('s', SWdgm))]
 
+steps_CS  =[
+    (fill_r, ('r',SWdgm)),
+    (fill_rdot, ('s',))]
+
+steps_DS  =[
+    (fill_r, ('r',SWdgm)),
+    (fill_rdot, ('s',SWdgm))]
+
 def drc_form_Sp(drc):
     return 2*gp_form_C(drc)
 
-DRCRule = {
-    'D': (S_Wrepn_D, S_Wrepns_D, steps_D,
-          r'SO(%d,%d)', gp_form_D, r'SO(%d,%d)', dual_form_D),
-    'C': (S_Wrepn_C, S_Wrepns_C, steps_C,
-          r'Sp(%d)', drc_form_Sp, r'SO(%d,%d)', dual_form_C),
-    'B': (S_Wrepn_B, S_Wrepns_B, steps_B,
-          r'SO(%d,%d)', gp_form_B, r'SO(%d,%d)', dual_form_B),
-    'M': (S_Wrepn_M, S_Wrepns_M, steps_M,
-          r'Mp(%d)', drc_form_Sp, r'Mp(%d)', drc_form_Sp),
-    }
+# DRCRule = {
+#     'D': (S_Wrepn_D, S_Wrepns_D, steps_D,
+#           r'SO(%d,%d)', gp_form_D, r'SO(%d,%d)', dual_form_D),
+#     'C': (S_Wrepn_C, S_Wrepns_C, steps_C,
+#           r'Sp(%d)', drc_form_Sp, r'SO(%d,%d)', dual_form_C),
+#     'B': (S_Wrepn_B, S_Wrepns_B, steps_B,
+#           r'SO(%d,%d)', gp_form_B, r'SO(%d,%d)', dual_form_B),
+#     'M': (S_Wrepn_M, S_Wrepns_M, steps_M,
+#           r'Mp(%d)', drc_form_Sp, r'Mp(%d)', drc_form_Sp),
+#     }
 
 
 def part2drc(partition, rtype = 'D',
@@ -916,19 +946,25 @@ DRCRule = {
     'D': (S_Wrepn_D, S_Wrepns_D, steps_D,
           r'SO(%d,%d)', gp_form_D, r'SO(%d,%d)', dual_form_D),
     'C': (S_Wrepn_C, S_Wrepns_C, steps_C,
-          r'Sp(%d)', drc_form_Sp, r'SO(%d,%d)', dual_form_C),
+          r'Sp(%d,%d)', drc_form_Sp, r'SO(%d,%d)', dual_form_C),
     'B': (S_Wrepn_B, S_Wrepns_B, steps_B,
           r'SO(%d,%d)', gp_form_B, r'SO(%d,%d)', dual_form_B),
     'M': (S_Wrepn_M, S_Wrepns_M, steps_M,
-          r'Mp(%d)', drc_form_Sp, r'Mp(%d)', drc_form_Sp),
+          r'Mp(%d,%d)', drc_form_Sp, r'Mp(%d)', drc_form_Sp),
+    'CS': (S_Wrepn_C, S_Wrepns_C, steps_CS,
+          r'Sp(%d,%d)', gp_form_CS, r'SO(%d,%d)', dual_form_C),
+    'DS': (S_Wrepn_C, S_Wrepns_C, steps_DS,
+          r'O*(%d,%d)', gp_form_DS, r'SO(%d,%d)', dual_form_D),
     }
 
 
 GPSIGN = {
+    'DS': gp_form_DS,
+    'CS': gp_form_CS,
     'D': gp_form_D,
     'B': gp_form_B,
-    'C': gp_form_C,
-    'M': gp_form_M,
+    'C': gp_form_C_signature,
+    'M': gp_form_M_signature,
 }
 
 
@@ -966,7 +1002,7 @@ def dpart2drc(dpart, rtype = 'D',
     Adrc = [drc for drc in chain(*ADRC.values())]
     #print(Adrc)
     if report:
-        print([(tau,len(drctau)) for tau, drctau in ADRC.items()])
+        #print([(tau,len(drctau)) for tau, drctau in ADRC.items()])
         Asgns = dict()
         for tau,drctau in ADRC.items():
             #print(drctau)
@@ -978,11 +1014,13 @@ def dpart2drc(dpart, rtype = 'D',
 
         ## Print the result
         sgnkeys = [k for k in sgnkeys]
-        tb = Table(" "*20,*[str(k) for k in sgnkeys],min_width=200, show_lines=True)
+        sgnkeys = sorted(sgnkeys, key = lambda sgn: sgn[0],reverse=True)
+        tb = Table(" "*20,"all", *[str(k) for k in sgnkeys], show_lines=True)
         for tau, dsigns in Asgns.items():
-            tb.add_row(str(tau), *[str(dsigns.get(k,0)) for k in sgnkeys])
+            tb.add_row(str(tau), f"{len(ADRC[tau])}", *[str(dsigns.get(k,0)) for k in sgnkeys])
         print(tb)
-
+        countres = countunip(dpart,rtype)
+        print(f"The result of counting function: {countres}")
 
         #print(sgnkeys)
         #print("\t".join([str(k) for k in sgnkeys]))
@@ -1186,7 +1224,26 @@ def verify_drc(drc, rtype='C'):
         srccdrcL = remove_tail_letter(rccdrcL,'s')
         if srccdrcL is None or \
             test_bullets_drc((srccdrcL,drcR)) is False:
-            return False  
+            return False
+    elif rtype == 'M':
+        drcL, drcR = drc
+        if test_young_dg(drcL) is False or test_young_dg(drcR) is False:
+            return False
+        cdrcL = remove_tail_letter(drcL,'c',onerow=True)
+        if cdrcL is None or test_young_dg(cdrcL) is False:
+            return False
+        ddrcR = remove_tail_letter(drcR,'d',onerow=True)
+        if ddrcR is None or \
+            test_young_dg(ddrcR) == False:
+            return False
+        scdrcL = remove_tail_letter(cdrcL,'s')
+        if scdrcL is None:
+            return False
+        rddrcR = remove_tail_letter(ddrcR,'r')
+        if rddrcR is None or \
+            test_young_dg(rddrcR) == False or \
+            test_bullets_drc((scdrcL,rddrcR)) is False:
+            return False
     return True
 
 def reg_drc(drc):

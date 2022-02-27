@@ -272,67 +272,88 @@ def twist_C_nonspecial(drc):
     return nspdrc
 
 
-def twist_M_nonspecial(drc):
-    """
-    send a the special diagram to non-special diagram
-    special diagram means `switch' the left diagram longest column 
-    to right diagram
-    We only implement fL = fR+1 case
-    """
-    drcL, drcR = drc
-    # first column of drcL and first, second column of drcR
-    fL, fR, sR = getz(drcL, 0, ''), getz(drcR, 0, ''), getz(drcR, 1, '')
-    assert(len(fL) == len(fR)+1 and len(fL) > 0)
-    fLL = fL[:-1]
-    if fL[-1] == 's':
-        if len(fR) > 0 and fR[-1] == 'd':
-            fRR = fR[:-1]+'rd'
-        else:
-            fRR = fR + 'r'
-    elif fL[-1] == 'c':
-        if len(fL) >= 2 and fL[-2] == 's':
-            fLL = fL[:-2]+'c'
-            fRR = fR[:-1]+'r'+fR[-1]
-        else:
-            fLL = fL[:-1]
-            fRR = fR+'d'
-    else:
-        print('Invalid original drc: %s' % (str_dgms(drc)))
-        return None
-    nspdrc = ((fLL, *drcL[1:]), (fRR, *drcR[1:]))
-    return nspdrc
+# def twist_M_nonspecial(drc):
+#     """
+#     send a the special diagram to non-special diagram
+#     special diagram means `switch' the left diagram longest column
+#     to right diagram
+#     We only implement fL = fR+1 case
+#     """
+#     drcL, drcR = drc
+#     # first column of drcL and first, second column of drcR
+#     fL, fR, sR = getz(drcL, 0, ''), getz(drcR, 0, ''), getz(drcR, 1, '')
+#     assert(len(fL) == len(fR)+1 and len(fL) > 0)
+#     fLL = fL[:-1]
+#     if fL[-1] == 's':
+#         if len(fR) > 0 and fR[-1] == 'd':
+#             fRR = fR[:-1]+'rd'
+#         else:
+#             fRR = fR + 'r'
+#     elif fL[-1] == 'c':
+#         if len(fL) >= 2 and fL[-2] == 's':
+#             fLL = fL[:-2]+'c'
+#             fRR = fR[:-1]+'r'+fR[-1]
+#         else:
+#             fLL = fL[:-1]
+#             fRR = fR+'d'
+#     else:
+#         print('Invalid original drc: %s' % (str_dgms(drc)))
+#         return None
+#     nspdrc = ((fLL, *drcL[1:]), (fRR, *drcR[1:]))
+#     return nspdrc
 
-## New version
+# ## New version
+# def twist_M_nonspecial(drc):
+#     """
+#     send a the special diagram to non-special diagram
+#     special diagram means `switch' the left diagram longest column
+#     to right diagram
+#     We only implement fL = fR+1 case
+#     """
+#     drcL, drcR = drc
+#     # first column of drcL and first, second column of drcR
+#     fL, fR, sR = getz(drcL, 0, ''), getz(drcR, 0, ''), getz(drcR, 1, '')
+#     assert(len(fL) == len(fR)+1 and len(fL) > 0)
+#     if fL[-1] == 's':
+#         if len(fR) > 0 and fR[-1] == 'd':
+#             fLL = fL[:-2] +'c'
+#             fRR = fR[:-1]+'rr'
+#         else:
+#             fLL = fL[:-1]
+#             fRR = fR + 'r'
+#     elif fL[-1] == 'c':
+#         if len(fR) > 0 and fR[-1] == 'd':
+#             fLL = fL[:-2]+'c'
+#             fRR = fR[:-1]+'rd'
+#         else:
+#             fLL = fL[:-1]
+#             fRR = fR+'d'
+#     else:
+#         print('Invalid original drc: %s' % (str_dgms(drc)))
+#         return None
+#     nspdrc = ((fLL, *drcL[1:]), (fRR, *drcR[1:]))
+#     #print('abc')
+#     return nspdrc
+
+#Map_cdrs = { 'c':'d', 'd':'c','r':'s', 's':'r'}
+TRcdrs = str.maketrans('cdrs','dcsr')
+
+# Very New version
 def twist_M_nonspecial(drc):
     """
     send a the special diagram to non-special diagram
     special diagram means `switch' the left diagram longest column
     to right diagram
-    We only implement fL = fR+1 case
+    We only implement fL \neq fR case (the general case)
+    We will not check whether drc is a valide drc
     """
     drcL, drcR = drc
     # first column of drcL and first, second column of drcR
-    fL, fR, sR = getz(drcL, 0, ''), getz(drcR, 0, ''), getz(drcR, 1, '')
-    assert(len(fL) == len(fR)+1 and len(fL) > 0)
-    if fL[-1] == 's':
-        if len(fR) > 0 and fR[-1] == 'd':
-            fLL = fL[:-2] +'c'
-            fRR = fR[:-1]+'rr'
-        else:
-            fLL = fL[:-1]
-            fRR = fR + 'r'
-    elif fL[-1] == 'c':
-        if len(fR) > 0 and fR[-1] == 'd':
-            fLL = fL[:-2]+'c'
-            fRR = fR[:-1]+'rd'
-        else:
-            fLL = fL[:-1]
-            fRR = fR+'d'
-    else:
-        print('Invalid original drc: %s' % (str_dgms(drc)))
-        return None
+    fL, fR = getz(drcL, 0, ''), getz(drcR, 0, '') # getz(drcR, 1, '')
+    assert(not len(fL) == len(fR))
+    fLL = fR.translate(TRcdrs)
+    fRR = fL.translate(TRcdrs)
     nspdrc = ((fLL, *drcL[1:]), (fRR, *drcR[1:]))
-    #print('abc')
     return nspdrc
 
 
@@ -1141,72 +1162,72 @@ def schar_is_trivial_D(drc):
         return True
 
 
-def test_young_dg(dg):
-    return all(len(getz(dg, i, '')) >= len(getz(dg, i+1, ''))
-               for i in range(len(dg)))
+# def test_young_dg(dg):
+#     return all(len(getz(dg, i, '')) >= len(getz(dg, i+1, ''))
+#                for i in range(len(dg)))
 
 
-def test_young_drc(drc):
-    drcL, drcR = drc
-    return test_young_dg(drcL) and test_young_dg(drcR)
+# def test_young_drc(drc):
+#     drcL, drcR = drc
+#     return test_young_dg(drcL) and test_young_dg(drcR)
 
 
-def test_bullets_drc(drc):
-    drcL, drcR = drc
-    for i in range(max(len(drcL), len(drcR))):
-        cL, cR = getz(drcL, i, ''), getz(drcR, i, '')
-        nL, nR = cL.count('*'), cR.count('*')
-        if (len(cL), len(cR)) != (nL, nR) or len(cL) != len(cR):
-            return False
-    return True
+# def test_bullets_drc(drc):
+#     drcL, drcR = drc
+#     for i in range(max(len(drcL), len(drcR))):
+#         cL, cR = getz(drcL, i, ''), getz(drcR, i, '')
+#         nL, nR = cL.count('*'), cR.count('*')
+#         if (len(cL), len(cR)) != (nL, nR) or len(cL) != len(cR):
+#             return False
+#     return True
 
 
-def remove_tail_letter(dg, l, onerow=False):
-    ddg = []
-    for col in dg:
-        dcol = col.rstrip(l)
-        if onerow and len(col)-len(dcol) > 1:
-            return None
-        ddg.append(dcol)
-    return tuple(ddg)
+# def remove_tail_letter(dg, l, onerow=False):
+#     ddg = []
+#     for col in dg:
+#         dcol = col.rstrip(l)
+#         if onerow and len(col)-len(dcol) > 1:
+#             return None
+#         ddg.append(dcol)
+#     return tuple(ddg)
 
 
-def verify_drc(drc, rtype='C'):
-    if rtype == 'C':
-        drcL, drcR = drc
-        if test_young_dg(drcL) is False or test_young_dg(drcR) is False:
-            return False
-        cdrcL = remove_tail_letter(drcL, 'd', onerow=True)
-        if cdrcL is None or test_young_dg(cdrcL) is False:
-            return False
-        ccdrcL = remove_tail_letter(cdrcL, 'c', onerow=True)
-        if ccdrcL is None or test_young_dg(ccdrcL) == False:
-            return False
-        rccdrcL = remove_tail_letter(ccdrcL, 'r')
-        rdrcR = remove_tail_letter(drcR, 's')
-        if rccdrcL is None or test_young_dg(rccdrcL) is False or \
-                rdrcR is None or test_young_dg(rdrcR) is False or\
-                test_bullets_drc((rccdrcL, rdrcR)) is False:
-            return False
-    elif rtype == 'D':
-        drcL, drcR = drc
-        if test_young_dg(drcL) is False or test_young_dg(drcR) is False:
-            return False
-        cdrcL = remove_tail_letter(drcL, 'd', onerow=True)
-        if cdrcL is None or test_young_dg(cdrcL) is False:
-            return False
-        ccdrcL = remove_tail_letter(cdrcL, 'c', onerow=True)
-        if ccdrcL is None or \
-                test_young_dg(cdrcL) == False:
-            return False
-        rccdrcL = remove_tail_letter(ccdrcL, 'r')
-        if rccdrcL is None:
-            return False
-        srccdrcL = remove_tail_letter(rccdrcL, 's')
-        if srccdrcL is None or \
-                test_bullets_drc((srccdrcL, drcR)) is False:
-            return False
-    return True
+# def verify_drc(drc, rtype='C'):
+#     if rtype == 'C':
+#         drcL, drcR = drc
+#         if test_young_dg(drcL) is False or test_young_dg(drcR) is False:
+#             return False
+#         cdrcL = remove_tail_letter(drcL, 'd', onerow=True)
+#         if cdrcL is None or test_young_dg(cdrcL) is False:
+#             return False
+#         ccdrcL = remove_tail_letter(cdrcL, 'c', onerow=True)
+#         if ccdrcL is None or test_young_dg(ccdrcL) == False:
+#             return False
+#         rccdrcL = remove_tail_letter(ccdrcL, 'r')
+#         rdrcR = remove_tail_letter(drcR, 's')
+#         if rccdrcL is None or test_young_dg(rccdrcL) is False or \
+#                 rdrcR is None or test_young_dg(rdrcR) is False or\
+#                 test_bullets_drc((rccdrcL, rdrcR)) is False:
+#             return False
+#     elif rtype == 'D':
+#         drcL, drcR = drc
+#         if test_young_dg(drcL) is False or test_young_dg(drcR) is False:
+#             return False
+#         cdrcL = remove_tail_letter(drcL, 'd', onerow=True)
+#         if cdrcL is None or test_young_dg(cdrcL) is False:
+#             return False
+#         ccdrcL = remove_tail_letter(cdrcL, 'c', onerow=True)
+#         if ccdrcL is None or \
+#                 test_young_dg(cdrcL) == False:
+#             return False
+#         rccdrcL = remove_tail_letter(ccdrcL, 'r')
+#         if rccdrcL is None:
+#             return False
+#         srccdrcL = remove_tail_letter(rccdrcL, 's')
+#         if srccdrcL is None or \
+#                 test_bullets_drc((srccdrcL, drcR)) is False:
+#             return False
+#     return True
 
 
 def switch_kv(D):

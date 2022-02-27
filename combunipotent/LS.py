@@ -1980,69 +1980,69 @@ def schar_or_trivial_D(drc):
     else:
         return True
             
-def test_young_dg(dg):
-    return all(len(getz(dg,i,''))>= len(getz(dg,i+1,'')) 
-               for i in range(len(dg)))
+# def test_young_dg(dg):
+#     return all(len(getz(dg,i,''))>= len(getz(dg,i+1,''))
+#                for i in range(len(dg)))
 
-def test_young_drc(drc):
-    drcL, drcR = drc
-    return test_young_dg(drcL) and test_young_dg(drcR)
+# def test_young_drc(drc):
+#     drcL, drcR = drc
+#     return test_young_dg(drcL) and test_young_dg(drcR)
 
-def test_bullets_drc(drc):
-    drcL, drcR = drc
-    for i in range(max(len(drcL),len(drcR))):
-        cL, cR = getz(drcL, i, ''), getz(drcR, i, '')
-        nL, nR = cL.count('*'), cR.count('*')
-        if  (len(cL),len(cR)) != (nL, nR) or len(cL) != len(cR):
-            return False
-    return True
-    
-def remove_tail_letter(dg,l,onerow=False):
-    ddg = []
-    for col in dg:
-        dcol = col.rstrip(l)
-        if onerow and len(col)-len(dcol)>1:
-            return None
-        ddg.append(dcol)
-    return tuple(ddg)
+# def test_bullets_drc(drc):
+#     drcL, drcR = drc
+#     for i in range(max(len(drcL),len(drcR))):
+#         cL, cR = getz(drcL, i, ''), getz(drcR, i, '')
+#         nL, nR = cL.count('*'), cR.count('*')
+#         if  (len(cL),len(cR)) != (nL, nR) or len(cL) != len(cR):
+#             return False
+#     return True
 
-            
-def verify_drc(drc, rtype='C'):
-    if rtype == 'C':
-        drcL, drcR = drc
-        if test_young_dg(drcL) is False or test_young_dg(drcR) is False:
-            return False
-        cdrcL = remove_tail_letter(drcL,'d',onerow=True)
-        if cdrcL is None or test_young_dg(cdrcL) is False:
-            return False
-        ccdrcL = remove_tail_letter(cdrcL,'c',onerow=True)
-        if ccdrcL is None or test_young_dg(ccdrcL) == False:
-            return False
-        rccdrcL = remove_tail_letter(ccdrcL,'r')
-        rdrcR = remove_tail_letter(drcR,'s')
-        if rccdrcL is None or test_young_dg(rccdrcL) is False or \
-            rdrcR is None or test_young_dg(rdrcR) is False or\
-            test_bullets_drc((rccdrcL,rdrcR)) is False:
-            return False
-    elif rtype == 'D':
-        drcL, drcR = drc
-        if test_young_dg(drcL) is False or test_young_dg(drcR) is False:
-            return False
-        cdrcL = remove_tail_letter(drcL,'d',onerow=True)
-        if cdrcL is None or test_young_dg(cdrcL) is False:
-            return False
-        ccdrcL = remove_tail_letter(cdrcL,'c',onerow=True)
-        if ccdrcL is None or \
-            test_young_dg(cdrcL) == False:
-            return False
-        rccdrcL = remove_tail_letter(ccdrcL,'r')
-        if rccdrcL is None:
-            return False
-        srccdrcL = remove_tail_letter(rccdrcL,'s')
-        if srccdrcL is None or \
-            test_bullets_drc((srccdrcL,drcR)) is False:
-            return False  
-    return True
+# def remove_tail_letter(dg,l,onerow=False):
+#     ddg = []
+#     for col in dg:
+#         dcol = col.rstrip(l)
+#         if onerow and len(col)-len(dcol)>1:
+#             return None
+#         ddg.append(dcol)
+#     return tuple(ddg)
+
+
+# def verify_drc(drc, rtype='C'):
+#     if rtype == 'C':
+#         drcL, drcR = drc
+#         if test_young_dg(drcL) is False or test_young_dg(drcR) is False:
+#             return False
+#         cdrcL = remove_tail_letter(drcL,'d',onerow=True)
+#         if cdrcL is None or test_young_dg(cdrcL) is False:
+#             return False
+#         ccdrcL = remove_tail_letter(cdrcL,'c',onerow=True)
+#         if ccdrcL is None or test_young_dg(ccdrcL) == False:
+#             return False
+#         rccdrcL = remove_tail_letter(ccdrcL,'r')
+#         rdrcR = remove_tail_letter(drcR,'s')
+#         if rccdrcL is None or test_young_dg(rccdrcL) is False or \
+#             rdrcR is None or test_young_dg(rdrcR) is False or\
+#             test_bullets_drc((rccdrcL,rdrcR)) is False:
+#             return False
+#     elif rtype == 'D':
+#         drcL, drcR = drc
+#         if test_young_dg(drcL) is False or test_young_dg(drcR) is False:
+#             return False
+#         cdrcL = remove_tail_letter(drcL,'d',onerow=True)
+#         if cdrcL is None or test_young_dg(cdrcL) is False:
+#             return False
+#         ccdrcL = remove_tail_letter(cdrcL,'c',onerow=True)
+#         if ccdrcL is None or \
+#             test_young_dg(cdrcL) == False:
+#             return False
+#         rccdrcL = remove_tail_letter(ccdrcL,'r')
+#         if rccdrcL is None:
+#             return False
+#         srccdrcL = remove_tail_letter(rccdrcL,'s')
+#         if srccdrcL is None or \
+#             test_bullets_drc((srccdrcL,drcR)) is False:
+#             return False
+#     return True
 
 def switch_kv(D):
     RD = dict()

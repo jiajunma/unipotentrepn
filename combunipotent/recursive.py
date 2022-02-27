@@ -194,15 +194,25 @@ def countM(ckO):
 
 
 def countDS(ckO):
-    pass
+    """
+    We will check ckO is a valid good parity partition of type DS.
+    Each row of ckO must be odd
+    """
+    assert all(r %2 == 1 for r in ckO), "Each row must be odd length"
+    assert sum(ckO)%2 ==0, "total size must be even"
+
+    a = countCS(ckO[1:])
+    res = a(1,1)
+    return res
+
 
 def countCS(ckO):
     """
     We will check ckO is a valid good parity partition of type CS.
     Each row of ckO must be odd
     """
-    assert sum(ckO)%2 ==1, "total size must be odd"
     assert all(r %2 == 1 for r in ckO), "Each row must be odd length"
+    assert sum(ckO)%2 ==1, "total size must be odd"
 
     res = R(0)
     if len(ckO) == 1:
