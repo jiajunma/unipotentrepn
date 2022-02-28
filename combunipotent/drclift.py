@@ -242,98 +242,158 @@ tau:
 
 """
 
+# def twist_C_nonspecial(drc):
+#     """
+#     send a the special diagram to non-special diagram
+#     special diagram means the longest column length of
+#     the left and right diagram are the same
+#     """
+#     drcL, drcR = drc
+#     # first, second column of drcL and first column of drcR
+#     fL, sL, fR = getz(drcL, 0, ''), getz(drcL, 1, ''), getz(drcR, 0, '')
+#     assert(len(fR) == len(fL) and len(fR) > 0)
+#     fRR = fR[:-1]
+#     if fR[-1] == 's':
+#         if len(fL) == 1 or fL[-2] != 'c':
+#             fLL = fL[:-1]+'r'+fL[-1:]
+#         else:
+#             fLL = fL[:-2]+'r'+fL[-2:]
+#         nspdrc = ((fLL, *drcL[1:]), (fRR, *drcR[1:]))
+#     elif (fL[-1], getz(sL, len(fL)-1, '')) == ('*', 'r'):
+#         fLL = fL[:-1]+'rd'
+#         sLL = sL[:-1]+'c'
+#         nspdrc = ((fLL, sLL, *drcL[2:]), (fRR, *drcR[1:]))
+#     else:
+#         fLL = fL[:-1]+'cd'
+#         nspdrc = ((fLL, *drcL[1:]), (fRR, *drcR[1:]))
+#     if not verify_drc(nspdrc, 'C'):
+#         print('Invalid nonspecial drc\n original: \n%s\n new:\n%s\n'
+#               % (str_dgms_C(drc), str_dgms_C(nspdrc)))
+#     return nspdrc
+
+
+def test_sp2nsp_twist(dpart,rtype,print=print):
+    """
+    This function tests our special-nonspecial shape twisting algorithm
+    It shows that the twisting gives a bijection.
+    """
+    print(r'Let $\mathcal O^\vee$ has rows $%s$'%(list(dpart),))
+    part = dualBVW(dpart,rtype,partrc='c')
+    print(r'Then $\mathcal O$ has columns $%s$'%(part,))
+    WLC = dualpart2LC(dpart,rtype)
+
+
+    PBPlist = LC2pbps(WLC,rtype)
+
+    for pp, PBPs in PBPlist.items():
+        tau = WLC[pp]
+        if 0 not in pp:
+            print(f"The  $\\wp = $ {set(pp)} \
+                    $\\mapsto \\tau =$ {tau[0]} $\\times$ {tau[1]} \
+                    attached to {len(PBPs)} PBPS")
+            # tau_pp is special shape in this case
+            PBPns = []
+            for pbp in PBPs:
+                pbpns = twist_sp2nsp(pbp,rtype)
+                rpbp = twist_nsp2sp(pbpns,rtype)
+                assert(rpbp == pbp)
+                PBPns.append(pbpns)
+            PBPns = set(PBPns)
+            PPup = frozenset(pp|set([0]))
+            print(f"The non-special $\\wp_{{\\uparrow}}=$  {set(PPup)} and $|PBP(\\tau_{{\\wp_{{\\uparrow}}}})| = $ {len(PBPns)}")
+            #print(PBPlist[PPd])
+            #print(pbpdowns)
+            #print(frozenset(PBPlist[PPd])-frozenset(pbpdowns))
+            #print(frozenset(pbpdowns)-frozenset(PBPlist[PPd]))
+            #printpbplist(pbpdowns)
+            assert(frozenset(PBPlist[PPup])==frozenset(PBPns))
+
+def twist_nsp2sp(drc,rtype):
+    if rtype == 'C':
+        """
+        send a non-special diagram to special diagram
+        non-special diagram means c_1(tau_L)>= c_1(tau_R)+2
+        """
+        drcL, drcR = drc
+        fL, sL, fR = getz(drcL, 0, ''), getz(drcL, 1, ''), getz(drcR, 0, '')
+        l  = len(fL)-len(fR)-2
+        # Check that pbp has non-special shape
+        assert(l>=0)
+        if fL[-2] == 'c':
+            if len(fR)>0 and fL[len(fR)-1] == 'r':
+                fLL = fL[:len(fR)-1]+'cd'
+                sLL = sL
+                fRR = fR + 's'*(l+1)
+            else:
+                fLL = fL[:len(fR)]+'*'
+                sLL = sL
+                fRR = fR + '*'+'s'*l
+        else:
+            # Now fL[-2] == 'r'
+            if len(fR)+1 == len(sL) and (sL[-1],fL[-1]) == ('c','d'):
+                fLL = fL[:len(fR)]+'*'
+                sLL = sL[:len(fR)]+'r'
+                fRR = fR +'*'+'s'*l
+            else:
+                fLL = fL[:len(fR)]+fL[-1]
+                sLL = sL
+                fRR = fR + 's'*(l+1)
+        spdrc = ((fLL, sLL, *drcL[2:]), (fRR, *drcR[1:]))
+    elif rtype == 'M':
+        spdrc = twist_M_nonspecial(drc)
+    else:
+        raise ValueError("Wrong root system type")
+    if not verify_drc(spdrc, rtype):
+        print('Invalid special drc\n original: \n%s\n new:\n%s\n'
+            % (str_dgms(drc), str_dgms(spdrc)))
+    return reg_drc(spdrc)
+
+def twist_sp2nsp(drc,rtype):
+    if rtype == 'C':
+        res = twist_C_nonspecial(drc)
+    elif rtype == 'M':
+        res = twist_M_nonspecial(drc)
+    else:
+        raise ValueError("Wrong root system type")
+    return reg_drc(res)
+
+## The general Version
 def twist_C_nonspecial(drc):
     """
-    send a the special diagram to non-special diagram
-    special diagram means the longest column length of 
-    the left and right diagram are the same
+    send a special diagram to non-special diagram
+    special diagram means 0<c_1(tau_L)<= c_1(tau_R)
     """
     drcL, drcR = drc
     # first, second column of drcL and first column of drcR
     fL, sL, fR = getz(drcL, 0, ''), getz(drcL, 1, ''), getz(drcR, 0, '')
-    assert(len(fR) == len(fL) and len(fR) > 0)
-    fRR = fR[:-1]
-    if fR[-1] == 's':
+    l  = len(fR)-len(fL)
+    # Check drc has special shape
+    assert(l >= 0 and len(fL) > 0)
+    fRR,x3 = fR[:-l-1], fR[-l-1]
+    # x3 == 's' iff x2 := fL[-1] != '*'
+    # x3 == '*' iff x2 := fL[-1] == '*'
+    if x3 == 's':
         if len(fL) == 1 or fL[-2] != 'c':
-            fLL = fL[:-1]+'r'+fL[-1:]
+            fLL = fL[:-1]+'r'*(l+1)+fL[-1:]
         else:
-            fLL = fL[:-2]+'r'+fL[-2:]
+            # In this case fL[-2:] = 'cd'
+            fLL = fL[:-2]+'r'*(l+1)+fL[-2:]
         nspdrc = ((fLL, *drcL[1:]), (fRR, *drcR[1:]))
-    elif (fL[-1], getz(sL, len(fL)-1, '')) == ('*', 'r'):
-        fLL = fL[:-1]+'rd'
-        sLL = sL[:-1]+'c'
-        nspdrc = ((fLL, sLL, *drcL[2:]), (fRR, *drcR[1:]))
     else:
-        fLL = fL[:-1]+'cd'
-        nspdrc = ((fLL, *drcL[1:]), (fRR, *drcR[1:]))
+        # Now fR[-l-1] == '*'
+        if getz(sL, len(fL)-1, '') == 'r':
+            fLL = fL[:-1]+'r'*l+'rd'
+            sLL = sL[:-1]+'c'
+        else:
+            fLL = fL[:-1]+'r'*l+'cd'
+            sLL = sL
+        nspdrc = ((fLL, sLL, *drcL[2:]), (fRR, *drcR[1:]))
     if not verify_drc(nspdrc, 'C'):
         print('Invalid nonspecial drc\n original: \n%s\n new:\n%s\n'
-              % (str_dgms_C(drc), str_dgms_C(nspdrc)))
+              % (str_dgms(drc), str_dgms(nspdrc)))
     return nspdrc
 
 
-# def twist_M_nonspecial(drc):
-#     """
-#     send a the special diagram to non-special diagram
-#     special diagram means `switch' the left diagram longest column
-#     to right diagram
-#     We only implement fL = fR+1 case
-#     """
-#     drcL, drcR = drc
-#     # first column of drcL and first, second column of drcR
-#     fL, fR, sR = getz(drcL, 0, ''), getz(drcR, 0, ''), getz(drcR, 1, '')
-#     assert(len(fL) == len(fR)+1 and len(fL) > 0)
-#     fLL = fL[:-1]
-#     if fL[-1] == 's':
-#         if len(fR) > 0 and fR[-1] == 'd':
-#             fRR = fR[:-1]+'rd'
-#         else:
-#             fRR = fR + 'r'
-#     elif fL[-1] == 'c':
-#         if len(fL) >= 2 and fL[-2] == 's':
-#             fLL = fL[:-2]+'c'
-#             fRR = fR[:-1]+'r'+fR[-1]
-#         else:
-#             fLL = fL[:-1]
-#             fRR = fR+'d'
-#     else:
-#         print('Invalid original drc: %s' % (str_dgms(drc)))
-#         return None
-#     nspdrc = ((fLL, *drcL[1:]), (fRR, *drcR[1:]))
-#     return nspdrc
-
-# ## New version
-# def twist_M_nonspecial(drc):
-#     """
-#     send a the special diagram to non-special diagram
-#     special diagram means `switch' the left diagram longest column
-#     to right diagram
-#     We only implement fL = fR+1 case
-#     """
-#     drcL, drcR = drc
-#     # first column of drcL and first, second column of drcR
-#     fL, fR, sR = getz(drcL, 0, ''), getz(drcR, 0, ''), getz(drcR, 1, '')
-#     assert(len(fL) == len(fR)+1 and len(fL) > 0)
-#     if fL[-1] == 's':
-#         if len(fR) > 0 and fR[-1] == 'd':
-#             fLL = fL[:-2] +'c'
-#             fRR = fR[:-1]+'rr'
-#         else:
-#             fLL = fL[:-1]
-#             fRR = fR + 'r'
-#     elif fL[-1] == 'c':
-#         if len(fR) > 0 and fR[-1] == 'd':
-#             fLL = fL[:-2]+'c'
-#             fRR = fR[:-1]+'rd'
-#         else:
-#             fLL = fL[:-1]
-#             fRR = fR+'d'
-#     else:
-#         print('Invalid original drc: %s' % (str_dgms(drc)))
-#         return None
-#     nspdrc = ((fLL, *drcL[1:]), (fRR, *drcR[1:]))
-#     #print('abc')
-#     return nspdrc
 
 #Map_cdrs = { 'c':'d', 'd':'c','r':'s', 's':'r'}
 TRcdrs = str.maketrans('cdrs','dcsr')
@@ -1162,72 +1222,6 @@ def schar_is_trivial_D(drc):
         return True
 
 
-# def test_young_dg(dg):
-#     return all(len(getz(dg, i, '')) >= len(getz(dg, i+1, ''))
-#                for i in range(len(dg)))
-
-
-# def test_young_drc(drc):
-#     drcL, drcR = drc
-#     return test_young_dg(drcL) and test_young_dg(drcR)
-
-
-# def test_bullets_drc(drc):
-#     drcL, drcR = drc
-#     for i in range(max(len(drcL), len(drcR))):
-#         cL, cR = getz(drcL, i, ''), getz(drcR, i, '')
-#         nL, nR = cL.count('*'), cR.count('*')
-#         if (len(cL), len(cR)) != (nL, nR) or len(cL) != len(cR):
-#             return False
-#     return True
-
-
-# def remove_tail_letter(dg, l, onerow=False):
-#     ddg = []
-#     for col in dg:
-#         dcol = col.rstrip(l)
-#         if onerow and len(col)-len(dcol) > 1:
-#             return None
-#         ddg.append(dcol)
-#     return tuple(ddg)
-
-
-# def verify_drc(drc, rtype='C'):
-#     if rtype == 'C':
-#         drcL, drcR = drc
-#         if test_young_dg(drcL) is False or test_young_dg(drcR) is False:
-#             return False
-#         cdrcL = remove_tail_letter(drcL, 'd', onerow=True)
-#         if cdrcL is None or test_young_dg(cdrcL) is False:
-#             return False
-#         ccdrcL = remove_tail_letter(cdrcL, 'c', onerow=True)
-#         if ccdrcL is None or test_young_dg(ccdrcL) == False:
-#             return False
-#         rccdrcL = remove_tail_letter(ccdrcL, 'r')
-#         rdrcR = remove_tail_letter(drcR, 's')
-#         if rccdrcL is None or test_young_dg(rccdrcL) is False or \
-#                 rdrcR is None or test_young_dg(rdrcR) is False or\
-#                 test_bullets_drc((rccdrcL, rdrcR)) is False:
-#             return False
-#     elif rtype == 'D':
-#         drcL, drcR = drc
-#         if test_young_dg(drcL) is False or test_young_dg(drcR) is False:
-#             return False
-#         cdrcL = remove_tail_letter(drcL, 'd', onerow=True)
-#         if cdrcL is None or test_young_dg(cdrcL) is False:
-#             return False
-#         ccdrcL = remove_tail_letter(cdrcL, 'c', onerow=True)
-#         if ccdrcL is None or \
-#                 test_young_dg(cdrcL) == False:
-#             return False
-#         rccdrcL = remove_tail_letter(ccdrcL, 'r')
-#         if rccdrcL is None:
-#             return False
-#         srccdrcL = remove_tail_letter(rccdrcL, 's')
-#         if srccdrcL is None or \
-#                 test_bullets_drc((srccdrcL, drcR)) is False:
-#             return False
-#     return True
 
 
 def switch_kv(D):
@@ -1374,6 +1368,307 @@ def test_LSDRC(part, rtype='D', report=False, reportann=False):
     return True
 
 
+
+def test_dpart2drcLS(dpart, rtype='D', report=False, reportann=False, reportpack = False):
+    """
+    dpart: dual partition
+    """
+    Ltypes = LtypesLST[rtype]
+
+    lDRCLS = [dict()]
+    lLSDRC = [dict()]
+    for i in range(len(part)-1, -1, -1):
+        DRCLS = lDRCLS[0]
+        LSDRC = lLSDRC[0]
+        # 'p' means present dual partition
+        pdpart = dpart[i:]
+        pdrtype = Ltypes[i % 2]
+
+        nDRCLS, nLSDRC = lift_DRCLS(DRCLS, LSDRC, pdpart, prtype, report=report, reportann=reportann)
+        lDRCLS.insert(0, nDRCLS)
+        lLSDRC.insert(0, nLSDRC)
+
+        # print(DRCLS)
+        # Adrcs = dpart2drc(ppart, prtype, printdig=False, report=report)
+        # ALS = dpart2LS(ppart, prtype, report=report)
+
+        Gdrcs = nDRCLS.keys()
+        LLS = set(nLSDRC.keys())
+        if prtype == 'D':
+            #LLS = det_all_LS(LLS, rtype=prtype)
+            DetLS = det_only_LS(LLS,rtype=prtype)
+            assert(DetLS.isdisjoint(LLS))
+            LLS = DetLS.union(LLS)
+        elif prtype == 'B':
+            LLS = det_all_LS(LLS, rtype=prtype)
+            #LLS = asign_all_LS(LLS, rtype=prtype)
+        # report some basic facts
+        print('Partition type %s  %s:' % (prtype, ppart))
+        if rtype == 'B':
+            print('#DRCS:\t%d,\t#ALS\t%s' %(len(Adrcs)*2, len(ALS)))
+        else:
+            print('#DRCS:\t%d,\t#ALS\t%s' %(len(Adrcs), len(ALS)))
+        print('#GDRCS:\t%d,\t#GLS\t%s' % (len(Gdrcs), len(LLS)))
+
+
+        if reportpack:
+            for LS, (sign, lst) in nLSDRC.items():
+                if len(lst)>1:
+                    print('Packet of %s (%d,%d)'%(rtype, *sign))
+                    for dd, ll, odd, oeps, oll in lst:
+                        print(concat_strblocks(str_dgms(odd),', %d , '%oeps, str_LS(oll), ' ---> ',
+                                               str_dgms(dd),' , ', str_LS(ll)))
+
+
+
+        if prtype == 'B':
+            Gdrcs = set([ext_drc2drc(edrc) for edrc in Gdrcs])
+        LDDRC, RDDRC = compare_drc(Adrcs, Gdrcs)
+        if len(RDDRC) > 0:
+            print('Adrcs dose not include DRCLS', RDDRC)
+        if len(LDDRC) > 0:
+            print('Number of all DRCS:', len(Adrcs))
+            print('Number of lifted DRCS:', len(Gdrcs))
+            for drc in LDDRC:
+                print(str_dgms(drc))
+                print(GPSIGN[prtype](drc))
+
+        DLS, _ = compare_LS(ALS, LLS)
+        # print(ALS)
+        # print(DRCLS)
+        #print_DRCLS(DRCLS, prtype)
+        if len(DLS) > 0:
+            print('Missing %d LS:' % len(DLS))
+            for LS in DLS:
+                print(str_LS(LS))
+                #if LSDIC and prtype == 'B':
+                #    sLS = str_LS(LS),
+                print('~~~~~~~~~~~~~~~')
+            return (lDRCLS, lLSDRC)
+    return (lDRCLS, lLSDRC)
+
+
+
+def lift_DRCLS(DRCLS, LSDRC, dpart, rtype='C', ltype='l', report=False, reportann=False):
+    """
+    rtype is the target root system type.
+    ltype is the lifting type:
+                l: normal lift,
+                L: gneralized lift,
+                n: size of orthogonal group if rtype = B/D
+    """
+    nDRCLS, nLSDRC = dict(), dict()
+    # Get the first and second row of the dual partition.
+    fRow, sRow = getz(dpart,0, 0), getz(dpart,1,0)
+
+    """
+    terms in LSDRC:
+    key: LS
+    value: list of tuple (drc, LS, descent of drc, descent of LS, det_twist)
+    """
+
+    if rtype == 'C':
+        if fRow > 0 and sRow ==0:
+            l = (fRow - 1 )//2
+        else:
+            l = (fRow - sRow -2)//2
+
+        if sR == 0:
+            # There is a unique pbp attached to the trivial local system
+            tdrc = (('',), ('s'*l,))
+            tLS = frozenset([tuple(l,l)])
+            DRCLS[tdrc] = tLS
+            LSDRC[tLS] = ((l,l), [(zdrc, zLS, None, 0, None)])
+
+        if fR == sR:
+           # (1,2) is not primitive pair
+        for drc, LS in DRCLS.items():
+            pO, nO = gp_form_D(drc)
+            ppO, nnO = sign_LS(LS)
+            assert((pO, nO) == (ppO, nnO))
+            anSp = len(drc[0][0])
+            nSp = anSp + (pO+nO)//2
+            # Lift trivial twist, oeps = 0
+            oeps = 0
+            ndrc = lift_drc_D_C_trivial(drc)
+            nLS = lift_D_C(LS, nSp)
+            updatepeDRCLS(nDRCLS, nLSDRC, drc, oeps, LS, ndrc, nLS, reportann=reportann)
+            # Lift det twist, oeps = 1
+            oeps = 1
+            dLS = char_twist_D(LS, (-1, -1))
+            ndLS = lift_D_C(dLS, nSp)
+            nddrc = twist_C_nonspecial(ndrc)
+            updatepeDRCLS(nDRCLS, nLSDRC, drc, oeps, dLS, nddrc, ndLS, reportann=reportann)
+            if report:
+                print(concat_strblocks(str_dgms(drc),  '====>', str_dgms(ndrc)))
+                print(concat_strblocks(str_LS(LS), '=====>', str_LS(nLS)))
+                print(concat_strblocks(str_dgms(drc), '=d==>', str_dgms(nddrc)))
+                print(concat_strblocks(str_LS(dLS), '==d==>', str_LS(ndLS)))
+
+        else:
+
+        for drc, LS in DRCLS.items():
+            pO, nO = gp_form_D(drc)
+            ppO, nnO = sign_LS(LS)
+            assert((pO, nO) == (ppO, nnO))
+            anSp = len(drc[0][0])-1
+            nSp = anSp + (pO+nO)//2
+            # Lift trivial twist
+            ndrc = lift_drc_D_C_gd(drc)
+            if ndrc is not None:
+                nLS = lift_D_C(LS, nSp)
+                # only lift the trivial twist, oeps = 0
+                oeps = 0
+                updatepeDRCLS(nDRCLS, nLSDRC, drc, oeps, LS, ndrc, nLS, reportann=reportann)
+                #RES[ndrc] = nLS
+                if report:
+                    print(concat_strblocks(str_dgms(drc), '====>', str_dgms(ndrc)))
+                    print(concat_strblocks(str_LS(LS), '=====>', str_LS(nLS)))
+    elif rtype == 'D':
+        ltype == int(ltype)
+        assert(ltype > 0)
+        if len(DRCLS) == 0:
+            zdrc = (('',), ('',))
+            zLS = frozenset([tuple()])
+            DRCLS[zdrc] = zLS
+            LSDRC[zLS] = ((0,0), [(zdrc, zLS, zdrc, 0, zLS)])
+        for drc, LS in DRCLS.items():
+            #if drc is None:
+            #    continue
+            nSp = gp_form_C(drc)
+            nnSp = sign_LS(LS)[0]
+            assert(nSp == nnSp)
+            aL = ltype//2 - nSp
+            NDRCS = lift_drc_C_D(drc, aL)
+            for ndrc, twist in NDRCS:
+                pO, nO = gp_form_D(ndrc)
+                nLS = lift_C_D(LS, pO, nO)
+                nLS = char_twist_D(nLS, twist)
+                if twist == (1,1):
+                    oeps = 0
+                else:
+                    oeps = 1
+                updatepeDRCLS(nDRCLS, nLSDRC, drc, oeps, LS, ndrc, nLS, reportann=reportann)
+                # RES[ndrc]=nLS
+                if report:
+                    print('twit sign', twist)
+                    print(concat_strblocks(str_dgms(drc), '====>', str_dgms(ndrc)))
+                    print(concat_strblocks(str_LS(LS), '=====>', str_LS(nLS),
+                                           '==d==>', str_LS(
+                                               char_twist_B(nLS, (-1, -1))),
+                                           '==td==>', str_LS(
+                                               char_twist_B(nLS, (1, -1))),
+                                           '==dt==>', str_LS(
+                                               char_twist_B(nLS, (-1, 1))),
+                                           ))
+    elif rtype == 'M' and ltype == 'l':
+        """
+        we work on extended drc diagram!
+        """
+        for drc, LS in DRCLS.items():
+            drcL, drcR = drc
+            if len(drcR) == 0:
+                drcR = ('',)
+                drc = (drcL, drcR)
+            pO, nO = gp_form_B_ext(drc)
+            ppO, nnO = sign_LS(LS)
+            assert((pO, nO) == (ppO, nnO))
+            acL = len(getz(drcR, 0, ''))
+            nSp = acL + (pO+nO-1)//2
+            # Lift trivial twist, oeps = 0
+            oeps = 0
+            ndrc = lift_extdrc_B_M_trivial(drc, acL)
+            if ndrc is None:
+                print('drc has no lift', drc)
+                continue
+            nLS = lift_B_M(LS, nSp)
+            updatepeDRCLS(nDRCLS, nLSDRC, drc, oeps, LS, ndrc, nLS, reportann=reportann)
+            # Lift the determinant twist
+            # Lift the determinant twist, oeps = 1
+            oeps = 1
+            nddrc = twist_M_nonspecial(ndrc)
+            if nddrc is None:
+                print('ndrc has no twist', ndrc)
+                continue
+            dLS = char_twist_B(LS, (-1, -1))
+            ndLS = lift_B_M(dLS, nSp)
+            updatepeDRCLS(nDRCLS, nLSDRC, drc, oeps, LS, nddrc, ndLS, reportann=reportann)
+            if report:
+                print(concat_strblocks(str_dgms(drc), '====>', str_dgms(ndrc)))
+                print(concat_strblocks(str_LS(LS), '=====>', str_LS(nLS)))
+                print(concat_strblocks(str_dgms(drc), '=d==>', str_dgms(nddrc)))
+                print(concat_strblocks(str_LS(dLS), '==d==>', str_LS(ndLS)))
+    elif rtype == 'M' and ltype == 'L':
+        for drc, LS in DRCLS.items():
+            drcL, drcR = drc
+            if len(drcR) == 0:
+                drcR = ('',)
+                drc = (drcL, drcR)
+            pO, nO = gp_form_B_ext(drc)
+            ppO, nnO = sign_LS(LS)
+            assert((pO, nO) == (ppO, nnO))
+            acL = len(getz(drcR, 0, '')) - 1
+            nSp = acL + (pO+nO-1)//2
+            # Lift trivial twist
+            ndrc = lift_extdrc_B_M_trivial(drc, acL)
+            if ndrc is not None:
+                #print(concat_strblocks(str_dgms(drc),' has no lift'))
+                #continue
+                nLS = lift_B_M(LS, nSp)
+                # only lift the trivial twist, oeps = 0
+                oeps = 0
+                updatepeDRCLS(nDRCLS, nLSDRC, drc, oeps, LS, ndrc, nLS, reportann=reportann)
+                if report:
+                    print(concat_strblocks(str_dgms(drc), '====>', str_dgms(ndrc)))
+                    print(concat_strblocks(str_LS(LS), '=====>', str_LS(nLS)))
+    elif rtype == 'B':
+        assert(ltype == int(ltype))
+        assert(ltype > 0)
+        if len(DRCLS) == 0:
+            zdrc = (('',), ('',))
+            DRCLS[zdrc] = frozenset([tuple()])
+        for drc, LS in DRCLS.items():
+            if drc is None:
+                continue
+            nSp = gp_form_M(drc)
+            nnSp = sign_LS(LS)[0]
+            assert(nSp == nnSp)
+            aL = (ltype-1)//2 - nSp
+            NDRCS = lift_drc_M_B(drc, aL)
+            # try:
+            #     NDRCS = lift_drc_M_B(drc, aL)
+            # except:
+            #     print('Exception on lift_drc_M_B')
+            #     print(str_dgms(drc))
+            for ndrc, twist in NDRCS:
+                pO, nO = gp_form_B_ext(ndrc)
+                nLS = lift_M_B(LS, pO, nO)
+                if len(nLS) == 0:
+                    print('the ndrc and LS has no lift')
+                    print(concat_strblocks(str_dgms(drc), '====>', str_dgms(ndrc)))
+                    print(concat_strblocks(str_LS(LS), '=====>', str_LS(nLS)))
+                nLS = char_twist_B(nLS, twist)
+                if twist == (1,1):
+                    oeps = 0
+                else:
+                    oeps = 1
+                updatepeDRCLS(nDRCLS, nLSDRC, drc, oeps, LS, ndrc, nLS, reportann=reportann)
+                #updateDRCLS(RES, drc, LS, ndrc, nLS, reportann=reportann)
+                ndLS = char_twist_B(nLS, (-1, -1))
+                keyLS = frozenset([str_LS(nLS), str_LS(ndLS)])
+                #print(ndrc, nLS)
+                if report:
+                    print('twit sign', twist)
+                    print(concat_strblocks(str_dgms(drc), '====>', str_dgms(ndrc)))
+                    print(concat_strblocks(str_LS(LS), '=====>', str_LS(nLS),
+                                           '==d==>', str_LS(
+                                               char_twist_B(nLS, (-1, -1))),
+                                           '==td==>', str_LS(
+                                               char_twist_B(nLS, (1, -1))),
+                                           '==dt==>', str_LS(
+                                               char_twist_B(nLS, (-1, 1))),
+                                           ))
+    return nDRCLS, nLSDRC
 
 def test_purelyeven(part, rtype='D', report=False, reportann=False, reportpack = False):
     Ltypes = LtypesLST[rtype]
