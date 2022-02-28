@@ -232,6 +232,14 @@ def _tpbpM(C):
 
 
 def testpbptwist(dO,rtype, print=print, report=False):
+    """
+    This is an alternative way to matching PBP of type C and M
+    with different sets of primitive pairs.
+    One can delete the smallest PP (going down), or
+    add a PP smaller then the existing PP (going up).
+
+    This program test whether the going/twist up algorithm gives a bijection.
+    """
     print(r'Let $\mathcal O^\vee$ has rows $%s$'%(list(dO),))
     O = dualBVW(dO,rtype,partrc='c')
     print(r'Then $\mathcal O$ has columns $%s$'%(O,))
