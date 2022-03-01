@@ -2,9 +2,9 @@ from rich import print
 from itertools import chain, zip_longest
 from copy import copy, deepcopy
 from multiset import FrozenMultiset as frozenset
-from .tool import *
-from .drc import *
-from .LS import *
+from .tool import getz, dualBVW, concat_strblocks
+from .drc import str_dgms, reg_drc, verify_drc, gp_form_D, gp_form_B,gp_form_C, gp_form_M, dpart2drc
+from .LS import lift_C_D, lift_D_C, lift_B_M, lift_M_B, char_twist_D, char_twist_B, part2LS, str_LS, sign_LS
 
 """
 Following lifting only realize the algorithm for the orbits
@@ -90,71 +90,36 @@ NONSPEC_M_TWIST = {
     ('c', ''): ('', 'd')
 }
 
-
-def lift_drc_D_C(drc, cR, printdrop=False):
+def descent_drc(drc, rtype):
     drcL, drcR = drc
-    """
-    if the lenght of '*'/'s' in the fisrt column > cR 
-    then there is no lift. 
-    Otherwise there is a lift. 
-    """
-    drcLL = [col.replace('s', '*') for col in drcL]
-    drcR = ['*'*cR]+drcR
-    drcRR = []
-    for i in range(max(len(drcLL), len(drcR))):
-        colL, colR = getz(drcLL, i, ''), getz(drcR, i, '')
-        bL = colL.count('*')
-        cR, cnR = len(colR), len(getz(drcR, i+1, ''))
-        assert(bL >= cnR)
-        if bL > cR:
-            if printdrop:
-                print('\n%s\n---------\n' % (str_dgms_C((drcL, drcR))))
-            return None
-        else:
-            drcRR.append('*'*bL+'s'*(cR-bL))
-    return (drcLL, drcRR)
-
-
-def lift_drc_D_C_gd(drc):
-    """
-    Generalized descent case, attach c_2a = c_{2a-1}-1
-    """
-    drcL, drcR = drc
-    """
-    if the lenght of '*'/'s' in the fisrt column > cR
-    then there is no lift.
-    Otherwise there is a lift.
-    """
-    drcL, drcR = drc
-    col0 = getz(drcL, 0, '')
-    assert(len(col0) > 0)
-    return lift_drc_D_C(drc, len(col0)-1)
-
-
-def lift_drc_D_C_trivial(drc):
-    """
-    Lift the representation without determinant twist,
-    attach c_2a = c_{2a-1}
-    """
-    drcL, drcR = drc
-    """
-    if the lenght of '*'/'s' in the fisrt column > cR
-    then there is no lift.
-    Otherwise there is a lift.
-    """
-    drcL, drcR = drc
-    col0 = getz(drcL, 0, '')
-    assert(len(col0) > 0)
-    return lift_drc_D_C(drc, len(col0))
-
-
-def lift_dgms_D_C_gd(dgms):
-    S = []
-    for drc in dgms:
-        ldrc = lift_drc_D_C_gd(drc)
-        if ldrc is not None:
-            S.append(ldrc)
-    return S
+    fL, sL, fR = getz(drcL, 0, ''), getz(drcL, 1, ''), getz(drcR, 0, '')
+    if rtype == 'C':
+        if len(fL)>len(fR):
+            # Non-special shape case:
+            # Twist back to the spacial partition
+            drcL,drcR = twist_nsp2sp(drc,'C')
+        # naive descent
+        res = _fill_ds_D((drcL, drcR[1:]))
+        assert(verify_drc(res,'D'))
+    elif rtype == 'D':
+        # naive descent
+        res = _fill_ds_C((drcL[1:],drcR))
+        resL, resR = res
+        if len(sL) == len(fR)+1:
+            # This is the case r_2(dpart) = r_3(dpart)
+            # Exceptional case: drcL[2] end with 'c' and drcR[1] did not contain 'c'
+            if fL.count('c')==0 and sL[-1:] == 'c':
+                res = ((resL[0][:-1]+'r', *resL[1:]), resR)
+        elif len(sL)>= len(fR)+2:
+            # This is the case (2,3) in PP
+            # drc has non-special shape
+            x0 = fL[len(sL)-2]
+            if x0 in 'rc':
+                res = ((resL[0][:-2]+'r'+x0, *resL[1:]), resR)
+        elif rtype == 'M':
+            pass
+    res = reg_drc(res)
+    return res
 
 
 def lift_dgms_D_C(dgms, cR):
@@ -166,28 +131,38 @@ def lift_dgms_D_C(dgms, cR):
     return S
 
 
-def lift_drc_D_C(drc, cR, printdrop=False):
+def _count_ds(s):
+    """
+    count the number of '*' and 's' in a string
+    """
+    return s.count('*') + s.count('s')
+
+def _fill_ds_C(drc):
     drcL, drcR = drc
+    ndrcL,ndrcR = [], []
+    for colL, colR in zip_longest(drcL, drcR, fillvalue=''):
+        cL, cR = _count_ds(colL), len(colR)
+        assert(cL<=cR)
+        ndrcL.append('*'*cL+colL[cL:])
+        ndrcR.append('*'*cL+'s'*(cR-cL))
+    res = reg_drc((tuple(ndrcL), tuple(ndrcR)))
+    return res
+
+def lift_drc_D_C(drc, cR, printdrop=False):
     """
-    if the lenght of '*'/'s' in the fisrt column > cR 
+    cR : The length of the new first column on the right
+    if the lenght of '*'/'s' in the first column of drcL > cR
     then there is no lift. 
-    Otherwise there is a lift. 
+    Otherwise there is a lift.
     """
-    drcLL = [col.replace('s', '*') for col in drcL]
-    drcR = ['*'*cR]+list(drcR)
-    drcRR = []
-    for i in range(max(len(drcLL), len(drcR))):
-        colL, colR = getz(drcLL, i, ''), getz(drcR, i, '')
-        bL = colL.count('*')
-        cR, cnR = len(colR), len(getz(drcR, i+1, ''))
-        assert(bL >= cnR)
-        if bL > cR:
-            if printdrop:
-                print('\n%s\n---------\n' % (str_dgms_C((drcL, drcR))))
-            return None
-        else:
-            drcRR.append('*'*bL+'s'*(cR-bL))
-    return (tuple(drcLL), tuple(drcRR))
+    drcL, drcR = drc
+    # the number of '*s' in the first column of drcL
+    bL = _count_ds(getz(drcL,0,''))
+    if bL > cR:
+        return None
+    else:
+        res = _fill_ds_C((drcL, ('*'*cR, *drcR)))
+        return res
 
 
 def lift_drc_D_C_gd(drc):
@@ -241,35 +216,6 @@ tau:
 *
 
 """
-
-# def twist_C_nonspecial(drc):
-#     """
-#     send a the special diagram to non-special diagram
-#     special diagram means the longest column length of
-#     the left and right diagram are the same
-#     """
-#     drcL, drcR = drc
-#     # first, second column of drcL and first column of drcR
-#     fL, sL, fR = getz(drcL, 0, ''), getz(drcL, 1, ''), getz(drcR, 0, '')
-#     assert(len(fR) == len(fL) and len(fR) > 0)
-#     fRR = fR[:-1]
-#     if fR[-1] == 's':
-#         if len(fL) == 1 or fL[-2] != 'c':
-#             fLL = fL[:-1]+'r'+fL[-1:]
-#         else:
-#             fLL = fL[:-2]+'r'+fL[-2:]
-#         nspdrc = ((fLL, *drcL[1:]), (fRR, *drcR[1:]))
-#     elif (fL[-1], getz(sL, len(fL)-1, '')) == ('*', 'r'):
-#         fLL = fL[:-1]+'rd'
-#         sLL = sL[:-1]+'c'
-#         nspdrc = ((fLL, sLL, *drcL[2:]), (fRR, *drcR[1:]))
-#     else:
-#         fLL = fL[:-1]+'cd'
-#         nspdrc = ((fLL, *drcL[1:]), (fRR, *drcR[1:]))
-#     if not verify_drc(nspdrc, 'C'):
-#         print('Invalid nonspecial drc\n original: \n%s\n new:\n%s\n'
-#               % (str_dgms_C(drc), str_dgms_C(nspdrc)))
-#     return nspdrc
 
 
 def test_sp2nsp_twist(dpart,rtype,print=print):
@@ -439,6 +385,7 @@ def _add_bullet_D(drcL, drcR):
         ndrcL.append(ncol)
     return (tuple(ndrcL), ndrcR)
 
+
 def gen_drc_D_two(fL, sL, n):
     RES = []
     assert(len(sL)<=1)
@@ -484,12 +431,7 @@ def gen_drc_D_two(fL, sL, n):
                     ('r'*(n-1)+'d', 'cd', sL,  (1,1))])
         if n >= 3:
             RES.extend([('r'*(n-2)+'cd', 'cd', sL, (1,1))])
-        # if n>2:
-        #    RES.extend([('s'*i+'r'*(n-i-1)+'d',fL) for i in range(2,n)])
-        # else:
-        #    RES.extend([('cd','cd')])
-        # if n==2:
-        #    RES = [('rr','cd'),('rc','cd'),('rd','cd'),('ss','rr')]
+
     elif fL == 'rc':
         assert(n >= 2)
         RES.extend([('s'*i+'r'*(n-i), fL, sL,  (1,-1)) for i in range(1, n+1)])
@@ -513,113 +455,53 @@ def gen_drc_D_two(fL, sL, n):
         RES.extend([('s'*i+'r'*(n-i-2)+'cd', fL, sL,  (1,1)) for i in range(1, n-1)])
     return RES
 
-# def gen_drc_D_two_new(fL, sL, n):
-#     RES = []
-#     if fL == '':
-#         RES.extend([('s'*i+'r'*(n-i), fL, sL,  (1,-1)) for i in range(0,n+1)])
-#         RES.extend([('s'*i+'r'*(n-i-1)+'c', fL, sL,  (1,-1)) for i in range(n)])
-#         RES.extend([('s'*i+'r'*(n-i-1)+'d', fL, sL,  (1,1)) for i in range(n)])
-#         RES.extend([('s'*i+'r'*(n-i-2)+'cd', fL, sL,  (1,1)) for i in range(n-1)])
-#     elif fL == 'd':
-#         # don't attach a column full of 's' or 'r' to d.
-#         RES.extend([('s'*i+'r'*(n-i), fL, sL,  (1,-1)) for i in range(1,n)])
-#         RES.extend([('s'*i+'r'*(n-i-1)+'c', fL, sL,  (1,-1)) for i in range(n)])
-#         RES.extend([('s'*i+'r'*(n-i-1)+'d', fL, sL,  (1,1)) for i in range(n)])
-#         RES.extend([('s'*i+'r'*(n-i-2)+'cd', fL, sL,  (1,1)) for i in range(n-1)])
-#     elif fL == 'c':
-#         RES.extend([('s'*i+'r'*(n-i), fL, sL,  (1,-1)) for i in range(1, n+1)])
-#         RES.extend([('s'*i+'r'*(n-i-1)+'c', fL, sL,  (1,-1)) for i in range(1, n)])
-#         RES.extend([('s'*i+'r'*(n-i-1)+'d', fL, sL,  (1,1)) for i in range(1, n)])
-#         RES.extend([('s'*i+'r'*(n-i-2)+'cd', fL, sL,  (1,1)) for i in range(1, n-1)])
-#         #if sL != 'c':
-#         #    RES.append(('s'*n, 'c', sL, (1,1)))
-#         if sL != 'c':
-#             RES.append(('s'*n, 'd', sL, (1,1)))
-#         else:
-#             RES.append(('s'*n, 'c', 'd', (1,1)))
-#         if n >= 1:
-#             RES.extend([('r'*(n-1)+'c', 'c', sL, (1,-1) ), ])
-#         if n >= 2:
-#             RES.extend([('r'*(n-2)+'cd', 'c', sL, (1,1))])
-#     elif fL == 'r':
-#         RES.extend([('s'*i+'r'*(n-i), fL, sL,  (1,-1)) for i in range(1, n+1)])
-#         RES.extend([('s'*i+'r'*(n-i-1)+'c', fL, sL,  (1,-1)) for i in range(1, n)])
-#         RES.extend([('s'*i+'r'*(n-i-1)+'d', fL, sL,  (1,1)) for i in range(1, n)])
-#         RES.extend([('s'*i+'r'*(n-i-2)+'cd', fL, sL,  (1,1)) for i in range(1, n-1)])
-#         RES.append(('r'*n, 'c', sL, (1,-1)))
-#         if sL == 'c':
-#             RES.append(('r'*n, 'c', 'd', (1,1)))
-#         else:
-#             RES.append(('r'*n, 'd', sL, (1,1)))
-#         if n >= 2:
-#             RES.extend([('r'*(n-1)+'d', 'c', sL, (1,1))])
-#         # if n>2:
-#         #    RES.extend([('r'*(n-2)+'cd','c')])
-#     elif fL == 'rr':
-#         assert(n >= 2)
-#         RES.extend([('s'*i+'r'*(n-i), 'rr', sL, (1,-1)) for i in range(2, n+1)])
-#         RES.extend([('s'*i+'r'*(n-i-1)+'c', 'rr', sL,  (1,-1)) for i in range(2, n)])
-#         RES.extend([('s'*i+'r'*(n-i-1)+'d', 'rr', sL,  (1,1)) for i in range(2, n)])
-#         RES.extend([('s'*i+'r'*(n-i-2)+'cd', 'rr', sL,  (1,1)) for i in range(2, n-1)])
-#         RES.extend([('r'*n, 'cd', sL,  (1,-1)),
-#                     ('r'*(n-1)+'c', 'cd', sL,  (1,1)),
-#                     ('r'*(n-1)+'d', 'cd', sL,  (1,-1))])
-#         if n >= 3:
-#             RES.extend([('r'*(n-2)+'cd', 'cd', sL, (1,-1))])
-#         # if n>2:
-#         #    RES.extend([('s'*i+'r'*(n-i-1)+'d',fL) for i in range(2,n)])
-#         # else:
-#         #    RES.extend([('cd','cd')])
-#         # if n==2:
-#         #    RES = [('rr','cd'),('rc','cd'),('rd','cd'),('ss','rr')]
-#     elif fL == 'rc':
-#         assert(n >= 2)
-#         RES.extend([('s'*i+'r'*(n-i), fL, sL,  (1,-1)) for i in range(1, n+1)])
-#         RES.extend([('s'*i+'r'*(n-i-1)+'c', fL, sL,  (1,-1)) for i in range(1, n)])
-#         RES.extend([('s'*i+'r'*(n-i-2)+'cd', fL, sL,  (1,1)) for i in range(1, n-1)])
-#         if n > 2:
-#             RES.extend([('s'*i+'r'*(n-i-1)+'d', fL, sL,  (1,1)) for i in range(1, n)])
-#         else:
-#             RES.extend([('cd', 'cd', sL,  (1,1))])
-#         # if n==2:
-#         #    RES = [('sr','rc'), ('ss','rc'),('sc','rc'), ('cd','cd')]
-#     elif fL == 'rd':
-#         assert(n >= 2)
-#         RES.extend([('s'*i+'r'*(n-i), fL, sL,  (1,-1)) for i in range(1, n+1)])
-#         RES.extend([('s'*i+'r'*(n-i-1)+'c', fL, sL,  (1,-1)) for i in range(1, n)])
-#         RES.extend([('s'*i+'r'*(n-i-1)+'d', fL, sL,  (1,1)) for i in range(1, n)])
-#         RES.extend([('s'*i+'r'*(n-i-2)+'cd', fL, sL,  (1,1)) for i in range(1, n-1)])
-#         # if n==2:
-#         #    RES =  [('sr',fL), ('ss',fL),('sc',fL),('sd',fL)]
-#     elif fL == 'cd':
-#         assert(n >= 2)
-#         RES.extend([('s'*i+'r'*(n-i), fL, sL,  (1,-1)) for i in range(1, n+1)])
-#         RES.extend([('s'*i+'r'*(n-i-1)+'c', fL, sL,  (1,-1)) for i in range(1, n)])
-#         RES.extend([('s'*i+'r'*(n-i-1)+'d', fL, sL,  (1,1)) for i in range(1, n)])
-#         RES.extend([('s'*i+'r'*(n-i-2)+'cd', fL, sL,  (1,1)) for i in range(1, n-1)])
-#         # if n==2:
-#         #    RES =  [('sr',fL), ('ss',fL),('sc',fL),('sd',fL)]
-#     return RES
 
+def _fill_ds_D(drc):
+    drcL, drcR = drc
+    ndrcR = [] #tuple('*'*len(col) for col in drcR)
+    ndrcL = []
+    for colL, colR in zip_longest(drcL,drcR, fillvalue=''):
+        cL = _count_ds(colL)
+        cR = len(colR)
+        if cR > cL:
+            print('Error')
+            print(concat_strblocks(str_dgms(drc)))
+            assert(cR<=cL)
+        ndrcL.append('*'*cR+'s'*(cL-cR)+colL[cL:])
+        ndrcR.append('*'*cR)
+    res = (tuple(ndrcL), tuple(ndrcR))
+    assert(verify_drc(res,'D'))
+    return reg_drc(res)
 
 def lift_drc_C_D(drc, a):
     drcL, drcR = drc
     fL, sL, fR = getz(drcL, 0, ''), getz(drcL, 1,''), getz(drcR, 0, '')
-    nL, nR = len(fL), len(fR)
-    assert(nL-nR <= 2)
-    assert(nL <= a)
-    bdrcL, bdrcR = _add_bullet_D([fL[:nR]]+list(drcL[1:]), drcR)
+    nfL, nfR = len(fL), len(fR)
+    assert(nfL <= a)
+    if nfL <= nfR:
+        # drc has special shape
+        nR = nfR
+    else:
+        # drc has non-special shape
+        nR = nfL -2
+        assert(nR>=0)
+
+    # bdrcL, bdrcR = _add_bullet_D((fLL, *drcL[1:]), drcR)
     # print(fL)
     ldrcD2 = gen_drc_D_two(fL[nR:], sL[nR:], a-nR)
     RES = []
-    for ffL, fL, sL,  twist in ldrcD2:
-        drcLL = (bdrcL[0]+ffL, bdrcL[1]+fL, getz(bdrcL,2,'')[:nR]+sL, *bdrcL[3:])
-        ndrc = (tuple(drcLL), tuple(bdrcR))
+    for ffL, nsL, ntL,  twist in ldrcD2:
+        # ffL: very first column
+        # nsL: new second column
+        # sL: old second colunn
+        drcLL = ('*'*nR + ffL, fL[:nR]+nsL, sL[:nR]+ntL, *drcL[2:])
+        ndrc = _fill_ds_D((drcLL,drcR))
         if not verify_drc(ndrc, 'D'):
             print('Invalid drc')
             print(concat_strblocks('original: ', str_dgms(drc),
                                    '  a = %d'%a, '  --> new:', str_dgms(ndrc)))
         RES.append((ndrc, twist))
+    ## There is no collision of the newly generated drcs
     assert(len(RES) == len(set(ndrc for ndrc, twist in RES)))
     # print(drc)
     # print(RES)
@@ -1375,26 +1257,33 @@ def test_dpart2drcLS(dpart, rtype='D', report=False, reportann=False, reportpack
     """
     Ltypes = LtypesLST[rtype]
 
+    if rtype == 'D' and len(dpart)>0 and dpart[-1]!=0:
+        dpart = (*dpart, 0)
     lDRCLS = [dict()]
     lLSDRC = [dict()]
-    for i in range(len(part)-1, -1, -1):
+    for i in range(len(dpart)-1, -1, -1):
         DRCLS = lDRCLS[0]
         LSDRC = lLSDRC[0]
         # 'p' means present dual partition
         pdpart = dpart[i:]
-        pdrtype = Ltypes[i % 2]
+        prtype = Ltypes[i % 2]
+
+
+        print('Group type %s, dual partition:  %s' % (prtype, pdpart))
 
         nDRCLS, nLSDRC = lift_DRCLS(DRCLS, LSDRC, pdpart, prtype, report=report, reportann=reportann)
         lDRCLS.insert(0, nDRCLS)
         lLSDRC.insert(0, nLSDRC)
 
         # print(DRCLS)
-        # Adrcs = dpart2drc(ppart, prtype, printdig=False, report=report)
-        # ALS = dpart2LS(ppart, prtype, report=report)
+        Adrcs = dpart2drc(pdpart, prtype, printdig=False, report=report)
+        ppart = dualBVW(pdpart,prtype,partrc='c')
+        print(prtype, ppart)
+        ALS = part2LS(ppart, prtype, report=report)
 
         Gdrcs = nDRCLS.keys()
         LLS = set(nLSDRC.keys())
-        if prtype == 'D':
+        if prtype == 'D' and sum(pdpart)!=0:
             #LLS = det_all_LS(LLS, rtype=prtype)
             DetLS = det_only_LS(LLS,rtype=prtype)
             assert(DetLS.isdisjoint(LLS))
@@ -1403,7 +1292,7 @@ def test_dpart2drcLS(dpart, rtype='D', report=False, reportann=False, reportpack
             LLS = det_all_LS(LLS, rtype=prtype)
             #LLS = asign_all_LS(LLS, rtype=prtype)
         # report some basic facts
-        print('Partition type %s  %s:' % (prtype, ppart))
+
         if rtype == 'B':
             print('#DRCS:\t%d,\t#ALS\t%s' %(len(Adrcs)*2, len(ALS)))
         else:
@@ -1438,6 +1327,8 @@ def test_dpart2drcLS(dpart, rtype='D', report=False, reportann=False, reportpack
         # print(DRCLS)
         #print_DRCLS(DRCLS, prtype)
         if len(DLS) > 0:
+            # print(ALS)
+            # print(LLS)
             print('Missing %d LS:' % len(DLS))
             for LS in DLS:
                 print(str_LS(LS))
@@ -1468,99 +1359,106 @@ def lift_DRCLS(DRCLS, LSDRC, dpart, rtype='C', ltype='l', report=False, reportan
     """
 
     if rtype == 'C':
-        if fRow > 0 and sRow ==0:
+        # Sp(2n), n is the rank
+        n = (sum(dpart)-1)//2
+        # The length of column to attach on the left of drcR
+        crow = (fRow-1)//2
+        if sRow ==0:
             l = (fRow - 1 )//2
         else:
             l = (fRow - sRow -2)//2
-
-        if sR == 0:
-            # There is a unique pbp attached to the trivial local system
-            tdrc = (('',), ('s'*l,))
-            tLS = frozenset([tuple(l,l)])
-            DRCLS[tdrc] = tLS
-            LSDRC[tLS] = ((l,l), [(zdrc, zLS, None, 0, None)])
-
-        if fR == sR:
-           # (1,2) is not primitive pair
-        for drc, LS in DRCLS.items():
-            pO, nO = gp_form_D(drc)
-            ppO, nnO = sign_LS(LS)
-            assert((pO, nO) == (ppO, nnO))
-            anSp = len(drc[0][0])
-            nSp = anSp + (pO+nO)//2
-            # Lift trivial twist, oeps = 0
-            oeps = 0
-            ndrc = lift_drc_D_C_trivial(drc)
-            nLS = lift_D_C(LS, nSp)
-            updatepeDRCLS(nDRCLS, nLSDRC, drc, oeps, LS, ndrc, nLS, reportann=reportann)
-            # Lift det twist, oeps = 1
-            oeps = 1
-            dLS = char_twist_D(LS, (-1, -1))
-            ndLS = lift_D_C(dLS, nSp)
-            nddrc = twist_C_nonspecial(ndrc)
-            updatepeDRCLS(nDRCLS, nLSDRC, drc, oeps, dLS, nddrc, ndLS, reportann=reportann)
-            if report:
-                print(concat_strblocks(str_dgms(drc),  '====>', str_dgms(ndrc)))
-                print(concat_strblocks(str_LS(LS), '=====>', str_LS(nLS)))
-                print(concat_strblocks(str_dgms(drc), '=d==>', str_dgms(nddrc)))
-                print(concat_strblocks(str_LS(dLS), '==d==>', str_LS(ndLS)))
-
-        else:
-
-        for drc, LS in DRCLS.items():
-            pO, nO = gp_form_D(drc)
-            ppO, nnO = sign_LS(LS)
-            assert((pO, nO) == (ppO, nnO))
-            anSp = len(drc[0][0])-1
-            nSp = anSp + (pO+nO)//2
-            # Lift trivial twist
-            ndrc = lift_drc_D_C_gd(drc)
-            if ndrc is not None:
-                nLS = lift_D_C(LS, nSp)
-                # only lift the trivial twist, oeps = 0
+        # sRow == 0:
+        #     # There is a unique pbp attached to the trivial local system
+        #     tdrc = (('',), ('s'*l,))
+        #     tLS = frozenset([tuple((l,l))])
+        #     DRCLS[tdrc] = tLS
+        #     LSDRC[tLS] = ((l,l), [(tdrc, tLS, None, 0, None)])
+        if fRow > sRow and sRow > 0:
+            # (1,2) is a primitive pair
+            for drc, LS in DRCLS.items():
+                #signature of drc
+                pO, nO = gp_form_D(drc)
+                #signature of LS
+                ppO, nnO = sign_LS(LS)
+                assert((pO, nO) == (ppO, nnO))
+                # Lift trivial twist, oeps = 0
                 oeps = 0
+                ndrc = lift_drc_D_C(drc, crow)
+                assert(descent_drc(ndrc,'C') == drc )
+                nLS = lift_D_C(LS, n)
                 updatepeDRCLS(nDRCLS, nLSDRC, drc, oeps, LS, ndrc, nLS, reportann=reportann)
-                #RES[ndrc] = nLS
+                # Lift det twist, oeps = 1
+                oeps = 1
+                dLS = char_twist_D(LS, (-1, -1)) # det twist of the original LS
+                ndLS = lift_D_C(dLS, n) # lift of the LS*det
+                nsdrc = twist_sp2nsp(ndrc, 'C') # non-special shape drc
+                updatepeDRCLS(nDRCLS, nLSDRC, drc, oeps, dLS, nsdrc, ndLS, reportann=reportann)
                 if report:
-                    print(concat_strblocks(str_dgms(drc), '====>', str_dgms(ndrc)))
+                    print(concat_strblocks(str_dgms(drc),  '====>', str_dgms(ndrc)))
                     print(concat_strblocks(str_LS(LS), '=====>', str_LS(nLS)))
+                    print(concat_strblocks(str_dgms(drc), '=d==>', str_dgms(nddrc)))
+                    print(concat_strblocks(str_LS(dLS), '==d==>', str_LS(ndLS)))
+        else:
+            # (1,2) is not a primitive pair
+            for drc, LS in DRCLS.items():
+                # signature of drc
+                pO, nO = gp_form_D(drc)
+                # signature of LS
+                pLS, nLS = sign_LS(LS)
+                assert((pO, nO) == (pLS, nLS))
+                # Lift trivial twist
+                ndrc = lift_drc_D_C(drc,crow)
+                if ndrc is not None:
+                    nLS = lift_D_C(LS, n)
+                    # only lift the trivial twist, oeps = 0
+                    oeps = 0
+                    updatepeDRCLS(nDRCLS, nLSDRC, drc, oeps, LS, ndrc, nLS, reportann=reportann)
+                    #RES[ndrc] = nLS
+                    if report:
+                        print(concat_strblocks(str_dgms(drc), '====>', str_dgms(ndrc)))
+                        print(concat_strblocks(str_LS(LS), '=====>', str_LS(nLS)))
     elif rtype == 'D':
-        ltype == int(ltype)
-        assert(ltype > 0)
-        if len(DRCLS) == 0:
+        if sum(dpart) == 0:
+            # Zero diagram, the initial case
+            print(dpart)
             zdrc = (('',), ('',))
             zLS = frozenset([tuple()])
-            DRCLS[zdrc] = zLS
-            LSDRC[zLS] = ((0,0), [(zdrc, zLS, zdrc, 0, zLS)])
-        for drc, LS in DRCLS.items():
-            #if drc is None:
-            #    continue
-            nSp = gp_form_C(drc)
-            nnSp = sign_LS(LS)[0]
-            assert(nSp == nnSp)
-            aL = ltype//2 - nSp
-            NDRCS = lift_drc_C_D(drc, aL)
-            for ndrc, twist in NDRCS:
-                pO, nO = gp_form_D(ndrc)
-                nLS = lift_C_D(LS, pO, nO)
-                nLS = char_twist_D(nLS, twist)
-                if twist == (1,1):
-                    oeps = 0
-                else:
-                    oeps = 1
-                updatepeDRCLS(nDRCLS, nLSDRC, drc, oeps, LS, ndrc, nLS, reportann=reportann)
-                # RES[ndrc]=nLS
-                if report:
-                    print('twit sign', twist)
-                    print(concat_strblocks(str_dgms(drc), '====>', str_dgms(ndrc)))
-                    print(concat_strblocks(str_LS(LS), '=====>', str_LS(nLS),
-                                           '==d==>', str_LS(
-                                               char_twist_B(nLS, (-1, -1))),
-                                           '==td==>', str_LS(
-                                               char_twist_B(nLS, (1, -1))),
-                                           '==dt==>', str_LS(
-                                               char_twist_B(nLS, (-1, 1))),
-                                           ))
+            updatepeDRCLS(nDRCLS, nLSDRC, zdrc, 0, zLS, zdrc, zLS, reportann=reportann)
+        else:
+            crow = (fRow+1)//2
+            for drc, LS in DRCLS.items():
+                # Some ckeck
+                nSp = gp_form_C(drc)
+                nnSp = sign_LS(LS)[0]
+                print(LS)
+                print(nSp, nnSp)
+                assert(nSp == nnSp)
+                NDRCS = lift_drc_C_D(drc, crow)
+                for ndrc, twist in NDRCS:
+                    dndrc = descent_drc(ndrc,'D')
+                    if dndrc != drc:
+                        print(concat_strblocks(str_dgms(ndrc), '=dec=>',str_dgms(dndrc),' origin:', str_dgms(drc)))
+                    pO, nO = gp_form_D(ndrc)
+                    nLS = lift_C_D(LS, pO, nO)
+                    assert(nLS)
+                    nLS = char_twist_D(nLS, twist)
+                    if twist == (1,1):
+                        oeps = 0
+                    else:
+                        oeps = 1
+                    updatepeDRCLS(nDRCLS, nLSDRC, drc, oeps, LS, ndrc, nLS, reportann=reportann)
+                    # RES[ndrc]=nLS
+                    if report:
+                        print('twit sign', twist)
+                        print(concat_strblocks(str_dgms(drc), '====>', str_dgms(ndrc)))
+                        print(concat_strblocks(str_LS(LS), '=====>', str_LS(nLS),
+                                            '==d==>', str_LS(
+                                                char_twist_B(nLS, (-1, -1))),
+                                            '==td==>', str_LS(
+                                                char_twist_B(nLS, (1, -1))),
+                                            '==dt==>', str_LS(
+                                                char_twist_B(nLS, (-1, 1))),
+                                            ))
     elif rtype == 'M' and ltype == 'l':
         """
         we work on extended drc diagram!
@@ -1765,8 +1663,11 @@ def strLSpacket(LS, dLSDRC):
     res = getLSpacket(LS, dLSDRC)
     return concat_strblocks(*('%d\n%s'%(oeps, str_dgms(dd)) for dd, oeps in res), sep=' , ')
 
-#def updatepeDRCLS(DRCLS, LSDRC, odrc, oeps, oLS, drc, LS, reportann = False, reportLSpack = True):
 def updatepeDRCLS(DRCLS, LSDRC, odrc, oeps, oLS, drc, LS, reportann = False, reportLSpack = False):
+    """
+    Update dictionaries DRC->LS and LS->DRC.
+    o = old, oeps, the det^epsilon twist.
+    """
     if drc in DRCLS:
         print(concat_strblocks('Collision of keys: ', str_dgms(odrc), ' --> ', str_dgms(drc)))
         print(concat_strblocks(str_LS(RES[drc]),' --- ', str_LS(LS)))
