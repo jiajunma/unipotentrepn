@@ -30,6 +30,41 @@ def _combine_tab(drca, drcb):
     return res
 
 
+def lift_extdrc_B_M(drc, crow):
+    drcL, drcR = drc
+    exttype = drcR[0][-1]
+    drcR = (drcR[0][:-1], *drcR[1:])
+    if cL is None:
+        # cL = len(getz(drcR, 0, ''))
+        cL = len(drcR[0])
+    cR = len(drcR[0])
+    if cL < cR:
+        return None
+    else:
+        tauL = [cL]+[c.count('*') for c in drcL]
+        tauR = [c.count('*')+c.count('s') for c in drcR]
+        sdrc = next(fill_rdot((tauL, tauR), sym='s'), None)
+        if sdrc is None:
+            return None
+        if len(sdrc[0]) == 0:
+            sdrc = (('',), ('',))
+            #else:
+        sdrcL, sdrcR = sdrc
+        #r = max(len(drcL)+1, len(drcR))
+        drcLL = (sdrcL[0], * _combine_tab(sdrcL[1:], drcL))
+        drcRR = _combine_tab(sdrcR, drcR)
+        if exttype == 'a':
+            return (drcLL, drcRR)
+        elif exttype == 'b':
+            if drcLL[0][-1] == 's':
+                drcLL = (drcLL[0][:-1]+'c', *drcLL[1:])
+                return (drcLL, drcRR)
+            else:
+                return None
+        else:
+            return None
+
+
 def lift_extdrc_B_M_trivial(drc, cL=None):
     drcL, drcR = drc
     exttype = drcR[0][-1]
@@ -1475,43 +1510,54 @@ def lift_DRCLS(DRCLS, LSDRC, dpart, rtype='C', ltype='l', report=False, reportan
                                             '==dt==>', str_LS(
                                                 char_twist_B(nLS, (-1, 1))),
                                             ))
-    elif rtype == 'M' and ltype == 'l':
+    elif rtype == 'M':
         """
         we work on extended drc diagram!
+        This initial case is Mp(0)
         """
-        for drc, LS in DRCLS.items():
-            drcL, drcR = drc
-            if len(drcR) == 0:
-                drcR = ('',)
-                drc = (drcL, drcR)
-            pO, nO = gp_form_B_ext(drc)
-            ppO, nnO = sign_LS(LS)
-            assert((pO, nO) == (ppO, nnO))
-            acL = len(getz(drcR, 0, ''))
-            nSp = acL + (pO+nO-1)//2
-            # Lift trivial twist, oeps = 0
-            oeps = 0
-            ndrc = lift_extdrc_B_M_trivial(drc, acL)
-            if ndrc is None:
-                print('drc has no lift', drc)
-                continue
-            nLS = lift_B_M(LS, nSp)
-            updatepeDRCLS(nDRCLS, nLSDRC, drc, oeps, LS, ndrc, nLS, reportann=reportann)
-            # Lift the determinant twist
-            # Lift the determinant twist, oeps = 1
-            oeps = 1
-            nddrc = twist_M_nonspecial(ndrc)
-            if nddrc is None:
-                print('ndrc has no twist', ndrc)
-                continue
-            dLS = char_twist_B(LS, (-1, -1))
-            ndLS = lift_B_M(dLS, nSp)
-            updatepeDRCLS(nDRCLS, nLSDRC, drc, oeps, LS, nddrc, ndLS, reportann=reportann)
-            if report:
-                print(concat_strblocks(str_dgms(drc), '====>', str_dgms(ndrc)))
-                print(concat_strblocks(str_LS(LS), '=====>', str_LS(nLS)))
-                print(concat_strblocks(str_dgms(drc), '=d==>', str_dgms(nddrc)))
-                print(concat_strblocks(str_LS(dLS), '==d==>', str_LS(ndLS)))
+        # Mp(2n)
+        n = sum(dpart)//2
+        # The length of column to attach on the left of drcL
+        crow = fRow//2
+
+        if fRow ==0:
+            print(dpart)
+            zdrc = (('',), ('',))
+            zLS = frozenset([tuple()])
+            updatepeDRCLS(nDRCLS, nLSDRC, zdrc, 0, zLS, zdrc, zLS, reportann=reportann)
+        elif fRow > sRow:
+            # (1,2) is a primitive pair
+            for drc, LS in DRCLS.items():
+                drcL, drcR = drc
+                if len(drcR) == 0:
+                    drcR = ('',)
+                    drc = (drcL, drcR)
+                pO, nO = gp_form_B_ext(drc)
+                pLS, nLS = sign_LS(LS)
+                assert((pO, nO) == (pLS, nLS))
+                # Lift trivial twist, oeps = 0
+                oeps = 0
+                ndrc = lift_extdrc_B_M(drc, crow)
+                if ndrc is None:
+                    print('drc has no lift', drc)
+                    continue
+                nLS = lift_B_M(LS, nSp)
+                updatepeDRCLS(nDRCLS, nLSDRC, drc, oeps, LS, ndrc, nLS, reportann=reportann)
+                # Lift the determinant twist
+                # Lift the determinant twist, oeps = 1
+                oeps = 1
+                nddrc = twist_M_nonspecial(ndrc)
+                if nddrc is None:
+                    print('ndrc has no twist', ndrc)
+                    continue
+                dLS = char_twist_B(LS, (-1, -1))
+                ndLS = lift_B_M(dLS, nSp)
+                updatepeDRCLS(nDRCLS, nLSDRC, drc, oeps, LS, nddrc, ndLS, reportann=reportann)
+                if report:
+                    print(concat_strblocks(str_dgms(drc), '====>', str_dgms(ndrc)))
+                    print(concat_strblocks(str_LS(LS), '=====>', str_LS(nLS)))
+                    print(concat_strblocks(str_dgms(drc), '=d==>', str_dgms(nddrc)))
+                    print(concat_strblocks(str_LS(dLS), '==d==>', str_LS(ndLS)))
     elif rtype == 'M' and ltype == 'L':
         for drc, LS in DRCLS.items():
             drcL, drcR = drc
@@ -1536,9 +1582,8 @@ def lift_DRCLS(DRCLS, LSDRC, dpart, rtype='C', ltype='l', report=False, reportan
                     print(concat_strblocks(str_dgms(drc), '====>', str_dgms(ndrc)))
                     print(concat_strblocks(str_LS(LS), '=====>', str_LS(nLS)))
     elif rtype == 'B':
-        assert(ltype == int(ltype))
-        assert(ltype > 0)
-        if len(DRCLS) == 0:
+        if sRow == 0:
+            # This is the initial case
             zdrc = (('',), ('',))
             DRCLS[zdrc] = frozenset([tuple()])
         for drc, LS in DRCLS.items():
