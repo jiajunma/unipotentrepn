@@ -3,7 +3,7 @@ from itertools import chain, zip_longest
 from copy import copy, deepcopy
 from multiset import FrozenMultiset as frozenset
 from .tool import getz, dualBVW, concat_strblocks
-from .drc import str_dgms, reg_drc, verify_drc, gp_form_D, gp_form_B,gp_form_C, gp_form_M, dpart2drc
+from .drc import str_dgms, reg_drc, verify_drc, gp_form_D, gp_form_B,gp_form_C, gp_form_M, dpart2drc, countdrcform
 from .LS import lift_C_D, lift_D_C, lift_B_M, lift_M_B, char_twist_D, char_twist_B, part2LS, str_LS, sign_LS
 
 """
@@ -183,6 +183,34 @@ def _fill_ds_C(drc):
         ndrcR.append('*'*cL+'s'*(cR-cL))
     res = reg_drc((tuple(ndrcL), tuple(ndrcR)))
     return res
+
+
+def _fill_ds_B(drc):
+    drcL, drcR = drc
+    ndrcR = [] #tuple('*'*len(col) for col in drcR)
+    ndrcL = []
+    for colL, colR in zip_longest(drcL,drcR, fillvalue=''):
+        cL, cR = _count_ds(colL), _count_ds(colR)
+        assert(cL<=cR)
+        ndrcL.append('*'*cL+colL[cL:])
+        ndrcR.append('*'*cL+'s'*(cR-cL)+colR[cR:])
+    res = (tuple(ndrcL), tuple(ndrcR))
+    assert(verify_drc(res,'B'))
+    return reg_drc(res)
+
+def _fill_ds_M(drc):
+    drcL, drcR = drc
+    ndrcR = [] #tuple('*'*len(col) for col in drcR)
+    ndrcL = []
+    for colL, colR in zip_longest(drcL,drcR, fillvalue=''):
+        cL, cR = _count_ds(colL),  _count_ds(colR)
+        assert(cL>=cR)
+        ndrcL.append('*'*cR+'s'*(cL-cR)+colL[cL:])
+        ndrcR.append('*'*cR+colR[cR:])
+    res = (tuple(ndrcL), tuple(ndrcR))
+    assert(verify_drc(res,'M'))
+    return reg_drc(res)
+
 
 def lift_drc_D_C(drc, cR, printdrop=False):
     """
@@ -575,7 +603,7 @@ def gen_drc_B_two(fL, sL, fR,  n):
     first column of L, second column of L, first column of R, second column of R
     """
     #print('fL, fR, n: %s, %s, %d'%(fL,fR,n))
-   #RES = []
+    #RES = []
     ERES = []
     if sL == '':
         if len(fL) == 0 and len(fR) == 0:
@@ -723,6 +751,7 @@ def sdot_switcher(drcL, drcR, nR):
 
 
 
+'''
 def lift_drc_M_B(drc, a):
     """
     Here we use extended drc diagram:
@@ -771,6 +800,7 @@ def lift_drc_M_B(drc, a):
     except:
         print(RES)
     return eRES
+'''
 
 ## New version
 
@@ -798,7 +828,6 @@ def gen_drc_B_two_new(L, R,  n):
     first column of L, second column of L, first column of R, second column of R, tiwst
     """
     #print('fL, fR, n: %s, %s, %d'%(fL,fR,n))
-    #RES = []
     ERES = []
     if len(L) == 0 and len(R) == 0:
         ERES = gen_fR_B('','',L,R,n)
@@ -825,35 +854,22 @@ def gen_drc_B_two_new(L, R,  n):
     else:
         if (L[0],R[0]) == ('s','r'):
             ERES = gen_fR_B('*','*',L,R,n-1)
-            # if n>1: # or len(L)==len(R):
-            #     ERES.append((('c',*L[1:]), ('r'*n + 'a','d',*R[1:]),(1, -1)))
         elif (L[0],R[0]) == ('s','d'):
             ERES = gen_fR_B('*','*',L,R,n-1)
             ERES.append((('c',*L[1:]), ('r'*(n-1)+'d'+'a',*R),(1, 1)))
-            # if n==1 and len(L)==len(R):
             ERES.append((('c',*L[1:]), ('r'*n+'a', *R),(1,-1)))
-            #ERES.append((('c',*L[1:]), ('r'*n+'a','d',*R[1:]),(1,-1)))
-            #ERES.append((('c',*L[1:]), ('r'*n+'b','d',*R[1:]),(1, -1)))
         elif (L[0],R[0]) == ('c','r'):
             ERES = gen_fR_B('c','s',L,R,n-1)
-            # if n==1 and len(L)!=len(R):
-            #     ERES.append((('c',*L[1:]), ('r'+'a','d',*R[1:]),(1, -1)))
         elif (L[0],R[0]) == ('c','d'):
             ERES = gen_fR_B('c','s',L,R,n-1)
-            #ERES.append((('c',*L[1:]), ('r'*n+'b','d',*R[1:]),(1, -1)))
             ERES.append((('c',*L[1:]), ('r'*n+'b', *R),(1, -1)))
             ERES.append((L, ('r'*(n-1)+'d'+'b',*R),(1, 1)))
-            # if n==1 and len(L)!=len(R):
-            #     ERES.append((('c',*L[1:]), ('d'+'a','d',*R[1:]),(1, -1)))
-            # if n==1 and len(L)==len(R):
-            #     ERES.append((('c',*L[1:]), ('d'+'a','d',*R[1:]),(1, -1)))
-            # if n>1:
-            #     ERES.append((L, ('r'*n+'b',*R),(1, 1)))
     return ERES
 
 ## New version
 def lift_drc_M_B(drc, a):
     """
+    a: the length of column attached to the right diagram
     Here we use extended drc diagram:
     'a'/'b' at the end of the longest column to indicate the form of B
     is given by adds 1 on p or q.
@@ -865,26 +881,13 @@ def lift_drc_M_B(drc, a):
     """
     fL, fR = getz(drcL, 0, ''), getz(drcR, 0, '')
     nL,  nR = len(fL), len(fR)
-    if nL != nR:
-        t = min(nL, nR)
-        assert(nL-t <= 1 and nR - t <= 1)
-    elif fL[-1:] == '*':
-        t = len(fL)
-    else:
-        t = max(nR-1, 0)
     assert(nR <= a)
+
+    t = max(max(nL,nR)-1,0)
+
     tdrcL = tuple(col[:t] for col in drcL)
     tdrcR = tuple(col[:t] for col in drcR)
-    try:
-        tdrcL, tdrcR = sdot_switcher(tdrcL, tdrcR, t)
-    except:
-        print(str_dgms(drc), ' t=', t)
-        print(fL,sL,fR)
-        print(tdrcL,tdrcR)
-        print(str_dgms((tdrcL,tdrcR)))
-        return None
-    #bdrcL, bdrcR = _add_bullet_D([fL[:nR]]+list(drcL[1:]),drcR)
-    # print(fL)
+
     RES = []
     eRES = []
     L = ''.join(col[t:] for col in drcL)
@@ -894,7 +897,7 @@ def lift_drc_M_B(drc, a):
         # print('%s,%s,%s'%(ffL,ffR,ssR))
         drcLL = tuple(col+getz(LL, i, '')  for i, col in enumerate(tdrcL))
         drcRR = tuple(col+getz(RR, i, '')  for i, col in enumerate(tdrcR))
-        ndrc = reg_drc((drcLL, drcRR))
+        ndrc = _fill_ds_B((drcLL,drcRR))
         RES.append(ndrc)
         eRES.append((ndrc, twist))
     try:
@@ -1294,6 +1297,33 @@ def test_LSDRC(part, rtype='D', report=False, reportann=False):
     return True
 
 
+def reg_purelyeven_dpart(dpart, rtype):
+    '''
+    regularize purelyeven dual partition:
+        stripe away zeros
+        test where the partition satisfies the parity condition.
+    '''
+    # dpart is a decreasing sequence.
+    dpart = (*(a for a in dpart if a>0 ),)
+    assert all(a-dpart[i+1]>=0 for i,a in enumerate(dpart[:-1]))
+    assert rtype in ('B','C','CS','D','DS','M'), f"Type must be in ('B','C','CS','D','DS','M'), {rtype}"
+
+    if rtype in ('D','DS','C','CS'):
+        # All parts are odd
+        assert all(a%2 == 1 for a in dpart), f'All parts must be odd: {dpart} for {rtype}'
+    else:  # rtype in ('B','M')
+        # All parts are even
+        assert all(a%2 == 0 for a in dpart), f'All parts must be even: {dpart} for {rtype}'
+
+    if rtype in ('D','M','B','DS'):
+        assert sum(dpart)%2 == 0, f'total size must be '
+    else: # rtype in ('C','CS')
+        assert(sum(dpart)%2 == 1)
+
+    return dpart
+
+
+
 
 def test_dpart2drcLS(dpart, rtype='D', report=False, reportann=False, reportpack = False, test=True):
     """
@@ -1306,21 +1336,36 @@ def test_dpart2drcLS(dpart, rtype='D', report=False, reportann=False, reportpack
     """
     Ltypes = LtypesLST[rtype]
 
+    dpart = reg_purelyeven_dpart(dpart,rtype)
+
+    # dpart always have assume to have even number of parts
+    # in type B D.
+    # So we starts with So
     if rtype == 'D' and len(dpart)>0 and dpart[-1]!=0:
         dpart = (*dpart, 0)
+
+    # We start the induction from Mp(0)
+    if rtype == 'B':
+        if len(dpart) %2 == 0:
+            dpart = (*dpart, 0,0)
+        else:
+            dpart = (*dpart, 0)
+
     lDRCLS = [dict()]
     lLSDRC = [dict()]
     for i in range(len(dpart)-1, -1, -1):
         DRCLS = lDRCLS[0]
         LSDRC = lLSDRC[0]
-        # 'p' means present dual partition
+        # 'pdpart' means present dual partition.
+        # 'prtype' means present root system type.
         pdpart = dpart[i:]
         prtype = Ltypes[i % 2]
 
 
         print('Group type %s, dual partition:  %s' % (prtype, pdpart))
 
-        nDRCLS, nLSDRC = lift_DRCLS(DRCLS, LSDRC, pdpart, prtype, report=report, reportann=reportann)
+        nDRCLS, nLSDRC = lift_DRCLS(DRCLS, LSDRC, pdpart, prtype,
+                                    report=report, reportann=reportann)
         lDRCLS.insert(0, nDRCLS)
         lLSDRC.insert(0, nLSDRC)
 
@@ -1339,15 +1384,23 @@ def test_dpart2drcLS(dpart, rtype='D', report=False, reportann=False, reportpack
                 assert(DetLS.isdisjoint(LLS))
             LLS = DetLS.union(LLS)
         elif prtype == 'B':
-            LLS = det_all_LS(LLS, rtype=prtype)
+            DetLS = det_only_LS(LLS,rtype=prtype)
+            if test:
+                assert(DetLS.isdisjoint(LLS))
+            LLS = DetLS.union(LLS)
+            #LLS = det_all_LS(LLS, rtype=prtype)
             #LLS = asign_all_LS(LLS, rtype=prtype)
         # report some basic facts
 
-        if rtype == 'B':
-            print('#DRCS:\t%d,\t#ALS\t%s' %(len(Adrcs)*2, len(ALS)))
+        if prtype == 'B':
+            print('#PBPext:\t%d, #PBPext*2:\t%d, \t#ALS\t%s' %(len(Adrcs)*2, len(Adrcs)*4, len(ALS)))
+            print('#GPBPext:\t%d, #GPBPext*2:\t%d, \t#GLS\t%s' % (len(Gdrcs),len(Gdrcs)*2, len(LLS)))
+        if prtype == 'D':
+            print('#PBP:\t%d, #PBP*2:\t%d, \t#ALS\t%s' %(len(Adrcs), len(Adrcs)*2, len(ALS)))
+            print('#GPBP:\t%d, #GPBP*2:\t%d, \t#GLS\t%s' % (len(Gdrcs),len(Gdrcs)*2, len(LLS)))
         else:
             print('#DRCS:\t%d,\t#ALS\t%s' %(len(Adrcs), len(ALS)))
-        print('#GDRCS:\t%d,\t#GLS\t%s' % (len(Gdrcs), len(LLS)))
+            print('#GDRCS:\t%d,\t#GLS\t%s' % (len(Gdrcs), len(LLS)))
 
 
         if reportpack:
@@ -1394,10 +1447,10 @@ def test_dpart2drcLS(dpart, rtype='D', report=False, reportann=False, reportpack
 def lift_DRCLS(DRCLS, LSDRC, dpart, rtype='C', ltype='l', report=False, reportann=False):
     """
     rtype is the target root system type.
-    ltype is the lifting type:
-                l: normal lift,
-                L: gneralized lift,
-                n: size of orthogonal group if rtype = B/D
+    # ltype is the lifting type:
+    #             l: normal lift,
+    #             L: gneralized lift,
+    #             n: size of orthogonal group if rtype = B/D
     """
     nDRCLS, nLSDRC = dict(), dict()
     # Get the first and second row of the dual partition.
@@ -1558,41 +1611,20 @@ def lift_DRCLS(DRCLS, LSDRC, dpart, rtype='C', ltype='l', report=False, reportan
                     print(concat_strblocks(str_LS(LS), '=====>', str_LS(nLS)))
                     print(concat_strblocks(str_dgms(drc), '=d==>', str_dgms(nddrc)))
                     print(concat_strblocks(str_LS(dLS), '==d==>', str_LS(ndLS)))
-    elif rtype == 'M' and ltype == 'L':
-        for drc, LS in DRCLS.items():
-            drcL, drcR = drc
-            if len(drcR) == 0:
-                drcR = ('',)
-                drc = (drcL, drcR)
-            pO, nO = gp_form_B_ext(drc)
-            ppO, nnO = sign_LS(LS)
-            assert((pO, nO) == (ppO, nnO))
-            acL = len(getz(drcR, 0, '')) - 1
-            nSp = acL + (pO+nO-1)//2
-            # Lift trivial twist
-            ndrc = lift_extdrc_B_M_trivial(drc, acL)
-            if ndrc is not None:
-                #print(concat_strblocks(str_dgms(drc),' has no lift'))
-                #continue
-                nLS = lift_B_M(LS, nSp)
-                # only lift the trivial twist, oeps = 0
-                oeps = 0
-                updatepeDRCLS(nDRCLS, nLSDRC, drc, oeps, LS, ndrc, nLS, reportann=reportann)
-                if report:
-                    print(concat_strblocks(str_dgms(drc), '====>', str_dgms(ndrc)))
-                    print(concat_strblocks(str_LS(LS), '=====>', str_LS(nLS)))
     elif rtype == 'B':
-        if sRow == 0:
-            # This is the initial case
-            zdrc = (('',), ('',))
-            DRCLS[zdrc] = frozenset([tuple()])
+        # if sRow == 0:
+        #     # This is the initial case
+        #     zdrc = (('',), ('',))
+        #     DRCLS[zdrc] = frozenset([tuple()])
+        #
+
+        # The initial case is Mp(0)
+
         for drc, LS in DRCLS.items():
-            if drc is None:
-                continue
             nSp = gp_form_M(drc)
             nnSp = sign_LS(LS)[0]
             assert(nSp == nnSp)
-            aL = (ltype-1)//2 - nSp
+            aL = getz(dpart,0)//2
             NDRCS = lift_drc_M_B(drc, aL)
             # try:
             #     NDRCS = lift_drc_M_B(drc, aL)
@@ -1609,7 +1641,7 @@ def lift_DRCLS(DRCLS, LSDRC, dpart, rtype='C', ltype='l', report=False, reportan
                 nLS = char_twist_B(nLS, twist)
                 if twist == (1,1):
                     oeps = 0
-                else:
+                else:  # twist = (1,-1)
                     oeps = 1
                 updatepeDRCLS(nDRCLS, nLSDRC, drc, oeps, LS, ndrc, nLS, reportann=reportann)
                 #updateDRCLS(RES, drc, LS, ndrc, nLS, reportann=reportann)
@@ -1943,7 +1975,7 @@ def lift_pedrcs(DRCLS, LSDRC, rtype='C', ltype='l', report=False, reportann=Fals
                 updatepeDRCLS(nDRCLS, nLSDRC, drc, oeps, LS, ndrc, nLS, reportann=reportann)
                 #updateDRCLS(RES, drc, LS, ndrc, nLS, reportann=reportann)
                 ndLS = char_twist_B(nLS, (-1, -1))
-                keyLS = frozenset([str_LS(nLS), str_LS(ndLS)])
+                # keyLS = frozenset([str_LS(nLS), str_LS(ndLS)])
                 #print(ndrc, nLS)
                 if report:
                     print('twit sign', twist)

@@ -499,10 +499,10 @@ def symbol2repn(sym, rtype = 'C', reverse=False):
 
 def repn2symbol(tau, rtype='C'):
     tauL,tauR = reg_W_repn(tau, reverse=False)
-    if rtype == 'C' or rtype == 'B':
+    if rtype in  ('C','B','CS'):
         lL = max(len(tauL),len(tauR)+1)
         lR = lL-1
-    elif rtype == 'D':
+    elif rtype in ('D','DS'):
         lR = lL = max(len(tauL),len(tauR))
     else:
         raise Exception('Wrong type',rtype)
