@@ -45,14 +45,17 @@ def lift_extdrc_B_M(drc, a):
     if exttype == 'a':
         ndrcL = ('*'*(a-1)+'*', *drcL)
     else: #exttype == 'b'
-        #if a == len(fR) and fR[-1] in ('s','*'):
-        #    return None
+        if a == len(fR) and fR[-1] in ('s','*'):
+            return None
         ndrcL = ('*'*(a-1)+'c', *drcL)
-    try:
-        ndrc = _fill_ds_M((ndrcL,drcR))
-        return ndrc
-    except:
-        return None
+    ndrc = _fill_ds_M((ndrcL,drcR))
+    return ndrc
+    #     ndrcL = ('*'*(a-1)+'c', *drcL)
+    # try:
+    #     ndrc = _fill_ds_M((ndrcL,drcR))
+    #     return ndrc
+    # except:
+    #     return None
 
 
 def lift_extdrc_B_M_trivial(drc, cL=None):
