@@ -30,39 +30,29 @@ def _combine_tab(drca, drcb):
     return res
 
 
-def lift_extdrc_B_M(drc, crow):
+def lift_extdrc_B_M(drc, a):
+    # Attache a length 'a' columne on the left diagram
+    # We assume a > 0
     drcL, drcR = drc
+    assert(len(drcR[0])>0)
     exttype = drcR[0][-1]
+    assert(exttype in ('a','b'))
+    # This get the usual drc diagram.
     drcR = (drcR[0][:-1], *drcR[1:])
-    if cL is None:
-        # cL = len(getz(drcR, 0, ''))
-        cL = len(drcR[0])
-    cR = len(drcR[0])
-    if cL < cR:
+
+    fL, fR = getz(drcL,0,''), getz(drcR,0,'')
+
+    if exttype == 'a':
+        ndrcL = ('*'*(a-1)+'*', *drcL)
+    else: #exttype == 'b'
+        #if a == len(fR) and fR[-1] in ('s','*'):
+        #    return None
+        ndrcL = ('*'*(a-1)+'c', *drcL)
+    try:
+        ndrc = _fill_ds_M((ndrcL,drcR))
+        return ndrc
+    except:
         return None
-    else:
-        tauL = [cL]+[c.count('*') for c in drcL]
-        tauR = [c.count('*')+c.count('s') for c in drcR]
-        sdrc = next(fill_rdot((tauL, tauR), sym='s'), None)
-        if sdrc is None:
-            return None
-        if len(sdrc[0]) == 0:
-            sdrc = (('',), ('',))
-            #else:
-        sdrcL, sdrcR = sdrc
-        #r = max(len(drcL)+1, len(drcR))
-        drcLL = (sdrcL[0], * _combine_tab(sdrcL[1:], drcL))
-        drcRR = _combine_tab(sdrcR, drcR)
-        if exttype == 'a':
-            return (drcLL, drcRR)
-        elif exttype == 'b':
-            if drcLL[0][-1] == 's':
-                drcLL = (drcLL[0][:-1]+'c', *drcLL[1:])
-                return (drcLL, drcRR)
-            else:
-                return None
-        else:
-            return None
 
 
 def lift_extdrc_B_M_trivial(drc, cL=None):
@@ -191,7 +181,10 @@ def _fill_ds_B(drc):
     ndrcL = []
     for colL, colR in zip_longest(drcL,drcR, fillvalue=''):
         cL, cR = _count_ds(colL), _count_ds(colR)
-        assert(cL<=cR)
+        if cL > cR:
+            print('error')
+            print(str_dgms(drc))
+            assert(cL<=cR)
         ndrcL.append('*'*cL+colL[cL:])
         ndrcR.append('*'*cL+'s'*(cR-cL)+colR[cR:])
     res = (tuple(ndrcL), tuple(ndrcR))
@@ -804,23 +797,8 @@ def lift_drc_M_B(drc, a):
 
 ## New version
 
-def gen_fR_B(tL,tR, L,R, n):
-    """
-    Generate columns of the right diagram
-    for O(2n+1)
-    """
-    LfR = []
-    LfR.extend([('s'*i+'r'*(n-i)+'a', (1, -1)) for i in range(0, n+1)])
-    LfR.extend([('s'*i+'r'*(n-i-1)+'d'+'a', (1, 1)) for i in range(0, n)])
-    LfR.extend([('s'*i+'r'*(n-i)+'b', (1, -1)) for i in range(0, n+1)])
-    LfR.extend([('s'*i+'r'*(n-i-1)+'d'+'b', (1, 1)) for i in range(0, n)])
-    ERES = []
-    for  fR, twist in LfR:
-        LL = (tL,  *L[1:])
-        RR = (tR+fR, *R)
-        ERES.append((LL, RR, twist))
-    return ERES
 
+'''
 def gen_drc_B_two_new(L, R,  n):
     """
     agruments: last row of left diagram and right diagram
@@ -865,6 +843,74 @@ def gen_drc_B_two_new(L, R,  n):
             ERES.append((('c',*L[1:]), ('r'*n+'b', *R),(1, -1)))
             ERES.append((L, ('r'*(n-1)+'d'+'b',*R),(1, 1)))
     return ERES
+'''
+
+def gen_fR_B(tL,aR, tR, n):
+    """
+    Generate columns of the right diagram
+    for O(2n+1)
+    With "hat"
+    tL   ,   aR   tR
+              s
+              r
+              d
+             a/b
+    """
+    LfR = []
+    LfR.extend([('s'*i+'r'*(n-i)+'a', (1, -1)) for i in range(0, n+1)])
+    LfR.extend([('s'*i+'r'*(n-i-1)+'d'+'a', (1, 1)) for i in range(0, n)])
+    LfR.extend([('s'*i+'r'*(n-i)+'b', (1, -1)) for i in range(0, n+1)])
+    LfR.extend([('s'*i+'r'*(n-i-1)+'d'+'b', (1, 1)) for i in range(0, n)])
+    ERES = []
+    for  fR, twist in LfR:
+        ERES.append((tL, aR+fR, tR, twist))
+    return ERES
+
+def gen_drc_B_two_new(tL, tR,  n):
+    """
+    agruments: last row of left diagram and right diagram
+    returns the tail of
+    first column of L, second column of L, first column of R, second column of R, tiwst
+    """
+    #print('fL, fR, n: %s, %s, %d'%(fL,fR,n))
+    ERES = []
+    if tL == '' and tR == '':
+        ERES = gen_fR_B('', '','', n)
+    elif tR == '':
+        if tL =='s':
+            ERES = gen_fR_B('*','*','',n-1)
+            ERES.append(('c', 'r'*n+'a', '', (1,-1)))
+            ERES.append(('c', 'r'*(n-1)+'d'+'a', '', (1,1)))
+        elif tL =='c':
+            ERES = gen_fR_B('c','s','',n-1)
+            ERES.append(('c', 'r'*(n-1)+'d'+'b','' , (1,1)))
+            ERES.append(('c', 'r'*n+'b', '', (1,-1)))
+    elif tL == '':
+        if tR =='r':
+            ERES = gen_fR_B('','s','r',n-1)
+            ERES.append(('', 'r'*n+'a','d', (1,-1)))
+            ERES.append(('', 'r'*(n-1)+'d'+'a','d', (1,1)))
+        elif tR =='d':
+            ERES = gen_fR_B('','s','d',n-1)
+            ERES.append(('', 'r'*(n-1)+'d'+'b','d', (1,1)))
+            ERES.append(('', 'r'*n+'b','d', (1,-1)))
+    else:
+        if (tL,tR) == ('*','*'):
+            ERES = gen_fR_B('*','*','s',n-1)
+        elif (tL,tR) == ('s','r'):
+            ERES = gen_fR_B('*','*','r',n-1)
+        elif (tL,tR) == ('s','d'):
+            ERES = gen_fR_B('*','*','d',n-1)
+            ERES.append(('c', 'r'*n+'a','d',(1,-1)))
+            ERES.append(('c', 'r'*(n-1)+'d'+'a','d',(1, 1)))
+        elif (tL,tR) == ('c','r'):
+            ERES = gen_fR_B('c','s','r',n-1)
+        elif (tL,tR) == ('c','d'):
+            ERES = gen_fR_B('c','s','d',n-1)
+            ERES.append(('c','r'*n+'b','d',(1, -1)))
+            ERES.append(('c','r'*(n-1)+'d'+'b','d',(1, 1)))
+    return ERES
+
 
 ## New version
 def lift_drc_M_B(drc, a):
@@ -885,18 +931,20 @@ def lift_drc_M_B(drc, a):
 
     t = max(max(nL,nR)-1,0)
 
-    tdrcL = tuple(col[:t] for col in drcL)
-    tdrcR = tuple(col[:t] for col in drcR)
+    #tdrcL = tuple(col[:t] for col in drcL)
+    #tdrcR = ('*'*t,*(col[:t] for col in drcR))
+
+    tL, tR = fL[t:], fR[t:]
 
     RES = []
     eRES = []
-    L = ''.join(col[t:] for col in drcL)
-    R = ''.join(col[t:] for col in drcR)
-    ldrcD2 = gen_drc_B_two_new(L, R, a-t)
-    for LL, RR, twist in ldrcD2:
+    ldrcD2 = gen_drc_B_two_new(tL, tR, a-t)
+    for nL, nR, nsR, twist in ldrcD2:
         # print('%s,%s,%s'%(ffL,ffR,ssR))
-        drcLL = tuple(col+getz(LL, i, '')  for i, col in enumerate(tdrcL))
-        drcRR = tuple(col+getz(RR, i, '')  for i, col in enumerate(tdrcR))
+        # drcLL = tuple(col+getz(LL, i, '')  for i, col in enumerate(tdrcL))
+        # drcRR = tuple(col+getz(RR, i, '')  for i, col in enumerate(tdrcR))
+        drcLL = (fL[:t]+nL, *drcL[1:])
+        drcRR = ('*'*t+nR, fR[:t]+nsR, *drcR[1:])
         ndrc = _fill_ds_B((drcLL,drcRR))
         RES.append(ndrc)
         eRES.append((ndrc, twist))
@@ -1395,7 +1443,7 @@ def test_dpart2drcLS(dpart, rtype='D', report=False, reportann=False, reportpack
         if prtype == 'B':
             print('#PBPext:\t%d, #PBPext*2:\t%d, \t#ALS\t%s' %(len(Adrcs)*2, len(Adrcs)*4, len(ALS)))
             print('#GPBPext:\t%d, #GPBPext*2:\t%d, \t#GLS\t%s' % (len(Gdrcs),len(Gdrcs)*2, len(LLS)))
-        if prtype == 'D':
+        elif prtype == 'D':
             print('#PBP:\t%d, #PBP*2:\t%d, \t#ALS\t%s' %(len(Adrcs), len(Adrcs)*2, len(ALS)))
             print('#GPBP:\t%d, #GPBP*2:\t%d, \t#GLS\t%s' % (len(Gdrcs),len(Gdrcs)*2, len(LLS)))
         else:
@@ -1410,8 +1458,6 @@ def test_dpart2drcLS(dpart, rtype='D', report=False, reportann=False, reportpack
                     for dd, ll, odd, oeps, oll in lst:
                         print(concat_strblocks(str_dgms(odd),', %d , '%oeps, str_LS(oll), ' ---> ',
                                                str_dgms(dd),' , ', str_LS(ll)))
-
-
 
         if prtype == 'B':
             Gdrcs = set([ext_drc2drc(edrc) for edrc in Gdrcs])
@@ -1568,18 +1614,17 @@ def lift_DRCLS(DRCLS, LSDRC, dpart, rtype='C', ltype='l', report=False, reportan
         we work on extended drc diagram!
         This initial case is Mp(0)
         """
-        # Mp(2n)
-        n = sum(dpart)//2
+        # Mp(2nSp)
         # The length of column to attach on the left of drcL
+        nSp = sum(dpart)//2
         crow = fRow//2
 
         if fRow ==0:
-            print(dpart)
+            #print(dpart)
             zdrc = (('',), ('',))
             zLS = frozenset([tuple()])
             updatepeDRCLS(nDRCLS, nLSDRC, zdrc, 0, zLS, zdrc, zLS, reportann=reportann)
-        elif fRow > sRow:
-            # (1,2) is a primitive pair
+        else: #first Row >= second Row:
             for drc, LS in DRCLS.items():
                 drcL, drcR = drc
                 if len(drcR) == 0:
@@ -1592,25 +1637,29 @@ def lift_DRCLS(DRCLS, LSDRC, dpart, rtype='C', ltype='l', report=False, reportan
                 oeps = 0
                 ndrc = lift_extdrc_B_M(drc, crow)
                 if ndrc is None:
-                    print('drc has no lift', drc)
+                    #print('drc has no lift', drc)
                     continue
                 nLS = lift_B_M(LS, nSp)
                 updatepeDRCLS(nDRCLS, nLSDRC, drc, oeps, LS, ndrc, nLS, reportann=reportann)
                 # Lift the determinant twist
                 # Lift the determinant twist, oeps = 1
-                oeps = 1
-                nddrc = twist_M_nonspecial(ndrc)
-                if nddrc is None:
-                    print('ndrc has no twist', ndrc)
-                    continue
-                dLS = char_twist_B(LS, (-1, -1))
-                ndLS = lift_B_M(dLS, nSp)
-                updatepeDRCLS(nDRCLS, nLSDRC, drc, oeps, LS, nddrc, ndLS, reportann=reportann)
+                if fRow > sRow :
+                    # (1,2) is a primitive pair
+                    # Also lift the determinant twist.
+                    oeps = 1
+                    nddrc = twist_M_nonspecial(ndrc)
+                    if nddrc is None:
+                        print('ndrc has no twist (should not happen)', ndrc)
+                        continue
+                    dLS = char_twist_B(LS, (-1, -1))
+                    ndLS = lift_B_M(dLS, nSp)
+                    updatepeDRCLS(nDRCLS, nLSDRC, drc, oeps, LS, nddrc, ndLS, reportann=reportann)
                 if report:
                     print(concat_strblocks(str_dgms(drc), '====>', str_dgms(ndrc)))
                     print(concat_strblocks(str_LS(LS), '=====>', str_LS(nLS)))
-                    print(concat_strblocks(str_dgms(drc), '=d==>', str_dgms(nddrc)))
-                    print(concat_strblocks(str_LS(dLS), '==d==>', str_LS(ndLS)))
+                    if fRow >sRow:
+                        print(concat_strblocks(str_dgms(drc), '=d==>', str_dgms(nddrc)))
+                        print(concat_strblocks(str_LS(dLS), '==d==>', str_LS(ndLS)))
     elif rtype == 'B':
         # if sRow == 0:
         #     # This is the initial case
