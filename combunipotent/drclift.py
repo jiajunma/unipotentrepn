@@ -50,12 +50,6 @@ def lift_extdrc_B_M(drc, a):
         ndrcL = ('*'*(a-1)+'c', *drcL)
     ndrc = _fill_ds_M((ndrcL,drcR))
     return ndrc
-    #     ndrcL = ('*'*(a-1)+'c', *drcL)
-    # try:
-    #     ndrc = _fill_ds_M((ndrcL,drcR))
-    #     return ndrc
-    # except:
-    #     return None
 
 
 def lift_extdrc_B_M_trivial(drc, cL=None):
@@ -1389,11 +1383,12 @@ def test_dpart2drcLS(dpart, rtype='D', report=False, reportann=False, reportpack
 
     dpart = reg_purelyeven_dpart(dpart,rtype)
 
-    # dpart always have assume to have even number of parts
-    # in type B D.
-    # So we starts with So
-    if rtype == 'D' and len(dpart)>0 and dpart[-1]!=0:
+    # dpart always have assume to have odd/even number of parts
+    # in type C/D.
+    # So we starts the induction from type D.
+    if rtype in ('D','C') and len(dpart)>0 and dpart[-1]!=0:
         dpart = (*dpart, 0)
+
 
     # We start the induction from Mp(0)
     if rtype == 'B':
@@ -1401,6 +1396,7 @@ def test_dpart2drcLS(dpart, rtype='D', report=False, reportann=False, reportpack
             dpart = (*dpart, 0,0)
         else:
             dpart = (*dpart, 0)
+
 
     lDRCLS = [dict()]
     lLSDRC = [dict()]
