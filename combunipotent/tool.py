@@ -564,3 +564,57 @@ def Wrepn2dbcell(tau, rtype='C'):
                 dd = sorted(ddown-set(td)|set(tu)|cc)
                 RES.append(symbol2repn((uu,dd)))
     return RES
+
+"""
+A marking nu on a yong diagram lam is a subset of lam
+"""
+def isMarking(nu,lam):
+    return set(nu).issubset(set(lam))
+
+"""
+A marked yong diagram of type BD is a marked partition such that  
+nu consists of odd numbers and has even number of parts. 
+"""
+def isMarkingBD(nu, lam):
+    return isMarking(nu,lam) and all(i % 2 == 1 for i in nu) and (len(set(nu)) %2 ==0)
+
+"""
+A marked yong diagram of type C is a marked partition such that  
+nu consists of even numbers
+"""
+def isMarkingC(nu, lam):
+    return isMarking(nu,lam) and all(i % 2 == 0 for i in nu)
+
+
+"""
+The markable part of a partition of 
+type B is the odd row length whose hight is odd
+type D is the odd row length whose hight is even
+"""
+"""
+ht(x) is the number of parts in lam larger than x
+"""
+def height_dict(lam):
+    lam = sorted(lam,reverse=True)
+    res = dict()
+    for i in range(len(lam)): 
+        if lam[i] not in res:
+            res[lam[i]] = i
+    return res
+
+def Markable_aux(lam,parity,eps):
+    res = height_dict(lam)
+    return set(r for r,m in res.items() if r%2==parity and m%2 == eps)    
+
+def MarkableBD(lam):
+    eps = sum(lam) % 2 # this is 0 (or 1) for type D (or B)
+    return Markable_aux(lam,1,eps)
+
+def MarkableC(lam):
+    return Markable_aux(lam,0,0)
+    
+"""
+A reduced marking of type BD is a marking such that 
+"""
+def isRMarkingBD(nu,lam):
+    return isMarkingBD(nu,lam) and set(nu).issubset(MarkableBD(lam))
