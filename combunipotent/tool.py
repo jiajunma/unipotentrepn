@@ -1,5 +1,6 @@
 from itertools import chain, combinations
 from copy import copy, deepcopy
+from multiset import Multiset
 
 
 def concat_strblocks(*args, sep=' '):
@@ -585,6 +586,13 @@ nu consists of even numbers
 def isMarkingC(nu, lam):
     return isMarking(nu,lam) and all(i % 2 == 0 for i in nu)
 
+"""
+Parity function
+if x and y has the same parity, return True
+else return False
+"""
+def parity(x,y):
+    return x%2 == y%2
 
 """
 The markable part of a partition of 
@@ -594,6 +602,9 @@ type D is the odd row length whose hight is even
 """
 ht(x) is the number of parts in lam larger than x
 """
+def ht(lam,x):
+    return len([a for a in lam if a>x])
+
 def height_dict(lam):
     lam = sorted(lam,reverse=True)
     res = dict()
@@ -618,3 +629,40 @@ A reduced marking of type BD is a marking such that
 """
 def isRMarkingBD(nu,lam):
     return isMarkingBD(nu,lam) and set(nu).issubset(MarkableBD(lam))
+
+
+
+"""
+A reduced marked partition (nu, lamb) of type B (resp. C, D) is special if and only if 
+there are no even (resp. odd, even) parts x of lam  such that ht(nu,x) is odd 
+and ht(lam,x) is odd (resp. even, even). 
+
+Here we assume (nu,lam) is a reduced marking of the correct type.
+"""
+def specialRM_aux(nu,lam,p0,p1,p2):
+    for x in set(lam):
+        if parity(x,p0) and parity(ht(nu,x), p1) and parity(ht(lam,x), p2):
+            return False
+    return True
+
+def isSpecialRMBD(nu,lam):
+    eps = sum(lam) % 2
+    return specialRM_aux(nu,lam,0,1,eps)
+
+
+def isSpecialRMC(nu,lam):
+    return specialRM_aux(nu,lam,1,1,0)
+
+"""
+Test a multiset is noduplicate elements or not
+"""
+def nodup(mset):
+    return len(mset) == len(mset.distinct_elements())
+
+"""
+A reduced marked partition (nu, lam) is distingushed if and only if
+lam \ nu is multiplicity one 
+"""
+def isDistingushed(nu,lam):
+    return nodup(Multiset(lam) - Multiset(nu))
+
