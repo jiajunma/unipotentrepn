@@ -677,17 +677,23 @@ type B is the odd row length whose hight is odd
 type D is the odd row length whose hight is even
 """
 """
-ht(x) is the number of parts in lam larger than x
+ht(x) is the number of parts in lam >= x
 """
 def ht(lam,x):
-    return len([a for a in lam if a>x])
+    return len([a for a in lam if a>=x])
+
+# def height_dict(lam):
+#     lam = sorted(lam,reverse=True)
+#     res = dict()
+#     for i in range(len(lam)): 
+#         if lam[i] not in res:
+#             res[lam[i]] = i+1
+#     return res
 
 def height_dict(lam):
-    lam = sorted(lam,reverse=True)
     res = dict()
-    for i in range(len(lam)): 
-        if lam[i] not in res:
-            res[lam[i]] = i
+    for r in set(lam):
+        res[r] = ht(lam,r) 
     return res
 
 def Markable_aux(lam,parity,eps):
@@ -707,7 +713,25 @@ A reduced marking of type BD is a marking such that
 def isRMarkingBD(nu,lam):
     return isMarkingBD(nu,lam) and set(nu).issubset(MarkableBD(lam))
 
-
+"""
+Give a symbol of type BC 
+(a_0 <  a_1 <  a_2 <  ...  )
+(   b_0 < b_1 < ...  )
+the following function return the equivalent symbol that shifts r times to the right 
+"""
+def equiv_symbol_shift(sym,r):
+    symU, symL = sym
+    r = max(r,0)
+    symU = list(a+r for a in chain(range(-r,0),sorted(symU)))
+    symL = list(a+r for a in chain(range(-r,0),sorted(symL)))
+    return (symU, symL)
+"""
+The following function return the equivalent symbol that has at least r parts
+"""
+def equiv_symbol_expend(sym,r):
+    l = len(sym[0])+len(sym[1])
+    r = (r-l+1)//2    
+    return equiv_symbol_shift(sym,r)
 
 """
 A reduced marked partition (nu, lamb) of type B (resp. C, D) is special if and only if 
