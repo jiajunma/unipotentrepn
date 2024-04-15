@@ -2,6 +2,17 @@ from itertools import chain, combinations
 from copy import copy, deepcopy
 from multiset import Multiset
 
+def sublists(l):
+    """
+    Generates all sublists of l
+    """
+    if len(l)==0:
+        yield []
+    else:
+        for ll in sublists(l[1:]):
+            yield ll 
+            yield [l[0]]+ll
+
 
 def concat_strblocks(*args, sep=' '):
     """
@@ -770,7 +781,7 @@ def isDistingushed(nu,lam):
 
 
 def isBDDistingushed(nu,lam):
-    return isMarkingBD(nu,lam) and isDistingushed(nu,lam) 
+    return isRMarkingBD(nu,lam) and isDistingushed(nu,lam) 
 
 
 """

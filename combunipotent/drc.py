@@ -711,6 +711,38 @@ IDdgm = lambda x: x
 SWdgm = lambda x: (x[1],x[0])
 
 
+def fill_dot(tau, reststeps=[], LRdgm=IDdgm, simp_Wrepn=True):
+    """
+    Here the Young diagram is parameterized by columns 
+    ([tauL_0, ...], [tauR_0, ...])
+    put symbol ('s') one the left diagram, 
+    and then fill * on left and right diagrams.
+    cL ncL        cR
+    *  *          *  *
+    *  *          *  *
+    *  *          *  *
+    *             *
+    
+    
+    Note that we always have tauL[i] = tauR[i] >= tauL[i-1]=tauR[i-1]
+    """
+    if simp_Wrepn:
+        tau = simp_W_repn(tau)
+    if tau is not None: 
+        tauL,tauR = LRdgm(tau)
+        drcL, drcR = [],[]
+        cols = max(len(tauL),len(tauR))
+        for i in range(cols):
+            cL, cR = getz(tauL,i,0), getz(tauR,i,0)
+            if cL == cR:
+                bul = '*'*cR
+                drcR.append(bul)
+                drcL.append(bul)
+            else:
+                return
+        yield LRdgm((tuple(drcL),tuple(drcR)))
+
+
 def fill_rdot(tau, reststeps=[], sym='s', LRdgm=IDdgm, simp_Wrepn=True):
     """
     Here the Young diagram is parameterized by columns 
@@ -897,6 +929,10 @@ steps_CS  =[
 steps_DS  =[
     (fill_r, ('r',SWdgm)),
     (fill_rdot, ('s',SWdgm))]
+
+def fill_tau_steps(tau,steps):
+    ffun, fparam = steps[0]
+    yield from ffun(tau, steps[1:], *fparam)
 
 def drc_form_Sp(drc):
     return 2*gp_form_C(drc)
