@@ -796,7 +796,7 @@ def list_up(nu):
 
 def tworhoplus(n):
     """
-    tworhoplus(n) is the list of positive elements in 
+    tworhoplus(n) is the list of nonnegative elements in 
     (n-1) , (n-3), ... , (1-n)
     """
     return list(range((n-1),0,-2))

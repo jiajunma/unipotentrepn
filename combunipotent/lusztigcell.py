@@ -13,10 +13,10 @@ def multiset_diff(a,b):
     """
     return Multiset(a) - Multiset(b)
 
-"""
-The following function generates all distinguished reduced marking 
-"""
 def allDistRmarkingBD(n):
+    """
+    The following function generates all distinguished reduced marking 
+    """
     for lam in BDpartitions(n):
         nu0  = sorted(set(multiset_diff(lam,set(lam))),reverse=True)
         nuall = MarkableBD(lam) 
@@ -25,9 +25,20 @@ def allDistRmarkingBD(n):
             if isBDDistingushed(nu,lam):
                 yield (nu,lam)
 
-def twogammaDistBD(nu,lam):
+def twogammaDistBD(nu :list[int],lam:list[int]):
     assert(isBDDistingushed(nu,lam))
-    part  = list_up(nu) + sorted(multiset_diff(lam,nu),reverse=True) 
+    nu = sorted(nu,reverse=True)
+    p= sorted (lam,reverse=True)
+    internu = []
+    for i in range(len(nu)//2):
+        internu.extend(a for a in p if a < nu[2*i] and a > nu[2*i+1])
+        internu.append(nu[2*i])
+        if p.count(nu[2*i+1]) > 1:
+            internu.append(nu[2*i+1])
+    other = sorted(Multiset(p)-Multiset(internu),reverse=True)
+    #print(f"internu = {internu}, other = {other}")
+    internu = sorted(internu,reverse=True)
+    part  = list_up(internu) + other 
     return twogamma_part(sum(lam)//2,part)
     
 
