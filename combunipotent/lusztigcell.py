@@ -41,7 +41,6 @@ def twogammaDistBD(nu :list[int],lam:list[int]):
     part  = list_up(internu) + other 
     return twogamma_part(sum(lam)//2,part)
     
-
 """
 Fix an integral infinitesimal character gamma,
 Let W_gamma be the stablizer of gamma in W.
