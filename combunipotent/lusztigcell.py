@@ -72,12 +72,13 @@ def gamma2LusztigCellB(gamma):
     # Levi of even and odd parts
     Leven, Lodd = Wgamma(gamma)
     Ecell = Jind([sgnBC(Leven[0])],Leven[1])
-    Ocell = Jind([sgnBC(Lodd[0])],Lodd[1])
+    #Here we use the metaplectic cell
+    Ocell = Jind([([0],[0])],Lodd[1])
     return(Ecell,Ocell)
 
-def printCells(cell,bipart=False):
+def printCells(cell,bipart=False,reverse=True):
     for sym in cell:
-        tau = symbol2repn(sym)
+        tau = symbol2repn(sym,reverse=reverse)
         if bipart:
             print(f"{tau}")
         else:

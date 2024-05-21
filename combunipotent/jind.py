@@ -19,6 +19,14 @@ def sgnD(n):
     """
     return (tuple(range(n)),tuple(range(1,n+1)))
 
+def sgnM(n):
+    """
+    Generate the metaplectic symbol of sgn representation of type M 
+    TODO: check the correctness
+    """
+    yield (tuple(range(n)),tuple(range(1,n+1)))
+    yield (tuple(range(1,n+1)),tuple(range(n)))
+
   
 
 """
