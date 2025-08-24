@@ -3,7 +3,7 @@ from itertools import chain, zip_longest
 from copy import copy, deepcopy
 from multiset import FrozenMultiset as frozenset
 from .tool import getz, dualBVW, concat_strblocks
-from .drc import str_dgms, reg_drc, verify_drc, gp_form_D, gp_form_B,gp_form_C, gp_form_M, dpart2drc, countdrcform
+from .drc import str_dgms, reg_drc, verify_drc, gp_form_D, gp_form_B,gp_form_C, gp_form_M, dpart2drc, countdrcform, part2drc, fill_rdot, fill_r,fill_c
 from .LS import lift_C_D, lift_D_C, lift_B_M, lift_M_B, char_twist_D, char_twist_B, part2LS, str_LS, sign_LS
 
 """
