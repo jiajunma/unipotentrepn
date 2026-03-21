@@ -216,6 +216,7 @@ def descent_drc(drc, rtype):
         assert(verify_drc(res,'B'))
     elif rtype == 'B':
         # Strip the a/b tag and determine sub-type
+        # Corresponds to descent from ★=B (SO(2n+1)) to ★'=M=C̃ (Mp)
         if fR[-1] == 'a':
             nrtype = 'B+'
         elif fR[-1] == 'b':
@@ -225,12 +226,23 @@ def descent_drc(drc, rtype):
         drcR = (drcR[0][:-1], *drcR[1:])
         # Re-read fR after stripping the tag
         fR = getz(drcR, 0, '')
-        res = _fill_ds_M((drcL,drcR[1:]))
+        # Naive descent: remove first column of Q (drcR)
+        res = _fill_ds_M((drcL, drcR[1:]))
         resL, resR = res
-        if nrtype == 'B+' and len(fR) > 0 and len(fL) >= len(fR) and fR[-1] in ['r','d']:
-            resL = (*resL[:-1], 's')
+        # Case (a) from [BMSZb, Section 10.4, The case ★=B]:
+        # Conditions: γ=B+, (2,3)∉℘, r₂(Ǒ)>0, Q(c₁(ι_℘),1) ∈ {r,d}.
+        # For purely even case, ℘=∅ so (2,3)∉℘ is automatic.
+        # c₁(ι_℘) = c₁(ι) = len(fL) (first column length of left diagram).
+        # Q(c₁(ι),1) = fR[len(fL)-1]: the char at row c₁(ι) of drcR's first column.
+        # r₂(Ǒ)>0 iff fR has length > len(fL) or drcR has ≥2 columns.
+        # Action: set P'(c₁(ι_℘'),1) = s, i.e. last char of resL's first column.
+        c1 = len(fL)
+        q_c1 = fR[c1 - 1] if 0 < c1 <= len(fR) else ''
+        if nrtype == 'B+' and q_c1 in ['r', 'd']:
+            col0 = resL[0]
+            resL = (col0[:-1] + 's', *resL[1:])
         res = (resL, resR)
-        assert(verify_drc(res,'M'))
+        assert(verify_drc(res, 'M'))
     res = reg_drc(res)
     return res
 
