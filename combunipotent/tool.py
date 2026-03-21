@@ -1,3 +1,38 @@
+"""
+tool.py - Core Combinatorial Utilities for Unipotent Representations
+
+This module provides fundamental operations on:
+
+1. **Partitions**: regularization, transposition, collapse operations
+   - reg_part: normalize a partition to decreasing tuple of positive integers
+   - part_trans: compute the transpose (conjugate) partition
+   - BDcollapse / Ccollapse: collapse partitions to satisfy parity conditions
+     for types B/D and C respectively
+
+2. **Springer correspondence**: bijection between nilpotent orbits and
+   Weyl group representations for classical types B, C, D
+   - springer_part2repn: partition -> W-representation (bipartition)
+   - springer_repn2part: W-representation -> partition
+   - springer_part2family: partition -> set of W-representations in the family
+
+3. **Symbol calculus**: the intermediate combinatorial objects
+   (pairs of integer sequences) used in the Springer correspondence
+   - repn2symbol: W-representation -> symbol
+   - symbol2repn: symbol -> W-representation
+   - symbol2specialsymbol: project a symbol to its special form
+   - symbol2family: enumerate all representations sharing a special symbol
+
+4. **Barbasch-Vogan duality**: the generalized duality on nilpotent orbits
+   - dualBVW: compute BV dual via the Weyl group / symbol method
+   - tdualLS, tdSP: Lusztig-Spaltenstein type dualities
+
+Conventions:
+    - Partitions are represented as tuples/lists of non-negative integers
+      in decreasing order.
+    - W_n-representations (bipartitions) are pairs (tauL, tauR) of partitions.
+    - Symbols are pairs (symL, symR) of sorted integer sequences.
+    - rtype in {'B', 'C', 'D', 'M', 'CS', 'DS'} specifies the root system type.
+"""
 from itertools import chain, combinations
 from copy import copy, deepcopy
 
@@ -30,7 +65,8 @@ def getz(C,idx,default=None):
 
 def column2row(C):
     """
-    ==
+    Convert a partition given by column lengths to row lengths.
+    Equivalent to computing the transpose (conjugate) partition.
     """
     C=sorted(C)
     l= len(C)
@@ -60,6 +96,10 @@ def reg_W_repn(tau, reverse=True):
     return ntau
 
 def part_trans(part, reverse=True):
+    """
+    Compute the transpose (conjugate) of a partition.
+    Given row lengths, return column lengths (or vice versa).
+    """
     part=sorted([x for x in part if x>0])
     if len(part) == 0:
         return []
@@ -92,24 +132,34 @@ simp_dec_seq = _simp_dec_seq
 
 
 def simp_W_repn(tau):
+    """
+    Simplify a W-representation bipartition by stripping trailing zeros
+    and checking that each component is a valid decreasing sequence.
+    Returns None if either component is not decreasing.
+    """
     tauL, tauR = tau
     simpL = _simp_dec_seq(tauL)
-    if simpL is None: 
+    if simpL is None:
         return None
     else:
         simpR = _simp_dec_seq(tauR)
-        if simpR is None: 
+        if simpR is None:
             return None
         else:
             return (simpL,simpR)
 
 def W_repn_sgn(tau):
+    """
+    Tensor a W-representation with the sign character.
+    Result: (tauR^t, tauL^t), i.e., transpose each component and swap.
+    """
     tauL, tauR = tau
     res = reg_W_repn((part_trans(tauR),
                        part_trans(tauL)))
     return res
     
 def part_size(part):
+    """Return the size (sum of parts) of a partition."""
     return sum(part)
 
    
@@ -117,12 +167,14 @@ def typeerr(part):
     raise ValueErrow('Wrong type %s'%rtype)
     
 def switch_kv(D):
+    """Invert a dictionary: swap keys and values, grouping keys by value."""
     RD = dict()
     for k,v in D.items():
         RD.setdefault(v, []).append(k)
     return RD
 
 def str_part(part, s='*'):
+    """Display a partition as a Young diagram using the character s."""
     part = reg_part(part)
     return '\n'.join([s*r for r in part])
 
@@ -172,6 +224,10 @@ def partcollapse(part, pair = 0):
     return tuple(res) 
 
 def partupplus(part):
+    """
+    Add 1 to the largest part of the partition: part^+ operation.
+    If empty, return (1,).
+    """
     part = reg_part(part, reverse = True)
     if len(part) == 0:
         return (1,)
@@ -179,6 +235,10 @@ def partupplus(part):
         return (part[0]+1, *part[1:])
 
 def partupminus(part):
+    """
+    Subtract 1 from the smallest part of the partition: part^- operation.
+    If smallest part is 1, remove it. If empty, return None.
+    """
     part = reg_part(part, reverse = True)
     if len(part) == 0:
         return None
@@ -210,9 +270,16 @@ def tdSP(part, col=False):
     return respart 
 
 def tdualBV(part):
+    """
+    Barbasch-Vogan duality for type C: compose tdualLS and tdSP.
+    """
     return tdSP(tdualLS(part))
 
 def tdualBVW(part):
+    """
+    Barbasch-Vogan duality for type C via Weyl group representations.
+    Implements: part -> Springer -> sign twist -> special projection -> swap -> inverse Springer.
+    """
     tau = springer_part2repn(part, rtype = 'C')
     ttau = W_repn_sgn(tau)
     sttau = repn2specialrepn(ttau, rtype='D')
@@ -221,11 +288,17 @@ def tdualBVW(part):
     return respart
 
 def sign_twist_Wrepn(tau):
+    """
+    Apply the sign character twist to a W-representation.
+    Swaps and transposes the two components of the bipartition:
+    (tauL, tauR) -> (tauR^t, tauL^t).
+    """
     return (part_trans(tau[1]), part_trans(tau[0]))
 
-# data for define Barabasch-Vogan duality
-# from the target rtype get
-# (original rtype, special repn rtype, target rtype)
+# Data for Barbasch-Vogan duality.
+# For each target rtype, stores:
+#   (source orbit rtype, special repn rtype, target rtype)
+# This determines the sequence of operations in dualBVW().
 DTdualBVW= {
     'C': ('B','B','C'),
     'CS': ('B','B','C'),
@@ -443,6 +516,11 @@ def springer_repn2part(tau, rtype = 'C'):
         return reg_part(part)
 
 def equiv_symbol(sym,l):
+    """
+    Extend a symbol by prepending l entries (0,1,...,l-1) to both rows,
+    then shifting all entries by l. This yields an equivalent symbol
+    of larger size (used for J-induction computations).
+    """
     symU, symL = sym
     l = max(l,0)
     symU = tuple(a+l for a in chain(range(-l,0),sorted(symU)))
@@ -513,6 +591,11 @@ def repn2symbol(tau, rtype='C'):
     return (symL,symR)
 
 def isspecial_BC(symb):
+    """
+    Check if a symbol is special for type B or C.
+    A symbol (symL, symR) with len(symL) = len(symR)+1 is special if
+    symL[i] <= symR[i] <= symL[i+1] for all i (interlacing condition).
+    """
     symL, symR = symb
     assert(len(symL) == len(symR)+1)
     for i, mu in enumerate(symR):
@@ -521,33 +604,41 @@ def isspecial_BC(symb):
     return True
 
 def isspecial_symbol(symb, rtype='C'):
+    """
+    Check if a symbol is special for the given root system type.
+    For type D, checks both possible orderings (since D-symbols have equal-length rows).
+    """
     symL, symR = symb
     if rtype == 'C' or rtype == 'B':
         return isspecial_BC(symb)
     elif rtype == 'D':
         res = (isspecial_BC(((0, *symL), symR)) or
-               isspecial_BC(((0, * symR), symL)))             
+               isspecial_BC(((0, * symR), symL)))
         return res
 
 
 
 def part2srepn(part, rtype='C'):
+    """Map a partition to the special W-representation in its family."""
     tau = springer_part2repn(part,rtype)
     RES = Wrepn2srepn(tau,rtype)
     return RES
 
 def Wrepn2srepn(tau, rtype='C'):
+    """Project a W-representation to the unique special representation in its family."""
     symb1 = repn2symbol(tau,rtype)
     symb = symbol2specialsymbol(symb1)
     res = symbol2repn(symb,rtype)
     return res
 
 def part2dbcell(part, rtype='C'):
+    """Map a partition to the set of W-representations in its double cell."""
     tau = springer_part2repn(part,rtype)
     RES = Wrepn2dbcell(tau,rtype)
     return RES
 
 def Wrepn2dbcell(tau, rtype='C'):
+    """Compute all W-representations in the double cell containing tau."""
     symb1 = repn2symbol(tau,rtype)
     #print(symb1)
     (up,down)= symbol2specialsymbol(symb1)

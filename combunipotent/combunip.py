@@ -1,4 +1,25 @@
+"""
+combunip.py - (Legacy) DRC Diagram Construction for Types B, C, D
 
+This is the original implementation of DRC diagram construction, predating the
+unified framework in drc.py. It provides direct construction algorithms for
+types B, C, and D using a column-based filling approach.
+
+The newer drc.py module provides a more general and extensible implementation
+using the fill_r / fill_c / fill_rdot pipeline. This module is retained for
+backward compatibility and because some functions (like the old LS code for
+types C and D) are still referenced.
+
+Key functions:
+    drc_dgms_C(tau): compute DRC diagrams for type C from a W-representation
+    drc_dgms_B(tau): compute DRC diagrams for type B (via type C transposition)
+    drc_dgms_D(tau): compute DRC diagrams for type D
+    print_drc_diag_C/B/D(partition): user-facing display functions
+
+Note: The column representation uses internal symbols that differ from display:
+    Internal: '*' = dot, 'r' = real, 's' = dual real, 'c' = compact, 'd' = discrete
+    Display:  '.' = dot, 'r' = both real types, 'c'/'d' = compact/discrete
+"""
 import itertools
 from copy import copy, deepcopy
 from multiset import FrozenMultiset as frozenset

@@ -1,3 +1,14 @@
+"""
+liftgraph.py - (Legacy) Simple LS Lifting Graph Visualization
+
+This module generates Graphviz directed graphs showing the theta lifting tree
+for local systems WITHOUT DRC packet annotations. This is the simpler, earlier
+version of the visualization; see lsdrcgraph.py for the version with DRC data.
+
+The graph structure and edge types are the same as lsdrcgraph.py:
+    'l'/'L': lifting edges (blue/navy)
+    'p'/'q'/'d': character twist edges (green/purple/red)
+"""
 from itertools import chain, zip_longest
 from copy import copy, deepcopy
 from multiset import FrozenMultiset as frozenset

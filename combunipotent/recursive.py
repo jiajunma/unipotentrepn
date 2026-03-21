@@ -1,7 +1,32 @@
+"""
+recursive.py - Recursive Counting of Unipotent Representations via Signature Polynomials
+
+This module counts unipotent representations attached to purely even nilpotent orbits
+of classical groups using recursive formulas with signature polynomials.
+
+The counting is done in the polynomial ring Z[p,q] where:
+    - r = p^2, s = q^2  (squares of the formal variables)
+    - c = d = pq          (cross terms)
+
+Each counting function returns a triple (DD, RC, SS) of polynomials in p, q:
+    - DD: contributions ending with a 'd' pattern (discrete series type)
+    - RC: contributions ending with an 'rc' pattern (principal series type)
+    - SS: contributions ending with an 's' pattern (finite-dimensional type)
+
+The total count at signature (1,1) gives the number of unipotent representations.
+
+Root system types and their parity conditions:
+    B : rows of the good parity partition are all even
+    C : rows are all odd, total size is odd
+    D : rows are all odd, total size is even
+    M : rows are all even (metaplectic type)
+    CS: rows are all odd, total size is odd (compact/split variant)
+    DS: rows are all odd, total size is even (quaternionic variant)
+"""
 from sympy import Poly, expand, ZZ, ring, symbols
 
 """
-The general case.
+Setup the polynomial ring Z[p,q] for signature polynomial computations.
 """
 pp,qq = symbols('p q')
 R, p, q = ring([pp,qq],ZZ)
@@ -9,16 +34,19 @@ R, p, q = ring([pp,qq],ZZ)
 r,s,c,d = p*p, q*q, p*q, p*q
 
 def rs_n(r,s,n):
+    """Compute r^n + r^(n-1)*s + ... + s^n = sum_{i=0}^{n} r^i * s^(n-i)."""
     a = R(0)
     for i in range(n+1):
         a += r**i * s**(n-i)
     return a
 
 def tail_n(n):
+    """Compute the tail polynomial: rs_n + rs_{n-1}*(c+d) + rs_{n-2}*cd."""
     a = rs_n(r,s,n) + rs_n(r,s,n-1)*c + rs_n(r,s,n-1)*d + rs_n(r,s,n-2)*c*d
     return a
 
 def evalsignature(countres):
+    """Sum the (DD, RC, SS) triple to get the total signature polynomial."""
     DD,RC,SS = countres
     a = DD+RC+SS
     res = a
@@ -235,6 +263,9 @@ def countCS(ckO):
     return res
 
 
+# Dispatch table mapping root system type to counting function.
+# Types B and D return (DD,RC,SS) triples that need evalsignature() to get a scalar.
+# Types C, M return scalars directly. CS, DS return polynomials.
 COUNTFUN = {
     'B': lambda ckO: evalsignature(countB(ckO)),
     'C': countC,
@@ -245,5 +276,15 @@ COUNTFUN = {
 }
 
 def countunip(ckO, rtype):
+    """
+    Unified interface to count unipotent representations.
+
+    Args:
+        ckO: tuple of row lengths of the good parity partition (decreasing order)
+        rtype: root system type ('B', 'C', 'D', 'M', 'CS', 'DS')
+
+    Returns:
+        The count of unipotent representations (integer for C/M, polynomial for others)
+    """
     countfun = COUNTFUN.get(rtype, lambda ckO: "Wrong rtype")
     return countfun(ckO)
