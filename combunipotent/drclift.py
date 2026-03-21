@@ -247,23 +247,25 @@ def descent_drc(drc, rtype):
             col0 = resL[0]
             resL = (col0[:-1] + 's', *resL[1:])
         # Reverse the second column tail conversion:
-        # During lift, gen_drc_B_two_new converts tR='r' → nsR='d' when
-        # nR starts with 'r'. The nsR sits at position t_src in sR (drcR[1]).
-        # t_src = max(len(fL_src), len(fR_src)) - 1
-        # After descent, fL_src = resL[0] (lengths preserved by naive descent)
-        # and fR_src = sR (the B-ext's second column).
-        # So t_src = max(len(resL[0]), len(sR)) - 1
+        # During lift, gen_drc_B_two_new('', 'r', n) produces special entries
+        # with nsR='d' and tag='a' (B+). gen_drc_B_two_new('', 'd', n)
+        # produces nsR='d' with tag='b' (B-). So:
+        # - If nrtype='B+' and tL='' and sR[t_src]='d' → source had tR='r', restore d→r
+        # - tL='' iff len(fL_src) <= t_src iff len(sR) > len(resL[0])
+        # - t_src = max(len(resL[0]), len(sR)) - 1
         if nrtype == 'B+' and len(sR) > 0 and len(resR) > 0:
-            t_src = max(len(resL[0]), len(sR)) - 1
-            if t_src >= 0 and t_src < len(resR[0]) and resR[0][t_src] == 'd':
-                # Check: was the original tR = 'r' (converted to 'd')?
-                # nR[0] = fR[t] (since _fill_ds_B only swaps *↔s, not r/c/d).
-                # The conversion tR='r'→nsR='d' only happens when nR[0]='r',
-                # i.e., fR[t]='r'.
-                nR_0 = fR[t] if t < len(fR) else ''
-                if nR_0 == 'r':
-                    r0 = resR[0]
-                    resR = (r0[:t_src] + 'r' + r0[t_src+1:], *resR[1:])
+            nL_src = len(resL[0]) if len(resL) > 0 else 0
+            t_src = max(nL_src, len(sR)) - 1
+            tL_empty = (len(sR) > nL_src)  # tL = '' in the lift
+            # Reverse the nsR conversion: tR='r' → nsR='d' in special cases.
+            # Use fR[t_src] (NOT fR[t]) to check nR[0], since t_src is the
+            # correct boundary from the lift algorithm.
+            fR_at_tsrc = fR[t_src] if t_src < len(fR) else ''
+            if (tL_empty and t_src >= 0 and t_src < len(resR[0])
+                    and resR[0][t_src] == 'd'
+                    and fR_at_tsrc in ('r', 'd')):
+                r0 = resR[0]
+                resR = (r0[:t_src] + 'r' + r0[t_src+1:], *resR[1:])
         res = (resL, resR)
         assert(verify_drc(res, 'M'))
     res = reg_drc(res)
@@ -1455,6 +1457,8 @@ def make_extdrc_B(drc, sub_rtype):
     else:
         raise ValueError(f"sub_rtype must be 'B+' or 'B-', got '{sub_rtype}'")
     drcL, drcR = drc
+    if len(drcR) == 0:
+        drcR = ('',)
     edrcR = (drcR[0] + tag, *drcR[1:])
     return (drcL, edrcR)
 
@@ -1813,10 +1817,10 @@ def lift_DRCLS(DRCLS, LSDRC, dpart, rtype='C', ltype='l', report=False, reportan
                 # Lift trivial twist, oeps = 0
                 oeps = 0
                 ndrc = lift_extdrc_B_M(drc, crow)
-                assert(descent_drc(ndrc,'M') == drc )
                 if ndrc is None:
                     #print('drc has no lift', drc)
                     continue
+                assert(reg_drc(descent_drc(ndrc,'M')) == reg_drc(drc))
                 nLS = lift_B_M(LS, nSp)
                 updatepeDRCLS(nDRCLS, nLSDRC, drc, oeps, LS, ndrc, nLS, reportann=reportann)
                 # Lift the determinant twist
@@ -1859,7 +1863,7 @@ def lift_DRCLS(DRCLS, LSDRC, dpart, rtype='C', ltype='l', report=False, reportan
             #     print('Exception on lift_drc_M_B')
             #     print(str_dgms(drc))
             for ndrc, twist in NDRCS:
-                assert(descent_drc(ndrc,'B') == drc)
+                assert(reg_drc(descent_drc(ndrc,'B')) == reg_drc(drc))
                 pO, nO = gp_form_B_ext(ndrc)
                 nLS = lift_M_B(LS, pO, nO)
                 if len(nLS) == 0:

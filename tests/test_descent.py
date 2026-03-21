@@ -38,26 +38,33 @@ from combunipotent.drc import gp_form_C, gp_form_D, gp_form_M
 
 # D->C lift: source is D-type DRC, target is C-type DRC
 TEST_D_TO_C = [
-    (1, 1), (3, 1), (3, 3), (5, 3), (5, 5),
-    (5, 3, 1, 1), (7, 5, 3, 1), (7, 7, 3, 3),
+    (1, 1), (3, 1), (3, 3), (5, 1), (5, 3), (5, 5),
+    (3, 3, 1, 1), (5, 3, 1, 1), (5, 5, 1, 1),
+    (7, 3), (7, 5), (7, 5, 3, 1), (7, 7, 3, 3),
+    (5, 5, 3, 3), (9, 7, 5, 3),
 ]
 
 # C->D lift: source is C-type DRC, target is D-type DRC
 TEST_C_TO_D = [
-    (1,), (3,), (5,), (3, 1, 1), (5, 3, 1),
-    (7, 5, 3), (7, 7, 1),
+    (1,), (3,), (5,), (3, 1, 1), (5, 1, 1),
+    (5, 3, 1), (5, 3, 3), (5, 5, 1),
+    (7, 3, 1), (7, 5, 1), (7, 5, 3), (7, 7, 1),
+    (9, 5, 3),
 ]
 
 # M->B lift: source is M-type DRC, target is B-type extended DRC
 TEST_M_TO_B = [
-    (2, 2), (4, 2), (4, 4), (6, 4), (6, 6),
-    (6, 4, 2, 2), (8, 6, 4, 2),
+    (2, 2), (4, 2), (4, 4), (6, 2), (6, 4), (6, 6),
+    (4, 4, 2, 2), (6, 4, 2, 2), (8, 4), (8, 6),
+    (8, 6, 4, 2), (8, 8, 4, 4), (6, 6, 4, 4),
+    (10, 8, 6, 4),
 ]
 
 # B->M lift: source is B-type extended DRC, target is M-type DRC
 TEST_B_TO_M = [
-    (2, 2), (4, 2), (4, 4), (6, 4),
-    (4, 4, 2, 2),
+    (2, 2), (4, 2), (4, 4), (6, 2), (6, 4), (6, 6),
+    (4, 4, 2, 2), (6, 4, 2, 2), (8, 4), (8, 6),
+    (8, 6, 4, 2),
 ]
 
 
@@ -137,8 +144,8 @@ def test_descent_M_to_B():
         m_drcs = dpart2drc(dpart, rtype='M', report=False)
         for drc in m_drcs:
             drc = reg_drc(drc)
-            # Lift M -> B with aL = max column length + 1
-            aL = (len(drc[0][0]) if len(drc[0]) > 0 and len(drc[0][0]) > 0 else 0) + 1
+            # aL = dpart[0]//2 (first row of dual partition divided by 2)
+            aL = dpart[0] // 2
             ndrcs = lift_drc_M_B(drc, aL)
             for ndrc, twist in ndrcs:
                 ndrc = reg_drc(ndrc)
@@ -172,7 +179,7 @@ def test_descent_B_to_M():
         m_drcs = dpart2drc(dpart, rtype='M', report=False)
         for mdrc in m_drcs:
             mdrc = reg_drc(mdrc)
-            aL = (len(mdrc[0][0]) if len(mdrc[0]) > 0 and len(mdrc[0][0]) > 0 else 0) + 1
+            aL = dpart[0] // 2
             ext_drcs = lift_drc_M_B(mdrc, aL)
             for edrc, twist in ext_drcs:
                 edrc = reg_drc(edrc)
