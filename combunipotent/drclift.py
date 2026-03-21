@@ -203,21 +203,34 @@ def descent_drc(drc, rtype):
             if x0 in 'rc':
                 res = ((resL[0][:-2]+'r'+x0, *resL[1:]), resR)
     elif rtype == 'M':
-        if len(fL)>len(fR):
+        if len(fL)<len(fR):
             # Non-special shape case:
             # Twist back to the spacial partition
             drcL,drcR = twist_nsp2sp(drc,'M')
         # naive descent
-        res = _fill_ds_B((drcL[1:], drcR))
         nrtype = 'B+' 
-        if len(drcL) > 0 and drcL[-1] == 'c':
+        if len(fL) > 0 and fL[-1] == 'c':
             nrtype = 'B-'
+        res = _fill_ds_B((drcL[1:], drcR),nrtype)
         res = make_extdrc_B(res, nrtype)
         assert(verify_drc(res,'B'))
     elif rtype == 'B':
+        # Strip the a/b tag and determine sub-type
+        if fR[-1] == 'a':
+            nrtype = 'B+'
+        elif fR[-1] == 'b':
+            nrtype = 'B-'
+        else:
+            raise ValueError(f"Expected 'a' or 'b' at end of drcR[0], got '{fR[-1]}'")
+        drcR = (drcR[0][:-1], *drcR[1:])
+        # Re-read fR after stripping the tag
+        fR = getz(drcR, 0, '')
         res = _fill_ds_M((drcL,drcR[1:]))
         resL, resR = res
-         
+        if nrtype == 'B+' and len(fR) > 0 and len(fL) >= len(fR) and fR[-1] in ['r','d']:
+            resL = (*resL[:-1], 's')
+        res = (resL, resR)
+        assert(verify_drc(res,'M'))
     res = reg_drc(res)
     return res
 
@@ -249,7 +262,7 @@ def _fill_ds_C(drc):
     return res
 
 
-def _fill_ds_B(drc):
+def _fill_ds_B(drc,rtype='B'):
     drcL, drcR = drc
     ndrcR = [] #tuple('*'*len(col) for col in drcR)
     ndrcL = []
@@ -262,7 +275,7 @@ def _fill_ds_B(drc):
         ndrcL.append('*'*cL+colL[cL:])
         ndrcR.append('*'*cL+'s'*(cR-cL)+colR[cR:])
     res = (tuple(ndrcL), tuple(ndrcR))
-    assert(verify_drc(res, 'B'))
+    assert(verify_drc(res, rtype))
     return reg_drc(res)
 
 def _fill_ds_M(drc):
@@ -1765,6 +1778,7 @@ def lift_DRCLS(DRCLS, LSDRC, dpart, rtype='C', ltype='l', report=False, reportan
                 # Lift trivial twist, oeps = 0
                 oeps = 0
                 ndrc = lift_extdrc_B_M(drc, crow)
+                assert(descent_drc(ndrc,'M') == drc )
                 if ndrc is None:
                     #print('drc has no lift', drc)
                     continue
@@ -1810,6 +1824,7 @@ def lift_DRCLS(DRCLS, LSDRC, dpart, rtype='C', ltype='l', report=False, reportan
             #     print('Exception on lift_drc_M_B')
             #     print(str_dgms(drc))
             for ndrc, twist in NDRCS:
+                assert(descent_drc(ndrc,'B') == drc)
                 pO, nO = gp_form_B_ext(ndrc)
                 nLS = lift_M_B(LS, pO, nO)
                 if len(nLS) == 0:
