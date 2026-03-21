@@ -1317,22 +1317,32 @@ def verify_drc(drc, rtype='C'):
             test_young_dg(rddrcR) == False or \
             test_bullets_drc((scdrcL,rddrcR)) is False:
             return False
-    elif rtype[0] == 'B':
+    elif rtype in ('B', 'B+', 'B-'):
+        # rtype='B': input is an extended DRC with 'a'/'b' tag on drcR[0],
+        #            strip the tag before structural verification.
+        # rtype='B+'/'B-': input is already stripped.
         drcL, drcR = drc
+        if rtype == 'B':
+            # Strip the 'a'/'b' tag from the extended DRC
+            tag = drcR[0][-1] if (len(drcR) > 0 and len(drcR[0]) > 0) else ''
+            if tag not in ('a', 'b'):
+                return False
+            drcR = (drcR[0][:-1], *drcR[1:])
         if test_young_dg(drcL) is False or test_young_dg(drcR) is False:
             return False
         cdrcL = remove_tail_letter(drcL,'c',onerow=True)
-        if test_young_dg(cdrcL) is False:
+        if cdrcL is None or test_young_dg(cdrcL) is False:
             return False
         ddrcR = remove_tail_letter(drcR,'d',onerow=True)
-        if test_young_dg(ddrcR) == False:
+        if ddrcR is None or \
+            test_young_dg(ddrcR) == False:
             return False
         rddrcR = remove_tail_letter(ddrcR,'r')
-        if test_young_dg(rddrcR) == False:
+        if rddrcR is None or test_young_dg(rddrcR) == False:
             return False
-        srddrcR = remove_tail_letter(srddrcR,'s')
-        if  test_young_dg(srddrcR) == False or \
-            test_bullets_drc((scdrcL,rddrcR)) is False:
+        srddrcR = remove_tail_letter(rddrcR,'s')
+        if  srddrcR is None or test_young_dg(srddrcR) == False or \
+            test_bullets_drc((cdrcL,srddrcR)) is False:
             return False
     return True
 

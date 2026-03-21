@@ -41,6 +41,15 @@ combunipotent/
   lsdrcgraph.py    # Graphviz visualization of LS lifting graphs with DRC packet info
   liftgraph.py     # (Legacy) simpler LS lifting graph visualization
   recursive.py     # Recursive counting of unipotent representations via signature polynomials
+
+tests/
+  test_verify_drc.py    # Exhaustive DRC diagram verification (B, B+, B-, C, D, M)
+  test_dpart2drcLS.py   # DRC-LS matching via theta lifting (purely even dual partitions)
+  test_purelyeven.py    # Purely even induction test (lift_pedrcs path)
+  test_LSDRC.py         # DRC-LS matching for general (non-purely-even) partitions
+
+tools/
+  lift_graph.py         # CLI tool: generate theta lifting graph diagrams
 ```
 
 ### Module Descriptions
@@ -172,6 +181,77 @@ dual = dualBVW((5, 3, 1), rtype='C', partrc='c')
 # Generate lifting graph visualization
 svg = gen_lift_graph((5, 3, 3, 1), rtype='C')
 ```
+
+## Command-Line Tools
+
+### lift_graph.py
+
+Generate theta lifting graph diagrams from the command line:
+
+```bash
+# Type C partition (5,5,2,2), output PDF
+python3 tools/lift_graph.py 5,5,2,2 -t C
+
+# Type M partition, output SVG
+python3 tools/lift_graph.py 2,2,2,2,1,1 -t M -f svg
+
+# Custom output filename
+python3 tools/lift_graph.py 6,4,2,2 -t D -o my_graph
+
+# Also print all DRC diagrams
+python3 tools/lift_graph.py 5,5,2,2 -t C --print-drc
+```
+
+Options:
+- `-t {B,C,D,M}` : root system type (required)
+- `-f {pdf,svg,png}` : output format (default: pdf)
+- `-o NAME` : output filename without extension (default: lift_tree)
+- `--print-drc` : also print all DRC diagrams to stdout
+
+## Testing
+
+Automated tests are in the `tests/` directory. Run from the project root:
+
+```bash
+# Run all tests
+python3 tests/test_verify_drc.py
+python3 tests/test_dpart2drcLS.py
+python3 tests/test_purelyeven.py
+python3 tests/test_LSDRC.py
+
+# Run DRC verification with larger partitions
+python3 tests/test_verify_drc.py --max-size 24
+```
+
+### test_verify_drc.py
+
+Exhaustively tests `verify_drc(drc, rtype)` for every DRC diagram produced by
+`dpart2drc`. Covers types C, D, M (plain), B (plain), and B+/B- (extended DRC
+with split/make roundtrip). Enumerates all valid purely-even dual partitions
+up to `--max-size`.
+
+| Type | Dual partition constraint | Total parity |
+|------|--------------------------|-------------|
+| C | all parts odd | odd |
+| D | all parts odd | even |
+| B / B+ / B- | all parts even | even |
+| M | all parts even | even |
+
+### test_dpart2drcLS.py
+
+Tests DRC-LS matching for purely even dual partitions via `test_dpart2drcLS()`.
+Verifies that theta lifting produces exactly the same DRC and LS sets as the
+definition. Covers types C, D, B, M (56 test cases).
+
+### test_purelyeven.py
+
+Tests the purely even induction path via `test_purelyeven()`, which uses the
+`lift_pedrcs` code path. Covers types C, D, M (17 test cases).
+
+### test_LSDRC.py
+
+Tests DRC-LS matching for general (non-purely-even) partitions via `test_LSDRC()`.
+Covers types C, D, B, M (19 test cases).
 
 ## References
 

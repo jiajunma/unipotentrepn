@@ -208,9 +208,16 @@ def descent_drc(drc, rtype):
             # Twist back to the spacial partition
             drcL,drcR = twist_nsp2sp(drc,'M')
         # naive descent
-        res = _fill_ds_M((drcL[1:], drcR))
+        res = _fill_ds_B((drcL[1:], drcR))
+        nrtype = 'B+' 
+        if len(drcL) > 0 and drcL[-1] == 'c':
+            nrtype = 'B-'
+        res = make_extdrc_B(res, nrtype)
         assert(verify_drc(res,'B'))
-
+    elif rtype == 'B':
+        res = _fill_ds_M((drcL,drcR[1:]))
+        resL, resR = res
+         
     res = reg_drc(res)
     return res
 
@@ -255,7 +262,7 @@ def _fill_ds_B(drc):
         ndrcL.append('*'*cL+colL[cL:])
         ndrcR.append('*'*cL+'s'*(cR-cL)+colR[cR:])
     res = (tuple(ndrcL), tuple(ndrcR))
-    assert(verify_drc(res,'B'))
+    assert(verify_drc(res, 'B'))
     return reg_drc(res)
 
 def _fill_ds_M(drc):
@@ -1347,6 +1354,61 @@ def ext_drc2drc(edrc):
     edrcL, edrcR = edrc
     drcR = (edrcR[0][:-1], *edrcR[1:])
     return (edrcL, drcR)
+
+
+def split_extdrc_B(edrc):
+    """
+    Split an extended type-B DRC diagram into (drc, sub_rtype).
+
+    An extended type-B DRC has an extra character appended to drcR[0]:
+      'a' -> sub_rtype = 'B+' (the "plus" real form)
+      'b' -> sub_rtype = 'B-' (the "minus" real form)
+
+    Returns:
+      (drc, sub_rtype) where drc has the 'a'/'b' stripped,
+      and sub_rtype is 'B+' or 'B-'.
+
+    Raises ValueError if the last character of drcR[0] is not 'a' or 'b'.
+    """
+    edrcL, edrcR = edrc
+    tag = edrcR[0][-1]
+    if tag == 'a':
+        sub_rtype = 'B+'
+    elif tag == 'b':
+        sub_rtype = 'B-'
+    else:
+        raise ValueError(f"Expected 'a' or 'b' at end of drcR[0], got '{tag}'")
+    drcR = (edrcR[0][:-1], *edrcR[1:])
+    return (edrcL, drcR), sub_rtype
+
+
+def make_extdrc_B(drc, sub_rtype):
+    """
+    Construct an extended type-B DRC diagram from (drc, sub_rtype).
+
+    Inverse of split_extdrc_B: appends 'a' or 'b' to drcR[0] based on sub_rtype.
+
+    Args:
+      drc: a type-B DRC diagram (drcL, drcR) WITHOUT the 'a'/'b' tag.
+      sub_rtype: 'B+' (appends 'a') or 'B-' (appends 'b').
+
+    Returns:
+      Extended DRC diagram with the tag appended to drcR[0].
+
+    Raises ValueError if sub_rtype is not 'B+' or 'B-'.
+    Asserts that the input drc passes verify_drc(drc, sub_rtype).
+    """
+    assert verify_drc(drc, sub_rtype), \
+        f"Input drc does not pass verify_drc with rtype='{sub_rtype}'"
+    if sub_rtype == 'B+':
+        tag = 'a'
+    elif sub_rtype == 'B-':
+        tag = 'b'
+    else:
+        raise ValueError(f"sub_rtype must be 'B+' or 'B-', got '{sub_rtype}'")
+    drcL, drcR = drc
+    edrcR = (drcR[0] + tag, *drcR[1:])
+    return (drcL, edrcR)
 
 
 def test_LSDRC(part, rtype='D', report=False, reportann=False):
