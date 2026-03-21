@@ -227,6 +227,7 @@ def descent_drc(drc, rtype):
         # Re-read fR after stripping the tag
         fR = getz(drcR, 0, '')
         # Naive descent: remove first column of Q (drcR)
+        sR = getz(drcR, 1, '')  # second column of drcR (before removing first col)
         res = _fill_ds_M((drcL, drcR[1:]))
         resL, resR = res
         # Case (a) from [BMSZb, Section 10.4, The case ★=B]:
@@ -234,13 +235,35 @@ def descent_drc(drc, rtype):
         # For purely even case, ℘=∅ so (2,3)∉℘ is automatic.
         # c₁(ι_℘) = c₁(ι) = len(fL) (first column length of left diagram).
         # Q(c₁(ι),1) = fR[len(fL)-1]: the char at row c₁(ι) of drcR's first column.
-        # r₂(Ǒ)>0 iff fR has length > len(fL) or drcR has ≥2 columns.
         # Action: set P'(c₁(ι_℘'),1) = s, i.e. last char of resL's first column.
         c1 = len(fL)
         q_c1 = fR[c1 - 1] if 0 < c1 <= len(fR) else ''
+        # Recover t: number of leading '*' in fR (from lift's '*'*t prefix)
+        t = 0
+        while t < len(fR) and fR[t] == '*':
+            t += 1
         if nrtype == 'B+' and q_c1 in ['r', 'd']:
+            # Case (a): set P'(c₁(ι'),1) = s
             col0 = resL[0]
             resL = (col0[:-1] + 's', *resL[1:])
+        # Reverse the second column tail conversion:
+        # During lift, gen_drc_B_two_new converts tR='r' → nsR='d' when
+        # nR starts with 'r'. The nsR sits at position t_src in sR (drcR[1]).
+        # t_src = max(len(fL_src), len(fR_src)) - 1
+        # After descent, fL_src = resL[0] (lengths preserved by naive descent)
+        # and fR_src = sR (the B-ext's second column).
+        # So t_src = max(len(resL[0]), len(sR)) - 1
+        if nrtype == 'B+' and len(sR) > 0 and len(resR) > 0:
+            t_src = max(len(resL[0]), len(sR)) - 1
+            if t_src >= 0 and t_src < len(resR[0]) and resR[0][t_src] == 'd':
+                # Check: was the original tR = 'r' (converted to 'd')?
+                # nR[0] = fR[t] (since _fill_ds_B only swaps *↔s, not r/c/d).
+                # The conversion tR='r'→nsR='d' only happens when nR[0]='r',
+                # i.e., fR[t]='r'.
+                nR_0 = fR[t] if t < len(fR) else ''
+                if nR_0 == 'r':
+                    r0 = resR[0]
+                    resR = (r0[:t_src] + 'r' + r0[t_src+1:], *resR[1:])
         res = (resL, resR)
         assert(verify_drc(res, 'M'))
     res = reg_drc(res)
