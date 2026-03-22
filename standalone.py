@@ -960,7 +960,7 @@ def _lsign(Oprime):
     return (sp, sq)
 
 
-def theta_lift_myd(Ep, rtype, p, q, pp, qp, delta=None):
+def theta_lift_myd(Ep, rtype, p, q, pp, qp, delta=None, n0=None):
     """
     Compute the geometric theta lift ϑ̂^{s,O}_{s',O'}(E') of a marked Young
     diagram E' ∈ MYD_{★'}(O').
@@ -972,7 +972,8 @@ def theta_lift_myd(Ep, rtype, p, q, pp, qp, delta=None):
         rtype: the TARGET type ★ ∈ {B, C, D, M}
         p, q: signature of the target s = (★, p, q)
         pp, qp: signature of the source s' = (★', p', q')
-        delta: c₁(O) - c₂(O) where O = d^★_BV(Ǒ). If None, estimated.
+        delta: |s'| - |∇_naive(O)| from Lemma 4.4. If None, estimated.
+        n0: (c₁(O) - c₂(O))/2 for C/C̃ types. If None, uses delta//2.
 
     Returns:
         A list of (coefficient, MYD) pairs in Z[MYD_★(O)].
@@ -980,36 +981,33 @@ def theta_lift_myd(Ep, rtype, p, q, pp, qp, delta=None):
     s_size = p + q      # |s|
     sp_size = pp + qp   # |s'|
 
-    # δ = c₁(O) - c₂(O) from Lemma 4.4
     if delta is None:
-        # Fallback estimate (may be wrong for non-trivial orbits)
         if rtype in ('B', 'B+', 'B-', 'D'):
             delta = s_size - sp_size - 1
         else:
             delta = s_size - sp_size + 1
 
-    # ˡSign(O') from page 55 of [BMSZ]
+    # ˡSign(O') — page 55 of [BMSZ]
     lsign_p, lsign_q = _lsign(Ep)
 
-    # Compute (p₀, q₀) — page 55 of [BMSZ]
     results = []
 
     if rtype in ('B', 'B+', 'B-', 'D'):
-        # ★ ∈ {B, D, C*}: formula (9.29)
-        # (p₀, q₀) = (p,q) - (p',q') - ˡSign(O') + (δ/2, δ/2)
-        half_delta = delta / 2  # may be half-integer
+        # ★ ∈ {B, D}: formula (9.29), page 55
+        # (p₀,q₀) = (p,q) - (p',q') - ˡSign(O') + (δ/2, δ/2)
+        half_delta = delta / 2
         p0 = int(p - pp - lsign_p + half_delta)
         q0 = int(q - qp - lsign_q + half_delta)
 
-        # Truncation parameter: (δ/2, δ/2)
-        trunc_p = trunc_q = delta // 2
-        truncated = myd_truncation(Ep, trunc_p, trunc_q)
+        # Truncation Λ_{(δ/2, δ/2)}
+        trunc = delta // 2
+        truncated = myd_truncation(Ep, trunc, trunc)
 
-        # Involution T exponent
+        # Involution T^{exponent}
         if rtype in ('B', 'B+', 'B-'):
-            t_exp = (p - q + 1) // 2
-        else:  # D
-            t_exp = (p - q) // 2
+            t_exp = (p - q + 1) // 2   # (9.29) B case
+        else:
+            t_exp = (p - q) // 2        # (9.29) D case
 
         twisted = truncated
         if t_exp % 2 != 0:
@@ -1020,17 +1018,18 @@ def theta_lift_myd(Ep, rtype, p, q, pp, qp, delta=None):
         results.append((1, augmented))
 
     elif rtype in ('C', 'M'):
-        # ★ ∈ {C, C̃, D*}: formula (9.30)
-        # n₀ = (c₁(O) - c₂(O)) / 2 = δ / 2
-        n0 = delta // 2
+        # ★ ∈ {C, C̃}: formula (9.30), page 55
+        # n₀ = (c₁(O) - c₂(O))/2
+        if n0 is None:
+            n0 = delta // 2
 
         # Involution T exponent
         if rtype == 'C':
-            t_exp = (pp - qp) // 2
-        else:  # M = C̃
-            t_exp = (pp - qp - 1) // 2
+            t_exp = (pp - qp) // 2         # (9.30) C case
+        else:
+            t_exp = (pp - qp - 1) // 2     # (9.30) C̃ case
 
-        # Sum over j = 0, ..., δ: Λ_{(j,δ-j)}(E') ⊕ (n₀, n₀)
+        # Sum over j = 0, ..., δ: Λ_{(j, δ-j)}(E') ⊕ (n₀, n₀)
         for j in range(delta + 1):
             truncated = myd_truncation(Ep, j, delta - j)
             augmented = myd_augmentation(truncated, n0, n0)
@@ -1105,21 +1104,39 @@ def compute_AC(drc, rtype, dpart=None):
         _, taup_rtype, taup_sig, taup_eps, taup_dpart = ch[idx + 1]
         taup_p, taup_q = taup_sig
 
-        # Compute δ from the BV dual orbit O = d^★_BV(Ǒ)
-        # δ = c₁(O) - c₂(O) (Lemma 4.4 of [BMSZ])
+        # Compute δ = |s'| - |∇_naive(O)| (Lemma 4.4 of [BMSZ])
+        # where O = d^★_BV(Ǒ), s' = (★', p', q').
+        # ∇_naive(O) removes the first row (for ★∈{B,D}) or first column
+        # (for ★∈{C,C̃}) of O.
         delta = 0
         if tau_dpart is not None:
+            try:
+                O = bv_dual(tau_dpart, tau_rtype)
+                O_rows = reg_part(O)
+                O_cols = col_lengths(O)
+                if tau_rtype in ('B', 'B+', 'B-', 'D'):
+                    # ★∈{B,D}: ∇_naive removes first row
+                    nabla_O_size = part_size(O) - (O_rows[0] if O_rows else 0)
+                else:
+                    # ★∈{C,M=C̃}: ∇_naive removes first column
+                    nabla_O_size = part_size(O) - (O_cols[0] if O_cols else 0)
+                delta = (taup_p + taup_q) - nabla_O_size
+            except Exception:
+                delta = abs(tau_p + tau_q - taup_p - taup_q)
+
+        # Also compute n₀ = (c₁(O) - c₂(O))/2 for C/C̃ types
+        n0 = 0
+        if tau_rtype in ('C', 'M') and tau_dpart is not None:
             try:
                 O = bv_dual(tau_dpart, tau_rtype)
                 O_cols = col_lengths(O)
                 c1_O = O_cols[0] if len(O_cols) > 0 else 0
                 c2_O = O_cols[1] if len(O_cols) > 1 else 0
-                delta = c1_O - c2_O
+                n0 = (c1_O - c2_O) // 2
             except Exception:
-                # Fallback: estimate from signatures
-                delta = abs(tau_p + tau_q - taup_p - taup_q)
+                n0 = 0
 
-        # Apply theta lift (equation 4.17)
+        # Apply theta lift (equation 4.17 of [BMSZ])
         new_AC = []
         for coeff, myd in current_AC:
             if tau_rtype in ('B', 'B+', 'B-', 'D'):
@@ -1138,7 +1155,7 @@ def compute_AC(drc, rtype, dpart=None):
                     myd_twisted = myd_involution_T(myd)
                 lifted = theta_lift_myd(myd_twisted, tau_rtype,
                                         tau_p, tau_q, taup_p, taup_q,
-                                        delta=delta)
+                                        delta=delta, n0=n0)
                 new_AC.extend((coeff * lc, lmyd) for lc, lmyd in lifted)
             else:
                 lifted = theta_lift_myd(myd, tau_rtype,
