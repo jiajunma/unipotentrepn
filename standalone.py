@@ -1079,21 +1079,69 @@ def _compute_sig_from_syd(syd):
     return (sp, sq)
 
 
-def _compute_lsign_from_orbit(O_rows, p_source, q_source, source_rtype):
+def _compute_descended_syd(O_syd, p_source, q_source):
     """
-    Compute ˡSign(O') from the orbit O' and its real form signature.
+    Compute O' = ∇^s_{s'}(O) via Lemma 9.2 of [BMSZ].
 
-    O' is the BV dual of the source orbit, with row lengths O_rows
-    and signature (p_source, q_source).
+    O' is the geometric descent of the SYD O.
+    O'(1) = O(2) + (p₀, q₀) where (p₀,q₀) = (p',q') - Sign(∇_naive(O))
+    O'(i) = O(i+1) for i ≥ 2.
+
+    Args:
+        O_syd: the signed Young diagram O as dict {i: (p_i, q_i)}
+        p_source, q_source: (p', q') source signature
+
+    Returns the descended SYD O' as dict.
+    """
+    # ∇_naive(O)(i) = O(i+1)
+    nabla = {}
+    for i, (pi, qi) in O_syd.items():
+        if i >= 2:
+            nabla[i - 1] = (pi, qi)
+
+    # Sign(∇_naive(O))
+    sign_nabla = _compute_sig_from_syd(nabla)
+
+    # (p₀, q₀) from equation (9.12)
+    p0_912 = p_source - sign_nabla[0]
+    q0_912 = q_source - sign_nabla[1]
+
+    # O'(1) = O(2) + (p₀, q₀)
+    o2 = O_syd.get(2, (0, 0))
+    Oprime = dict(nabla)  # copy ∇_naive(O) for i ≥ 1
+    Oprime[1] = (o2[0] + p0_912, o2[1] + q0_912)
+
+    return _myd_clean(Oprime)
+
+
+def _compute_lsign_from_orbit(O_rows, p_target, q_target, target_rtype,
+                               p_source, q_source):
+    """
+    Compute ˡSign(O') for use in formula (9.29)/(9.30) of [BMSZ].
+
+    O is the BV dual orbit with row lengths O_rows and TARGET signature (p,q).
+    O' = ∇(O) is the descended SYD, computed via Lemma 9.2.
+
+    Args:
+        O_rows: row lengths of the orbit O (BV dual of Ǒ)
+        p_target, q_target: target signature (p, q) of the current step
+        target_rtype: type ★ of the current step
+        p_source, q_source: source signature (p', q')
 
     Returns (ˡSign_p, ˡSign_q).
     """
-    syd = _orbit_signed_yd(O_rows, p_source, q_source, source_rtype)
-    return _lsign(syd)
+    # 1. Build SYD O from orbit and target signature
+    O_syd = _orbit_signed_yd(O_rows, p_target, q_target, target_rtype)
+
+    # 2. Compute descended SYD O' via Lemma 9.2
+    Oprime = _compute_descended_syd(O_syd, p_source, q_source)
+
+    # 3. Compute ˡSign(O')
+    return _lsign(Oprime)
 
 
 def theta_lift_myd(Ep, rtype, p, q, pp, qp, delta=None, n0=None,
-                   O_source_rows=None, source_rtype=None):
+                   O_target_rows=None, target_rtype=None):
     """
     Compute the geometric theta lift ϑ̂^{s,O}_{s',O'}(E') of a marked Young
     diagram E' ∈ MYD_{★'}(O').
@@ -1124,12 +1172,12 @@ def theta_lift_myd(Ep, rtype, p, q, pp, qp, delta=None, n0=None,
             delta = s_size - sp_size + 1
 
     # ˡSign(O') — page 55 of [BMSZ]
-    # This is a property of the orbit O' = ∇^s_{s'}(O) in Nil(g_{s'}),
-    # computed from its signed Young diagram.
-    # For now, compute from the source orbit's row structure.
-    if O_source_rows is not None and sum(O_source_rows) > 0:
+    # O' = ∇^s_{s'}(O) is the descended SYD of the TARGET orbit O.
+    # Computed via Lemma 9.2: O'(1) = O(2) + (p₀^{9.12}, q₀^{9.12}),
+    # O'(i) = O(i+1) for i ≥ 2.
+    if O_target_rows is not None and sum(O_target_rows) > 0:
         lsign_p, lsign_q = _compute_lsign_from_orbit(
-            O_source_rows, pp, qp, source_rtype or rtype)
+            O_target_rows, p, q, target_rtype or rtype, pp, qp)
     else:
         lsign_p, lsign_q = (0, 0)
 
@@ -1205,7 +1253,8 @@ def bv_dual(dpart, rtype):
         bv_rtype = rtype
         if bv_rtype in ('B+', 'B-'):
             bv_rtype = 'B'
-        return reg_part(dualBVW(dpart, bv_rtype, partrc='c'))
+        # Return ROW lengths (not column lengths)
+        return reg_part(dualBVW(dpart, bv_rtype, partrc='r'))
     except ImportError:
         # Fallback: for purely even orbits, the BV dual has a simpler form
         # This is a placeholder — full BV duality requires Springer correspondence
@@ -1260,25 +1309,20 @@ def compute_AC(drc, rtype, dpart=None):
         _, taup_rtype, taup_sig, taup_eps, taup_dpart = ch[idx + 1]
         taup_p, taup_q = taup_sig
 
-        # Compute δ = |s'| - |∇_naive(O)| (Lemma 4.4 of [BMSZ])
-        # where O = d^★_BV(Ǒ), s' = (★', p', q').
-        # ∇_naive(O) removes the first row (for ★∈{B,D}) or first column
-        # (for ★∈{C,C̃}) of O.
+        # Compute δ = |s'| - |∇_naive(O)| (equation 9.11, Lemma 4.4 of [BMSZ])
+        # ∇_naive(O)(i) = O(i+1) — shift SYD index by 1.
+        # |∇_naive(O)| = total signature of the shifted SYD.
         delta = 0
         if tau_dpart is not None:
             try:
                 O = bv_dual(tau_dpart, tau_rtype)
                 O_rows = reg_part(O)
-                O_cols = col_lengths(O)
-                # ∇_naive(O) of a nilpotent orbit O ∈ Nil(g_s):
-                # For ★ ∈ {B,D}: removes first row of O (O is type D/B Young diagram)
-                # For ★ ∈ {C,M}: also removes first row of O (O is type C Young diagram)
-                # Reference: Lemma 4.4, page 21 of [BMSZ].
-                if tau_rtype in ('B', 'B+', 'B-', 'D'):
-                    nabla_O_size = part_size(O) - (O_rows[0] if O_rows else 0)
-                else:
-                    # For C/M: O is in sp/so algebra, ∇_naive removes first row
-                    nabla_O_size = part_size(O) - (O_rows[0] if O_rows else 0)
+                # Build SYD of O with TARGET signature (tau_p, tau_q)
+                O_syd = _orbit_signed_yd(O_rows, tau_p, tau_q, tau_rtype)
+                # ∇_naive(O): shift index by 1 (remove level-1 entries)
+                nabla_syd = {i - 1: v for i, v in O_syd.items() if i >= 2}
+                sign_nabla = _compute_sig_from_syd(nabla_syd)
+                nabla_O_size = sign_nabla[0] + sign_nabla[1]
                 delta = (taup_p + taup_q) - nabla_O_size
             except Exception:
                 delta = abs(tau_p + tau_q - taup_p - taup_q)
@@ -1295,14 +1339,16 @@ def compute_AC(drc, rtype, dpart=None):
             except Exception:
                 n0 = 0
 
-        # Compute O' (BV dual of source orbit) for ˡSign
-        O_source_rows = None
-        if taup_dpart is not None and part_size(taup_dpart) > 0:
+        # Compute O = BV dual of TARGET orbit for ˡSign computation
+        # ˡSign(O') uses the descended SYD O' = ∇(O), where O is the
+        # BV dual of Ǒ (the TARGET orbit).
+        O_target_rows = None
+        if tau_dpart is not None and part_size(tau_dpart) > 0:
             try:
-                bv_rt = taup_rtype
+                bv_rt = tau_rtype
                 if bv_rt in ('B+', 'B-'):
                     bv_rt = 'B'
-                O_source_rows = reg_part(bv_dual(taup_dpart, bv_rt))
+                O_target_rows = reg_part(bv_dual(tau_dpart, bv_rt))
             except Exception:
                 pass
 
@@ -1314,8 +1360,8 @@ def compute_AC(drc, rtype, dpart=None):
                 lifted = theta_lift_myd(myd, tau_rtype,
                                         tau_p, tau_q, taup_p, taup_q,
                                         delta=delta,
-                                        O_source_rows=O_source_rows,
-                                        source_rtype=taup_rtype)
+                                        O_target_rows=O_target_rows,
+                                        target_rtype=tau_rtype)
                 for lc, lmyd in lifted:
                     if idx == 0 and tau_eps != 0:
                         lmyd = myd_sign_twist(lmyd, 0, tau_eps, tau_rtype)
@@ -1325,15 +1371,15 @@ def compute_AC(drc, rtype, dpart=None):
                 lifted = theta_lift_myd(myd, tau_rtype,
                                         tau_p, tau_q, taup_p, taup_q,
                                         delta=delta, n0=n0,
-                                        O_source_rows=O_source_rows,
-                                        source_rtype=taup_rtype)
+                                        O_target_rows=O_target_rows,
+                                        target_rtype=tau_rtype)
                 new_AC.extend((coeff * lc, lmyd) for lc, lmyd in lifted)
             else:
                 lifted = theta_lift_myd(myd, tau_rtype,
                                         tau_p, tau_q, taup_p, taup_q,
                                         delta=delta,
-                                        O_source_rows=O_source_rows,
-                                        source_rtype=taup_rtype)
+                                        O_target_rows=O_target_rows,
+                                        target_rtype=tau_rtype)
                 new_AC.extend((coeff * lc, lmyd) for lc, lmyd in lifted)
 
         current_AC = new_AC
