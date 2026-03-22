@@ -368,6 +368,10 @@ def verify_drc(drc, rtype):
     drcL, drcR = drc
     gamma = rtype
 
+    # For type B, caller should use 'B+' or 'B-' (same symbol rules)
+    if gamma == 'B':
+        gamma = 'B+'
+
     # Both must be valid Young diagrams (column lengths decrease)
     if not test_young_dg(drcL) or not test_young_dg(drcR):
         return False
@@ -670,9 +674,12 @@ def dpart2drc(dpart, rtype):
     Compute all DRC diagrams for the special shape (℘ = ∅) of a dual partition.
 
     Only uses the special bipartition (ι_Ǒ, j_Ǒ) from dpart_to_bipartition.
-    Returns a list of regularized DRC diagrams.
+    Returns a list of regularized DRC diagrams (untagged).
 
-    The number of DRCs should equal countPBP(dpart, rtype).
+    For type B, the same DRC diagrams are valid for both B+ and B-.
+    Use rtype='B+' or 'B-' to specify gamma when computing signature, etc.
+
+    The number of DRCs equals countPBP(dpart, rtype) for all types.
     """
     tauL, tauR = dpart_to_bipartition(dpart, rtype)
     tau = (list(tauL), list(tauR))
@@ -686,8 +693,10 @@ def dpart2drc(dpart, rtype):
 
 def signature(drc, rtype):
     """
-    Compute (p_τ, q_τ) for the painted bipartition.
+    Compute (p_τ, q_τ) for the painted bipartition τ = (drc, rtype).
     Reference: Equation (3.3) of [BMSZ] / (2.17) of [BMSZb].
+
+    rtype must be one of: C, D, B+, B-, M.
     """
     n_dot = count_symbol(drc, '*')
     n_r = count_symbol(drc, 'r')
@@ -695,19 +704,19 @@ def signature(drc, rtype):
     n_c = count_symbol(drc, 'c')
     n_d = count_symbol(drc, 'd')
 
-    if rtype in ('B+', 'B', 'D'):
+    if rtype in ('B+', 'D'):
         p = n_dot + 2 * n_r + n_c + n_d + (1 if rtype == 'B+' else 0)
-        q = n_dot + 2 * n_s + n_c + n_d + (1 if rtype in ('B', 'B-') else 0)
+        q = n_dot + 2 * n_s + n_c + n_d
         return (p, q)
-    elif rtype in ('C', 'M'):
-        n = n_dot + n_r + n_s + n_c + n_d
-        return (n, n)
     elif rtype == 'B-':
         p = n_dot + 2 * n_r + n_c + n_d
         q = n_dot + 2 * n_s + n_c + n_d + 1
         return (p, q)
+    elif rtype in ('C', 'M'):
+        n = n_dot + n_r + n_s + n_c + n_d
+        return (n, n)
     else:
-        raise ValueError(f"Unknown rtype: {rtype}")
+        raise ValueError(f"Unknown rtype: {rtype} (use B+/B- instead of B)")
 
 
 def epsilon(drc, rtype):
@@ -1703,7 +1712,8 @@ def countPBP(dpart, rtype):
         return DD + RC + SS
     elif rtype == 'B':
         DD, RC, SS = _countPBP_B(dpart)
-        return DD + RC + SS
+        # f_B(1,1) counts both B+ and B-; they have equal count.
+        return (DD + RC + SS) // 2
     else:
         raise ValueError(f"Unknown rtype: {rtype}")
 

@@ -111,6 +111,7 @@ def test_verify_all_drcs(dparts, rtype):
 
     for dpart in dparts:
         drcs = dpart2drc(dpart, rtype)
+        # B type DRCs are untagged; B+ and B- have the same symbol rules
         vtype = 'B+' if rtype == 'B' else rtype
         for drc in drcs:
             if sa_verify_drc(drc, vtype):
