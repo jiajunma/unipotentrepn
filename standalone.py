@@ -1369,7 +1369,8 @@ def gen_descent_tree(dpart, rtype, format='pdf', filename='descent_tree'):
                            'fontsize': '8'},
                 graph_attr={'rankdir': 'TB', 'newrank': 'true',
                             'ranksep': '1.2', 'nodesep': '0.4',
-                            'concentrate': 'false'},
+                            'concentrate': 'false',
+                            'dpi': '150'},
                 engine='dot', format=format)
 
     # Group nodes by (rtype, total_size) for rank alignment
@@ -1610,9 +1611,9 @@ def main():
                         help='Run cross-check tests against combunipotent')
     parser.add_argument('--tree', action='store_true',
                         help='Generate descent tree diagram (PDF/SVG)')
-    parser.add_argument('-f', '--format', default='pdf',
+    parser.add_argument('-f', '--format', default='svg',
                         choices=['pdf', 'svg', 'png'],
-                        help='Output format for tree (default: pdf)')
+                        help='Output format for tree (default: svg)')
     parser.add_argument('-o', '--output', default=None,
                         help='Output filename (default: descent_tree)')
 
