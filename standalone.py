@@ -1216,8 +1216,8 @@ def print_descent_chain(drc, rtype):
 # Phase 13: Lift tree visualization (Graphviz)
 # ============================================================================
 
-RTYPE_GP = {'C': 'Sp(%d)', 'D': 'O(%d)', 'M': 'Mp(%d)',
-            'B': 'O(%d)', 'B+': 'O(%d)', 'B-': 'O(%d)'}
+RTYPE_GP = {'C': 'Sp(%d)', 'D': 'SO(%d,%d)', 'M': 'Mp(%d)',
+            'B': 'O(%d,%d)', 'B+': 'O(%d,%d)', 'B-': 'O(%d,%d)'}
 
 
 def _format_myd(myd):
@@ -1305,7 +1305,10 @@ def gen_descent_tree(dpart, rtype, format='pdf', filename='descent_tree'):
 
             # Format group label
             gp = RTYPE_GP.get(rt, rt + '(%d)')
-            gp_label = gp % (sig[0] + sig[1])
+            if rt in ('C', 'M'):
+                gp_label = gp % (2 * sig[0],)
+            else:
+                gp_label = gp % (sig[0], sig[1])
 
             # Format AC / MYD
             ac = get_ac(drc, rt)
@@ -1313,10 +1316,8 @@ def gen_descent_tree(dpart, rtype, format='pdf', filename='descent_tree'):
             ac_str = '\\l'.join(ac_lines)
 
             # Build label
-            label = (f'{rt} {gp_label}\\l'
-                     f'sig=({sig[0]},{sig[1]}) ε={eps}\\l'
-                     f'{drc_str}\\l'
-                     f'──────\\l'
+            label = (f'{drc_str}\\l'
+                     f'ε={eps}\\l'
                      f'AC: {ac_str}\\l')
 
             # Color by type
@@ -1391,13 +1392,36 @@ def gen_descent_tree(dpart, rtype, format='pdf', filename='descent_tree'):
                                arrowsize='0.3',
                                constraint='false')
 
-    # Add rank constraints
-    for (rt, size), nids in levels.items():
-        if len(nids) > 1:
-            with g.subgraph() as s:
-                s.attr(rank='same')
-                for nid in nids:
-                    s.node(nid)
+    # Add group labels on the left and rank constraints
+    gp_nodes = []  # list of (size, gp_node_id)
+    for (rt, size), nids in sorted(levels.items(), key=lambda x: -x[0][1]):
+        # Determine the group name from the type and dimension
+        if rt in ('C', 'M'):
+            gp_label = RTYPE_GP[rt] % (size,)
+        elif rt in ('B+', 'B-', 'D'):
+            # For orthogonal types, show the type and total dimension
+            dim = size + (1 if rt in ('B+', 'B-') else 0)
+            gp_label = f'{rt}  dim={dim}'
+        else:
+            gp_label = rt
+
+        gp_nid = f'gp_{rt}_{size}'
+        g.node(gp_nid, label=gp_label, shape='plaintext',
+               fontname='Helvetica', fontsize='11', fontcolor='#333333')
+        gp_nodes.append((size, gp_nid))
+
+        # Rank constraint: group label + all nodes at this level
+        with g.subgraph() as s:
+            s.attr(rank='same')
+            s.node(gp_nid)
+            for nid in nids:
+                s.node(nid)
+
+    # Chain group label nodes vertically
+    gp_nodes_sorted = sorted(gp_nodes, key=lambda x: -x[0])
+    for i in range(len(gp_nodes_sorted) - 1):
+        g.edge(gp_nodes_sorted[i][1], gp_nodes_sorted[i + 1][1],
+               style='invis')
 
     return g
 
