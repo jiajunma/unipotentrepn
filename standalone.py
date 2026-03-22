@@ -72,32 +72,34 @@ def getz(seq, idx, default=None):
 # Phase 2: Orbit → bipartition  (Equation 2.16 of [BMSZb])
 # ============================================================================
 
-def orbit_to_bipartition(dpart, rtype):
+def dpart_to_bipartition(dpart, rtype):
     """
-    Compute (ι_Ǒ, j_Ǒ) from dual partition Ǒ and type ★.
+    Compute the bipartition (ι_Ǒ, j_Ǒ) from dual partition Ǒ and type ★.
 
     Returns (tauL, tauR): column lengths of the two Young diagrams.
-    tauL[i] = c_{i+1}(ι_Ǒ), tauR[i] = c_{i+1}(j_Ǒ).
+    tauL = (c₁(ι_Ǒ), c₂(ι_Ǒ), ...), tauR = (c₁(j_Ǒ), c₂(j_Ǒ), ...).
 
-    Reference: [BMSZb] Section 2.8, equation (2.16).
+    Reference: [BMSZb] Section 2.8, equation (2.7).
     """
     rows = reg_part(dpart)  # r_1 >= r_2 >= ...
     n = len(rows)
 
     if rtype == 'B':
-        # ★ = B: Ǒ is type C, even rows only.
-        # c_1(j) = r_1/2
-        # For i >= 1: (c_i(ι), c_{i+1}(j)) = (r_{2i}/2, r_{2i+1}/2)
-        # Pair up: add row of 0 if odd number of rows
-        if n % 2 == 1:
-            rows = rows + (0,)
-            n += 1
-        tauL = []
-        tauR = [rows[0] // 2]  # c_1(j) = r_1/2
-        for i in range(n // 2):
-            tauL.append(rows[2 * i] // 2)
-            if 2 * i + 1 < n:
-                tauR.append(rows[2 * i + 1] // 2)
+        # ★ = B: Ǒ is type C (even rows only).
+        # c₁(j_Ǒ) = r₁(Ǒ)/2
+        # For i ≥ 1: (cᵢ(ι_Ǒ), cᵢ₊₁(j_Ǒ)) = (r₂ᵢ(Ǒ)/2, r₂ᵢ₊₁(Ǒ)/2)
+        # Reference: [BMSZb] equation (2.7), case ★ = B.
+        tauL = []  # ι columns: c₁(ι)=r₂/2, c₂(ι)=r₄/2, ...
+        tauR = [getz(rows, 0, 0) // 2]  # j columns: c₁(j)=r₁/2
+        i = 1
+        while True:
+            r_2i = getz(rows, 2 * i - 1, 0)    # r_{2i}
+            r_2i1 = getz(rows, 2 * i, 0)       # r_{2i+1}
+            if r_2i == 0 and r_2i1 == 0:
+                break
+            tauL.append(r_2i // 2)              # cᵢ(ι) = r_{2i}/2
+            tauR.append(r_2i1 // 2)             # cᵢ₊₁(j) = r_{2i+1}/2
+            i += 1
         tauL = reg_part(tauL)
         tauR = reg_part(tauR)
         return (tauL, tauR)
@@ -174,6 +176,10 @@ def orbit_to_bipartition(dpart, rtype):
 
     else:
         raise ValueError(f"Unknown rtype: {rtype}")
+
+
+# Backward compatibility alias
+orbit_to_bipartition = dpart_to_bipartition
 
 
 # ============================================================================
@@ -2034,7 +2040,7 @@ def main():
     print(f"Type: {rtype}")
 
     # Compute bipartition
-    tauL, tauR = orbit_to_bipartition(parts, rtype)
+    tauL, tauR = dpart_to_bipartition(parts, rtype)
     print(f"Bipartition: ({tauL}, {tauR})")
 
     # Compute primitive pairs
