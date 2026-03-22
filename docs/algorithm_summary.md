@@ -166,6 +166,59 @@ dim τ = 2|τ| + 1   if ★ = B
 ε_τ = 0  ⟺  symbol 'd' occurs in the first column of P or Q
 ```
 
+## Step 5b: Tail of a Painted Bipartition (for ★ ∈ {B, D})
+
+**Reference**: [BMSZb] Section 10.5, equation (10.7).
+
+For ★ ∈ {B, D}, define k := (r₁(Ǒ) - r₂(Ǒ))/2 + 1, which is a positive integer.
+
+### Tail orbit Ǒ_t
+
+- If ★ ∈ {B, D}: Ǒ_t consists of two rows with lengths 2k-1 and 1.
+- The tail type ★_t = D (so Ǒ_t has good parity w.r.t. D).
+- PP_{★_t}(Ǒ_t) = ∅.
+
+### Tail τ_t
+
+Every element in PBP_{★_t}(Ǒ_t) has the form of a single-column painted
+bipartition with entries x₁, x₂, ..., x_k from top to bottom:
+
+```
+  |x₁|
+  |x₂|
+  |..|  × ∅ × D    (for ★ = B or D)
+  |xk|
+```
+
+### Tail multiset {x₁, ..., x_k}
+
+**★ = B** (c₁(ι) ≤ c₁(j)):
+
+The multiset {x₁, ..., x_k} = { Q(j,1) | c₁(ι)+1 ≤ j ≤ c₁(j) } ∪ {extra}
+
+where extra =
+- {c}  if α = B⁺ and (c₁(ι)=0 or Q(c₁(ι),1) ∈ {•,s})
+- {s}  if α = B⁻ and (c₁(ι)=0 or Q(c₁(ι),1) ∈ {•,s})
+- {Q(c₁(ι),1)} otherwise
+
+**★ = D** (c₁(ι) > c₁(j) when |Ǒ| > 0):
+
+The multiset = { P(j,1) | c₁(j)+2 ≤ j ≤ c₁(ι) } ∪ {extra}
+
+where extra =
+- {d}             if |Ǒ| = 0
+- {c}             if r₂ = r₃ > 0, P(c₁(ι),1) ∈ {r,d}, and
+                   (P(c₁(j)+1,1), P(c₁(j)+1,2)) = (r,c)
+- {P(c₁(j)+1,1)}  otherwise
+
+### Tail symbol x_τ
+
+For ★ ∈ {B, D}:  x_τ := P_{τ_t}(k, 1), the symbol in the LAST box of the tail.
+
+x_τ ∈ {c, d, r, s} determines the "type" of the tail, used in:
+- Recursive counting (Proposition 10.11): f = f^{d} + f^{c,r} + f^{s}
+- Descent image (Proposition 10.8): when r₁ = r₂, descent image = {τ' | x_{τ'} ≠ s}
+
 ## Step 6: Descent
 
 **Function**: `descent(τ, ★)`

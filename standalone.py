@@ -1604,7 +1604,74 @@ def print_descent_chain(drc, rtype, dpart=None):
 
 # ============================================================================
 # ============================================================================
-# Phase 12e: Recursive counting of PBPs
+# Phase 12e: Tail of a painted bipartition (for ★ ∈ {B, D})
+#            ([BMSZb] Section 10.5, equation 10.7)
+# ============================================================================
+
+def compute_tail_symbol(drc, rtype, dpart=None):
+    """
+    Compute the tail symbol x_τ for ★ ∈ {B, D}.
+
+    x_τ := P_{τ_t}(k, 1), the symbol in the last box of the tail τ_t.
+    x_τ ∈ {c, d, r, s}.
+
+    For ★ = B: x_τ is determined by the last entry in the Q (right) diagram's
+    first column, plus the B+/B- correction.
+    For ★ = D: x_τ is determined by the last entry in the P (left) diagram's
+    first column, plus special cases for balanced pairs.
+
+    Reference: [BMSZb] Section 10.5.
+    """
+    drcL, drcR = drc
+
+    if rtype in ('B', 'B+', 'B-'):
+        # ★ = B: c₁(ι) ≤ c₁(j)
+        c1_iota = len(getz(drcL, 0, ''))  # first column of P
+        c1_j = len(getz(drcR, 0, ''))     # first column of Q
+        # Q(c₁(ι), 1) — symbol at row c₁(ι) in first column of Q
+        q_c1 = getz(drcR, 0, '')[c1_iota - 1] if c1_iota > 0 and c1_iota <= c1_j else ''
+
+        if c1_iota == 0 or q_c1 in ('*', 's'):
+            # B+ → c, B- → s
+            if rtype == 'B+' or (rtype == 'B' and verify_drc(drc, 'B+')):
+                return 'c'
+            else:
+                return 's'
+        else:
+            return q_c1
+
+    elif rtype == 'D':
+        # ★ = D: c₁(ι) > c₁(j) when |Ǒ| > 0
+        c1_iota = len(getz(drcL, 0, ''))
+        c1_j = len(getz(drcR, 0, ''))
+
+        if c1_iota == 0 and c1_j == 0:
+            return 'd'  # |Ǒ| = 0
+
+        # P(c₁(j)+1, 1) — the symbol at row c₁(j)+1 in the first column of P
+        p_c1j1 = getz(drcL, 0, '')[c1_j] if c1_j < c1_iota else ''
+
+        # Check special case: r₂ = r₃ > 0
+        if dpart is not None:
+            rows = reg_part(dpart)
+            r2 = getz(rows, 1, 0)
+            r3 = getz(rows, 2, 0)
+            if r2 == r3 and r2 > 0:
+                p_c1_1 = getz(drcL, 0, '')[c1_iota - 1] if c1_iota > 0 else ''
+                # Check (P(c₁(j)+1,1), P(c₁(j)+1,2)) = (r, c)
+                sL = getz(drcL, 1, '')  # second column of P
+                p_c1j1_2 = sL[c1_j] if c1_j < len(sL) else ''
+                if p_c1_1 in ('r', 'd') and (p_c1j1, p_c1j1_2) == ('r', 'c'):
+                    return 'c'
+
+        return p_c1j1
+
+    else:
+        return ''  # tail only defined for B, D
+
+
+# ============================================================================
+# Phase 12f: Recursive counting of PBPs
 #            (Propositions 10.11-10.12 of [BMSZb])
 # ============================================================================
 
