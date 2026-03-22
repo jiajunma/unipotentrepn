@@ -1024,10 +1024,13 @@ def theta_lift_myd(Ep, rtype, p, q, pp, qp, delta=None, n0=None):
             n0 = delta // 2
 
         # Involution T exponent
+        # For C̃ (M): source is B type, use |p'-q'| convention
+        # since O(p,q) ≅ O(q,p) and the formula uses the standard form
         if rtype == 'C':
             t_exp = (pp - qp) // 2         # (9.30) C case
         else:
-            t_exp = (pp - qp - 1) // 2     # (9.30) C̃ case
+            # (9.30) C̃ case: T^{(p'-q'-1)/2} where p'≥q' (B+ convention)
+            t_exp = (max(pp, qp) - min(pp, qp) - 1) // 2
 
         # Sum over j = 0, ..., δ: Λ_{(j, δ-j)}(E') ⊕ (n₀, n₀)
         for j in range(delta + 1):
@@ -1082,8 +1085,16 @@ def compute_AC(drc, rtype, dpart=None):
 
     Returns a list of (coefficient, MYD) pairs.
     """
+    # For B type: determine B+/B- from the DRC
+    effective_rtype = rtype
+    if rtype == 'B':
+        if verify_drc(drc, 'B+'):
+            effective_rtype = 'B+'
+        elif verify_drc(drc, 'B-'):
+            effective_rtype = 'B-'
+
     # Build the descent chain (with orbit tracking)
-    ch = descent_chain(drc, rtype, dpart)
+    ch = descent_chain(drc, effective_rtype, dpart)
 
     # Base case: the last element of the chain
     _, base_rtype, base_sig, base_eps, _ = ch[-1]
@@ -1141,12 +1152,13 @@ def compute_AC(drc, rtype, dpart=None):
         for coeff, myd in current_AC:
             if tau_rtype in ('B', 'B+', 'B-', 'D'):
                 # ★ ∈ {B,D}: AC(τ) = ϑ̂(AC(τ')) ⊗ (det_{-1})^{ε_τ}
+                # The (det_{-1})^{ε_τ} twist is NOT applied here —
+                # it's an external twist: (τ, ε) ↦ π_τ ⊗ det^ε.
+                # AC(τ) = ϑ̂(AC(τ')), ε_τ recorded separately.
                 lifted = theta_lift_myd(myd, tau_rtype,
                                         tau_p, tau_q, taup_p, taup_q,
                                         delta=delta)
                 for lc, lmyd in lifted:
-                    if tau_eps == 1:
-                        lmyd = myd_sign_twist(lmyd, 1, 1, tau_rtype)
                     new_AC.append((coeff * lc, lmyd))
             elif tau_rtype in ('C', 'M'):
                 # ★ ∈ {C, C̃}: AC(τ) = ϑ̂(AC(τ') ⊗ det^{ε_℘})
