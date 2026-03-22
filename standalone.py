@@ -851,7 +851,72 @@ def twist_M_nonspecial(drc):
 
 
 # ============================================================================
-# Phase 12: Main API
+# Phase 12: Associated cycles / Local systems via iterated descent
+#           (Section 9 and equation 4.17 of [BMSZ])
+# ============================================================================
+
+def descent_chain(drc, rtype):
+    """
+    Compute the full descent chain from τ down to the trivial orbit.
+
+    Returns a list of (drc, rtype, signature, epsilon) tuples.
+    chain[0] is the input τ, chain[-1] is the base case.
+    """
+    result = []
+    cur_drc = drc
+    cur_rtype = rtype
+
+    for _ in range(1000):  # safety limit
+        sig = signature(cur_drc, cur_rtype)
+        eps = epsilon(cur_drc, cur_rtype)
+
+        # Total size of the DRC
+        drcL, drcR = cur_drc
+        total = sum(len(c) for c in drcL) + sum(len(c) for c in drcR)
+
+        result.append((cur_drc, cur_rtype, sig, eps))
+
+        if total == 0:
+            break
+
+        try:
+            next_drc, next_rtype = descent(cur_drc, cur_rtype)
+            if next_drc is None:
+                break
+            cur_drc = next_drc
+            cur_rtype = next_rtype
+        except Exception:
+            break
+
+    return result
+
+
+def descent_chain_signatures(drc, rtype):
+    """
+    Extract the sequence of classical signatures from the descent chain.
+
+    Returns a list of (★, p, q, ε) tuples = the combinatorial data
+    needed to reconstruct the associated cycle / local system.
+
+    This is the key output: the iterated theta lift path that defines
+    the representation π_τ (equation 3.16 of [BMSZ]).
+    """
+    ch = descent_chain(drc, rtype)
+    return [(rt, sig[0], sig[1], eps) for (_, rt, sig, eps) in ch]
+
+
+def print_descent_chain(drc, rtype):
+    """Print the descent chain with DRC diagrams."""
+    ch = descent_chain(drc, rtype)
+    for i, (d, rt, sig, eps) in enumerate(ch):
+        prefix = f"Step {i}: {rt}, sig=({sig[0]},{sig[1]}), ε={eps}"
+        print(prefix)
+        print(str_dgms(d))
+        print()
+
+
+# ============================================================================
+# Phase 13: Main API
 # ============================================================================
 
 def compute_all_pbp(dpart, rtype, report=False):
