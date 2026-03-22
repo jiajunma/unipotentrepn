@@ -960,106 +960,82 @@ def _lsign(Oprime):
     return (sp, sq)
 
 
-def theta_lift_myd(Ep, rtype, p, q, pp, qp):
+def theta_lift_myd(Ep, rtype, p, q, pp, qp, delta=None):
     """
     Compute the geometric theta lift ϑ̂^{s,O}_{s',O'}(E') of a marked Young
     diagram E' ∈ MYD_{★'}(O').
 
+    Reference: formulas (9.29) and (9.30) of [BMSZ], page 55.
+
     Args:
         Ep: the marked Young diagram E' (dict)
         rtype: the TARGET type ★ ∈ {B, C, D, M}
-        p, q: signature of the target (p_τ, q_τ) = (★, p, q)
-        pp, qp: signature of the source (★', p', q')
+        p, q: signature of the target s = (★, p, q)
+        pp, qp: signature of the source s' = (★', p', q')
+        delta: c₁(O) - c₂(O) where O = d^★_BV(Ǒ). If None, estimated.
 
     Returns:
-        A list of (coefficient, MYD) pairs representing the result
-        in Z[MYD_★(O)].
-
-    Reference: formulas (9.29) and (9.30) of [BMSZ].
+        A list of (coefficient, MYD) pairs in Z[MYD_★(O)].
     """
-    # Compute δ = c₁(O) - c₂(O) = |s'| - |∇_naive(O)|
-    # For our purposes, δ is determined by the signatures
     s_size = p + q      # |s|
     sp_size = pp + qp   # |s'|
 
-    # ★' is the Howe dual of ★
-    if rtype in ('B', 'B+', 'B-'):
-        # ★ = B, ★' = M=C̃
-        delta = s_size - sp_size - 1  # |s| - |s'| - 1 for B
-    elif rtype == 'D':
-        # ★ = D, ★' = C
-        delta = s_size - sp_size - 1
-    elif rtype == 'C':
-        # ★ = C, ★' = D
-        delta = s_size - sp_size + 1
-    elif rtype == 'M':
-        # ★ = M=C̃, ★' = B
-        delta = s_size - sp_size + 1
-    else:
-        delta = abs(s_size - sp_size)
+    # δ = c₁(O) - c₂(O) from Lemma 4.4
+    if delta is None:
+        # Fallback estimate (may be wrong for non-trivial orbits)
+        if rtype in ('B', 'B+', 'B-', 'D'):
+            delta = s_size - sp_size - 1
+        else:
+            delta = s_size - sp_size + 1
 
-    # Compute (p₀, q₀) from page 55
+    # ˡSign(O') from page 55 of [BMSZ]
     lsign_p, lsign_q = _lsign(Ep)
-    half_delta = delta // 2
 
-    if rtype in ('B', 'B+', 'B-', 'D'):
-        # ★ ∈ {B, D, C*}: p₀ = q₀ = (p,q) - (p',q') - ˡSign(O') + (δ/2, δ/2)
-        p0 = (p - pp - lsign_p + half_delta)
-        q0 = (q - qp - lsign_q + half_delta)
-    elif rtype in ('C', 'M'):
-        # ★ ∈ {C, C̃, D*}: different formula, see (9.30)
-        # n₀ = (c₁(O) - c₂(O)) / 2
-        n0 = delta // 2
-        p0 = q0 = n0
-    else:
-        p0 = q0 = 0
-
-    # Now apply the theta lift formula
+    # Compute (p₀, q₀) — page 55 of [BMSZ]
     results = []
 
-    if rtype in ('B', 'B+', 'B-'):
-        # Formula (9.29) for ★ = B:
-        # ϑ̂(E') = (T^{(p-q+1)/2}(Λ_{(δ/2,δ/2)}(E'))) ⊕ (p₀, q₀)
-        truncated = myd_truncation(Ep, half_delta, half_delta)
-        t_exp = (p - q + 1) // 2
+    if rtype in ('B', 'B+', 'B-', 'D'):
+        # ★ ∈ {B, D, C*}: formula (9.29)
+        # (p₀, q₀) = (p,q) - (p',q') - ˡSign(O') + (δ/2, δ/2)
+        half_delta = delta / 2  # may be half-integer
+        p0 = int(p - pp - lsign_p + half_delta)
+        q0 = int(q - qp - lsign_q + half_delta)
+
+        # Truncation parameter: (δ/2, δ/2)
+        trunc_p = trunc_q = delta // 2
+        truncated = myd_truncation(Ep, trunc_p, trunc_q)
+
+        # Involution T exponent
+        if rtype in ('B', 'B+', 'B-'):
+            t_exp = (p - q + 1) // 2
+        else:  # D
+            t_exp = (p - q) // 2
+
         twisted = truncated
-        for _ in range(abs(t_exp) % 2):
+        if t_exp % 2 != 0:
             twisted = myd_involution_T(twisted)
+
+        # Augmentation ⊕ (p₀, q₀)
         augmented = myd_augmentation(twisted, p0, q0)
         results.append((1, augmented))
 
-    elif rtype == 'D':
-        # Formula (9.29) for ★ = D:
-        # ϑ̂(E') = (T^{(p-q)/2}(Λ_{(δ/2,δ/2)}(E'))) ⊕ (p₀, q₀)
-        truncated = myd_truncation(Ep, half_delta, half_delta)
-        t_exp = (p - q) // 2
-        twisted = truncated
-        for _ in range(abs(t_exp) % 2):
-            twisted = myd_involution_T(twisted)
-        augmented = myd_augmentation(twisted, p0, q0)
-        results.append((1, augmented))
+    elif rtype in ('C', 'M'):
+        # ★ ∈ {C, C̃, D*}: formula (9.30)
+        # n₀ = (c₁(O) - c₂(O)) / 2 = δ / 2
+        n0 = delta // 2
 
-    elif rtype == 'C':
-        # Formula (9.30) for ★ = C:
-        # ϑ̂(E') = T^{(p'-q')/2}(Σ_{j=0}^{δ} Λ_{(j,δ-j)}(E') ⊕ (n₀, n₀))
-        t_exp = (pp - qp) // 2
+        # Involution T exponent
+        if rtype == 'C':
+            t_exp = (pp - qp) // 2
+        else:  # M = C̃
+            t_exp = (pp - qp - 1) // 2
+
+        # Sum over j = 0, ..., δ: Λ_{(j,δ-j)}(E') ⊕ (n₀, n₀)
         for j in range(delta + 1):
             truncated = myd_truncation(Ep, j, delta - j)
             augmented = myd_augmentation(truncated, n0, n0)
             twisted = augmented
-            for _ in range(abs(t_exp) % 2):
-                twisted = myd_involution_T(twisted)
-            results.append((1, twisted))
-
-    elif rtype == 'M':
-        # Formula (9.30) for ★ = C̃:
-        # ϑ̂(E') = T^{(p'-q'-1)/2}(Σ_{j=0}^{δ} Λ_{(j,δ-j)}(E') ⊕ (n₀, n₀))
-        t_exp = (pp - qp - 1) // 2
-        for j in range(delta + 1):
-            truncated = myd_truncation(Ep, j, delta - j)
-            augmented = myd_augmentation(truncated, n0, n0)
-            twisted = augmented
-            for _ in range(abs(t_exp) % 2):
+            if t_exp % 2 != 0:
                 twisted = myd_involution_T(twisted)
             results.append((1, twisted))
 
@@ -1071,66 +1047,103 @@ def theta_lift_myd(Ep, rtype, p, q, pp, qp):
 #            (Equation 4.17 of [BMSZ])
 # ============================================================================
 
-def compute_AC(drc, rtype):
+def bv_dual(dpart, rtype):
+    """
+    Compute the Barbasch-Vogan dual d^★_BV(Ǒ) of a dual partition.
+    Reference: Definition 4.5 of [BMSZ], [BMSZb] Section 2.5.
+
+    Uses the combunipotent implementation if available, otherwise raises.
+    """
+    try:
+        from combunipotent.tool import dualBVW
+        # Normalize rtype for BV dual: B+/B- → B
+        bv_rtype = rtype
+        if bv_rtype in ('B+', 'B-'):
+            bv_rtype = 'B'
+        return reg_part(dualBVW(dpart, bv_rtype, partrc='c'))
+    except ImportError:
+        # Fallback: for purely even orbits, the BV dual has a simpler form
+        # This is a placeholder — full BV duality requires Springer correspondence
+        raise NotImplementedError("BV duality requires combunipotent package")
+
+
+def compute_AC(drc, rtype, dpart=None):
     """
     Compute the associated cycle AC(τ) ∈ K_s(O) for a painted bipartition τ.
 
-    Uses iterated descent: AC(τ) is defined recursively by (4.17):
+    Uses iterated descent: AC(τ) is defined recursively by (4.17) of [BMSZ]:
     - Base case (|Ǒ| = 0): AC(τ) = trivial/det/genuine
-    - Induction: AC(τ) = ϑ̂^O_{O'}(AC(τ') ⊗ twist)
+    - ★ = B or D: AC(τ) = ϑ̂^O_{O'}(AC(τ')) ⊗ (det_{-1})^{ε_τ}
+    - ★ = C or C̃: AC(τ) = ϑ̂^O_{O'}(AC(τ') ⊗ det^{ε_℘})
+
+    Args:
+        drc: painted bipartition (drcL, drcR)
+        rtype: root system type
+        dpart: dual partition Ǒ (needed for BV dual computation)
 
     Returns a list of (coefficient, MYD) pairs.
     """
-    # Build the descent chain
-    ch = descent_chain(drc, rtype)
+    # Build the descent chain (with orbit tracking)
+    ch = descent_chain(drc, rtype, dpart)
 
     # Base case: the last element of the chain
-    _, base_rtype, base_sig, base_eps = ch[-1]
+    _, base_rtype, base_sig, base_eps, _ = ch[-1]
 
-    # Initialize AC at the base case
     # For |Ǒ| = 0: AC = trivial MYD (empty)
+    # Equation (4.17) base case, page 23 of [BMSZ]
     if base_rtype == 'B-':
-        # determinant character
-        current_AC = [(1, {1: (0, 1)})]  # det representation
+        current_AC = [(1, {1: (0, 1)})]  # det character of O(0,1)
     elif base_rtype == 'M':
-        # genuine representation of Mp(0)
-        current_AC = [(1, {})]  # trivial (genuine for Mp(0) = {±1})
+        current_AC = [(1, {})]  # genuine rep of Mp(0)
     else:
-        # trivial representation
-        current_AC = [(1, {})]
+        current_AC = [(1, {})]  # trivial rep
 
     # Induction: walk backwards through the descent chain
     for idx in range(len(ch) - 2, -1, -1):
-        tau_drc, tau_rtype, tau_sig, tau_eps = ch[idx]
+        tau_drc, tau_rtype, tau_sig, tau_eps, tau_dpart = ch[idx]
         tau_p, tau_q = tau_sig
-        # The descent target (tau') is ch[idx + 1]
-        _, taup_rtype, taup_sig, taup_eps = ch[idx + 1]
+        _, taup_rtype, taup_sig, taup_eps, taup_dpart = ch[idx + 1]
         taup_p, taup_q = taup_sig
 
-        # Apply theta lift to each term in current_AC
+        # Compute δ from the BV dual orbit O = d^★_BV(Ǒ)
+        # δ = c₁(O) - c₂(O) (Lemma 4.4 of [BMSZ])
+        delta = 0
+        if tau_dpart is not None:
+            try:
+                O = bv_dual(tau_dpart, tau_rtype)
+                O_cols = col_lengths(O)
+                c1_O = O_cols[0] if len(O_cols) > 0 else 0
+                c2_O = O_cols[1] if len(O_cols) > 1 else 0
+                delta = c1_O - c2_O
+            except Exception:
+                # Fallback: estimate from signatures
+                delta = abs(tau_p + tau_q - taup_p - taup_q)
+
+        # Apply theta lift (equation 4.17)
         new_AC = []
         for coeff, myd in current_AC:
-            # Apply the epsilon twist before theta lift (equation 4.17)
             if tau_rtype in ('B', 'B+', 'B-', 'D'):
-                # ★ = B or D: AC(τ) = ϑ̂(AC(τ')) ⊗ (det_{-1})^{ε_τ}
-                # The sign twist is applied AFTER theta lift
-                lifted = theta_lift_myd(myd, tau_rtype, tau_p, tau_q, taup_p, taup_q)
+                # ★ ∈ {B,D}: AC(τ) = ϑ̂(AC(τ')) ⊗ (det_{-1})^{ε_τ}
+                lifted = theta_lift_myd(myd, tau_rtype,
+                                        tau_p, tau_q, taup_p, taup_q,
+                                        delta=delta)
                 for lc, lmyd in lifted:
                     if tau_eps == 1:
-                        # Apply det_{-1} twist: sign twist with (1,1)
                         lmyd = myd_sign_twist(lmyd, 1, 1, tau_rtype)
                     new_AC.append((coeff * lc, lmyd))
             elif tau_rtype in ('C', 'M'):
-                # ★ = C or C̃: AC(τ) = ϑ̂(AC(τ') ⊗ det^{ε_℘})
-                # For special shape (℘=∅), ε_℘ = 0 always
-                # The det twist is applied BEFORE theta lift
+                # ★ ∈ {C, C̃}: AC(τ) = ϑ̂(AC(τ') ⊗ det^{ε_℘})
                 myd_twisted = myd
                 if tau_eps == 1:
                     myd_twisted = myd_involution_T(myd)
-                lifted = theta_lift_myd(myd_twisted, tau_rtype, tau_p, tau_q, taup_p, taup_q)
+                lifted = theta_lift_myd(myd_twisted, tau_rtype,
+                                        tau_p, tau_q, taup_p, taup_q,
+                                        delta=delta)
                 new_AC.extend((coeff * lc, lmyd) for lc, lmyd in lifted)
             else:
-                lifted = theta_lift_myd(myd, tau_rtype, tau_p, tau_q, taup_p, taup_q)
+                lifted = theta_lift_myd(myd, tau_rtype,
+                                        tau_p, tau_q, taup_p, taup_q,
+                                        delta=delta)
                 new_AC.extend((coeff * lc, lmyd) for lc, lmyd in lifted)
 
         current_AC = new_AC
@@ -1152,16 +1165,44 @@ def print_AC(drc, rtype):
 # Phase 12d: Descent chain
 # ============================================================================
 
-def descent_chain(drc, rtype):
+def orbit_descent(dpart, rtype):
+    """
+    Compute the dual descent of the orbit: Ǒ' = ∇̂_★(Ǒ).
+    Equation (3.10) of [BMSZ]:
+      - ∇̂_naive(Ǒ) = Ǒ with first row removed.
+      - Special case: if ★ ∈ {D, D*} and |Ǒ| = 0, then Ǒ' = □ (one box).
+
+    Returns (dpart', rtype') where rtype' is the Howe dual of rtype.
+    """
+    rows = reg_part(dpart)
+    if len(rows) == 0:
+        if rtype in ('D',):
+            return (1,), 'C'
+        else:
+            return (), HOWE_DUAL.get(rtype, rtype)
+    # Remove first row
+    dpart_prime = rows[1:]
+    rtype_prime = HOWE_DUAL.get(rtype, rtype)
+    if rtype in ('M',):
+        # M → B: need B+ or B- depending on the DRC
+        # For orbit descent, we just track as 'B'
+        rtype_prime = 'B'
+    elif rtype in ('B', 'B+', 'B-'):
+        rtype_prime = 'M'
+    return reg_part(dpart_prime), rtype_prime
+
+
+def descent_chain(drc, rtype, dpart=None):
     """
     Compute the full descent chain from τ down to the trivial orbit.
 
-    Returns a list of (drc, rtype, signature, epsilon) tuples.
+    Returns a list of (drc, rtype, signature, epsilon, dpart) tuples.
     chain[0] is the input τ, chain[-1] is the base case.
     """
     result = []
     cur_drc = drc
     cur_rtype = rtype
+    cur_dpart = dpart  # may be None if not provided
 
     for _ in range(1000):  # safety limit
         sig = signature(cur_drc, cur_rtype)
@@ -1171,7 +1212,7 @@ def descent_chain(drc, rtype):
         drcL, drcR = cur_drc
         total = sum(len(c) for c in drcL) + sum(len(c) for c in drcR)
 
-        result.append((cur_drc, cur_rtype, sig, eps))
+        result.append((cur_drc, cur_rtype, sig, eps, cur_dpart))
 
         if total == 0:
             break
@@ -1180,15 +1221,21 @@ def descent_chain(drc, rtype):
             next_drc, next_rtype = descent(cur_drc, cur_rtype)
             if next_drc is None:
                 break
+            # Descend the orbit too
+            if cur_dpart is not None:
+                next_dpart, _ = orbit_descent(cur_dpart, cur_rtype)
+            else:
+                next_dpart = None
             cur_drc = next_drc
             cur_rtype = next_rtype
+            cur_dpart = next_dpart
         except Exception:
             break
 
     return result
 
 
-def descent_chain_signatures(drc, rtype):
+def descent_chain_signatures(drc, rtype, dpart=None):
     """
     Extract the sequence of classical signatures from the descent chain.
 
@@ -1198,15 +1245,16 @@ def descent_chain_signatures(drc, rtype):
     This is the key output: the iterated theta lift path that defines
     the representation π_τ (equation 3.16 of [BMSZ]).
     """
-    ch = descent_chain(drc, rtype)
-    return [(rt, sig[0], sig[1], eps) for (_, rt, sig, eps) in ch]
+    ch = descent_chain(drc, rtype, dpart)
+    return [(rt, sig[0], sig[1], eps) for (_, rt, sig, eps, _) in ch]
 
 
-def print_descent_chain(drc, rtype):
+def print_descent_chain(drc, rtype, dpart=None):
     """Print the descent chain with DRC diagrams."""
-    ch = descent_chain(drc, rtype)
-    for i, (d, rt, sig, eps) in enumerate(ch):
-        prefix = f"Step {i}: {rt}, sig=({sig[0]},{sig[1]}), ε={eps}"
+    ch = descent_chain(drc, rtype, dpart)
+    for i, (d, rt, sig, eps, dp) in enumerate(ch):
+        dp_str = f" Ǒ={dp}" if dp is not None else ""
+        prefix = f"Step {i}: {rt}, sig=({sig[0]},{sig[1]}), ε={eps}{dp_str}"
         print(prefix)
         print(str_dgms(d))
         print()
@@ -1495,15 +1543,30 @@ def gen_descent_tree(dpart, rtype, format='pdf', filename='descent_tree'):
                                constraint='false')
 
     # Add group labels on the left and rank constraints
+    # Compute the group label from signatures:
+    #   C: Sp(2|τ|), M: Mp(2|τ|), B±: O(p,q), D: SO(p,q)
     gp_nodes = []  # list of (size, gp_node_id)
     for (rt, size), nids in sorted(levels.items(), key=lambda x: -x[0][1]):
-        # Determine the group name from the type and dimension
         if rt in ('C', 'M'):
-            gp_label = RTYPE_GP[rt] % (size,)
+            # |τ| = size (total boxes), group is Sp(2*size) or Mp(2*size)
+            gp_label = RTYPE_GP[rt] % (2 * size,)
         elif rt in ('B+', 'B-', 'D'):
-            # For orthogonal types, show the type and total dimension
-            dim = size + (1 if rt in ('B+', 'B-') else 0)
-            gp_label = f'{rt}  dim={dim}'
+            # Collect all distinct signatures at this level
+            sigs = set()
+            for (drc, drt), nid in node_id_map.items():
+                if nid in nids:
+                    sigs.add(signature(drc, drt))
+            if len(sigs) == 1:
+                p, q = sigs.pop()
+                gp_label = RTYPE_GP[rt] % (p, q)
+            else:
+                # Multiple signatures: show the dimension
+                p, q = next(iter(sigs))
+                dim = p + q
+                if rt in ('B+', 'B-'):
+                    gp_label = f'O({dim})'
+                else:
+                    gp_label = f'SO({dim})'
         else:
             gp_label = rt
 
