@@ -75,8 +75,8 @@ def gen_good_parity_dparts(rtype, max_size):
 
 
 def test_drc_count(dparts, rtype):
-    """Test that DRC count matches recursive formula."""
-    from combunipotent.recursive import countunip, countB, countC, countD, countM, evalsignature
+    """Test that DRC count matches recursive formula from standalone.countPBP."""
+    from standalone import countPBP
 
     passed = 0
     failed = 0
@@ -87,18 +87,18 @@ def test_drc_count(dparts, rtype):
         PP = primitive_pairs(dpart, rtype)
         n_pp = len(PP)
 
-        # Compute f(1,1) from recursive formula
-        if rtype == 'D':
-            f11 = evalsignature(countD(dpart))(1, 1)
+        # countPBP gives #PBP for one ℘
+        f11 = countPBP(dpart, rtype)
+
+        # Relation:
+        # C, M: #DRC = f(1,1)
+        # D:    #DRC = f(1,1) × 2^{|PP|}
+        # B:    #DRC = f(1,1) × 2^{max(|PP|-1, 0)}
+        if rtype in ('C', 'M'):
+            expected = f11
+        elif rtype == 'D':
             expected = f11 * (2 ** n_pp)
-        elif rtype == 'C':
-            f11 = countC(dpart)
-            expected = f11
-        elif rtype == 'M':
-            f11 = countM(dpart)
-            expected = f11
         elif rtype == 'B':
-            f11 = evalsignature(countB(dpart))(1, 1)
             expected = f11 * (2 ** max(n_pp - 1, 0))
 
         if n_drc == expected:
@@ -107,7 +107,7 @@ def test_drc_count(dparts, rtype):
             failed += 1
             if failed <= 3:
                 print(f"  COUNT FAIL: {dpart} {rtype}: #DRC={n_drc}, expected={expected} "
-                      f"(f(1,1)={f11}, |PP|={n_pp})")
+                      f"(countPBP={f11}, |PP|={n_pp})")
 
     return passed, failed
 

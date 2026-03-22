@@ -1603,6 +1603,194 @@ def print_descent_chain(drc, rtype, dpart=None):
 
 
 # ============================================================================
+# ============================================================================
+# Phase 12e: Recursive counting of PBPs
+#            (Propositions 10.11-10.12 of [BMSZb])
+# ============================================================================
+
+def countPBP(dpart, rtype):
+    """
+    Count the number of painted bipartitions #PBP_★(Ǒ, ∅) using the
+    recursive formulas from [BMSZb] Propositions 10.11 and 10.12.
+
+    This counts PBPs for ℘ = ∅ (special shape). Since #PBP is independent
+    of ℘ (Proposition 10.2), this also gives #PBP for any ℘.
+
+    For ★ ∈ {B, D}: returns the generating function f(p,q) evaluated at (1,1).
+    For ★ ∈ {C, M}: returns the count directly.
+
+    The recursive formula relates #PBP_★(Ǒ) to #PBP_{★'}(∇̃(Ǒ))
+    where ★' is the Howe dual:
+      B ↔ M,  C ↔ D.
+    """
+    dpart = reg_part(dpart)
+
+    if rtype == 'C':
+        return _countPBP_C(dpart)
+    elif rtype == 'M':
+        return _countPBP_M(dpart)
+    elif rtype == 'D':
+        DD, RC, SS = _countPBP_D(dpart)
+        return DD + RC + SS
+    elif rtype == 'B':
+        DD, RC, SS = _countPBP_B(dpart)
+        return DD + RC + SS
+    else:
+        raise ValueError(f"Unknown rtype: {rtype}")
+
+
+def _countPBP_D(dpart):
+    """
+    Count PBPs for type D using Proposition 10.11 of [BMSZb].
+    Ǒ has all odd rows, total even.
+
+    Returns (DD, RC, SS) triple:
+      DD = count of PBPs with tail symbol d
+      RC = count of PBPs with tail symbol in {c, r}
+      SS = count of PBPs with tail symbol s
+
+    Total = DD + RC + SS.
+    """
+    if len(dpart) == 0:
+        return (1, 0, 0)  # base case: f^{d}=1, f^{c,r}=0, f^{s}=0
+
+    R1 = dpart[0]
+    R2 = dpart[1] if len(dpart) > 1 else 0
+    R3 = dpart[2] if len(dpart) > 2 else -1
+    k = (R1 - R2) // 2 + 1  # k from Proposition 10.11
+
+    # Tail polynomials for D,[2k-1,1]_row (evaluated at p=q=1: r=s=c=d=1)
+    # ν_k at (1,1) = k+1
+    def nu(n):
+        return n + 1 if n >= 0 else 0
+
+    TDD = nu(k - 1) * 1 + nu(k - 2) * 1  # ν_{k-1}·d + ν_{k-2}·cd
+    TRC = nu(k - 1) * 1 + 1 * nu(k - 1)  # ν_{k-1}·c + r·ν_{k-1}
+    TSS = 1  # s^k = 1 at p=q=1
+
+    if R2 > R3:
+        # (2,3) is primitive: Prop 10.11(a)
+        C2 = R2 - 1
+        DDp, RCp, SSp = _countPBP_D(dpart[2:])
+        resp = 1 * (DDp + RCp + SSp)  # (pq)^{c₁} at (1,1) = 1
+        return (resp * TDD, resp * TRC, resp * TSS)
+    else:
+        # (2,3) is balanced: Prop 10.11(b)
+        scDD = nu(k - 2) * 1 + 1 * nu(k - 2) * 1  # ν_{k-2}·cd + s·ν_{k-2}·d
+        scRC = nu(k - 1) * 1 + 1 * nu(k - 2) * 1  # ν_{k-1}·c + s·ν_{k-2}·r
+        scSS = 1  # s^k
+
+        DDp, RCp, SSp = _countPBP_D(dpart[2:])
+        DD = DDp * TDD + RCp * scDD
+        RC = DDp * TRC + RCp * scRC
+        SS = DDp * TSS + RCp * scSS
+        return (DD, RC, SS)
+
+
+def _countPBP_B(dpart):
+    """
+    Count PBPs for type B using Proposition 10.11 of [BMSZb].
+    Ǒ has all even rows, total even.
+
+    Returns (DD, RC, SS) triple.
+    """
+    # Remove trailing zeros
+    dpart = tuple(r for r in dpart if r > 0)
+
+    if len(dpart) <= 1:
+        # Base case: single even row [2k] or empty
+        c1 = dpart[0] // 2 if len(dpart) == 1 else 0
+
+        def nu(n):
+            return n + 1 if n >= 0 else 0
+
+        DD = 1 * 2 * nu(c1 - 1)       # d·(p+q)·ν_{c1-1} at (1,1)
+        RC = 1 * nu(c1) + 1 * nu(c1 - 1)  # p·ν_{c1} + q·r·ν_{c1-1}
+        SS = 1                         # q·s^{c1}
+        return (DD, RC, SS)
+
+    R1 = dpart[0]
+    R2 = dpart[1]
+    R3 = dpart[2] if len(dpart) > 2 else 0
+    k = (R1 - R2) // 2 + 1
+
+    def nu(n):
+        return n + 1 if n >= 0 else 0
+
+    TDD = nu(k - 1) + nu(k - 2)
+    TRC = nu(k - 1) + nu(k - 1)
+    TSS = 1
+
+    if R2 > R3:
+        C2 = R2 - 1
+        DDp, RCp, SSp = _countPBP_B(dpart[2:])
+        resp = DDp + RCp + SSp
+        return (resp * TDD, resp * TRC, resp * TSS)
+    else:
+        scDD = nu(k - 2) + nu(k - 2)
+        scRC = nu(k - 1) + nu(k - 2)
+        scSS = 1
+
+        DDp, RCp, SSp = _countPBP_B(dpart[2:])
+        DD = DDp * TDD + RCp * scDD
+        RC = DDp * TRC + RCp * scRC
+        SS = DDp * TSS + RCp * scSS
+        return (DD, RC, SS)
+
+
+def _countPBP_C(dpart):
+    """
+    Count PBPs for type C using Proposition 10.12 of [BMSZb].
+    Ǒ has all odd rows, total odd.
+
+    Returns the count #PBP_C(Ǒ, ∅).
+    """
+    if len(dpart) == 0:
+        return 0
+    if len(dpart) == 1:
+        return 1
+
+    R1 = dpart[0]
+    R2 = dpart[1]
+
+    # Howe dual: C ↔ D
+    DDp, RCp, SSp = _countPBP_D(dpart[1:])
+
+    if R1 > R2:
+        # (1,2) is primitive: Prop 10.12(a)
+        return 2 * (DDp + RCp + SSp)
+    else:
+        # (1,2) balanced: Prop 10.12(b)
+        return DDp + RCp
+
+
+def _countPBP_M(dpart):
+    """
+    Count PBPs for type M (= C̃) using Proposition 10.12 of [BMSZb].
+    Ǒ has all even rows, total even.
+
+    Returns the count #PBP_M(Ǒ, ∅).
+    """
+    dpart = tuple(r for r in dpart if r > 0)
+
+    if len(dpart) == 0:
+        return 1
+
+    R1 = dpart[0]
+    R2 = dpart[1] if len(dpart) > 1 else 0
+
+    # Howe dual: M ↔ B
+    DDp, RCp, SSp = _countPBP_B(dpart[1:])
+
+    if R1 > R2:
+        # (1,2) is primitive: Prop 10.12(a)
+        return 2 * (DDp + RCp + SSp)
+    else:
+        # (1,2) balanced: Prop 10.12(b)
+        return DDp + RCp
+
+
+# ============================================================================
 # Phase 13: Lift tree visualization (Graphviz)
 # ============================================================================
 
