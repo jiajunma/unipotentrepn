@@ -1213,7 +1213,108 @@ def print_descent_chain(drc, rtype):
 
 
 # ============================================================================
-# Phase 13: Main API
+# Phase 13: Lift tree visualization (Graphviz)
+# ============================================================================
+
+RTYPE_GP = {'C': 'Sp(%d)', 'D': 'O(%d)', 'M': 'Mp(%d)',
+            'B': 'O(%d)', 'B+': 'O(%d)', 'B-': 'O(%d)'}
+
+
+def gen_descent_tree(dpart, rtype, format='pdf', filename='descent_tree'):
+    """
+    Generate a Graphviz directed graph showing the descent tree
+    for all PBPs attached to (dpart, rtype).
+
+    Each node shows the DRC diagram, signature (p,q), ε, and AC.
+    Edges show the descent map ∇.
+
+    Returns the Graphviz Digraph object.
+    """
+    from graphviz import Digraph
+
+    drcs = dpart2drc(dpart, rtype)
+
+    g = Digraph(name='Descent Tree',
+                filename=filename,
+                node_attr={'shape': 'box', 'fontname': 'Courier New',
+                           'fontsize': '9'},
+                graph_attr={'rankdir': 'TB', 'newrank': 'true',
+                            'ranksep': '1.0', 'nodesep': '0.3'},
+                engine='dot', format=format)
+
+    # Group nodes by (rtype, total_size) for rank alignment
+    levels = {}  # (rtype, size) -> list of node_ids
+    node_id_map = {}  # drc -> node_id
+    edges = []
+
+    # BFS through descent chains
+    node_counter = [0]
+
+    def get_node_id(drc, rt):
+        key = (drc, rt)
+        if key not in node_id_map:
+            nid = f'n{node_counter[0]}'
+            node_counter[0] += 1
+            node_id_map[key] = nid
+
+            sig = signature(drc, rt)
+            eps = epsilon(drc, rt)
+            drcL, drcR = drc
+            total = sum(len(c) for c in drcL) + sum(len(c) for c in drcR)
+
+            # Format label
+            drc_str = str_dgms(drc).replace('\n', '\\l')
+            gp = RTYPE_GP.get(rt, rt + '(%d)')
+            if rt in ('C', 'M'):
+                gp_label = gp % (sig[0] + sig[1])
+            else:
+                gp_label = gp % (sig[0] + sig[1])
+
+            label = f'{rt} {gp_label}\\lsig=({sig[0]},{sig[1]}) ε={eps}\\l{drc_str}\\l'
+
+            # Color by type
+            colors = {'C': '#e6f3ff', 'D': '#fff3e6',
+                      'M': '#e6ffe6', 'B+': '#ffe6e6', 'B-': '#ffe6f3'}
+            fillcolor = colors.get(rt, '#ffffff')
+
+            g.node(nid, label=label, style='filled', fillcolor=fillcolor,
+                   labeljust='l')
+
+            level_key = (rt, total)
+            levels.setdefault(level_key, []).append(nid)
+
+        return node_id_map[key]
+
+    # Build the tree
+    for drc in drcs:
+        ch = descent_chain(drc, rtype)
+        for i in range(len(ch) - 1):
+            src_drc, src_rt, _, _ = ch[i]
+            dst_drc, dst_rt, _, _ = ch[i + 1]
+            src_id = get_node_id(src_drc, src_rt)
+            dst_id = get_node_id(dst_drc, dst_rt)
+            edge_key = (src_id, dst_id)
+            if edge_key not in edges:
+                edges.append(edge_key)
+                g.edge(src_id, dst_id, color='blue')
+        # Also register the last node
+        if ch:
+            last_drc, last_rt, _, _ = ch[-1]
+            get_node_id(last_drc, last_rt)
+
+    # Add rank constraints
+    for (rt, size), nids in levels.items():
+        if len(nids) > 1:
+            with g.subgraph() as s:
+                s.attr(rank='same')
+                for nid in nids:
+                    s.node(nid)
+
+    return g
+
+
+# ============================================================================
+# Phase 14: Main API
 # ============================================================================
 
 def compute_all_pbp(dpart, rtype, report=False):
@@ -1293,6 +1394,13 @@ def main():
                         help='Verify descent for all PBPs')
     parser.add_argument('--test', action='store_true',
                         help='Run cross-check tests against combunipotent')
+    parser.add_argument('--tree', action='store_true',
+                        help='Generate descent tree diagram (PDF/SVG)')
+    parser.add_argument('-f', '--format', default='pdf',
+                        choices=['pdf', 'svg', 'png'],
+                        help='Output format for tree (default: pdf)')
+    parser.add_argument('-o', '--output', default=None,
+                        help='Output filename (default: descent_tree)')
 
     args = parser.parse_args()
 
@@ -1327,6 +1435,13 @@ def main():
         print(f"\nVerifying descent...")
         p, f = verify_descent(parts, rtype, report=True)
         print(f"Descent verification: {p} passed, {f} failed")
+
+    if args.tree:
+        fname = args.output or 'descent_tree'
+        print(f"\nGenerating descent tree...")
+        g = gen_descent_tree(parts, rtype, format=args.format, filename=fname)
+        outfile = g.render()
+        print(f"Output: {outfile}")
 
 
 def run_tests():

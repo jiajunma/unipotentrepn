@@ -227,6 +227,62 @@ def test_Wrepn_count():
     return passed, failed
 
 
+def test_AC_uniqueness():
+    """
+    Verify that different τ (painted bipartitions) produce different
+    associated cycles (MYD). According to Proposition 3.15 / Theorem 5.1,
+    the map τ ↦ (∇(τ), p_τ, q_τ, ε_τ) is injective.
+    So (AC, sig, ε) should be unique per τ.
+    """
+    from standalone import (compute_AC, myd_to_tuple,
+                            signature as sa_signature, epsilon as sa_epsilon,
+                            verify_drc)
+
+    passed = 0
+    failed = 0
+
+    # Test cases: purely even partitions where AC should be injective
+    test_cases = [
+        ((1, 1), 'D'), ((3, 1), 'D'), ((3, 3), 'D'), ((5, 3), 'D'),
+        ((1,), 'C'), ((3,), 'C'),
+        ((2, 2), 'M'), ((4, 2), 'M'), ((4, 4), 'M'),
+        ((6, 4, 2, 2), 'M'),
+        ((2, 2), 'B'), ((4, 2), 'B'), ((6, 4), 'B'),
+    ]
+
+    for dpart, rtype in test_cases:
+        drcs = sa_dpart2drc(dpart, rtype)
+
+        if rtype == 'B':
+            items = []
+            for drc in drcs:
+                for bt in ('B+', 'B-'):
+                    if verify_drc(drc, bt):
+                        items.append((drc, bt))
+        else:
+            items = [(drc, rtype) for drc in drcs]
+
+        seen = set()
+        dup = 0
+        for drc, rt in items:
+            ac = compute_AC(drc, rt)
+            ac_key = frozenset((c, myd_to_tuple(m)) for c, m in ac)
+            sig = sa_signature(drc, rt)
+            eps = sa_epsilon(drc, rt)
+            full_key = (sig, eps, ac_key)
+            if full_key in seen:
+                dup += 1
+            seen.add(full_key)
+
+        if dup == 0:
+            passed += 1
+        else:
+            failed += 1
+            print(f"  FAIL: {dpart} {rtype}: {dup} duplicates in (sig, ε, AC)")
+
+    return passed, failed
+
+
 def test_AC_signature_match():
     """
     Compare standalone AC signature with reference LS signature.
@@ -367,7 +423,16 @@ def main():
     if f > 0:
         all_passed = False
 
-    # Test 5: AC signature match
+    # Test 5: AC uniqueness (each τ produces a distinct AC)
+    print(f"\n{'='*60}")
+    print("Test 5: AC uniqueness — different τ produce different MYD")
+    print(f"{'='*60}")
+    p, f = test_AC_uniqueness()
+    print(f"  {p} passed, {f} failed")
+    if f > 0:
+        all_passed = False
+
+    # Test 6: AC signature match
     print(f"\n{'='*60}")
     print("Test 5: AC signature matches reference LS signature")
     print(f"{'='*60}")
