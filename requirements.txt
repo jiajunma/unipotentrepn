@@ -1,0 +1,4 @@
+multiset>=3.0
+graphviz>=0.20
+sympy>=1.12
+rich>=13.0
