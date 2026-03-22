@@ -1059,18 +1059,15 @@ def _orbit_signed_yd(O_rows, p_total, q_total, rtype):
 
     if forced_even:
         # Free levels are odd: i=2k-1
-        # Each (p_i, q_i) with p_i+q_i=ι(i)
-        # p_i → adds (1,0) to p-q per unit (since (k,k-1)-(k-1,k) = (1,-1))
-        # So p-q = Σ (p_i - q_i) for free levels
-        target_diff = rem_p - rem_q  # p - q from free levels
+        # p-q = Σ (p_i - q_i) for free levels
+        target_diff = rem_p - rem_q
 
-        # Greedy assignment: process levels from largest to smallest
-        for length, count in sorted(free_levels, reverse=True):
+        # Assignment: process levels from SMALLEST to LARGEST
+        # This matches the sl₂ decomposition structure where
+        # smaller representations are assigned first.
+        for length, count in sorted(free_levels):
             k = (length + 1) // 2
-            # Try to match target_diff
-            # p_i - q_i can range from -count to +count
             diff_i = max(-count, min(count, target_diff))
-            # Ensure same parity as count
             if (diff_i + count) % 2 != 0:
                 diff_i += 1 if diff_i < count else -1
             p_i = (count + diff_i) // 2
