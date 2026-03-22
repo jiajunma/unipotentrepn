@@ -1099,14 +1099,16 @@ def compute_AC(drc, rtype, dpart=None):
     # Base case: the last element of the chain
     _, base_rtype, base_sig, base_eps, _ = ch[-1]
 
-    # For |Ǒ| = 0: AC = trivial MYD (empty)
-    # Equation (4.17) base case, page 23 of [BMSZ]
-    if base_rtype == 'B-':
-        current_AC = [(1, {1: (0, 1)})]  # det character of O(0,1)
-    elif base_rtype == 'M':
-        current_AC = [(1, {})]  # genuine rep of Mp(0)
+    # Base case |Ǒ| = 0: L_τ from page 62 of [BMSZ]
+    #   α_τ = B⁺ : L_τ = (1, 0)_★
+    #   α_τ = B⁻ : L_τ = (0, -1)_★
+    #   otherwise: L_τ = (0, 0)_★
+    if base_rtype == 'B+':
+        current_AC = [(1, {1: (1, 0)})]
+    elif base_rtype == 'B-':
+        current_AC = [(1, {1: (0, -1)})]
     else:
-        current_AC = [(1, {})]  # trivial rep
+        current_AC = [(1, {})]  # (0,0)_★ = trivial
 
     # Induction: walk backwards through the descent chain
     for idx in range(len(ch) - 2, -1, -1):
@@ -1147,25 +1149,24 @@ def compute_AC(drc, rtype, dpart=None):
             except Exception:
                 n0 = 0
 
-        # Apply theta lift (equation 4.17 of [BMSZ])
+        # Apply theta lift + sign twist (equation 11.2 of [BMSZ], page 62)
         new_AC = []
         for coeff, myd in current_AC:
             if tau_rtype in ('B', 'B+', 'B-', 'D'):
-                # ★ ∈ {B,D}: AC(τ) = ϑ̂(AC(τ')) ⊗ (det_{-1})^{ε_τ}
-                # The (det_{-1})^{ε_τ} twist is NOT applied here —
-                # it's an external twist: (τ, ε) ↦ π_τ ⊗ det^ε.
-                # AC(τ) = ϑ̂(AC(τ')), ε_τ recorded separately.
+                # ★ ∈ {B,D}: L_τ = ϑ̂^{s_τ,O}_{s_{τ'},O'}(L_{τ'}) ⊗ (0, ε_τ)
                 lifted = theta_lift_myd(myd, tau_rtype,
                                         tau_p, tau_q, taup_p, taup_q,
                                         delta=delta)
                 for lc, lmyd in lifted:
+                    # Apply sign twist ⊗ (0, ε_τ)
+                    if tau_eps != 0:
+                        lmyd = myd_sign_twist(lmyd, 0, tau_eps, tau_rtype)
                     new_AC.append((coeff * lc, lmyd))
             elif tau_rtype in ('C', 'M'):
-                # ★ ∈ {C, C̃}: AC(τ) = ϑ̂(AC(τ') ⊗ det^{ε_℘})
-                myd_twisted = myd
-                if tau_eps == 1:
-                    myd_twisted = myd_involution_T(myd)
-                lifted = theta_lift_myd(myd_twisted, tau_rtype,
+                # ★ ∈ {C, C̃}: L_τ = ϑ̂(L_{τ'} ⊗ (ε_℘, ε_℘))
+                # For ℘=∅: ε_℘ = 0, so no twist on L_{τ'}
+                # For ℘≠∅: ε_℘ = 1 iff (1,2) ∈ ℘
+                lifted = theta_lift_myd(myd, tau_rtype,
                                         tau_p, tau_q, taup_p, taup_q,
                                         delta=delta, n0=n0)
                 new_AC.extend((coeff * lc, lmyd) for lc, lmyd in lifted)
