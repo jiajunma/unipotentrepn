@@ -1323,8 +1323,10 @@ def compute_AC(drc, rtype, dpart=None):
     _, base_rtype, base_sig, base_eps, _ = ch[-1]
 
     # Base case |Ǒ| = 0: L_τ from page 62 of [BMSZ]
-    #   α_τ = B⁺ : L_τ = (1, 0)_★
-    #   α_τ = B⁻ : L_τ = (0, -1)_★
+    #   α_τ = B⁺ : L_τ = (1, 0)_★  → det is on the p (larger) side
+    #   α_τ = B⁻ : L_τ = (-1, 0)_★ → det flips the p (smaller) side
+    #     Note: paper writes (0,-1)_★ but in B- convention p<q,
+    #     so the det character acts on the first (p) component.
     #   otherwise: L_τ = (0, 0)_★
     if base_rtype == 'B+':
         current_AC = [(1, {1: (1, 0)})]
