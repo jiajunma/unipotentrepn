@@ -37,6 +37,20 @@ The formulas depend on ★:
 - For i ≥ 1: (c_i(j_Ǒ), c_{i+1}(ι_Ǒ)) depends on whether (2i, 2i+1)
   is vacant, tailed, or balanced.
 
+## Good Parity
+
+A dual partition Ǒ has **good parity** with respect to ★ if all its nonzero
+row lengths have the correct parity:
+
+| ★ | Ǒ orbit type | Row parity | Total parity |
+|---|-------------|-----------|-------------|
+| B | type C | all rows even | even |
+| M (= C̃) | type C | all rows even | even |
+| C | type B | all rows odd | odd |
+| D | type D | all rows odd | even |
+
+Reference: [BMSZb] Section 2.8, good parity assumption.
+
 ## Step 2: Primitive Pairs
 
 **Function**: `primitive_pairs(Ǒ, ★)`
