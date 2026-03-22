@@ -297,19 +297,41 @@ def count_symbol(drc, sym):
     return sum(c.count(sym) for c in chain(drcL, drcR))
 
 
+def _remove_tail_symbols(dg, symbols):
+    """
+    Remove trailing characters from each column that are in the given set.
+    Returns the stripped diagram, or None if any column has more than one
+    such symbol (violating the one-per-column constraint for c/d).
+    """
+    result = []
+    for col in dg:
+        stripped = col.rstrip(''.join(symbols))
+        result.append(stripped)
+    return tuple(result)
+
+
 def verify_drc(drc, rtype):
     """
     Verify that a DRC diagram satisfies all structural constraints.
-    Reference: Definition 3.1 and Definition 2.24 of [BMSZb].
+
+    Checks:
+    - Definition 3.1 of [BMSZ] (painting constraints):
+      (1) Removing {d}, {c,d}, {r,c,d}, or {s,r,c,d} leaves valid Young diagram
+      (2) Each row has at most one s and at most one r
+      (3) Each column has at most one c and at most one d
+    - Definition 2.3/2.24 of [BMSZb] (painted bipartition):
+      (1) P and Q have identical set of •-boxes
+      (2) P symbols ⊆ allowed set for γ
+      (3) Q symbols ⊆ allowed set for γ
     """
     drcL, drcR = drc
     gamma = rtype
 
-    # Both must be valid Young diagrams
+    # Both must be valid Young diagrams (column lengths decrease)
     if not test_young_dg(drcL) or not test_young_dg(drcR):
         return False
 
-    # Check symbol constraints
+    # Definition 2.3 (2)+(3): symbol constraints by type
     p_sym = P_SYMBOLS.get(gamma, None)
     q_sym = Q_SYMBOLS.get(gamma, None)
     if p_sym is None or q_sym is None:
@@ -319,16 +341,14 @@ def verify_drc(drc, rtype):
     if not verify_painting(drcR, q_sym):
         return False
 
-    # P and Q must have identical •-boxes
+    # Definition 2.3 (1): P and Q have identical •-boxes
     for i in range(max(len(drcL), len(drcR))):
         cL = getz(drcL, i, '')
         cR = getz(drcR, i, '')
-        nL = cL.count('*')
-        nR = cR.count('*')
-        if nL != nR:
+        if cL.count('*') != cR.count('*'):
             return False
 
-    # Each row: at most one s, at most one r (across both diagrams)
+    # Definition 3.1 (2): each row has at most one s and at most one r
     r_max = max(len(getz(drcL, 0, '')), len(getz(drcR, 0, '')))
     for row in range(r_max):
         s_count = sum(1 for col in chain(drcL, drcR)
@@ -338,10 +358,22 @@ def verify_drc(drc, rtype):
         if s_count > 1 or r_count > 1:
             return False
 
-    # Each column: at most one c, at most one d
+    # Definition 3.1 (3): each column has at most one c and at most one d
     for col in chain(drcL, drcR):
         if col.count('c') > 1 or col.count('d') > 1:
             return False
+
+    # Definition 3.1 (1): removing symbol layers leaves valid Young diagrams
+    # Check for BOTH P (drcL) and Q (drcR):
+    # Strip d → must be valid YD
+    # Strip c,d → must be valid YD
+    # Strip r,c,d → must be valid YD
+    # Strip s,r,c,d → must be valid YD (= just •-boxes)
+    for dg in (drcL, drcR):
+        for sym_set in [{'d'}, {'c', 'd'}, {'r', 'c', 'd'}, {'s', 'r', 'c', 'd'}]:
+            stripped = _remove_tail_symbols(dg, sym_set)
+            if not test_young_dg(stripped):
+                return False
 
     return True
 
