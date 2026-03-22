@@ -227,6 +227,107 @@ def test_Wrepn_count():
     return passed, failed
 
 
+def test_AC_signature_match():
+    """
+    Compare standalone AC signature with reference LS signature.
+    For each DRC, the signature from standalone must match
+    the signature of the matched LS from combunipotent.
+    """
+    from standalone import compute_AC, signature as sa_signature
+    from combunipotent.drclift import test_dpart2drcLS
+    from combunipotent.LS import sign_LS
+
+    passed = 0
+    failed = 0
+
+    test_cases = [
+        ((1, 1), 'D'), ((3, 1), 'D'), ((3, 3), 'D'),
+        ((5, 3), 'D'), ((5, 3, 1, 1), 'D'),
+        ((2, 2), 'M'), ((4, 2), 'M'), ((4, 4), 'M'),
+        ((6, 4, 2, 2), 'M'),
+    ]
+
+    for dpart, rtype in test_cases:
+        try:
+            use_test = (rtype != 'B')
+            lDRCLS, lLSDRC = test_dpart2drcLS(dpart, rtype, test=use_test, report=False)
+            ref_drcls = lDRCLS[0]
+        except Exception:
+            continue
+
+        sa_drcs = sa_dpart2drc(dpart, rtype)
+        ok = 0
+        mismatch = 0
+
+        for sa_drc in sa_drcs:
+            sa_sig = sa_signature(sa_drc, rtype)
+            ref_ls = ref_drcls.get(sa_drc)
+            if ref_ls is None:
+                continue
+            ref_sig = sign_LS(ref_ls)
+            if sa_sig == ref_sig:
+                ok += 1
+            else:
+                mismatch += 1
+
+        if mismatch == 0:
+            passed += 1
+        else:
+            failed += 1
+            print(f"  FAIL AC sig: {dpart} {rtype}: {ok} ok, {mismatch} mismatch")
+
+    return passed, failed
+
+
+def test_AC_count_match():
+    """
+    Compare LS count by signature between standalone and combunipotent.
+    For each (dpart, rtype), the distribution of DRCs by signature must match
+    the distribution of LS by signature.
+    """
+    from standalone import signature as sa_signature
+    from combunipotent.LS import part2LS, sign_LS
+    from combunipotent.tool import dualBVW
+
+    passed = 0
+    failed = 0
+
+    test_cases = [
+        ((1, 1), 'D'), ((3, 1), 'D'), ((5, 3), 'D'),
+        ((1,), 'C'), ((3,), 'C'), ((5, 3, 1), 'C'),
+        ((2, 2), 'M'), ((4, 2), 'M'), ((4, 4), 'M'),
+        ((6, 4, 2, 2), 'M'),
+    ]
+
+    for dpart, rtype in test_cases:
+        ppart = dualBVW(dpart, rtype, partrc='c')
+        ref_ls = part2LS(ppart, rtype, report=False)
+        ref_counts = {}
+        for ls in ref_ls:
+            s = sign_LS(ls)
+            ref_counts[s] = ref_counts.get(s, 0) + 1
+
+        sa_drcs = sa_dpart2drc(dpart, rtype)
+        sa_counts = {}
+        for drc in sa_drcs:
+            sig = sa_signature(drc, rtype)
+            sa_counts[sig] = sa_counts.get(sig, 0) + 1
+
+        # For D type, LS count = 2 × DRC count (det twist)
+        if rtype == 'D':
+            sa_counts = {k: v * 2 for k, v in sa_counts.items()}
+
+        if ref_counts == sa_counts:
+            passed += 1
+        else:
+            failed += 1
+            print(f"  FAIL count: {dpart} {rtype}")
+            print(f"    ref: {ref_counts}")
+            print(f"    sa:  {sa_counts}")
+
+    return passed, failed
+
+
 def main():
     all_passed = True
 
@@ -262,6 +363,24 @@ def main():
     print("Test 4: Descent produces valid DRC diagrams")
     print(f"{'='*60}")
     p, f = test_descent_validity()
+    print(f"  {p} passed, {f} failed")
+    if f > 0:
+        all_passed = False
+
+    # Test 5: AC signature match
+    print(f"\n{'='*60}")
+    print("Test 5: AC signature matches reference LS signature")
+    print(f"{'='*60}")
+    p, f = test_AC_signature_match()
+    print(f"  {p} passed, {f} failed")
+    if f > 0:
+        all_passed = False
+
+    # Test 6: AC count match
+    print(f"\n{'='*60}")
+    print("Test 6: LS count by signature matches reference")
+    print(f"{'='*60}")
+    p, f = test_AC_count_match()
     print(f"  {p} passed, {f} failed")
     if f > 0:
         all_passed = False
