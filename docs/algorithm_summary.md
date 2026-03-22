@@ -109,13 +109,27 @@ the right diagram (Q). The SWdgm transform swaps L↔R before/after the fill.
 
 ### Signature (p_τ, q_τ)
 
-For ★ ∈ {B, D}: count symbols in both diagrams:
+Each cell in the DRC diagram contributes to (p, q) as follows:
+
+| Symbol | (p, q) contribution |
+|--------|:------------------:|
+| • (dot) | (1, 1) |
+| c | (1, 1) |
+| d | (1, 1) |
+| r | (2, 0) |
+| s | (0, 2) |
+
+For type B, an additional overall contribution:
+- B⁺: +(1, 0)
+- B⁻: +(0, 1)
+
+Equivalently:
 ```
 p_τ = (#•) + 2(#r) + (#c) + (#d) + (#B⁺)
 q_τ = (#•) + 2(#s) + (#c) + (#d) + (#B⁻)
 ```
 
-For ★ ∈ {C, M}: p_τ = q_τ = |τ| (total number of boxes).
+For ★ ∈ {C, M}: all symbols contribute (1,1), so p_τ = q_τ = |τ| (total number of boxes).
 
 ### Group G_τ
 
