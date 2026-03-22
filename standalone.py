@@ -180,40 +180,75 @@ def orbit_to_bipartition(dpart, rtype):
 # Phase 3: Primitive pairs  (Definition 2.21 of [BMSZb])
 # ============================================================================
 
-def primitive_pairs(dpart, rtype):
+def classify_star_pairs(dpart, rtype):
     """
-    Compute PP_★(Ǒ): the set of primitive ★-pairs in Ǒ.
+    Classify all ★-pairs (i, i+1) in Ǒ.
 
-    A ★-pair (i, i+1) is primitive if r_i(Ǒ) - r_{i+1}(Ǒ) is positive and even.
-    The parity of i depends on ★:
-      ★ ∈ {C, C̃, C*}: i is odd
-      ★ ∈ {B, D, D*}: i is even
+    Reference: Definition 2.5 of [BMSZb].
 
-    Returns a set of pairs (i, i+1) (1-indexed).
+    A ★-pair (i, i+1) is a pair of consecutive positive integers where:
+      i is odd  if ★ ∈ {C, C̃(=M)}
+      i is even if ★ ∈ {B, D}
+
+    Classification based on r_i(Ǒ) and r_{i+1}(Ǒ):
+      vacant:    r_i = r_{i+1} = 0
+      balanced:  r_i = r_{i+1} > 0
+      tailed:    r_i - r_{i+1} is positive and odd
+      primitive: r_i - r_{i+1} is positive and even
+
+    Returns a dict mapping (i, i+1) → 'vacant'|'balanced'|'tailed'|'primitive'
+    for all ★-pairs up to the length of Ǒ.
     """
     rows = reg_part(dpart)
-    PP = set()
-    for idx in range(len(rows)):
-        i = idx + 1  # 1-indexed
-        r_i = getz(rows, idx, 0)
-        r_next = getz(rows, idx + 1, 0)
-        diff = r_i - r_next
+    n = len(rows) + 2  # check a few beyond the partition length
 
-        if rtype in ('C', 'M'):  # C, C̃
-            need_odd_i = True
-        elif rtype in ('B', 'D'):
-            need_odd_i = False
-        else:
-            raise ValueError(f"Unknown rtype: {rtype}")
+    if rtype in ('C', 'M'):
+        need_odd_i = True
+    elif rtype in ('B', 'D'):
+        need_odd_i = False
+    else:
+        raise ValueError(f"Unknown rtype: {rtype}")
 
+    result = {}
+    for i in range(1, n + 1):
         if need_odd_i and i % 2 == 0:
             continue
         if not need_odd_i and i % 2 == 1:
             continue
-        if diff > 0 and diff % 2 == 0:
-            PP.add((i, i + 1))
 
-    return PP
+        r_i = getz(rows, i - 1, 0)      # 1-indexed → 0-indexed
+        r_next = getz(rows, i, 0)
+        diff = r_i - r_next
+
+        if r_i == 0 and r_next == 0:
+            kind = 'vacant'
+        elif r_i == r_next and r_i > 0:
+            kind = 'balanced'
+        elif diff > 0 and diff % 2 == 1:
+            kind = 'tailed'
+        elif diff > 0 and diff % 2 == 0:
+            kind = 'primitive'
+        else:
+            continue  # r_i < r_next shouldn't happen for a valid partition
+
+        result[(i, i + 1)] = kind
+
+    # Remove trailing vacant pairs
+    result = {k: v for k, v in result.items() if v != 'vacant'}
+
+    return result
+
+
+def primitive_pairs(dpart, rtype):
+    """
+    Compute PP_★(Ǒ): the set of primitive ★-pairs in Ǒ.
+
+    Reference: Definition 2.5 of [BMSZb].
+
+    Returns a set of pairs (i, i+1) that are primitive (1-indexed).
+    """
+    classified = classify_star_pairs(dpart, rtype)
+    return {k for k, v in classified.items() if v == 'primitive'}
 
 
 # ============================================================================
