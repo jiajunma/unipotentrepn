@@ -1220,13 +1220,42 @@ RTYPE_GP = {'C': 'Sp(%d)', 'D': 'O(%d)', 'M': 'Mp(%d)',
             'B': 'O(%d)', 'B+': 'O(%d)', 'B-': 'O(%d)'}
 
 
+def _format_myd(myd):
+    """Format a marked Young diagram as a compact string."""
+    if not myd:
+        return '(trivial)'
+    entries = sorted(myd.items())
+    parts = []
+    for i, (p, q) in entries:
+        parts.append(f'{i}:({p},{q})')
+    return ' '.join(parts)
+
+
+def _format_myd_multiline(ac_list):
+    """Format AC (list of (coeff, myd)) as multiline string for graph label."""
+    lines = []
+    for coeff, myd in ac_list:
+        myd_str = _format_myd(myd)
+        if coeff == 1:
+            lines.append(myd_str)
+        else:
+            lines.append(f'{coeff}*[{myd_str}]')
+    return lines
+
+
 def gen_descent_tree(dpart, rtype, format='pdf', filename='descent_tree'):
     """
     Generate a Graphviz directed graph showing the descent tree
     for all PBPs attached to (dpart, rtype).
 
-    Each node shows the DRC diagram, signature (p,q), ε, and AC.
-    Edges show the descent map ∇.
+    Each node shows:
+      - DRC diagram
+      - Type ★, signature (p,q), ε
+      - Associated cycle AC(τ) as marked Young diagram
+
+    Edges:
+      - Blue: descent map ∇ (vertical)
+      - Red (dashed, bidirectional): det twist for orthogonal types (B, D)
 
     Returns the Graphviz Digraph object.
     """
@@ -1237,18 +1266,27 @@ def gen_descent_tree(dpart, rtype, format='pdf', filename='descent_tree'):
     g = Digraph(name='Descent Tree',
                 filename=filename,
                 node_attr={'shape': 'box', 'fontname': 'Courier New',
-                           'fontsize': '9'},
+                           'fontsize': '8'},
                 graph_attr={'rankdir': 'TB', 'newrank': 'true',
-                            'ranksep': '1.0', 'nodesep': '0.3'},
+                            'ranksep': '1.2', 'nodesep': '0.4',
+                            'concentrate': 'false'},
                 engine='dot', format=format)
 
     # Group nodes by (rtype, total_size) for rank alignment
-    levels = {}  # (rtype, size) -> list of node_ids
-    node_id_map = {}  # drc -> node_id
-    edges = []
+    levels = {}     # (rtype, size) -> list of node_ids
+    node_id_map = {}  # (drc, rt) -> node_id
+    descent_edges = set()
+    det_twist_edges = set()
 
-    # BFS through descent chains
     node_counter = [0]
+    # Cache AC computations
+    ac_cache = {}
+
+    def get_ac(drc, rt):
+        key = (drc, rt)
+        if key not in ac_cache:
+            ac_cache[key] = compute_AC(drc, rt)
+        return ac_cache[key]
 
     def get_node_id(drc, rt):
         key = (drc, rt)
@@ -1262,15 +1300,24 @@ def gen_descent_tree(dpart, rtype, format='pdf', filename='descent_tree'):
             drcL, drcR = drc
             total = sum(len(c) for c in drcL) + sum(len(c) for c in drcR)
 
-            # Format label
+            # Format DRC diagram
             drc_str = str_dgms(drc).replace('\n', '\\l')
-            gp = RTYPE_GP.get(rt, rt + '(%d)')
-            if rt in ('C', 'M'):
-                gp_label = gp % (sig[0] + sig[1])
-            else:
-                gp_label = gp % (sig[0] + sig[1])
 
-            label = f'{rt} {gp_label}\\lsig=({sig[0]},{sig[1]}) ε={eps}\\l{drc_str}\\l'
+            # Format group label
+            gp = RTYPE_GP.get(rt, rt + '(%d)')
+            gp_label = gp % (sig[0] + sig[1])
+
+            # Format AC / MYD
+            ac = get_ac(drc, rt)
+            ac_lines = _format_myd_multiline(ac)
+            ac_str = '\\l'.join(ac_lines)
+
+            # Build label
+            label = (f'{rt} {gp_label}\\l'
+                     f'sig=({sig[0]},{sig[1]}) ε={eps}\\l'
+                     f'{drc_str}\\l'
+                     f'──────\\l'
+                     f'AC: {ac_str}\\l')
 
             # Color by type
             colors = {'C': '#e6f3ff', 'D': '#fff3e6',
@@ -1285,7 +1332,7 @@ def gen_descent_tree(dpart, rtype, format='pdf', filename='descent_tree'):
 
         return node_id_map[key]
 
-    # Build the tree
+    # Build the tree: descent edges
     for drc in drcs:
         ch = descent_chain(drc, rtype)
         for i in range(len(ch) - 1):
@@ -1294,13 +1341,55 @@ def gen_descent_tree(dpart, rtype, format='pdf', filename='descent_tree'):
             src_id = get_node_id(src_drc, src_rt)
             dst_id = get_node_id(dst_drc, dst_rt)
             edge_key = (src_id, dst_id)
-            if edge_key not in edges:
-                edges.append(edge_key)
-                g.edge(src_id, dst_id, color='blue')
-        # Also register the last node
+            if edge_key not in descent_edges:
+                descent_edges.add(edge_key)
+                g.edge(src_id, dst_id, color='blue',
+                       tailport='s', headport='n')
+        # Register last node
         if ch:
             last_drc, last_rt, _, _ = ch[-1]
             get_node_id(last_drc, last_rt)
+
+    # Add det-twist edges for orthogonal types (B+/B-, D)
+    # Two DRCs are det-twist pairs if they have the same DRC but
+    # differ only by ε (i.e., d↔c in the first column)
+    for (drc, rt), nid in list(node_id_map.items()):
+        if rt in ('B+', 'B-', 'D'):
+            # For D type: det twist changes ε
+            # For B+/B-: the pair is B+ ↔ B- with same DRC shape
+            # Find the det-twist partner
+            if rt == 'D':
+                # Det twist for D: sign_twist with (1,1) on the MYD
+                # The partner DRC has the same shape but different ε
+                # Look for another node with same DRC and opposite ε
+                eps = epsilon(drc, rt)
+                for (drc2, rt2), nid2 in node_id_map.items():
+                    if rt2 == rt and drc2 == drc:
+                        continue
+                    if rt2 == rt and epsilon(drc2, rt2) != eps:
+                        # Check if they are truly det-twist pairs
+                        sig1 = signature(drc, rt)
+                        sig2 = signature(drc2, rt2)
+                        if sig1 == sig2:
+                            edge = tuple(sorted([nid, nid2]))
+                            if edge not in det_twist_edges:
+                                det_twist_edges.add(edge)
+                                g.edge(nid, nid2, color='red',
+                                       style='dashed', dir='both',
+                                       arrowsize='0.3',
+                                       constraint='false')
+            elif rt == 'B+':
+                # B+ ↔ B- partner: same underlying DRC
+                partner_key = (drc, 'B-')
+                if partner_key in node_id_map:
+                    nid2 = node_id_map[partner_key]
+                    edge = tuple(sorted([nid, nid2]))
+                    if edge not in det_twist_edges:
+                        det_twist_edges.add(edge)
+                        g.edge(nid, nid2, color='red',
+                               style='dashed', dir='both',
+                               arrowsize='0.3',
+                               constraint='false')
 
     # Add rank constraints
     for (rt, size), nids in levels.items():
