@@ -916,9 +916,14 @@ def myd_truncation(E, p0, q0):
     (Λ_{(p₀,q₀)} E)(i) = E(1) - (p₀, q₀)   if i = 1;
                         = E(i)               if i > 1.
     Requires E ⊒ (p₀, q₀) (condition 9.19).
-    Maps MYD_★ → MYD_★.
+    Returns None if the condition is not satisfied.
     """
     p1, q1 = E.get(1, (0, 0))
+    # Check condition (9.19): E ⊒ (p₀, q₀)
+    p_ok = (p1 >= p0 >= 0) or (p1 <= p0 <= 0)
+    q_ok = (q1 >= q0 >= 0) or (q1 <= q0 <= 0)
+    if not (p_ok and q_ok):
+        return None  # truncation not valid
     result = dict(E)
     result[1] = (p1 - p0, q1 - q0)
     return _myd_clean(result)
@@ -932,6 +937,31 @@ def _myd_clean(E):
 def myd_size(E):
     """Total size |E| = sum of |p_i| + |q_i|."""
     return sum(abs(p) + abs(q) for p, q in E.values())
+
+
+def myd_signature(E):
+    """
+    Compute the signature Sign(V ∘ E) of a marked Young diagram.
+
+    Uses |p_i|, |q_i| (absolute values) per the map V from equation (9.13)
+    of [BMSZ], composed with the Sign formula (9.10).
+
+    Returns (p, q) where:
+      (p,q) = Σ_{i∈N+} (i·|p_{2i}| + i·|q_{2i}|, i·|p_{2i}| + i·|q_{2i}|)
+            + Σ_{i∈N+} (i·|p_{2i-1}| + (i-1)·|q_{2i-1}|, (i-1)·|p_{2i-1}| + i·|q_{2i-1}|)
+    """
+    sp, sq = 0, 0
+    for idx, (pi, qi) in E.items():
+        api, aqi = abs(pi), abs(qi)
+        if idx % 2 == 0:
+            i = idx // 2
+            sp += i * api + i * aqi
+            sq += i * api + i * aqi
+        else:
+            i = (idx + 1) // 2
+            sp += i * api + (i - 1) * aqi
+            sq += (i - 1) * api + i * aqi
+    return (sp, sq)
 
 
 def myd_to_tuple(E):
@@ -1193,20 +1223,22 @@ def theta_lift_myd(Ep, rtype, p, q, pp, qp, delta=None, n0=None,
         # Truncation Λ_{(δ/2, δ/2)}
         trunc = delta // 2
         truncated = myd_truncation(Ep, trunc, trunc)
-
-        # Involution T^{exponent}
-        if rtype in ('B', 'B+', 'B-'):
-            t_exp = (p - q + 1) // 2   # (9.29) B case
+        if truncated is None:
+            pass  # truncation invalid, skip
         else:
-            t_exp = (p - q) // 2        # (9.29) D case
+            # Involution T^{exponent}
+            if rtype in ('B', 'B+', 'B-'):
+                t_exp = (p - q + 1) // 2   # (9.29) B case
+            else:
+                t_exp = (p - q) // 2        # (9.29) D case
 
-        twisted = truncated
-        if t_exp % 2 != 0:
-            twisted = myd_involution_T(twisted)
+            twisted = truncated
+            if t_exp % 2 != 0:
+                twisted = myd_involution_T(twisted)
 
-        # Augmentation ⊕ (p₀, q₀)
-        augmented = myd_augmentation(twisted, p0, q0)
-        results.append((1, augmented))
+            # Augmentation ⊕ (p₀, q₀)
+            augmented = myd_augmentation(twisted, p0, q0)
+            results.append((1, augmented))
 
     elif rtype in ('C', 'M'):
         # ★ ∈ {C, C̃}: formula (9.30), page 55
@@ -1226,6 +1258,8 @@ def theta_lift_myd(Ep, rtype, p, q, pp, qp, delta=None, n0=None,
         # Sum over j = 0, ..., δ: Λ_{(j, δ-j)}(E') ⊕ (n₀, n₀)
         for j in range(delta + 1):
             truncated = myd_truncation(Ep, j, delta - j)
+            if truncated is None:
+                continue  # truncation invalid, skip this term
             augmented = myd_augmentation(truncated, n0, n0)
             twisted = augmented
             if t_exp % 2 != 0:
