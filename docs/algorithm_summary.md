@@ -201,9 +201,11 @@ The "• or s" ambiguity is resolved by the interlacing condition.
 
 ### Dual descent of ℘ (equation 3.15)
 
+Shift all pair indices down by 1, and discard (0, 1):
 ```
-℘' = ∇̃(℘) = {(i, i+1) : (i+1, i+2) ∈ ℘, i ≥ 1}
+℘' = ∇̃(℘) = {(i-1, i) : (i, i+1) ∈ ℘, i ≥ 2}
 ```
+Equivalently: `℘' = {(i, i+1) : (i+1, i+2) ∈ ℘, i ≥ 1}`.
 
 ## Step 7: Descent Chain
 
