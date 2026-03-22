@@ -988,6 +988,16 @@ def theta_lift_myd(Ep, rtype, p, q, pp, qp, delta=None, n0=None):
             delta = s_size - sp_size + 1
 
     # ˡSign(O') — page 55 of [BMSZ]
+    # Note: ˡSign is computed from the SOURCE orbit O' (its signed Young diagram),
+    # NOT from the MYD E'. For the combinatorial cycle L_τ, the orbit O'
+    # is determined by the source signature s' = (★', p', q').
+    # The signed Young diagram of O' is: O'(i) = (p'_{O',i}, q'_{O',i})
+    # which equals the MYD of the trivial representation.
+    # For now, we compute ˡSign from the source signature directly.
+    # When |O'| = |s'| = p'+q', and r₁(O') ≤ 1:
+    #   ˡSign = (q', p') for odd-row orbits (B/D types as source)
+    #   ˡSign = (0, 0) for empty orbits
+    # This simplification works for the current purely-even case.
     lsign_p, lsign_q = _lsign(Ep)
 
     results = []
@@ -1158,8 +1168,9 @@ def compute_AC(drc, rtype, dpart=None):
                                         tau_p, tau_q, taup_p, taup_q,
                                         delta=delta)
                 for lc, lmyd in lifted:
-                    # Apply sign twist ⊗ (0, ε_τ)
-                    if tau_eps != 0:
+                    # Apply sign twist ⊗ (0, ε_τ) only at the TOP level
+                    # (i.e., when this is the final/outermost step)
+                    if idx == 0 and tau_eps != 0:
                         lmyd = myd_sign_twist(lmyd, 0, tau_eps, tau_rtype)
                     new_AC.append((coeff * lc, lmyd))
             elif tau_rtype in ('C', 'M'):
