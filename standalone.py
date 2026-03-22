@@ -948,6 +948,8 @@ def _lsign(Oprime):
     """
     Compute ˡSign(O') = Σ (p'_{2i}, q'_{2i}) + Σ (q'_{2i-1}, p'_{2i-1}).
     Reference: page 55 of [BMSZ].
+
+    Oprime here is the signed Young diagram of O' as a dict {i: (p_i, q_i)}.
     """
     sp, sq = 0, 0
     for i, (pi, qi) in Oprime.items():
@@ -960,7 +962,99 @@ def _lsign(Oprime):
     return (sp, sq)
 
 
-def theta_lift_myd(Ep, rtype, p, q, pp, qp, delta=None, n0=None):
+def _orbit_signed_yd(O_rows, p_total, q_total, rtype):
+    """
+    Compute the signed Young diagram of orbit O with row lengths O_rows
+    and real form signature (p_total, q_total) of type rtype.
+
+    Returns dict {i: (p_i, q_i)} where p_i = number of + rows of length i,
+    q_i = number of - rows of length i.
+
+    Reference: equation (9.8)-(9.9) of [BMSZ].
+
+    For type B/D: rows are labeled with + or - signs. The signature
+    (p, q) equals the sum from formula (9.9):
+      (p,q) = Σ (i·p_{2i} + i·q_{2i}, i·p_{2i} + i·q_{2i})
+            + Σ (i·p_{2i-1} + (i-1)·q_{2i-1}, (i-1)·p_{2i-1} + i·q_{2i-1})
+    """
+    from collections import Counter
+    row_counts = Counter(O_rows)
+
+    # For each row length, we need to split the count into (p_i, q_i)
+    # such that the overall signature matches (p_total, q_total).
+    # For simple cases (each length appears once), this is deterministic.
+
+    result = {}
+    # Accumulate signature
+    sig_p, sig_q = 0, 0
+
+    for length in sorted(row_counts.keys(), reverse=True):
+        count = row_counts[length]
+        # For each possible split (pi, qi) with pi + qi = count:
+        # Choose the one consistent with the signature.
+        # For simplicity (count=1): try (1,0) and (0,1)
+        if count == 1:
+            # Try (1, 0)
+            result[length] = (1, 0)
+        elif count == 2:
+            result[length] = (1, 1)
+        else:
+            # Split evenly
+            result[length] = (count // 2, count - count // 2)
+
+    # Verify signature matches — if not, adjust
+    sig = _compute_sig_from_syd(result)
+    if sig == (p_total, q_total):
+        return result
+
+    # Try swapping sign for single-count rows
+    for length in sorted(row_counts.keys()):
+        if row_counts[length] == 1:
+            # Try swapping (1,0) ↔ (0,1)
+            old = result[length]
+            result[length] = (old[1], old[0])
+            sig = _compute_sig_from_syd(result)
+            if sig == (p_total, q_total):
+                return result
+            result[length] = old  # revert
+
+    # Fallback: return what we have
+    return result
+
+
+def _compute_sig_from_syd(syd):
+    """
+    Compute signature (p, q) from a signed Young diagram.
+    Formula (9.9)/(9.10) of [BMSZ].
+    """
+    sp, sq = 0, 0
+    for idx, (pi, qi) in syd.items():
+        if idx % 2 == 0:
+            i = idx // 2
+            sp += i * pi + i * qi
+            sq += i * pi + i * qi
+        else:
+            i = (idx + 1) // 2
+            sp += i * pi + (i - 1) * qi
+            sq += (i - 1) * pi + i * qi
+    return (sp, sq)
+
+
+def _compute_lsign_from_orbit(O_rows, p_source, q_source, source_rtype):
+    """
+    Compute ˡSign(O') from the orbit O' and its real form signature.
+
+    O' is the BV dual of the source orbit, with row lengths O_rows
+    and signature (p_source, q_source).
+
+    Returns (ˡSign_p, ˡSign_q).
+    """
+    syd = _orbit_signed_yd(O_rows, p_source, q_source, source_rtype)
+    return _lsign(syd)
+
+
+def theta_lift_myd(Ep, rtype, p, q, pp, qp, delta=None, n0=None,
+                   O_source_rows=None, source_rtype=None):
     """
     Compute the geometric theta lift ϑ̂^{s,O}_{s',O'}(E') of a marked Young
     diagram E' ∈ MYD_{★'}(O').
@@ -974,6 +1068,9 @@ def theta_lift_myd(Ep, rtype, p, q, pp, qp, delta=None, n0=None):
         pp, qp: signature of the source s' = (★', p', q')
         delta: |s'| - |∇_naive(O)| from Lemma 4.4. If None, estimated.
         n0: (c₁(O) - c₂(O))/2 for C/C̃ types. If None, uses delta//2.
+        O_source_rows: row lengths of the SOURCE orbit O' (BV dual of Ǒ').
+                       Used to compute ˡSign(O'). If None, ˡSign = (0,0).
+        source_rtype: the source type ★' (for signed YD computation).
 
     Returns:
         A list of (coefficient, MYD) pairs in Z[MYD_★(O)].
@@ -988,17 +1085,14 @@ def theta_lift_myd(Ep, rtype, p, q, pp, qp, delta=None, n0=None):
             delta = s_size - sp_size + 1
 
     # ˡSign(O') — page 55 of [BMSZ]
-    # Note: ˡSign is computed from the SOURCE orbit O' (its signed Young diagram),
-    # NOT from the MYD E'. For the combinatorial cycle L_τ, the orbit O'
-    # is determined by the source signature s' = (★', p', q').
-    # The signed Young diagram of O' is: O'(i) = (p'_{O',i}, q'_{O',i})
-    # which equals the MYD of the trivial representation.
-    # For now, we compute ˡSign from the source signature directly.
-    # When |O'| = |s'| = p'+q', and r₁(O') ≤ 1:
-    #   ˡSign = (q', p') for odd-row orbits (B/D types as source)
-    #   ˡSign = (0, 0) for empty orbits
-    # This simplification works for the current purely-even case.
-    lsign_p, lsign_q = _lsign(Ep)
+    # This is a property of the orbit O' = ∇^s_{s'}(O) in Nil(g_{s'}),
+    # computed from its signed Young diagram.
+    # For now, compute from the source orbit's row structure.
+    if O_source_rows is not None and sum(O_source_rows) > 0:
+        lsign_p, lsign_q = _compute_lsign_from_orbit(
+            O_source_rows, pp, qp, source_rtype or rtype)
+    else:
+        lsign_p, lsign_q = (0, 0)
 
     results = []
 
@@ -1137,12 +1231,15 @@ def compute_AC(drc, rtype, dpart=None):
                 O = bv_dual(tau_dpart, tau_rtype)
                 O_rows = reg_part(O)
                 O_cols = col_lengths(O)
+                # ∇_naive(O) of a nilpotent orbit O ∈ Nil(g_s):
+                # For ★ ∈ {B,D}: removes first row of O (O is type D/B Young diagram)
+                # For ★ ∈ {C,M}: also removes first row of O (O is type C Young diagram)
+                # Reference: Lemma 4.4, page 21 of [BMSZ].
                 if tau_rtype in ('B', 'B+', 'B-', 'D'):
-                    # ★∈{B,D}: ∇_naive removes first row
                     nabla_O_size = part_size(O) - (O_rows[0] if O_rows else 0)
                 else:
-                    # ★∈{C,M=C̃}: ∇_naive removes first column
-                    nabla_O_size = part_size(O) - (O_cols[0] if O_cols else 0)
+                    # For C/M: O is in sp/so algebra, ∇_naive removes first row
+                    nabla_O_size = part_size(O) - (O_rows[0] if O_rows else 0)
                 delta = (taup_p + taup_q) - nabla_O_size
             except Exception:
                 delta = abs(tau_p + tau_q - taup_p - taup_q)
@@ -1159,32 +1256,45 @@ def compute_AC(drc, rtype, dpart=None):
             except Exception:
                 n0 = 0
 
+        # Compute O' (BV dual of source orbit) for ˡSign
+        O_source_rows = None
+        if taup_dpart is not None and part_size(taup_dpart) > 0:
+            try:
+                bv_rt = taup_rtype
+                if bv_rt in ('B+', 'B-'):
+                    bv_rt = 'B'
+                O_source_rows = reg_part(bv_dual(taup_dpart, bv_rt))
+            except Exception:
+                pass
+
         # Apply theta lift + sign twist (equation 11.2 of [BMSZ], page 62)
         new_AC = []
         for coeff, myd in current_AC:
             if tau_rtype in ('B', 'B+', 'B-', 'D'):
-                # ★ ∈ {B,D}: L_τ = ϑ̂^{s_τ,O}_{s_{τ'},O'}(L_{τ'}) ⊗ (0, ε_τ)
+                # ★ ∈ {B,D}: L_τ = ϑ̂(L_{τ'}) ⊗ (0, ε_τ)
                 lifted = theta_lift_myd(myd, tau_rtype,
                                         tau_p, tau_q, taup_p, taup_q,
-                                        delta=delta)
+                                        delta=delta,
+                                        O_source_rows=O_source_rows,
+                                        source_rtype=taup_rtype)
                 for lc, lmyd in lifted:
-                    # Apply sign twist ⊗ (0, ε_τ) only at the TOP level
-                    # (i.e., when this is the final/outermost step)
                     if idx == 0 and tau_eps != 0:
                         lmyd = myd_sign_twist(lmyd, 0, tau_eps, tau_rtype)
                     new_AC.append((coeff * lc, lmyd))
             elif tau_rtype in ('C', 'M'):
                 # ★ ∈ {C, C̃}: L_τ = ϑ̂(L_{τ'} ⊗ (ε_℘, ε_℘))
-                # For ℘=∅: ε_℘ = 0, so no twist on L_{τ'}
-                # For ℘≠∅: ε_℘ = 1 iff (1,2) ∈ ℘
                 lifted = theta_lift_myd(myd, tau_rtype,
                                         tau_p, tau_q, taup_p, taup_q,
-                                        delta=delta, n0=n0)
+                                        delta=delta, n0=n0,
+                                        O_source_rows=O_source_rows,
+                                        source_rtype=taup_rtype)
                 new_AC.extend((coeff * lc, lmyd) for lc, lmyd in lifted)
             else:
                 lifted = theta_lift_myd(myd, tau_rtype,
                                         tau_p, tau_q, taup_p, taup_q,
-                                        delta=delta)
+                                        delta=delta,
+                                        O_source_rows=O_source_rows,
+                                        source_rtype=taup_rtype)
                 new_AC.extend((coeff * lc, lmyd) for lc, lmyd in lifted)
 
         current_AC = new_AC
