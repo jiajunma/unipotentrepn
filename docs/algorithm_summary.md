@@ -227,13 +227,18 @@ Parity constraints (Definition 9.3):
 
 ### MYD Signature
 
-Sign(E) via map V (equation 9.13): V(a,b) = (|a|, |b|), then formula (9.10):
+Each MYD entry `(±p_i, ±q_i)` at level i contributes `(|p_i|, |q_i|)` to the
+signature, analogous to the DRC per-cell formula. The sign (±) encodes
+trivial vs non-trivial local system; the absolute value determines the
+signature contribution.
+
+Formally, via map V (equation 9.13): V(a,b) = (|a|, |b|), then formula (9.10):
 ```
-Sign(E) = Σ_{i} (i·|p_{2i}| + i·|q_{2i}|, i·|p_{2i}| + i·|q_{2i}|)
-         + Σ_{i} (i·|p_{2i-1}| + (i-1)·|q_{2i-1}|, (i-1)·|p_{2i-1}| + i·|q_{2i-1}|)
+Sign(E) = Σ_{k≥1} (k·|p_{2k}| + k·|q_{2k}|,  k·|p_{2k}| + k·|q_{2k}|)
+        + Σ_{k≥1} (k·|p_{2k-1}| + (k-1)·|q_{2k-1}|,  (k-1)·|p_{2k-1}| + k·|q_{2k-1}|)
 ```
 
-Sign(L_τ) = (p_τ, q_τ) for all verified types (D, C, M).
+**Key property**: Sign(L_τ) = (p_τ, q_τ). Verified for all D, C, M types.
 
 ### Four operations on MYD (Section 9.4)
 
