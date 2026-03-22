@@ -970,55 +970,94 @@ def _orbit_signed_yd(O_rows, p_total, q_total, rtype):
     Returns dict {i: (p_i, q_i)} where p_i = number of + rows of length i,
     q_i = number of - rows of length i.
 
-    Reference: equation (9.8)-(9.9) of [BMSZ].
+    Reference: Definition 9.1, equation (9.8)-(9.9) of [BMSZ].
 
-    For type B/D: rows are labeled with + or - signs. The signature
-    (p, q) equals the sum from formula (9.9):
-      (p,q) = Σ (i·p_{2i} + i·q_{2i}, i·p_{2i} + i·q_{2i})
-            + Σ (i·p_{2i-1} + (i-1)·q_{2i-1}, (i-1)·p_{2i-1} + i·q_{2i-1})
+    Parity constraints (Definition 9.1):
+      ★ ∈ {B, D}: p_i = q_i when i is even
+      ★ ∈ {C, C̃}: p_i = q_i when i is odd
+
+    Signature formula (9.9):
+      (p,q) = Σ_{k≥1} (k·p_{2k} + k·q_{2k}, k·p_{2k} + k·q_{2k})
+            + Σ_{k≥1} (k·p_{2k-1} + (k-1)·q_{2k-1}, (k-1)·p_{2k-1} + k·q_{2k-1})
     """
     from collections import Counter
     row_counts = Counter(O_rows)
-
-    # For each row length, we need to split the count into (p_i, q_i)
-    # such that the overall signature matches (p_total, q_total).
-    # For simple cases (each length appears once), this is deterministic.
-
     result = {}
-    # Accumulate signature
-    sig_p, sig_q = 0, 0
 
-    for length in sorted(row_counts.keys(), reverse=True):
-        count = row_counts[length]
-        # For each possible split (pi, qi) with pi + qi = count:
-        # Choose the one consistent with the signature.
-        # For simplicity (count=1): try (1,0) and (0,1)
-        if count == 1:
-            # Try (1, 0)
-            result[length] = (1, 0)
-        elif count == 2:
-            result[length] = (1, 1)
+    # Determine which levels are "free" (can split) vs "forced" (p=q)
+    if rtype in ('B', 'B+', 'B-', 'D'):
+        # Even levels forced: p_i = q_i = ι(i)/2
+        # Odd levels free: p_i + q_i = ι(i), choose split
+        forced_even = True
+    elif rtype in ('C', 'M'):
+        # Odd levels forced: p_i = q_i = ι(i)/2
+        # Even levels free: p_i + q_i = ι(i), choose split
+        forced_even = False
+    else:
+        forced_even = True
+
+    # First pass: set forced levels
+    forced_p, forced_q = 0, 0
+    free_levels = []
+    for length, count in sorted(row_counts.items()):
+        is_even = (length % 2 == 0)
+        if (forced_even and is_even) or (not forced_even and not is_even):
+            # Forced: p_i = q_i = count/2
+            half = count // 2
+            result[length] = (half, half)
+            # Contribution to signature
+            k = length // 2 if is_even else (length + 1) // 2
+            if is_even:
+                forced_p += k * count
+                forced_q += k * count
+            else:
+                forced_p += k * half + (k - 1) * half
+                forced_q += (k - 1) * half + k * half
         else:
-            # Split evenly
-            result[length] = (count // 2, count - count // 2)
+            # Free: need to determine split
+            free_levels.append((length, count))
 
-    # Verify signature matches — if not, adjust
-    sig = _compute_sig_from_syd(result)
-    if sig == (p_total, q_total):
-        return result
+    # Remaining signature to distribute among free levels
+    rem_p = p_total - forced_p
+    rem_q = q_total - forced_q
 
-    # Try swapping sign for single-count rows
-    for length in sorted(row_counts.keys()):
-        if row_counts[length] == 1:
-            # Try swapping (1,0) ↔ (0,1)
-            old = result[length]
-            result[length] = (old[1], old[0])
-            sig = _compute_sig_from_syd(result)
-            if sig == (p_total, q_total):
-                return result
-            result[length] = old  # revert
+    # For free levels, each unit of p_i contributes differently than q_i.
+    # At odd level i=2k-1: p_i contributes (k, k-1), q_i contributes (k-1, k)
+    # At even level i=2k: p_i contributes (k, k), q_i contributes (k, k)
+    # So for free odd levels (B/D): p_i → (k, k-1), q_i → (k-1, k)
+    # For free even levels (C/M): p_i → (k, k), q_i → (k, k) — no difference!
 
-    # Fallback: return what we have
+    if forced_even:
+        # Free levels are odd: i=2k-1
+        # Each (p_i, q_i) with p_i+q_i=ι(i)
+        # p_i → adds (1,0) to p-q per unit (since (k,k-1)-(k-1,k) = (1,-1))
+        # So p-q = Σ (p_i - q_i) for free levels
+        target_diff = rem_p - rem_q  # p - q from free levels
+
+        # Greedy assignment: process levels from largest to smallest
+        for length, count in sorted(free_levels, reverse=True):
+            k = (length + 1) // 2
+            # Try to match target_diff
+            # p_i - q_i can range from -count to +count
+            diff_i = max(-count, min(count, target_diff))
+            # Ensure same parity as count
+            if (diff_i + count) % 2 != 0:
+                diff_i += 1 if diff_i < count else -1
+            p_i = (count + diff_i) // 2
+            q_i = count - p_i
+            result[length] = (p_i, q_i)
+            target_diff -= diff_i
+    else:
+        # Free levels are even: i=2k
+        # At even i=2k: both p_i and q_i contribute (k,k) — same!
+        # So the split doesn't affect the signature.
+        # Just split evenly or use any valid split.
+        for length, count in free_levels:
+            # Any split works since contribution is symmetric
+            result[length] = (count, 0)  # arbitrary
+
+    # Clean up zeros
+    result = {i: (p, q) for i, (p, q) in result.items() if p != 0 or q != 0}
     return result
 
 
