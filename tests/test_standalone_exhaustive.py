@@ -87,19 +87,11 @@ def test_drc_count(dparts, rtype):
         PP = primitive_pairs(dpart, rtype)
         n_pp = len(PP)
 
-        # countPBP gives #PBP for one ℘
+        # countPBP gives #PBP for ℘=∅ (special shape)
+        # dpart2drc now only generates DRCs for the special bipartition
+        # So #DRC should equal countPBP for all types
         f11 = countPBP(dpart, rtype)
-
-        # Relation:
-        # C, M: #DRC = f(1,1)
-        # D:    #DRC = f(1,1) × 2^{|PP|}
-        # B:    #DRC = f(1,1) × 2^{max(|PP|-1, 0)}
-        if rtype in ('C', 'M'):
-            expected = f11
-        elif rtype == 'D':
-            expected = f11 * (2 ** n_pp)
-        elif rtype == 'B':
-            expected = f11 * (2 ** max(n_pp - 1, 0))
+        expected = f11
 
         if n_drc == expected:
             passed += 1

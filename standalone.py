@@ -667,15 +667,17 @@ def dpart2Wrepns(dpart, rtype):
 
 def dpart2drc(dpart, rtype):
     """
-    Compute all DRC diagrams for a dual partition and type.
+    Compute all DRC diagrams for the special shape (℘ = ∅) of a dual partition.
+
+    Only uses the special bipartition (ι_Ǒ, j_Ǒ) from dpart_to_bipartition.
     Returns a list of regularized DRC diagrams.
+
+    The number of DRCs should equal countPBP(dpart, rtype).
     """
-    Atau = dpart2Wrepns(dpart, rtype)
-    all_drcs = []
-    for tau in Atau:
-        drcs = fill_drc(tau, rtype)
-        all_drcs.extend(reg_drc(drc) for drc in drcs)
-    return all_drcs
+    tauL, tauR = dpart_to_bipartition(dpart, rtype)
+    tau = (list(tauL), list(tauR))
+    drcs = fill_drc(tau, rtype)
+    return [reg_drc(drc) for drc in drcs]
 
 
 # ============================================================================
@@ -1807,8 +1809,12 @@ def _countPBP_B(dpart):
 
 def _countPBP_C(dpart):
     """
-    Count PBPs for type C using Proposition 10.12 of [BMSZb].
+    Count PBPs for type C, ℘=∅, using Proposition 10.12 of [BMSZb].
     Ǒ has all odd rows, total odd.
+
+    Proposition 10.12:
+    (a) If (1,2) ∈ PP_★(Ǒ): #PBP_★(Ǒ, ℘) = f_{★',∇̃(Ǒ),∇̃(℘)}(1,1)
+    (b) If (1,2) ∉ PP_★(Ǒ): #PBP_★(Ǒ, ℘) = f^{c,r}_{★',∇̃(Ǒ),∇̃(℘)}(1,1) + f^{d}_{★',∇̃(Ǒ),∇̃(℘)}(1,1)
 
     Returns the count #PBP_C(Ǒ, ∅).
     """
@@ -1825,15 +1831,17 @@ def _countPBP_C(dpart):
 
     if R1 > R2:
         # (1,2) is primitive: Prop 10.12(a)
-        return 2 * (DDp + RCp + SSp)
+        # #PBP = f_D(1,1) = DD + RC + SS (for ONE ℘)
+        return DDp + RCp + SSp
     else:
         # (1,2) balanced: Prop 10.12(b)
+        # #PBP = f^{c,r} + f^{d} = DD + RC (no SS)
         return DDp + RCp
 
 
 def _countPBP_M(dpart):
     """
-    Count PBPs for type M (= C̃) using Proposition 10.12 of [BMSZb].
+    Count PBPs for type M (= C̃), ℘=∅, using Proposition 10.12 of [BMSZb].
     Ǒ has all even rows, total even.
 
     Returns the count #PBP_M(Ǒ, ∅).
@@ -1851,7 +1859,7 @@ def _countPBP_M(dpart):
 
     if R1 > R2:
         # (1,2) is primitive: Prop 10.12(a)
-        return 2 * (DDp + RCp + SSp)
+        return DDp + RCp + SSp
     else:
         # (1,2) balanced: Prop 10.12(b)
         return DDp + RCp
