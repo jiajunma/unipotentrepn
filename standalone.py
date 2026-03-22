@@ -851,8 +851,305 @@ def twist_M_nonspecial(drc):
 
 
 # ============================================================================
-# Phase 12: Associated cycles / Local systems via iterated descent
-#           (Section 9 and equation 4.17 of [BMSZ])
+# Phase 12: Marked Young diagrams and four operations
+#           (Section 9.3-9.4 of [BMSZ])
+# ============================================================================
+#
+# A marked Young diagram (MYD) E of type ★ is a map
+#     E: N⁺ → Z × Z,   i ↦ (p_i, q_i)
+# with finite support, satisfying parity conditions depending on ★.
+#
+# We represent E as a dict: {i: (p_i, q_i)} for i with (p_i, q_i) ≠ (0,0).
+# Indices are 1-based.
+
+def myd_sign_twist(E, ep, em, rtype):
+    """
+    Sign twist operation (9.15):
+    (E ⊗ (ε⁺, ε⁻))(i) = ((-1)^{(i+1)/2·ε⁺ + (i-1)/2·ε⁻} p_i,
+                           (-1)^{(i-1)/2·ε⁺ + (i+1)/2·ε⁻} q_i)  if i is odd;
+                        = (p_i, q_i)                               if i is even.
+    Here ep, em ∈ {0, 1} (elements of Z/2Z).
+    Only for ★ ∈ {B, D}.
+    """
+    result = {}
+    for i, (pi, qi) in E.items():
+        if i % 2 == 1:  # i is odd
+            exp_p = ((i + 1) // 2 * ep + (i - 1) // 2 * em) % 2
+            exp_q = ((i - 1) // 2 * ep + (i + 1) // 2 * em) % 2
+            result[i] = ((-1)**exp_p * pi, (-1)**exp_q * qi)
+        else:
+            result[i] = (pi, qi)
+    return _myd_clean(result)
+
+
+def myd_involution_T(E):
+    """
+    Involution T (9.16): for ★ ∈ {C, C̃},
+    (TE)(i) = -E(i) if i ≡ 2 (mod 4); E(i) otherwise.
+    T² = identity.
+    """
+    result = {}
+    for i, (pi, qi) in E.items():
+        if i % 4 == 2:
+            result[i] = (-pi, -qi)
+        else:
+            result[i] = (pi, qi)
+    return _myd_clean(result)
+
+
+def myd_augmentation(Ep, p0, q0):
+    """
+    Augmentation operation ⊕(p₀, q₀) (9.18):
+    (E' ⊕ (p₀, q₀))(i) = (p₀, q₀)    if i = 1;
+                         = E'(i - 1)   if i > 1.
+    Maps MYD_{★'} → MYD_★.
+    """
+    result = {1: (p0, q0)}
+    for i, val in Ep.items():
+        result[i + 1] = val
+    return _myd_clean(result)
+
+
+def myd_truncation(E, p0, q0):
+    """
+    Truncation Λ_{(p₀,q₀)} (9.20):
+    (Λ_{(p₀,q₀)} E)(i) = E(1) - (p₀, q₀)   if i = 1;
+                        = E(i)               if i > 1.
+    Requires E ⊒ (p₀, q₀) (condition 9.19).
+    Maps MYD_★ → MYD_★.
+    """
+    p1, q1 = E.get(1, (0, 0))
+    result = dict(E)
+    result[1] = (p1 - p0, q1 - q0)
+    return _myd_clean(result)
+
+
+def _myd_clean(E):
+    """Remove entries with (0, 0)."""
+    return {i: v for i, v in E.items() if v != (0, 0)}
+
+
+def myd_size(E):
+    """Total size |E| = sum of |p_i| + |q_i|."""
+    return sum(abs(p) + abs(q) for p, q in E.values())
+
+
+def myd_to_tuple(E):
+    """Convert MYD to a canonical hashable form."""
+    return tuple(sorted(E.items()))
+
+
+# ============================================================================
+# Phase 12b: Theta lift of marked Young diagrams
+#            (Section 9.5, formulas 9.29 and 9.30 of [BMSZ])
+# ============================================================================
+
+def _lsign(Oprime):
+    """
+    Compute ˡSign(O') = Σ (p'_{2i}, q'_{2i}) + Σ (q'_{2i-1}, p'_{2i-1}).
+    Reference: page 55 of [BMSZ].
+    """
+    sp, sq = 0, 0
+    for i, (pi, qi) in Oprime.items():
+        if i % 2 == 0:
+            sp += pi
+            sq += qi
+        else:
+            sp += qi
+            sq += pi
+    return (sp, sq)
+
+
+def theta_lift_myd(Ep, rtype, p, q, pp, qp):
+    """
+    Compute the geometric theta lift ϑ̂^{s,O}_{s',O'}(E') of a marked Young
+    diagram E' ∈ MYD_{★'}(O').
+
+    Args:
+        Ep: the marked Young diagram E' (dict)
+        rtype: the TARGET type ★ ∈ {B, C, D, M}
+        p, q: signature of the target (p_τ, q_τ) = (★, p, q)
+        pp, qp: signature of the source (★', p', q')
+
+    Returns:
+        A list of (coefficient, MYD) pairs representing the result
+        in Z[MYD_★(O)].
+
+    Reference: formulas (9.29) and (9.30) of [BMSZ].
+    """
+    # Compute δ = c₁(O) - c₂(O) = |s'| - |∇_naive(O)|
+    # For our purposes, δ is determined by the signatures
+    s_size = p + q      # |s|
+    sp_size = pp + qp   # |s'|
+
+    # ★' is the Howe dual of ★
+    if rtype in ('B', 'B+', 'B-'):
+        # ★ = B, ★' = M=C̃
+        delta = s_size - sp_size - 1  # |s| - |s'| - 1 for B
+    elif rtype == 'D':
+        # ★ = D, ★' = C
+        delta = s_size - sp_size - 1
+    elif rtype == 'C':
+        # ★ = C, ★' = D
+        delta = s_size - sp_size + 1
+    elif rtype == 'M':
+        # ★ = M=C̃, ★' = B
+        delta = s_size - sp_size + 1
+    else:
+        delta = abs(s_size - sp_size)
+
+    # Compute (p₀, q₀) from page 55
+    lsign_p, lsign_q = _lsign(Ep)
+    half_delta = delta // 2
+
+    if rtype in ('B', 'B+', 'B-', 'D'):
+        # ★ ∈ {B, D, C*}: p₀ = q₀ = (p,q) - (p',q') - ˡSign(O') + (δ/2, δ/2)
+        p0 = (p - pp - lsign_p + half_delta)
+        q0 = (q - qp - lsign_q + half_delta)
+    elif rtype in ('C', 'M'):
+        # ★ ∈ {C, C̃, D*}: different formula, see (9.30)
+        # n₀ = (c₁(O) - c₂(O)) / 2
+        n0 = delta // 2
+        p0 = q0 = n0
+    else:
+        p0 = q0 = 0
+
+    # Now apply the theta lift formula
+    results = []
+
+    if rtype in ('B', 'B+', 'B-'):
+        # Formula (9.29) for ★ = B:
+        # ϑ̂(E') = (T^{(p-q+1)/2}(Λ_{(δ/2,δ/2)}(E'))) ⊕ (p₀, q₀)
+        truncated = myd_truncation(Ep, half_delta, half_delta)
+        t_exp = (p - q + 1) // 2
+        twisted = truncated
+        for _ in range(abs(t_exp) % 2):
+            twisted = myd_involution_T(twisted)
+        augmented = myd_augmentation(twisted, p0, q0)
+        results.append((1, augmented))
+
+    elif rtype == 'D':
+        # Formula (9.29) for ★ = D:
+        # ϑ̂(E') = (T^{(p-q)/2}(Λ_{(δ/2,δ/2)}(E'))) ⊕ (p₀, q₀)
+        truncated = myd_truncation(Ep, half_delta, half_delta)
+        t_exp = (p - q) // 2
+        twisted = truncated
+        for _ in range(abs(t_exp) % 2):
+            twisted = myd_involution_T(twisted)
+        augmented = myd_augmentation(twisted, p0, q0)
+        results.append((1, augmented))
+
+    elif rtype == 'C':
+        # Formula (9.30) for ★ = C:
+        # ϑ̂(E') = T^{(p'-q')/2}(Σ_{j=0}^{δ} Λ_{(j,δ-j)}(E') ⊕ (n₀, n₀))
+        t_exp = (pp - qp) // 2
+        for j in range(delta + 1):
+            truncated = myd_truncation(Ep, j, delta - j)
+            augmented = myd_augmentation(truncated, n0, n0)
+            twisted = augmented
+            for _ in range(abs(t_exp) % 2):
+                twisted = myd_involution_T(twisted)
+            results.append((1, twisted))
+
+    elif rtype == 'M':
+        # Formula (9.30) for ★ = C̃:
+        # ϑ̂(E') = T^{(p'-q'-1)/2}(Σ_{j=0}^{δ} Λ_{(j,δ-j)}(E') ⊕ (n₀, n₀))
+        t_exp = (pp - qp - 1) // 2
+        for j in range(delta + 1):
+            truncated = myd_truncation(Ep, j, delta - j)
+            augmented = myd_augmentation(truncated, n0, n0)
+            twisted = augmented
+            for _ in range(abs(t_exp) % 2):
+                twisted = myd_involution_T(twisted)
+            results.append((1, twisted))
+
+    return results
+
+
+# ============================================================================
+# Phase 12c: Associated cycle AC(τ) via iterated descent
+#            (Equation 4.17 of [BMSZ])
+# ============================================================================
+
+def compute_AC(drc, rtype):
+    """
+    Compute the associated cycle AC(τ) ∈ K_s(O) for a painted bipartition τ.
+
+    Uses iterated descent: AC(τ) is defined recursively by (4.17):
+    - Base case (|Ǒ| = 0): AC(τ) = trivial/det/genuine
+    - Induction: AC(τ) = ϑ̂^O_{O'}(AC(τ') ⊗ twist)
+
+    Returns a list of (coefficient, MYD) pairs.
+    """
+    # Build the descent chain
+    ch = descent_chain(drc, rtype)
+
+    # Base case: the last element of the chain
+    _, base_rtype, base_sig, base_eps = ch[-1]
+
+    # Initialize AC at the base case
+    # For |Ǒ| = 0: AC = trivial MYD (empty)
+    if base_rtype == 'B-':
+        # determinant character
+        current_AC = [(1, {1: (0, 1)})]  # det representation
+    elif base_rtype == 'M':
+        # genuine representation of Mp(0)
+        current_AC = [(1, {})]  # trivial (genuine for Mp(0) = {±1})
+    else:
+        # trivial representation
+        current_AC = [(1, {})]
+
+    # Induction: walk backwards through the descent chain
+    for idx in range(len(ch) - 2, -1, -1):
+        tau_drc, tau_rtype, tau_sig, tau_eps = ch[idx]
+        tau_p, tau_q = tau_sig
+        # The descent target (tau') is ch[idx + 1]
+        _, taup_rtype, taup_sig, taup_eps = ch[idx + 1]
+        taup_p, taup_q = taup_sig
+
+        # Apply theta lift to each term in current_AC
+        new_AC = []
+        for coeff, myd in current_AC:
+            # Apply the epsilon twist before theta lift (equation 4.17)
+            if tau_rtype in ('B', 'B+', 'B-', 'D'):
+                # ★ = B or D: AC(τ) = ϑ̂(AC(τ')) ⊗ (det_{-1})^{ε_τ}
+                # The sign twist is applied AFTER theta lift
+                lifted = theta_lift_myd(myd, tau_rtype, tau_p, tau_q, taup_p, taup_q)
+                for lc, lmyd in lifted:
+                    if tau_eps == 1:
+                        # Apply det_{-1} twist: sign twist with (1,1)
+                        lmyd = myd_sign_twist(lmyd, 1, 1, tau_rtype)
+                    new_AC.append((coeff * lc, lmyd))
+            elif tau_rtype in ('C', 'M'):
+                # ★ = C or C̃: AC(τ) = ϑ̂(AC(τ') ⊗ det^{ε_℘})
+                # For special shape (℘=∅), ε_℘ = 0 always
+                # The det twist is applied BEFORE theta lift
+                myd_twisted = myd
+                if tau_eps == 1:
+                    myd_twisted = myd_involution_T(myd)
+                lifted = theta_lift_myd(myd_twisted, tau_rtype, tau_p, tau_q, taup_p, taup_q)
+                new_AC.extend((coeff * lc, lmyd) for lc, lmyd in lifted)
+            else:
+                lifted = theta_lift_myd(myd, tau_rtype, tau_p, tau_q, taup_p, taup_q)
+                new_AC.extend((coeff * lc, lmyd) for lc, lmyd in lifted)
+
+        current_AC = new_AC
+
+    return current_AC
+
+
+def print_AC(drc, rtype):
+    """Print the associated cycle for a painted bipartition."""
+    ac = compute_AC(drc, rtype)
+    print(f"AC ({rtype}):")
+    for coeff, myd in ac:
+        entries = sorted(myd.items())
+        myd_str = ', '.join(f'{i}:({p},{q})' for i, (p, q) in entries)
+        print(f"  {coeff} × [{myd_str}]")
+
+
+# ============================================================================
+# Phase 12d: Descent chain
 # ============================================================================
 
 def descent_chain(drc, rtype):
