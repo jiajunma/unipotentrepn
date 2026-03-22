@@ -1231,16 +1231,116 @@ def _format_myd(myd):
     return ' '.join(parts)
 
 
+# Display symbols for LS/MYD visualization:
+#   + : trivial system on + sign (p > 0)
+#   * : non-trivial system on + sign (p < 0)
+#   - : trivial system on - sign (q > 0)
+#   = : non-trivial system on - sign (q < 0)
+_PNPN = '+-+'   # trivial: row pattern for + rows
+_QMQM = '*=*'   # non-trivial: row pattern for + rows
+
+
+def _str_irr_myd(myd_entry):
+    """
+    Draw one irreducible MYD component as rows of +-*/=- symbols.
+
+    An entry i ↦ (p_i, q_i) at level i means:
+      - |p_i| rows of length i, with + sign if p_i > 0, * if p_i < 0
+      - |q_i| rows of length i, with - sign if q_i > 0, = if q_i < 0
+
+    Row patterns follow the alternating sign convention from [BMSZ]:
+      odd-length rows:  +, -+, +-+, -+-+, ...
+      even-length rows: -, +-, -+-, +-+-, ...
+    """
+    rows = []
+    # Sort by level (descending, so longest rows on top)
+    for i in sorted(myd_entry.keys(), reverse=True):
+        pi, qi = myd_entry[i]
+        hii, rii = divmod(i, 2)
+        # q rows (- sign) come first (displayed on top within this level)
+        if qi != 0:
+            if qi > 0:
+                onerow = _PNPN[1] * rii + _PNPN[0:2] * hii
+            else:
+                onerow = _QMQM[1] * rii + _QMQM[0:2] * hii
+            rows.extend([onerow] * abs(qi))
+        # p rows (+ sign)
+        if pi != 0:
+            if pi > 0:
+                onerow = _PNPN[0] * rii + _PNPN[1:3] * hii
+            else:
+                onerow = _QMQM[0] * rii + _QMQM[1:3] * hii
+            rows.extend([onerow] * abs(pi))
+    return rows
+
+
+def str_myd(myd):
+    """
+    Draw a marked Young diagram in the visual LS format.
+
+    Uses the same display convention as combunipotent.LS.str_LS:
+      + trivial on + sign, - trivial on - sign
+      * non-trivial on + sign, = non-trivial on - sign
+    """
+    if not myd:
+        return '(trivial)'
+    rows = _str_irr_myd(myd)
+    if not rows:
+        return '(trivial)'
+    return '\n'.join(rows)
+
+
+def str_myd_ac(ac_list):
+    """
+    Draw the associated cycle (list of (coeff, myd)) in visual format.
+    Multiple MYD components are shown side by side separated by ' | '.
+    """
+    if not ac_list:
+        return '(empty)'
+
+    all_row_blocks = []
+    for coeff, myd in ac_list:
+        rows = _str_irr_myd(myd) if myd else ['(triv)']
+        all_row_blocks.append(rows)
+
+    if not all_row_blocks:
+        return '(empty)'
+
+    # Align blocks side by side
+    max_rows = max(len(b) for b in all_row_blocks)
+    max_cols = [max((len(r) for r in b), default=0) for b in all_row_blocks]
+
+    result = []
+    for row_idx in range(max_rows):
+        parts = []
+        for blk_idx, block in enumerate(all_row_blocks):
+            r = block[row_idx] if row_idx < len(block) else ''
+            parts.append(r + ' ' * (max_cols[blk_idx] - len(r)))
+        result.append(' | '.join(parts))
+    return '\n'.join(result)
+
+
 def _format_myd_multiline(ac_list):
     """Format AC (list of (coeff, myd)) as multiline string for graph label."""
-    lines = []
+    if not ac_list:
+        return ['(empty)']
+
+    all_row_blocks = []
     for coeff, myd in ac_list:
-        myd_str = _format_myd(myd)
-        if coeff == 1:
-            lines.append(myd_str)
-        else:
-            lines.append(f'{coeff}*[{myd_str}]')
-    return lines
+        rows = _str_irr_myd(myd) if myd else ['(triv)']
+        all_row_blocks.append(rows)
+
+    max_rows = max(len(b) for b in all_row_blocks)
+    max_cols = [max((len(r) for r in b), default=0) for b in all_row_blocks]
+
+    result = []
+    for row_idx in range(max_rows):
+        parts = []
+        for blk_idx, block in enumerate(all_row_blocks):
+            r = block[row_idx] if row_idx < len(block) else ''
+            parts.append(r + ' ' * (max_cols[blk_idx] - len(r)))
+        result.append(' | '.join(parts))
+    return result
 
 
 def gen_descent_tree(dpart, rtype, format='pdf', filename='descent_tree'):
@@ -1310,15 +1410,16 @@ def gen_descent_tree(dpart, rtype, format='pdf', filename='descent_tree'):
             else:
                 gp_label = gp % (sig[0], sig[1])
 
-            # Format AC / MYD
+            # Format AC / MYD in visual LS-style format
             ac = get_ac(drc, rt)
             ac_lines = _format_myd_multiline(ac)
             ac_str = '\\l'.join(ac_lines)
 
-            # Build label
+            # Build label: DRC on top, then ε, then AC visual
             label = (f'{drc_str}\\l'
                      f'ε={eps}\\l'
-                     f'AC: {ac_str}\\l')
+                     f'─────\\l'
+                     f'{ac_str}\\l')
 
             # Color by type
             colors = {'C': '#e6f3ff', 'D': '#fff3e6',
