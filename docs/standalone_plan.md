@@ -92,11 +92,10 @@ Conditions: γ = D, r₂(Ǒ) = r₃(Ǒ) > 0, (P(c₂(ι),1), P(c₂(ι),2)) = (r
 P(c₁(ι), 1) ∈ {r, d}.
 Action: P'(c₁(ι'), 1) := r (override the naive descent at one position).
 
-#### Step 3: Handle non-special shapes (Section 10.2, 10.4)
+#### Step 3: Non-special shapes
 
-For ★ = B with (2,3) ∈ ℘ (case b): modify Q' instead of P'.
-For ★ = C, C̃ with (1,2) ∈ ℘: apply shape-shifting via T_{℘,℘↑}.
-For ★ = D with (2,3) ∈ ℘ (case b): modify P' with two-position override.
+NOT implemented. This file only handles the special shape case (℘ = ∅),
+following [BMSZ, arXiv:1712.05552v6] which does not discuss non-special shapes.
 
 ### Orbit and Bipartition Setup
 
