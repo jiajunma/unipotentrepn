@@ -129,17 +129,25 @@ def test_descent_valid(dparts, rtype):
     passed = 0
     failed = 0
 
+    # For B type, test both B+ and B- descent on the same untagged DRCs
+    rtypes_to_test = ['B+', 'B-'] if rtype == 'B' else [rtype]
+
     for dpart in dparts:
         drcs = dpart2drc(dpart, rtype)
         for drc in drcs:
-            try:
-                ddrc, rtype_prime = descent(drc, rtype)
-                if ddrc is not None and sa_verify_drc(ddrc, rtype_prime):
-                    passed += 1
-                else:
+            for rt in rtypes_to_test:
+                try:
+                    ddrc, rtype_prime = descent(drc, rt)
+                    if ddrc is not None and sa_verify_drc(ddrc, rtype_prime):
+                        passed += 1
+                    else:
+                        failed += 1
+                        if failed <= 3:
+                            print(f"  DESCENT FAIL: {dpart} {rt}: verify failed")
+                except Exception as e:
                     failed += 1
-            except Exception:
-                failed += 1
+                    if failed <= 3:
+                        print(f"  DESCENT ERROR: {dpart} {rt}: {e}")
 
     return passed, failed
 

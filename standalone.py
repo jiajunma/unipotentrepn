@@ -755,14 +755,15 @@ def _fill_ds_C(drc):
 
 
 def _fill_ds_D(drc):
-    """Redistribute dots/s for D-type (Lemma 3.7a with ★=D)."""
+    """Redistribute dots/s for D-type (used in C→D descent, Lemma 3.7a)."""
     from itertools import zip_longest
     drcL, drcR = drc
     ndrcL, ndrcR = [], []
     for colL, colR in zip_longest(drcL, drcR, fillvalue=''):
-        cL, cR = len(colL), _count_ds(colR)
+        cL = _count_ds(colL)   # •+s prefix length in P column
+        cR = len(colR)         # total Q column length (all • in C-type Q)
         ndrcL.append('*' * cR + 's' * (cL - cR) + colL[cL:])
-        ndrcR.append('*' * cR + colR[cR:])
+        ndrcR.append('*' * cR)
     return reg_drc((tuple(ndrcL), tuple(ndrcR)))
 
 
@@ -843,58 +844,75 @@ def descent(drc, rtype, dpart=None):
     """
     Compute the descent ∇(τ) of a painted bipartition.
 
-    ∇(τ) = τ' (from Lemma 3.10 or 3.12) if conditions hold,
-           τ'_naive otherwise.
+    Definition 3.14 of [BMSZ]:
+      ∇(τ) = τ'       if conditions of Lemma 3.10 or 3.12 hold,
+              τ'_naive  otherwise.
 
-    Reference: Definition 3.14 of [BMSZ].
+    Args:
+        drc: painted bipartition (drcL, drcR)
+        rtype: γ ∈ {'B+', 'B-', 'C', 'D', 'M'}
 
     Returns (drc', rtype').
     """
     drcL, drcR = drc
-    fL = getz(drcL, 0, '')
-    fR = getz(drcR, 0, '')
+    fL = getz(drcL, 0, '')  # first column of P
+    fR = getz(drcR, 0, '')  # first column of Q
+    sL = getz(drcL, 1, '')  # second column of P
 
     # Compute naive descent first
     res, rtype_prime = naive_descent(drc, rtype)
     resL, resR = res
 
-    # Lemma 3.10: ★ = B+
-    # Conditions: γ = B+, r₂(Ǒ) > 0, Q(c₁(ι), 1) ∈ {r, d}
-    if rtype in ('B+',):
-        c1_iota = len(fL)  # c₁(ι) = length of first column of P
-        q_c1 = fR[c1_iota - 1] if 0 < c1_iota <= len(fR) else ''
-        # r₂(Ǒ) > 0: check if the orbit has at least 2 rows
-        r2_positive = len(fR) > c1_iota or len(getz(drcR, 1, '')) > 0
-        if r2_positive and q_c1 in ('r', 'd'):
-            # P'(c₁(ι'), 1) = s
-            if len(resL) > 0 and len(resL[0]) > 0:
-                col0 = resL[0]
-                resL = (col0[:-1] + 's', *resL[1:])
+    # Lemma 3.10 correction: γ = B+ only
+    # Conditions:
+    #   (1) γ = B+
+    #   (2) r₂(Ǒ) > 0
+    #   (3) Q(c₁(ι), 1) ∈ {r, d}
+    # Action: P'(c₁(ι'), 1) = s
+    if rtype == 'B+':
+        c1 = len(fL)  # c₁(ι) = first column length of P
+        # r₂(Ǒ) > 0 ⟺ Q has cells beyond c₁(ι) in col 1, or has a second column
+        r2_pos = (len(fR) > c1) or (len(getz(drcR, 1, '')) > 0)
+        q_c1_1 = fR[c1 - 1] if 0 < c1 <= len(fR) else ''
+        if r2_pos and q_c1_1 in ('r', 'd'):
+            col0 = resL[0]
+            resL = (col0[:-1] + 's', *resL[1:])
 
-    # Lemma 3.12: ★ = D
-    # Conditions: γ = D, r₂(Ǒ) = r₃(Ǒ) > 0,
-    #   (P(c₂(ι),1), P(c₂(ι),2)) = (r, c),
-    #   P(c₁(ι),1) ∈ {r, d}
+    # Lemma 3.12 correction: γ = D only
+    # Conditions:
+    #   (1) γ = D
+    #   (2) r₂(Ǒ) = r₃(Ǒ) > 0
+    #   (3) (P(c₂(ι), 1), P(c₂(ι), 2)) = (r, c)
+    #   (4) P(c₁(ι), 1) ∈ {r, d}
+    # Action: P'(c₁(ι'), 1) = r
+    #
+    # Condition (2): r₂ = r₃ > 0 is equivalent to c₂(ι) = c₁(j) + 1
+    # (the second column of P extends exactly one row beyond Q's first column)
     elif rtype == 'D':
-        sL = getz(drcL, 1, '')  # second column of P
         c1 = len(fL)
         c2 = len(sL)
-        # r₂ = r₃ > 0 iff c₂(ι) = c₁(j) + 1 (see existing code)
-        if c2 > 0 and c2 == len(fR) + 1:
+        c1_j = len(fR)
+
+        if c2 > 0 and c2 == c1_j + 1:
+            # P(c₂(ι), 1) = symbol at row c₂ of P's first column
             p_c2_1 = fL[c2 - 1] if c2 <= len(fL) else ''
+            # P(c₂(ι), 2) = last symbol in P's second column
             p_c2_2 = sL[-1] if len(sL) > 0 else ''
-            p_c1_1 = fL[c1 - 1] if c1 > 0 and c1 <= len(fL) else ''
-            # Check: (P(c₂,1), P(c₂,2)) = (r, c) and P(c₁,1) ∈ {r, d}
+            # P(c₁(ι), 1) = last symbol in P's first column
+            p_c1_1 = fL[-1] if len(fL) > 0 else ''
+
             if (p_c2_1, p_c2_2) == ('r', 'c') and p_c1_1 in ('r', 'd'):
-                # P'(c₁(ι'), 1) = r
-                if len(resL) > 0 and len(resL[0]) > 0:
-                    col0 = resL[0]
-                    resL = (col0[:-1] + 'r', *resL[1:])
-            # Also check the broader condition from the existing code
-            elif c1 > 0 and fL.count('c') == 0 and fL[c2 - 1:].count('s') == 0 and sL[-1:] == 'c':
-                if len(resL) > 0 and len(resL[0]) > 0:
-                    col0 = resL[0]
-                    resL = (col0[:-1] + 'r', *resL[1:])
+                col0 = resL[0]
+                resL = (col0[:-1] + 'r', *resL[1:])
+
+        # Additional case from combunipotent/drclift.py:
+        # When c₂(ι) = c₁(j) + 1 but (P(c₂,1), P(c₂,2)) ≠ (r,c),
+        # check the broader condition: fL has no 'c', fL[c₂-1:] has no 's',
+        # and sL ends with 'c'.
+        elif c2 > 0 and c2 == c1_j + 1:
+            if fL.count('c') == 0 and fL[c2 - 1:].count('s') == 0 and sL[-1:] == 'c':
+                col0 = resL[0]
+                resL = (col0[:-1] + 'r', *resL[1:])
 
     return reg_drc((resL, resR)), rtype_prime
 
