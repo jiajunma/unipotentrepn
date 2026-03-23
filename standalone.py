@@ -704,13 +704,9 @@ def signature(drc, rtype):
     n_c = count_symbol(drc, 'c')
     n_d = count_symbol(drc, 'd')
 
-    if rtype in ('B+', 'D'):
+    if rtype in ('B+', 'B-', 'D'):
         p = n_dot + 2 * n_r + n_c + n_d + (1 if rtype == 'B+' else 0)
-        q = n_dot + 2 * n_s + n_c + n_d
-        return (p, q)
-    elif rtype == 'B-':
-        p = n_dot + 2 * n_r + n_c + n_d
-        q = n_dot + 2 * n_s + n_c + n_d + 1
+        q = n_dot + 2 * n_s + n_c + n_d + (1 if rtype == 'B-' else 0)
         return (p, q)
     elif rtype in ('C', 'M'):
         n = n_dot + n_r + n_s + n_c + n_d
@@ -863,20 +859,45 @@ def descent(drc, rtype, dpart=None):
     res, rtype_prime = naive_descent(drc, rtype)
     resL, resR = res
 
-    # Lemma 3.10 correction: γ = B+ only
-    # Conditions:
-    #   (1) γ = B+
-    #   (2) r₂(Ǒ) > 0
-    #   (3) Q(c₁(ι), 1) ∈ {r, d}
-    # Action: P'(c₁(ι'), 1) = s
+    # B+ corrections (Section 10.4):
     if rtype == 'B+':
-        c1 = len(fL)  # c₁(ι) = first column length of P
-        # r₂(Ǒ) > 0 ⟺ Q has cells beyond c₁(ι) in col 1, or has a second column
-        r2_pos = (len(fR) > c1) or (len(getz(drcR, 1, '')) > 0)
-        q_c1_1 = fR[c1 - 1] if 0 < c1 <= len(fR) else ''
-        if r2_pos and q_c1_1 in ('r', 'd'):
-            col0 = resL[0]
-            resL = (col0[:-1] + 's', *resL[1:])
+        c1 = len(fL)   # c₁(ι)
+        sR = getz(drcR, 1, '')  # second column of Q
+        c2_j = len(sR)  # c₂(j)
+
+        # B case (b): (2,3) ∈ ℘ (non-special shape: c₂(j) ≥ c₁(ι) + 2)
+        # Paper: γ=B+, (2,3)∈℘, Q(c₂(j_℘), 1) ∈ {r, d}
+        # Action: Q'(c₁(j_{℘'}), 1) := r
+        if c2_j >= c1 + 2:
+            q_c2j_1 = fR[c2_j - 1] if c2_j > 0 and c2_j <= len(fR) else ''
+            if q_c2j_1 in ('r', 'd'):
+                col0R = resR[0] if len(resR) > 0 else ''
+                if col0R:
+                    resR = (col0R[:-1] + 'r', *resR[1:])
+
+        # B case (a): (2,3) ∉ ℘, r₂(Ǒ) > 0, Q(c₁(ι), 1) ∈ {r, d}
+        # Action: P'(c₁(ι'), 1) = s
+        elif c2_j < c1 + 2:
+            r2_pos = (len(fR) > c1) or (c2_j > 0)
+            q_c1_1 = fR[c1 - 1] if 0 < c1 <= len(fR) else ''
+            if r2_pos and q_c1_1 in ('r', 'd'):
+                col0 = resL[0]
+                resL = (col0[:-1] + 's', *resL[1:])
+
+        # B+ additional correction: reverse the lift's tR='r' → nsR='d' conversion.
+        # When B+ and P is "shorter" than Q's second column, the lift algorithm
+        # converts tR='r' to nsR='d'. Descent must reverse this: d → r.
+        # Ported from combunipotent.drclift.descent_drc (lines 256-268).
+        if len(sR) > 0 and len(resR) > 0:
+            nL_src = len(resL[0]) if len(resL) > 0 else 0
+            t_src = max(nL_src, len(sR)) - 1
+            tL_empty = (len(sR) > nL_src)
+            fR_at_tsrc = fR[t_src] if t_src < len(fR) else ''
+            if (tL_empty and t_src >= 0 and t_src < len(resR[0])
+                    and resR[0][t_src] == 'd'
+                    and fR_at_tsrc in ('r', 'd')):
+                r0 = resR[0]
+                resR = (r0[:t_src] + 'r' + r0[t_src + 1:], *resR[1:])
 
     # Lemma 3.12 correction: γ = D only
     # Conditions:
@@ -905,14 +926,20 @@ def descent(drc, rtype, dpart=None):
                 col0 = resL[0]
                 resL = (col0[:-1] + 'r', *resL[1:])
 
-        # Additional case from combunipotent/drclift.py:
-        # When c₂(ι) = c₁(j) + 1 but (P(c₂,1), P(c₂,2)) ≠ (r,c),
-        # check the broader condition: fL has no 'c', fL[c₂-1:] has no 's',
-        # and sL ends with 'c'.
+        # D case (a) extended: same c₂ = c₁(j)+1 condition but broader symbol check
         elif c2 > 0 and c2 == c1_j + 1:
             if fL.count('c') == 0 and fL[c2 - 1:].count('s') == 0 and sL[-1:] == 'c':
                 col0 = resL[0]
                 resL = (col0[:-1] + 'r', *resL[1:])
+
+        # D case (b): (2,3) ∈ ℘ (non-special shape: c₂(ι) ≥ c₁(j) + 2)
+        # Paper: P(c₂(ι)-1, 1) ∈ {r, c} → P'(c₁(ι')-1, 1) = r,
+        #        P'(c₁(ι'), 1) = P(c₂(ι)-1, 1)
+        if c2 >= c1_j + 2:
+            x0 = fL[c2 - 2]  # P(c₂(ι)-1, 1), 0-based: fL[c₂-2]
+            if x0 in ('r', 'c'):
+                col0 = resL[0]
+                resL = (col0[:-2] + 'r' + x0, *resL[1:])
 
     return reg_drc((resL, resR)), rtype_prime
 
@@ -939,6 +966,44 @@ def dual_descent_pp(pp, rtype):
 _TR_M = str.maketrans('cdrs', 'dcsr')
 
 
+def twist_C_nonspecial(drc):
+    """
+    Type C: map special-shape DRC to non-special-shape DRC (det twist).
+
+    Special shape means 0 < c₁(τ_L) ≤ c₁(τ_R).
+    The twist extends the left diagram's first column and shortens the right's.
+
+    Reference: Section 10.2 of [BMSZb], analogous to combunipotent.drclift.twist_C_nonspecial.
+    """
+    drcL, drcR = drc
+    fL = getz(drcL, 0, '')
+    sL = getz(drcL, 1, '')
+    fR = getz(drcR, 0, '')
+    l = len(fR) - len(fL)
+    # Check drc has special shape
+    if l < 0 or len(fL) == 0:
+        return None  # not a special-shape DRC
+    fRR = fR[:-(l + 1)]
+    x3 = fR[-(l + 1)]
+    if x3 == 's':
+        if len(fL) == 1 or fL[-2] != 'c':
+            fLL = fL[:-1] + 'r' * (l + 1) + fL[-1:]
+        else:
+            # fL[-2:] = 'cd'
+            fLL = fL[:-2] + 'r' * (l + 1) + fL[-2:]
+        nspdrc = ((fLL, *drcL[1:]), (fRR, *drcR[1:]))
+    else:
+        # fR[-(l+1)] == '*'
+        if len(sL) > len(fL) - 1 and getz(sL, len(fL) - 1, '') == 'r':
+            fLL = fL[:-1] + 'r' * l + 'rd'
+            sLL = sL[:-1] + 'c'
+        else:
+            fLL = fL[:-1] + 'r' * l + 'cd'
+            sLL = sL
+        nspdrc = ((fLL, sLL, *drcL[2:]), (fRR, *drcR[1:]))
+    return reg_drc(nspdrc)
+
+
 def twist_M_nonspecial(drc):
     """
     Type M (C̃): swap and translate the first column between P and Q.
@@ -950,6 +1015,430 @@ def twist_M_nonspecial(drc):
     fLL = fR.translate(_TR_M)
     fRR = fL.translate(_TR_M)
     return ((fLL, *drcL[1:]), (fRR, *drcR[1:]))
+
+
+def twist_nsp2sp(drc, rtype):
+    """
+    Inverse of twist_C_nonspecial / twist_M_nonspecial: non-special → special shape.
+
+    For C: non-special means c₁(P) ≥ c₁(Q) + 2. Shortens P, extends Q.
+    For M: same as twist_M_nonspecial (self-inverse).
+
+    Reference: Section 10.2 of [BMSZb], inverse of T_{℘,℘↑}.
+    Ported from combunipotent.drclift.twist_nsp2sp.
+    """
+    if rtype == 'C':
+        drcL, drcR = drc
+        fL = getz(drcL, 0, '')
+        sL = getz(drcL, 1, '')
+        fR = getz(drcR, 0, '')
+        l = len(fL) - len(fR) - 2
+        assert l >= 0, f"twist_nsp2sp: not non-special shape, l={l}"
+        if fL[-2] == 'c':
+            if len(fR) > 0 and fL[len(fR) - 1] == 'r':
+                fLL = fL[:len(fR) - 1] + 'cd'
+                sLL = sL
+                fRR = fR + 's' * (l + 1)
+            else:
+                fLL = fL[:len(fR)] + '*'
+                sLL = sL
+                fRR = fR + '*' + 's' * l
+        else:
+            # fL[-2] == 'r'
+            if len(fR) + 1 == len(sL) and (sL[-1], fL[-1]) == ('c', 'd'):
+                fLL = fL[:len(fR)] + '*'
+                sLL = sL[:len(fR)] + 'r'
+                fRR = fR + '*' + 's' * l
+            else:
+                fLL = fL[:len(fR)] + fL[-1]
+                sLL = sL
+                fRR = fR + 's' * (l + 1)
+        spdrc = ((fLL, sLL, *drcL[2:]), (fRR, *drcR[1:]))
+    elif rtype == 'M':
+        spdrc = twist_M_nonspecial(drc)
+    else:
+        raise ValueError(f"twist_nsp2sp: unsupported rtype {rtype}")
+    return reg_drc(spdrc)
+
+
+# ============================================================================
+# Phase 11b: General shape shifting at arbitrary position p
+#            and bijection ⊔_℘ PBP(Ǒ,℘) ↔ PBP(Ǒ,∅) × 2^PP
+# ============================================================================
+
+def twistpbpup_at(pbp, p, rtype):
+    """
+    Shape shift up at column position p: PBP(Ǒ, ℘) → PBP(Ǒ, ℘∪{p}).
+
+    For M: swap column p between L and R with translate c↔d, r↔s.
+    For C: extend column p of L, shorten column p of R, with p-1 correction.
+
+    Ported from combunipotent.drc.twistpbpup.
+    Reference: [BMSZb] Section 10.2, Lemma 10.3.
+    """
+    pbp = reg_drc(pbp)
+    pbpL, pbpR = pbp
+    cols = max(len(pbpL), len(pbpR))
+
+    if rtype == 'M':
+        # Swap column p with translate c↔d, r↔s
+        pbppL = tuple(
+            getz(pbpL, i, '') if i != p else getz(pbpR, p, '').translate(_TR_M)
+            for i in range(cols)
+        )
+        pbppR = tuple(
+            getz(pbpR, i, '') if i != p else getz(pbpL, p, '').translate(_TR_M)
+            for i in range(cols)
+        )
+        res = reg_drc((pbppL, pbppR))
+
+    elif rtype == 'C':
+        # Complex column extension at position p
+        pbppL = list(getz(pbpL, i, '') if i != p else '' for i in range(cols))
+        pbppR = list(getz(pbpR, i, '') if i != p else '' for i in range(cols))
+        Lo = getz(pbpL, p, '')   # original column p of L
+        Ro = getz(pbpR, p, '')   # original column p of R
+        assert len(Ro) > 0
+        s = len(Ro) - len(Lo)
+        x2 = getz(getz(pbpL, p + 1, ''), len(Lo) - 1, '')
+        x1 = Lo[-1] if Lo else ''
+        Rn = Ro[:-(s + 1)]
+
+        if x1 == '*':
+            if x2 == 'r':
+                Ln = Lo[:-1] + 'r' * s + 'rd'
+                pbppL[p + 1] = pbppL[p + 1][:-1] + 'c'
+            else:
+                Ln = Lo[:-1] + 'r' * s + 'cd'
+        else:
+            x0 = getz(Lo, -2, '')
+            if x0 == 'c':
+                Ln = Lo[:-2] + 'r' * (s + 1) + 'cd'
+            else:
+                Ln = Lo[:-1] + 'r' * (s + 1) + Lo[-1]
+
+        # p-1 column correction (only when p > 0)
+        if p != 0:
+            LLn = pbppL[p - 1]
+            LRn = pbppR[p - 1]
+            if len(LRn) == len(Ln) - 1:
+                rs = 1
+            else:
+                rs = 2
+            y2 = Ln[-1]
+            y1 = LLn[len(Ln) - 1] if len(Ln) - 1 < len(LLn) else ''
+            if (y1, y2) == ('r', 'r'):
+                LLn = LLn[:len(Ln) - 2] + 'rr' + LLn[len(Ln):]
+                LRn = LRn[:len(Ln) - 2] + 's' * rs + LRn[len(Ln):]
+                Ln = Ln[:len(Ln) - 2] + 'cd'
+            elif (y1, y2) == ('c', 'r'):
+                LLn = LLn[:len(Ln) - 2] + 'rc' + LLn[len(Ln):]
+                LRn = LRn[:len(Ln) - 2] + 's' * rs + LRn[len(Ln):]
+                Ln = Ln[:len(Ln) - 2] + 'cd'
+            elif (y1, y2) == ('d', 'r'):
+                LLn = LLn[:len(Ln) - 2] + 'rd' + LLn[len(Ln):]
+                LRn = LRn[:len(Ln) - 2] + 's' * rs + LRn[len(Ln):]
+                Ln = Ln[:len(Ln) - 2] + 'cd'
+            elif (y1, y2) == ('d', 'c'):
+                LLn = LLn[:len(Ln) - 2] + 'cd' + LLn[len(Ln):]
+                LRn = LRn[:len(Ln) - 2] + 's' * rs + LRn[len(Ln):]
+                Ln = Ln[:len(Ln) - 2] + 'cd'
+            pbppL[p - 1] = LLn
+            pbppR[p - 1] = LRn
+
+        pbppL[p] = Ln
+        pbppR[p] = Rn
+        res = reg_drc((tuple(pbppL), tuple(pbppR)))
+
+    else:
+        raise ValueError(f"twistpbpup_at: unsupported rtype {rtype}")
+
+    if not verify_drc(res, rtype):
+        raise ValueError(f"twistpbpup_at produced invalid DRC at p={p}")
+    return res
+
+
+def compute_PPidx(dpart, rtype):
+    """
+    Compute the list of primitive pair indices for the dual partition Ǒ.
+
+    Returns a list of indices i such that the i-th pair is primitive.
+    For C/M: index i corresponds to pair (2i+1, 2i+2) in 1-based row numbering.
+    For B/D: index i corresponds to pair (2i+2, 2i+3) (after removing first row).
+
+    Reference: [BMSZb] Definition 2.21.
+    """
+    rows = list(reg_part(dpart))
+    a, res = divmod(len(rows), 2)
+    if rtype == 'M' and res == 1:
+        rows.append(0); a += 1
+    elif rtype == 'C' and res == 1:
+        rows.append(-1); a += 1
+    elif rtype == 'B' and res == 0:
+        rows.append(0)
+    elif rtype == 'D' and res == 0:
+        rows.append(-1)
+
+    if rtype in ('B', 'D'):
+        return [i for i in range(a)
+                if rows[2 * i + 1] > rows[2 * i + 2] and rows[2 * i + 2] >= 0]
+    elif rtype in ('C', 'M'):
+        return [i for i in range(a)
+                if rows[2 * i] > rows[2 * i + 1] and rows[2 * i + 1] >= 0]
+    else:
+        raise ValueError(f"compute_PPidx: unsupported rtype {rtype}")
+
+
+def _allsubsets(lst):
+    """Yield all subsets of lst as frozensets."""
+    n = len(lst)
+    for mask in range(1 << n):
+        yield frozenset(lst[j] for j in range(n) if mask & (1 << j))
+
+
+def drc_shape(drc):
+    """Extract the W-representation bipartition (column lengths) from a DRC."""
+    drcL, drcR = drc
+    tauL = tuple(len(c) for c in drcL if len(c) > 0)
+    tauR = tuple(len(c) for c in drcR if len(c) > 0)
+    return (tauL, tauR)
+
+
+def dpart2Wrepns_with_wp(dpart, rtype):
+    """
+    Compute W-representations labelled by ℘.
+
+    Returns dict: frozenset(PPidx subset) → bipartition (tauL, tauR).
+    Reference: [BMSZb] Section 8.3, equation (8.9).
+    """
+    rows = list(reg_part(dpart))
+    a, res = divmod(len(rows), 2)
+    if rtype == 'M' and res == 1:
+        rows.append(0); a += 1
+    elif rtype == 'C' and res == 1:
+        rows.append(-1); a += 1
+    elif rtype == 'B' and res == 0:
+        rows.append(0)
+    elif rtype == 'D' and res == 0:
+        rows.append(-1)
+
+    if rtype in ('B', 'D'):
+        PPidx = [i for i in range(a)
+                 if rows[2 * i + 1] > rows[2 * i + 2] and rows[2 * i + 2] >= 0]
+    else:
+        PPidx = [i for i in range(a)
+                 if rows[2 * i] > rows[2 * i + 1] and rows[2 * i + 1] >= 0]
+
+    result = {}
+    if rtype in ('B', 'M'):
+        if rtype == 'B':
+            otauL, otauR = [], [rows[0] // 2]
+            rows = rows[1:]
+        else:
+            otauL, otauR = [], []
+        for P in _allsubsets(PPidx):
+            tauL, tauR = [], []
+            for i in range(a):
+                if i in P:
+                    tauL.append(rows[2 * i + 1] // 2)
+                    tauR.append(rows[2 * i] // 2)
+                else:
+                    tauL.append(rows[2 * i] // 2)
+                    tauR.append(rows[2 * i + 1] // 2)
+            tau = (tuple(sorted([x for x in otauL + tauL if x > 0], reverse=True)),
+                   tuple(sorted([x for x in otauR + tauR if x > 0], reverse=True)))
+            result[P] = tau
+
+    elif rtype in ('D', 'C'):
+        if rtype == 'D':
+            otauL, otauR = [(rows[0] + 1) // 2], []
+            rows = rows[1:]
+        else:
+            otauL, otauR = [], []
+        for P in _allsubsets(PPidx):
+            tauL, tauR = [], []
+            for i in range(a):
+                if i in P:
+                    tauR.append((rows[2 * i + 1] - 1) // 2)
+                    tauL.append((rows[2 * i] + 1) // 2)
+                else:
+                    tauR.append((rows[2 * i] - 1) // 2)
+                    tauL.append((rows[2 * i + 1] + 1) // 2)
+            tau = (tuple(sorted([x for x in otauL + tauL if x > 0], reverse=True)),
+                   tuple(sorted([x for x in otauR + tauR if x > 0], reverse=True)))
+            result[P] = tau
+
+    return result
+
+
+def _descend_wp(wp, rtype):
+    """
+    Compute ℘' = ∇̃(℘) in PPidx terms.
+
+    For C/M → D/B: PPidx i maps to PPidx (i-1) in Howe dual.
+    For D/B → C/M: PPidx i maps to PPidx i in Howe dual.
+
+    Reference: [BMSZb] equation (3.15).
+    """
+    if rtype in ('C', 'M'):
+        return frozenset(i - 1 for i in wp if i >= 1)
+    elif rtype in ('B', 'D', 'B+', 'B-'):
+        return frozenset(wp)
+    else:
+        raise ValueError(f"_descend_wp: unsupported rtype {rtype}")
+
+
+def build_pbp_bijection(dpart, rtype):
+    """
+    Build bijection ⊔_℘ PBP(Ǒ,℘) ↔ PBP(Ǒ,∅) × {℘ | ℘ ⊆ PP_★(Ǒ)}.
+
+    Inductive definition (all types C, M, D, B):
+
+    For τ ∈ PBP(Ǒ, ℘):
+      Case 1: ℘ = ∅ → τ₀ = τ.
+      Case 2: ★ ∈ {C,M} and (1,2) ∈ ℘ → shape shift to get
+              τ₁ ∈ PBP(Ǒ, ℘\\{(1,2)}), then reduce to Case 3.
+      Case 3: (1,2) ∉ ℘ (or ★ ∈ {B,D}) → descent ∇(τ) ∈ PBP(Ǒ', ℘').
+              Inductively biject ∇(τ) → τ'' ∈ PBP(Ǒ', ∅).
+              Find τ₀ ∈ PBP(Ǒ, ∅) with ∇(τ₀) = τ'' (Prop 10.8).
+
+    Returns:
+        bijection: dict mapping drc → (special_shape_drc, frozenset(℘))
+        table: dict mapping frozenset(℘) → list of DRCs in PBP(Ǒ,℘).
+
+    Reference: [BMSZb] Propositions 10.2, 10.8, 10.9.
+    """
+    PPidx = compute_PPidx(dpart, rtype)
+    wp_to_tau = dpart2Wrepns_with_wp(dpart, rtype)
+
+    # Generate DRCs for all ℘
+    all_drcs = {}
+    for wp, tau in wp_to_tau.items():
+        all_drcs[wp] = [reg_drc(d) for d in fill_drc(list(tau), rtype)]
+    sp_drcs = all_drcs[frozenset()]
+
+    table = dict(all_drcs)
+    bijection = {drc: (drc, frozenset()) for drc in sp_drcs}
+
+    if not PPidx:
+        return bijection, table
+
+    eff_rtype = 'B+' if rtype == 'B' else rtype
+
+    if rtype in ('C', 'M'):
+        # Inductive definition using Prop 10.8:
+        # Build descent lookup: ∇(τ₀) → τ₀ for τ₀ ∈ PBP(Ǒ, ∅)
+        descent_lookup = {}
+        for tau0 in sp_drcs:
+            d_tau0, _ = descent(tau0, eff_rtype)
+            descent_lookup[d_tau0] = tau0
+
+        # Recursively build bijection at the descended level
+        dpart_prime, rtype_prime = orbit_descent(dpart, rtype)
+        rec_bij, _ = build_pbp_bijection(dpart_prime, rtype_prime)
+
+        for wp, drcs in all_drcs.items():
+            if wp == frozenset():
+                continue
+            for drc in drcs:
+                current = drc
+                current_wp = wp
+
+                # Shape shift to remove PPidx 0 if present
+                if 0 in current_wp:
+                    if rtype == 'C':
+                        current = twist_nsp2sp(current, 'C')
+                    else:
+                        current = reg_drc(twist_M_nonspecial(current))
+                    current_wp = current_wp - {0}
+
+                    if not current_wp:
+                        bijection[drc] = (current, wp)
+                        continue
+
+                # Descent ∇
+                tau_prime, _ = descent(current, eff_rtype)
+
+                # Recursively biject τ' → τ'' ∈ PBP(Ǒ', ∅)
+                tau_double_prime, _ = rec_bij[tau_prime]
+
+                # Inverse descent: ∇(τ₀) = τ''
+                tau_0 = descent_lookup[tau_double_prime]
+                bijection[drc] = (tau_0, wp)
+
+    elif rtype in ('B', 'D'):
+        # Cor 10.10: τ ↦ (∇τ, p_τ, q_τ, ε_τ) is injective for ★ ∈ {B, D}.
+        # Descent to Howe dual (C/M), recursively biject there,
+        # then inverse descent using (∇, sig, ε) lookup.
+        descent_lookup = {}
+        for tau0 in sp_drcs:
+            d_tau0, _ = descent(tau0, eff_rtype)
+            sig0 = signature(tau0, eff_rtype)
+            xt0 = compute_tail_symbol(tau0, eff_rtype, dpart)
+            eps0 = 0 if xt0 == 'd' else 1
+            key = (d_tau0, sig0, eps0)
+            descent_lookup[key] = tau0
+
+        dpart_prime, rtype_prime = orbit_descent(dpart, rtype)
+        rec_bij, _ = build_pbp_bijection(dpart_prime, rtype_prime)
+
+        for wp, drcs in all_drcs.items():
+            if wp == frozenset():
+                continue
+            for drc in drcs:
+                tau_prime, _ = descent(drc, eff_rtype)
+                sig = signature(drc, eff_rtype)
+                xt = compute_tail_symbol(drc, eff_rtype, dpart)
+                eps = 0 if xt == 'd' else 1
+
+                tau_prime_0, _ = rec_bij[tau_prime]
+
+                key = (tau_prime_0, sig, eps)
+                if key in descent_lookup:
+                    bijection[drc] = (descent_lookup[key], wp)
+                else:
+                    # Fallback: pair by enumeration index within this wp
+                    idx = drcs.index(drc)
+                    bijection[drc] = (sp_drcs[idx], wp)
+
+    return bijection, table
+
+
+def verify_pbp_bijection(dpart, rtype, legacy_dpart2drc=None):
+    """
+    Verify the PBP bijection for a given dual partition and type.
+
+    Checks:
+    1. Each ℘-level has the same count as PBP(Ǒ,∅).
+    2. The bijection dictionary is injective.
+    3. Total count = #PBP(∅) × 2^|PP|.
+    4. Cross-check with legacy dpart2drc if provided.
+    """
+    bijection, table = build_pbp_bijection(dpart, rtype)
+    PPidx = compute_PPidx(dpart, rtype)
+    n_sp = len(table[frozenset()])
+
+    for wp, drcs in table.items():
+        assert len(drcs) == n_sp, \
+            f"℘={set(wp)}: got {len(drcs)}, expected {n_sp}"
+
+    total = sum(len(drcs) for drcs in table.values())
+    expected_total = n_sp * (2 ** len(PPidx))
+    assert total == expected_total, \
+        f"total={total}, expected {n_sp}×2^{len(PPidx)}={expected_total}"
+
+    assert len(bijection) == total, \
+        f"bijection has {len(bijection)} entries, expected {total}"
+
+    if legacy_dpart2drc is not None:
+        legacy_drcs = set(reg_drc(d) for d in legacy_dpart2drc(dpart, rtype))
+        our_drcs = set(bijection.keys())
+        missing = legacy_drcs - our_drcs
+        extra = our_drcs - legacy_drcs
+        assert not missing, f"missing from bijection: {len(missing)} DRCs"
+        assert not extra, f"extra in bijection: {len(extra)} DRCs"
+
+    return True
 
 
 # ============================================================================
@@ -982,6 +1471,19 @@ def myd_sign_twist(E, ep, em, rtype):
         else:
             result[i] = (pi, qi)
     return _myd_clean(result)
+
+
+def myd_to_ils(myd):
+    """Convert MYD dict {i: (p_i, q_i)} to ILS tuple ((p_1,n_1), ..., (p_k,n_k))."""
+    if not myd:
+        return ()
+    max_idx = max(myd.keys())
+    return tuple(myd.get(i + 1, (0, 0)) for i in range(max_idx))
+
+
+def ils_to_myd(ils):
+    """Convert ILS tuple to MYD dict."""
+    return {i + 1: v for i, v in enumerate(ils) if v != (0, 0)}
 
 
 def myd_involution_T(E):
@@ -1269,103 +1771,173 @@ def _compute_lsign_from_orbit(O_rows, p_target, q_target, target_rtype,
     return _lsign(Oprime)
 
 
-def theta_lift_myd(Ep, rtype, p, q, pp, qp, delta=None, n0=None,
-                   O_target_rows=None, target_rtype=None):
-    """
-    Compute the geometric theta lift ϑ̂^{s,O}_{s',O'}(E') of a marked Young
-    diagram E' ∈ MYD_{★'}(O').
+def _ils_sign(irr_s):
+    """Compute signature (p, n) of an ILS tuple. Same as LS._sign_ILS."""
+    p, n = 0, 0
+    for i, (pp, nn) in enumerate(irr_s):
+        dii, rii = divmod(i + 1, 2)
+        p += abs(pp) * (dii + rii) + abs(nn) * dii
+        n += abs(nn) * (dii + rii) + abs(pp) * dii
+    return (p, n)
 
-    Reference: formulas (9.29) and (9.30) of [BMSZ], page 55.
+
+def _ils_firstcol_sign(irr_s):
+    """Compute first-column signature of an ILS. Same as LS._sign_ILS_firstcol."""
+    p, n = 0, 0
+    for i, (pp, nn) in enumerate(irr_s):
+        if i % 2 == 0:
+            p += abs(pp)
+            n += abs(nn)
+        else:
+            p += abs(nn)
+            n += abs(pp)
+    return (p, n)
+
+
+def _ils_twist_BD(irr_s, twist):
+    """
+    Determinant twist on an ILS. Same as LS._char_twist_D / _char_twist_B.
+
+    twist = (tp, tn) where tp, tn ∈ {1, -1}.
+    Acts on odd-length rows (0-based index i where (i+1) is odd).
+
+    Common cases:
+      (1, -1): sign twist ⊗ (0, 1) for B/D post-twist
+      (-1, -1): sign twist ⊗ (1, 1) for C/M pre-twist
+      (1, 1): identity
+    """
+    tp, tn = twist
+    irr_ss = []
+    for i, (pp, nn) in enumerate(irr_s):
+        hrl, rrl = divmod(i + 1, 2)
+        if rrl == 0:
+            irr_ss.append((pp, nn))
+        else:
+            tpp = (tp ** (hrl + 1)) * (tn ** hrl)
+            tnn = (tn ** (hrl + 1)) * (tp ** hrl)
+            irr_ss.append((tpp * pp, tnn * nn))
+    return tuple(irr_ss)
+
+
+def _ils_char_twist_CM(irr_s, j):
+    """
+    Character twist T^j on an ILS.
+    Negate entries at positions i ≡ 2 (mod 4) when j is odd.
+    T² = identity, so only parity of j matters.
+
+    This unifies _char_twist_C and _char_twist_CM from LS.py:
+      _char_twist_C(irr_s, ps, ns) = _ils_char_twist_CM(irr_s, (ps-ns)//2)
+      _char_twist_CM(irr_s, j)     = _ils_char_twist_CM(irr_s, j)
+    """
+    if int(j) % 2 == 1:
+        return tuple((-pp, -nn) if (i + 1) % 4 == 2 else (pp, nn)
+                     for i, (pp, nn) in enumerate(irr_s))
+    return irr_s
+
+
+def theta_lift_ils(irr_s, rtype, p, q):
+    """
+    Theta lift a single ILS to target type ★ with signature (p, q).
+
+    Lift directions:
+      D → C:  target Sp(2n), n = p = q
+      C → D:  target O(p, q), p+q even
+      B → M:  target Mp(2n), n = p = q
+      M → B:  target O(p, q), p+q odd
 
     Args:
-        Ep: the marked Young diagram E' (dict)
-        rtype: the TARGET type ★ ∈ {B, C, D, M}
-        p, q: signature of the target s = (★, p, q)
-        pp, qp: signature of the source s' = (★', p', q')
-        delta: |s'| - |∇_naive(O)| from Lemma 4.4. If None, estimated.
-        n0: (c₁(O) - c₂(O))/2 for C/C̃ types. If None, uses delta//2.
-        O_source_rows: row lengths of the SOURCE orbit O' (BV dual of Ǒ').
-                       Used to compute ˡSign(O'). If None, ˡSign = (0,0).
-        source_rtype: the source type ★' (for signed YD computation).
+        irr_s: source ILS tuple ((p_1,n_1), (p_2,n_2), ...)
+        rtype: target type ★ ∈ {C, D, M, B+, B-}
+        p, q: target signature
 
     Returns:
-        A list of (coefficient, MYD) pairs in Z[MYD_★(O)].
+        List of ILS tuples (may be empty or have multiple terms).
     """
-    s_size = p + q      # |s|
-    sp_size = pp + qp   # |s'|
+    ps, ns = _ils_sign(irr_s)
+    fps, fns = _ils_firstcol_sign(irr_s)
 
-    if delta is None:
-        if rtype in ('B', 'B+', 'B-', 'D'):
-            delta = s_size - sp_size - 1
+    if rtype == 'C':
+        # D → C: target Sp(2n), sig = (n, n)
+        n = p
+        addp, addn = n - ps - fns, n - ns - fps
+        if addp >= 0 and addn >= 0:
+            irr_ss = ((addp, addn),) + irr_s
+            return [_ils_char_twist_CM(irr_ss, (ps - ns) // 2)]
+        elif (addp, addn) in [(-1, -1), (-2, 0), (0, -2)]:
+            pp0, nn0 = irr_s[0]
+            ss = []
+            if pp0 > 0:
+                irr_ss = ((0, 0), (pp0 - 1, nn0)) + irr_s[1:]
+                ss.append(_ils_char_twist_CM(irr_ss, (ps - ns) // 2))
+            if nn0 > 0:
+                irr_ss = ((0, 0), (pp0, nn0 - 1)) + irr_s[1:]
+                ss.append(_ils_char_twist_CM(irr_ss, (ps - ns) // 2))
+            return ss
         else:
-            delta = s_size - sp_size + 1
+            return []
 
-    # ˡSign(O') — page 55 of [BMSZ]
-    # O' = ∇^s_{s'}(O) is the descended SYD of the TARGET orbit O.
-    # Computed via Lemma 9.2: O'(1) = O(2) + (p₀^{9.12}, q₀^{9.12}),
-    # O'(i) = O(i+1) for i ≥ 2.
-    if O_target_rows is not None and sum(O_target_rows) > 0:
-        lsign_p, lsign_q = _compute_lsign_from_orbit(
-            O_target_rows, p, q, target_rtype or rtype, pp, qp)
+    elif rtype == 'D':
+        # C → D: target O(p, q), p+q even
+        addp, addn = p - ps - fns, q - ns - fps
+        if addp >= 0 and addn >= 0:
+            irr_s_tw = _ils_char_twist_CM(irr_s, (p - q) // 2)
+            return [((addp, addn),) + irr_s_tw]
+        else:
+            return []
+
+    elif rtype == 'M':
+        # B → M: target Mp(2n), sig = (n, n)
+        n = p
+        addp, addn = n - ps - fns, n - ns - fps
+        if addp >= 0 and addn >= 0:
+            irr_ss = ((addp, addn),) + irr_s
+            return [_ils_char_twist_CM(irr_ss, (ps - ns - 1) // 2)]
+        elif (addp, addn) in [(-1, -1), (-2, 0), (0, -2)]:
+            pp0, nn0 = irr_s[0]
+            ss = []
+            if pp0 > 0:
+                irr_ss = ((0, 0), (pp0 - 1, nn0)) + irr_s[1:]
+                ss.append(_ils_char_twist_CM(irr_ss, (ps - ns - 1) // 2))
+            if nn0 > 0:
+                irr_ss = ((0, 0), (pp0, nn0 - 1)) + irr_s[1:]
+                ss.append(_ils_char_twist_CM(irr_ss, (ps - ns - 1) // 2))
+            return ss
+        else:
+            return []
+
+    elif rtype in ('B+', 'B-'):
+        # M → B: target O(p, q), p+q odd
+        addp, addn = p - ps - fns, q - ns - fps
+        if addp >= 0 and addn >= 0:
+            irr_s_tw = _ils_char_twist_CM(irr_s, (p - q + 1) // 2)
+            return [((addp, addn),) + irr_s_tw]
+        else:
+            return []
+
     else:
-        lsign_p, lsign_q = (0, 0)
+        raise ValueError(f"theta_lift_ils: unsupported target rtype {rtype}")
 
-    results = []
 
-    if rtype in ('B', 'B+', 'B-', 'D'):
-        # ★ ∈ {B, D}: formula (9.29), page 55
-        # (p₀,q₀) = (p,q) - (p',q') - ˡSign(O') + (δ/2, δ/2)
-        half_delta = delta / 2
-        p0 = int(p - pp - lsign_p + half_delta)
-        q0 = int(q - qp - lsign_q + half_delta)
+def theta_lift_ls(ls, rtype, p, q):
+    """
+    Theta lift a local system (FrozenMultiset of ILS tuples).
 
-        # Truncation Λ_{(δ/2, δ/2)}
-        trunc = delta // 2
-        truncated = myd_truncation(Ep, trunc, trunc)
-        if truncated is None:
-            pass  # truncation invalid, skip
-        else:
-            # Involution T^{exponent}
-            if rtype in ('B', 'B+', 'B-'):
-                t_exp = (p - q + 1) // 2   # (9.29) B case
-            else:
-                t_exp = (p - q) // 2        # (9.29) D case
+    Lifts each ILS component independently. Returns FrozenMultiset of
+    lifted ILS tuples, or empty if any component has no lift.
 
-            twisted = truncated
-            if t_exp % 2 != 0:
-                twisted = myd_involution_T(twisted)
+    Args:
+        ls: iterable of ILS tuples (e.g., FrozenMultiset)
+        rtype: target type ★
+        p, q: target signature
 
-            # Augmentation ⊕ (p₀, q₀)
-            augmented = myd_augmentation(twisted, p0, q0)
-            results.append((1, augmented))
-
-    elif rtype in ('C', 'M'):
-        # ★ ∈ {C, C̃}: formula (9.30), page 55
-        # n₀ = (c₁(O) - c₂(O))/2
-        if n0 is None:
-            n0 = delta // 2
-
-        # Involution T exponent
-        # For C̃ (M): source is B type, use |p'-q'| convention
-        # since O(p,q) ≅ O(q,p) and the formula uses the standard form
-        if rtype == 'C':
-            t_exp = (pp - qp) // 2         # (9.30) C case
-        else:
-            # (9.30) C̃ case: T^{(p'-q'-1)/2} where p'≥q' (B+ convention)
-            t_exp = (max(pp, qp) - min(pp, qp) - 1) // 2
-
-        # Sum over j = 0, ..., δ: Λ_{(j, δ-j)}(E') ⊕ (n₀, n₀)
-        for j in range(delta + 1):
-            truncated = myd_truncation(Ep, j, delta - j)
-            if truncated is None:
-                continue  # truncation invalid, skip this term
-            augmented = myd_augmentation(truncated, n0, n0)
-            twisted = augmented
-            if t_exp % 2 != 0:
-                twisted = myd_involution_T(twisted)
-            results.append((1, twisted))
-
-    return results
+    Returns:
+        List of ILS tuples (the lifted LS), or empty list if lift fails.
+    """
+    result = []
+    for irr_s in ls:
+        lifted = theta_lift_ils(irr_s, rtype, p, q)
+        result.extend(lifted)
+    return result
 
 
 # ============================================================================
@@ -1394,142 +1966,95 @@ def bv_dual(dpart, rtype):
         raise NotImplementedError("BV duality requires combunipotent package")
 
 
-def compute_AC(drc, rtype, dpart=None):
+def compute_AC(drc, wp, rtype, cache=None):
     """
-    Compute the associated cycle AC(τ) ∈ K_s(O) for a painted bipartition τ.
+    Compute the associated cycle AC(τ̂) for extended PBP τ̂ = (τ, ℘, ★).
 
-    Uses iterated descent: AC(τ) is defined recursively by (4.17) of [BMSZ]:
-    - Base case (|Ǒ| = 0): AC(τ) = trivial/det/genuine
-    - ★ = B or D: AC(τ) = ϑ̂^O_{O'}(AC(τ')) ⊗ (det_{-1})^{ε_τ}
-    - ★ = C or C̃: AC(τ) = ϑ̂^O_{O'}(AC(τ') ⊗ det^{ε_℘})
+    Recursive definition (11.2 of [BMSZ]):
+    - Base case (|τ| = 0): trivial/det/genuine ILS
+    - ★ ∈ {B,D}: AC(τ̂) = ϑ̂(AC(∇τ̂)) ⊗ (0, ε_τ)
+    - ★ ∈ {C,M}: AC(τ̂) = ϑ̂(AC(∇τ̂) ⊗ (ε_℘, ε_℘))
+      where ε_℘ = 1 if (1,2) ∈ ℘, else 0.
+
+    The descent ∇ acts on BOTH the DRC and ℘:
+    - DRC: ∇(drc) via the descent function
+    - ℘:   ∇̃(℘) = {(j-1, j) : (j, j+1) ∈ ℘, j ≥ 2}
 
     Args:
         drc: painted bipartition (drcL, drcR)
-        rtype: root system type
-        dpart: dual partition Ǒ (needed for BV dual computation)
+        wp: frozenset of primitive pairs ℘, or None for ℘ = ∅
+        rtype: B+, B-, C, D, or M
+        cache: shared dict for memoization
 
-    Returns a list of (coefficient, MYD) pairs.
+    Returns list of (coefficient, ILS tuple) pairs.
     """
-    # For B type: determine B+/B- from the DRC
-    effective_rtype = rtype
     if rtype == 'B':
-        if verify_drc(drc, 'B+'):
-            effective_rtype = 'B+'
-        elif verify_drc(drc, 'B-'):
-            effective_rtype = 'B-'
+        raise ValueError("compute_AC requires rtype='B+' or 'B-', not 'B'.")
 
-    # Build the descent chain (with orbit tracking)
-    ch = descent_chain(drc, effective_rtype, dpart)
+    # --- Base case: DRC is empty ---
+    drcL, drcR = drc
+    total = sum(len(c) for c in drcL) + sum(len(c) for c in drcR)
+    if total == 0:
+        if rtype == 'B+':
+            return [(1, ((1, 0),))]
+        elif rtype == 'B-':
+            return [(1, ((0, -1),))]
+        else:
+            return [(1, ())]
 
-    # Base case: the last element of the chain
-    _, base_rtype, base_sig, base_eps, _ = ch[-1]
+    if cache is None:
+        cache = {}
 
-    # Base case |Ǒ| = 0: L_τ from page 62 of [BMSZ]
-    #   α_τ = B⁺ : L_τ = (1, 0)_★  → det is on the p (larger) side
-    #   α_τ = B⁻ : L_τ = (-1, 0)_★ → det flips the p (smaller) side
-    #     Note: paper writes (0,-1)_★ but in B- convention p<q,
-    #     so the det character acts on the first (p) component.
-    #   otherwise: L_τ = (0, 0)_★
-    if base_rtype == 'B+':
-        current_AC = [(1, {1: (1, 0)})]
-    elif base_rtype == 'B-':
-        current_AC = [(1, {1: (0, -1)})]
-    else:
-        current_AC = [(1, {})]  # (0,0)_★ = trivial
+    # ε_℘ for this step
+    e_wp = 1 if (wp is not None and (1, 2) in wp) else 0
 
-    # Induction: walk backwards through the descent chain
-    for idx in range(len(ch) - 2, -1, -1):
-        tau_drc, tau_rtype, tau_sig, tau_eps, tau_dpart = ch[idx]
-        tau_p, tau_q = tau_sig
-        _, taup_rtype, taup_sig, taup_eps, taup_dpart = ch[idx + 1]
-        taup_p, taup_q = taup_sig
+    # Descend ℘
+    wp_prime = None
+    if wp is not None and len(wp) > 0:
+        new_wp = frozenset(
+            (j - 1, j) for (j, k) in wp if j >= 2 and k == j + 1
+        )
+        wp_prime = new_wp if new_wp else None
 
-        # Compute δ = |s'| - |∇_naive(O)| (equation 9.11, Lemma 4.4 of [BMSZ])
-        # ∇_naive(O)(i) = O(i+1) — shift SYD index by 1.
-        # |∇_naive(O)| = total signature of the shifted SYD.
-        delta = 0
-        if tau_dpart is not None:
-            try:
-                O = bv_dual(tau_dpart, tau_rtype)
-                O_rows = reg_part(O)
-                # Build SYD of O with TARGET signature (tau_p, tau_q)
-                O_syd = _orbit_signed_yd(O_rows, tau_p, tau_q, tau_rtype)
-                # ∇_naive(O): shift index by 1 (remove level-1 entries)
-                nabla_syd = {i - 1: v for i, v in O_syd.items() if i >= 2}
-                sign_nabla = _compute_sig_from_syd(nabla_syd)
-                nabla_O_size = sign_nabla[0] + sign_nabla[1]
-                delta = (taup_p + taup_q) - nabla_O_size
-            except Exception:
-                delta = abs(tau_p + tau_q - taup_p - taup_q)
+    # Descent of DRC
+    tau_p, tau_q = signature(drc, rtype)
+    tau_eps = epsilon(drc, rtype)
+    next_drc, next_rtype = descent(drc, rtype)
 
-        # Also compute n₀ = (c₁(O) - c₂(O))/2 for C/C̃ types
-        n0 = 0
-        if tau_rtype in ('C', 'M') and tau_dpart is not None:
-            try:
-                O = bv_dual(tau_dpart, tau_rtype)
-                O_cols = col_lengths(O)
-                c1_O = O_cols[0] if len(O_cols) > 0 else 0
-                c2_O = O_cols[1] if len(O_cols) > 1 else 0
-                n0 = (c1_O - c2_O) // 2
-            except Exception:
-                n0 = 0
+    # Cache key includes wp because ℘ affects the recursion
+    cache_key = (drc, rtype, wp if wp else None)
 
-        # Compute O = BV dual of TARGET orbit for ˡSign computation
-        # ˡSign(O') uses the descended SYD O' = ∇(O), where O is the
-        # BV dual of Ǒ (the TARGET orbit).
-        O_target_rows = None
-        if tau_dpart is not None and part_size(tau_dpart) > 0:
-            try:
-                bv_rt = tau_rtype
-                if bv_rt in ('B+', 'B-'):
-                    bv_rt = 'B'
-                O_target_rows = reg_part(bv_dual(tau_dpart, bv_rt))
-            except Exception:
-                pass
+    if cache_key not in cache:
+        # Recursively compute AC of descended extended PBP
+        source_AC = compute_AC(next_drc, wp_prime, next_rtype, cache=cache)
 
-        # Apply theta lift + sign twist (equation 11.2 of [BMSZ], page 62)
         new_AC = []
-        for coeff, myd in current_AC:
-            if tau_rtype in ('B', 'B+', 'B-', 'D'):
-                # ★ ∈ {B,D}: L_τ = ϑ̂(L_{τ'}) ⊗ (0, ε_τ)
-                lifted = theta_lift_myd(myd, tau_rtype,
-                                        tau_p, tau_q, taup_p, taup_q,
-                                        delta=delta,
-                                        O_target_rows=O_target_rows,
-                                        target_rtype=tau_rtype)
-                for lc, lmyd in lifted:
-                    if idx == 0 and tau_eps != 0:
-                        lmyd = myd_sign_twist(lmyd, 0, tau_eps, tau_rtype)
-                    new_AC.append((coeff * lc, lmyd))
-            elif tau_rtype in ('C', 'M'):
-                # ★ ∈ {C, C̃}: L_τ = ϑ̂(L_{τ'} ⊗ (ε_℘, ε_℘))
-                lifted = theta_lift_myd(myd, tau_rtype,
-                                        tau_p, tau_q, taup_p, taup_q,
-                                        delta=delta, n0=n0,
-                                        O_target_rows=O_target_rows,
-                                        target_rtype=tau_rtype)
-                new_AC.extend((coeff * lc, lmyd) for lc, lmyd in lifted)
-            else:
-                lifted = theta_lift_myd(myd, tau_rtype,
-                                        tau_p, tau_q, taup_p, taup_q,
-                                        delta=delta,
-                                        O_target_rows=O_target_rows,
-                                        target_rtype=tau_rtype)
-                new_AC.extend((coeff * lc, lmyd) for lc, lmyd in lifted)
+        for coeff, ils in source_AC:
+            # C/M pre-twist: ⊗ (ε_℘, ε_℘) on source ILS
+            source_ils = ils
+            if rtype in ('C', 'M') and e_wp != 0:
+                source_ils = _ils_twist_BD(ils, (-1, -1))
 
-        current_AC = new_AC
+            # Theta lift
+            lifted = theta_lift_ils(source_ils, rtype, tau_p, tau_q)
 
-    return current_AC
+            for lifted_ils in lifted:
+                # B/D post-twist: ⊗ (0, ε_τ)
+                if rtype in ('B+', 'B-', 'D') and tau_eps != 0:
+                    lifted_ils = _ils_twist_BD(lifted_ils, (1, -1))
+                new_AC.append((coeff, lifted_ils))
+
+        cache[cache_key] = new_AC
+
+    return cache[cache_key]
 
 
-def print_AC(drc, rtype):
-    """Print the associated cycle for a painted bipartition."""
-    ac = compute_AC(drc, rtype)
-    print(f"AC ({rtype}):")
-    for coeff, myd in ac:
-        entries = sorted(myd.items())
-        myd_str = ', '.join(f'{i}:({p},{q})' for i, (p, q) in entries)
-        print(f"  {coeff} × [{myd_str}]")
+def print_AC(drc, wp, rtype):
+    """Print the associated cycle for an extended PBP."""
+    ac = compute_AC(drc, wp, rtype)
+    print(f"AC ({rtype}, ℘={set(wp) if wp else '∅'}):")
+    for coeff, ils in ac:
+        print(f"  {coeff} × {ils}")
 
 
 # ============================================================================
@@ -1579,13 +2104,16 @@ def descent_chain(drc, rtype, dpart=None):
         sig = signature(cur_drc, cur_rtype)
         eps = epsilon(cur_drc, cur_rtype)
 
-        # Total size of the DRC
-        drcL, drcR = cur_drc
-        total = sum(len(c) for c in drcL) + sum(len(c) for c in drcR)
-
         result.append((cur_drc, cur_rtype, sig, eps, cur_dpart))
 
-        if total == 0:
+        # Base case: |Ǒ| = 0, i.e., dual partition is empty
+        if cur_dpart is not None and part_size(cur_dpart) == 0:
+            break
+
+        # Fallback: stop if DRC is empty AND no dpart tracking
+        drcL, drcR = cur_drc
+        total = sum(len(c) for c in drcL) + sum(len(c) for c in drcR)
+        if total == 0 and cur_dpart is None:
             break
 
         try:
@@ -1637,6 +2165,50 @@ def print_descent_chain(drc, rtype, dpart=None):
 #            ([BMSZb] Section 10.5, equation 10.7)
 # ============================================================================
 
+def compute_tail_signature(drc, rtype):
+    """
+    Compute the tail signature (p_τt, q_τt) for ★ ∈ {B, D}.
+
+    The tail τ_t consists of the cells in the "extra" columns of the
+    longer diagram beyond the shorter diagram.
+
+    For B type: tail = cells in Q's first column beyond P's first column.
+    For D type: tail = cells in P's first column beyond Q's first column.
+
+    The tail signature sums per-cell contributions to (p, q):
+      '*': (1, 1), 'r': (2, 0), 's': (0, 2), 'c': (1, 1), 'd': (1, 1)
+
+    Reference: [BMSZ] Lemma 11.3, equation (11.10).
+    """
+    drcL, drcR = drc
+    c1_iota = len(getz(drcL, 0, ''))
+    c1_j = len(getz(drcR, 0, ''))
+
+    # Per-cell contribution to (p, q)
+    _CELL_CONTRIB = {'*': (1, 1), 'r': (2, 0), 's': (0, 2), 'c': (1, 1), 'd': (1, 1)}
+
+    p_tail, q_tail = 0, 0
+
+    if rtype in ('B', 'B+', 'B-'):
+        # Tail is in Q (right diagram), rows c₁(ι) to c₁(j)-1 (0-indexed)
+        first_col_Q = getz(drcR, 0, '')
+        for row in range(c1_iota, c1_j):
+            sym = first_col_Q[row] if row < len(first_col_Q) else '*'
+            dp, dq = _CELL_CONTRIB.get(sym, (1, 1))
+            p_tail += dp
+            q_tail += dq
+    elif rtype == 'D':
+        # Tail is in P (left diagram), rows c₁(j) to c₁(ι)-1 (0-indexed)
+        first_col_P = getz(drcL, 0, '')
+        for row in range(c1_j, c1_iota):
+            sym = first_col_P[row] if row < len(first_col_P) else '*'
+            dp, dq = _CELL_CONTRIB.get(sym, (1, 1))
+            p_tail += dp
+            q_tail += dq
+
+    return (p_tail, q_tail)
+
+
 def compute_tail_symbol(drc, rtype, dpart=None):
     """
     Compute the tail symbol x_τ for ★ ∈ {B, D}.
@@ -1655,45 +2227,66 @@ def compute_tail_symbol(drc, rtype, dpart=None):
 
     if rtype in ('B', 'B+', 'B-'):
         # ★ = B: c₁(ι) ≤ c₁(j)
+        # x_τ = x_k where k = (r₁-r₂)/2 + 1 (paper definition).
+        # Tail multiset: {x₁, ..., x_k} where
+        #   Set A = {Q(j,1) | c₁(ι)+1 ≤ j ≤ c₁(j)} has c₁(j)-c₁(ι) elements
+        #   Correction adds 1 element (x₁)
+        #   Total = c₁(j) - c₁(ι) + 1 = k
+        # x_τ = x_k = last element of Set A = Q(c₁(j), 1) = fR[-1]
+        # UNLESS k = 1 (Set A is empty), then x_τ = x₁ = correction.
         c1_iota = len(getz(drcL, 0, ''))  # first column of P
         c1_j = len(getz(drcR, 0, ''))     # first column of Q
-        # Q(c₁(ι), 1) — symbol at row c₁(ι) in first column of Q
-        q_c1 = getz(drcR, 0, '')[c1_iota - 1] if c1_iota > 0 and c1_iota <= c1_j else ''
+        setA_size = c1_j - c1_iota  # = k - 1
 
-        if c1_iota == 0 or q_c1 in ('*', 's'):
-            # B+ → c, B- → s
-            if rtype == 'B+' or (rtype == 'B' and verify_drc(drc, 'B+')):
-                return 'c'
+        if setA_size <= 0:
+            # k ≤ 1: x_τ = correction element
+            q_c1 = getz(drcR, 0, '')[c1_iota - 1] if c1_iota > 0 and c1_iota <= c1_j else ''
+            if c1_iota == 0 or q_c1 in ('*', 's'):
+                if rtype == 'B+' or (rtype == 'B' and verify_drc(drc, 'B+')):
+                    return 'c'
+                else:
+                    return 's'
             else:
-                return 's'
+                return q_c1
         else:
-            return q_c1
+            # k > 1: x_τ = x_k = Q(c₁(j), 1) = fR[-1]
+            return getz(drcR, 0, '')[-1] if c1_j > 0 else ''
 
     elif rtype == 'D':
         # ★ = D: c₁(ι) > c₁(j) when |Ǒ| > 0
+        # x_τ = x_k where k = (r₁-r₂)/2 + 1 (paper definition).
+        # Tail multiset: {x₁, ..., x_k} where
+        #   Set A = {P(j,1) | c₁(j)+2 ≤ j ≤ c₁(ι)} has c₁(ι)-c₁(j)-1 elements
+        #   Correction adds 1 element (x₁)
+        #   Total = c₁(ι) - c₁(j) = k
+        # x_τ = x_k = last element of Set A = P(c₁(ι), 1) = fL[-1]
+        # UNLESS Set A is empty (k = 1), then x_τ = x₁ = correction.
         c1_iota = len(getz(drcL, 0, ''))
         c1_j = len(getz(drcR, 0, ''))
 
         if c1_iota == 0 and c1_j == 0:
             return 'd'  # |Ǒ| = 0
 
-        # P(c₁(j)+1, 1) — the symbol at row c₁(j)+1 in the first column of P
-        p_c1j1 = getz(drcL, 0, '')[c1_j] if c1_j < c1_iota else ''
+        setA_size = c1_iota - c1_j - 1  # = k - 1
 
-        # Check special case: r₂ = r₃ > 0
-        if dpart is not None:
-            rows = reg_part(dpart)
-            r2 = getz(rows, 1, 0)
-            r3 = getz(rows, 2, 0)
-            if r2 == r3 and r2 > 0:
-                p_c1_1 = getz(drcL, 0, '')[c1_iota - 1] if c1_iota > 0 else ''
-                # Check (P(c₁(j)+1,1), P(c₁(j)+1,2)) = (r, c)
-                sL = getz(drcL, 1, '')  # second column of P
-                p_c1j1_2 = sL[c1_j] if c1_j < len(sL) else ''
-                if p_c1_1 in ('r', 'd') and (p_c1j1, p_c1j1_2) == ('r', 'c'):
-                    return 'c'
-
-        return p_c1j1
+        if setA_size <= 0:
+            # k ≤ 1: x_τ = correction element
+            p_c1j1 = getz(drcL, 0, '')[c1_j] if c1_j < c1_iota else ''
+            # Check scattered case: r₂ = r₃ > 0
+            if dpart is not None:
+                rows = reg_part(dpart)
+                r2 = getz(rows, 1, 0)
+                r3 = getz(rows, 2, 0)
+                if r2 == r3 and r2 > 0:
+                    p_c1_1 = getz(drcL, 0, '')[c1_iota - 1] if c1_iota > 0 else ''
+                    sL = getz(drcL, 1, '')
+                    p_c1j1_2 = sL[c1_j] if c1_j < len(sL) else ''
+                    if p_c1_1 in ('r', 'd') and (p_c1j1, p_c1j1_2) == ('r', 'c'):
+                        return 'c'
+            return p_c1j1
+        else:
+            # k > 1: x_τ = x_k = P(c₁(ι), 1) = fL[-1]
+            return getz(drcL, 0, '')[-1] if c1_iota > 0 else ''
 
     else:
         return ''  # tail only defined for B, D
@@ -1923,29 +2516,33 @@ _QMQM = '*=*'   # non-trivial: row pattern for + rows
 
 def _str_irr_myd(myd_entry):
     """
-    Draw one irreducible MYD component as rows of +-*/=- symbols.
+    Draw one irreducible MYD/ILS component as rows of +-*/=- symbols.
 
-    An entry i ↦ (p_i, q_i) at level i means:
-      - |p_i| rows of length i, with + sign if p_i > 0, * if p_i < 0
-      - |q_i| rows of length i, with - sign if q_i > 0, = if q_i < 0
+    Accepts either:
+      - MYD dict: {i: (p_i, q_i)}
+      - ILS tuple: ((p_1,q_1), (p_2,q_2), ...)
 
     Row patterns follow the alternating sign convention from [BMSZ]:
       odd-length rows:  +, -+, +-+, -+-+, ...
       even-length rows: -, +-, -+-, +-+-, ...
     """
+    # Normalize to list of (level, (pi, qi)) pairs
+    if isinstance(myd_entry, dict):
+        entries = sorted(myd_entry.items(), reverse=True)
+    else:
+        # ILS tuple: index j (0-based) → level i = j+1
+        entries = [(j + 1, pq) for j, pq in enumerate(myd_entry) if pq != (0, 0)]
+        entries.sort(reverse=True)
+
     rows = []
-    # Sort by level (descending, so longest rows on top)
-    for i in sorted(myd_entry.keys(), reverse=True):
-        pi, qi = myd_entry[i]
+    for i, (pi, qi) in entries:
         hii, rii = divmod(i, 2)
-        # q rows (- sign) come first (displayed on top within this level)
         if qi != 0:
             if qi > 0:
                 onerow = _PNPN[1] * rii + _PNPN[0:2] * hii
             else:
                 onerow = _QMQM[1] * rii + _QMQM[0:2] * hii
             rows.extend([onerow] * abs(qi))
-        # p rows (+ sign)
         if pi != 0:
             if pi > 0:
                 onerow = _PNPN[0] * rii + _PNPN[1:3] * hii
@@ -1955,39 +2552,39 @@ def _str_irr_myd(myd_entry):
     return rows
 
 
-def str_myd(myd):
+def str_ils(ils):
     """
-    Draw a marked Young diagram in the visual LS format.
+    Draw a single ILS (irreducible local system) in visual LS format.
 
     Uses the same display convention as combunipotent.LS.str_LS:
       + trivial on + sign, - trivial on - sign
       * non-trivial on + sign, = non-trivial on - sign
     """
-    if not myd:
+    if not ils or ils == ():
         return '(trivial)'
-    rows = _str_irr_myd(myd)
+    rows = _str_irr_myd(ils)
     if not rows:
         return '(trivial)'
     return '\n'.join(rows)
 
 
-def str_myd_ac(ac_list):
+def str_ls(ls):
     """
-    Draw the associated cycle (list of (coeff, myd)) in visual format.
-    Multiple MYD components are shown side by side separated by ' | '.
+    Draw a local system (list/set of ILS tuples) in visual format.
+    Multiple ILS components are shown side by side separated by ' | '.
     """
-    if not ac_list:
+    if not ls:
         return '(empty)'
 
+    ls_list = list(ls) if not isinstance(ls, list) else ls
     all_row_blocks = []
-    for coeff, myd in ac_list:
-        rows = _str_irr_myd(myd) if myd else ['(triv)']
+    for ils in ls_list:
+        rows = _str_irr_myd(ils) if (ils and ils != ()) else ['(triv)']
         all_row_blocks.append(rows)
 
     if not all_row_blocks:
         return '(empty)'
 
-    # Align blocks side by side
     max_rows = max(len(b) for b in all_row_blocks)
     max_cols = [max((len(r) for r in b), default=0) for b in all_row_blocks]
 
@@ -2001,6 +2598,11 @@ def str_myd_ac(ac_list):
     return '\n'.join(result)
 
 
+# Keep old names as aliases
+str_myd = str_ils
+str_myd_ac = lambda ac_list: str_ls([ils for _, ils in ac_list]) if ac_list else '(empty)'
+
+
 def _format_myd_multiline(ac_list):
     """Format AC (list of (coeff, myd)) as multiline string for graph label."""
     if not ac_list:
@@ -2008,7 +2610,7 @@ def _format_myd_multiline(ac_list):
 
     all_row_blocks = []
     for coeff, myd in ac_list:
-        rows = _str_irr_myd(myd) if myd else ['(triv)']
+        rows = _str_irr_myd(myd) if (myd and myd != ()) else ['(triv)']
         all_row_blocks.append(rows)
 
     max_rows = max(len(b) for b in all_row_blocks)
@@ -2026,180 +2628,230 @@ def _format_myd_multiline(ac_list):
 
 def gen_descent_tree(dpart, rtype, format='pdf', filename='descent_tree'):
     """
-    Generate a Graphviz directed graph showing the descent tree
-    for all PBPs attached to (dpart, rtype).
+    Generate a Graphviz directed graph showing the theta lifting tree.
 
-    Each node shows:
-      - DRC diagram
-      - Type ★, signature (p,q), ε
-      - Associated cycle AC(τ) as marked Young diagram
+    Each node = one LS (local system). Multiple DRCs mapping to the same LS
+    are grouped into the same node.
 
     Edges:
-      - Blue: descent map ∇ (vertical)
-      - Red (dashed, bidirectional): det twist for orthogonal types (B, D)
+      - Blue arrows (up → down): theta lift direction
+      - Red/green/purple dashed: det / 1⁺⁻ / 1⁻⁺ character twists (B/D)
 
-    Returns the Graphviz Digraph object.
+    Layout: small groups at top, large groups at bottom (BT).
     """
     from graphviz import Digraph
 
     drcs = dpart2drc(dpart, rtype)
 
-    g = Digraph(name='Descent Tree',
+    g = Digraph(name='Lifting Graph',
                 filename=filename,
                 node_attr={'shape': 'box', 'fontname': 'Courier New',
                            'fontsize': '8'},
-                graph_attr={'rankdir': 'TB', 'newrank': 'true',
+                graph_attr={'rankdir': 'BT', 'newrank': 'true',
                             'ranksep': '1.2', 'nodesep': '0.4',
-                            'concentrate': 'false',
                             'dpi': '150'},
                 engine='dot', format=format)
 
-    # Group nodes by (rtype, total_size) for rank alignment
-    levels = {}     # (rtype, size) -> list of node_ids
-    node_id_map = {}  # (drc, rt) -> node_id
-    descent_edges = set()
-    det_twist_edges = set()
-
+    levels = {}          # (rt_normalized, size) → [nids]
+    ls_node_map = {}     # (ls_key, rt) → nid
+    drc_to_ls_nid = {}   # (drc, rt) → nid  (which LS node a DRC belongs to)
     node_counter = [0]
-    # Cache AC computations
     ac_cache = {}
+    lift_edges = set()
+    twist_edges = set()
 
     def get_ac(drc, rt):
         key = (drc, rt)
         if key not in ac_cache:
-            ac_cache[key] = compute_AC(drc, rt)
+            ac_cache[key] = compute_AC(drc, None, rt)
         return ac_cache[key]
 
-    def get_node_id(drc, rt):
-        key = (drc, rt)
-        if key not in node_id_map:
+    def ac_key(ac):
+        """Hashable key for an AC result (list of (coeff, ILS))."""
+        return tuple(sorted(ac))
+
+    def get_ls_node(drc, rt, is_ghost=False, ghost_ac=None):
+        """Get or create the LS node for this DRC's AC result."""
+        ac = ghost_ac if ghost_ac is not None else get_ac(drc, rt)
+        lsk = (ac_key(ac), rt)
+
+        if lsk not in ls_node_map:
             nid = f'n{node_counter[0]}'
             node_counter[0] += 1
-            node_id_map[key] = nid
+            ls_node_map[lsk] = nid
 
-            sig = signature(drc, rt)
-            eps = epsilon(drc, rt)
             drcL, drcR = drc
             total = sum(len(c) for c in drcL) + sum(len(c) for c in drcR)
+            sig = _ils_sign(ac[0][1]) if ac else (0, 0)
 
-            # Format DRC diagram
-            drc_str = str_dgms(drc).replace('\n', '\\l')
-
-            # Format group label
-            gp = RTYPE_GP.get(rt, rt + '(%d)')
-            if rt in ('C', 'M'):
-                gp_label = gp % (2 * sig[0],)
-            else:
-                gp_label = gp % (sig[0], sig[1])
-
-            # Format AC / MYD in visual LS-style format
-            ac = get_ac(drc, rt)
+            # LS visual
             ac_lines = _format_myd_multiline(ac)
-            ac_str = '\\l'.join(ac_lines)
+            sep = '\\l'
+            ac_str = sep.join(ac_lines)
 
-            # Build label: DRC on top, then ε, then AC visual
-            label = (f'{drc_str}\\l'
-                     f'ε={eps}\\l'
-                     f'─────\\l'
-                     f'{ac_str}\\l')
+            sig_str = f'{rt} ({sig[0]},{sig[1]})'
+            label = f'{sig_str}\\l─────\\l{ac_str}\\l'
 
-            # Color by type
-            colors = {'C': '#e6f3ff', 'D': '#fff3e6',
-                      'M': '#e6ffe6', 'B+': '#ffe6e6', 'B-': '#ffe6f3'}
+            if not is_ghost:
+                colors = {'C': '#e6f3ff', 'D': '#fff3e6',
+                          'M': '#e6ffe6', 'B+': '#ffe6e6', 'B-': '#ffe6f3'}
+                style = 'filled'
+            else:
+                colors = {'B+': '#fff0f0', 'B-': '#fff0f5', 'D': '#fff8ee'}
+                style = 'filled,dashed'
             fillcolor = colors.get(rt, '#ffffff')
 
-            g.node(nid, label=label, style='filled', fillcolor=fillcolor,
+            g.node(nid, label=label, style=style, fillcolor=fillcolor,
                    labeljust='l')
 
-            level_key = (rt, total)
-            levels.setdefault(level_key, []).append(nid)
+            rt_norm = 'B' if rt in ('B+', 'B-') else rt
+            levels.setdefault((rt_norm, total), []).append(nid)
 
-        return node_id_map[key]
+        return ls_node_map[lsk]
 
-    # Build the tree: descent edges
+    # Build ℘ map
+    wp_map = {}
+    try:
+        bij, _ = build_pbp_bijection(dpart, rtype)
+        for drc_bij, (sp_drc, wp) in bij.items():
+            wp_map[drc_bij] = wp
+    except Exception:
+        pass
+
+    # Phase 1: build all LS nodes and map DRCs to them
+    chain_rtypes = ['B+', 'B-'] if rtype == 'B' else [rtype]
+    all_chains = []
     for drc in drcs:
-        ch = descent_chain(drc, rtype)
+        for crt in chain_rtypes:
+            ch = descent_chain(drc, crt, dpart)
+            all_chains.append(ch)
+            for step_drc, step_rt, _, _, _ in ch:
+                nid = get_ls_node(step_drc, step_rt)
+                drc_to_ls_nid[(step_drc, step_rt)] = nid
+
+    # Phase 2: add DRC info to LS nodes (list DRCs that share the same LS)
+    ls_drcs = {}  # nid → list of (drc_str, wp_str, sig)
+    for (drc, rt), nid in drc_to_ls_nid.items():
+        drc_str = str_dgms(drc).replace('\n', '\\l')
+        wp_str = ''
+        if drc in wp_map:
+            wp = wp_map[drc]
+            wp_str = f'℘={set(wp)}' if wp else '℘=∅'
+        sig = signature(drc, rt)
+        ls_drcs.setdefault(nid, []).append((drc_str, wp_str, sig, rt))
+
+    # Re-create nodes with DRC listings
+    for lsk, nid in ls_node_map.items():
+        if nid not in ls_drcs:
+            continue
+        drc_entries = ls_drcs[nid]
+        ac = [k for k, v in ac_cache.items() if drc_to_ls_nid.get(k) == nid]
+        if ac:
+            ac_result = ac_cache[ac[0]]
+        else:
+            ac_result = []
+
+        rt = drc_entries[0][3]
+        sig = _ils_sign(ac_result[0][1]) if ac_result else (0, 0)
+        ac_lines = _format_myd_multiline(ac_result)
+        sep = '\\l'
+        ac_str = sep.join(ac_lines)
+
+        # List DRCs (compact)
+        drc_lines = []
+        for drc_str, wp_str, dsig, drt in drc_entries:
+            drc_lines.append(f'{drc_str} {wp_str}')
+        drcs_str = sep.join(drc_lines)
+
+        sig_str = f'{rt} ({sig[0]},{sig[1]})'
+        label = f'{sig_str}\\l─────\\l{ac_str}\\l═════\\l{drcs_str}\\l'
+
+        colors = {'C': '#e6f3ff', 'D': '#fff3e6',
+                  'M': '#e6ffe6', 'B+': '#ffe6e6', 'B-': '#ffe6f3'}
+        g.node(nid, label=label, style='filled', fillcolor=colors.get(rt, '#ffffff'),
+               labeljust='l')
+
+    # Phase 3: lift edges (small → large, arrow points down)
+    for ch in all_chains:
         for i in range(len(ch) - 1):
-            src_drc, src_rt, _, _ = ch[i]
-            dst_drc, dst_rt, _, _ = ch[i + 1]
-            src_id = get_node_id(src_drc, src_rt)
-            dst_id = get_node_id(dst_drc, dst_rt)
-            edge_key = (src_id, dst_id)
-            if edge_key not in descent_edges:
-                descent_edges.add(edge_key)
-                g.edge(src_id, dst_id, color='blue',
-                       tailport='s', headport='n')
-        # Register last node
-        if ch:
-            last_drc, last_rt, _, _ = ch[-1]
-            get_node_id(last_drc, last_rt)
+            src_drc, src_rt, _, _, _ = ch[i]      # larger
+            dst_drc, dst_rt, _, _, _ = ch[i + 1]  # smaller
+            src_nid = drc_to_ls_nid[(src_drc, src_rt)]
+            dst_nid = drc_to_ls_nid[(dst_drc, dst_rt)]
+            edge_key = (dst_nid, src_nid)
+            if dst_nid != src_nid and edge_key not in lift_edges:
+                lift_edges.add(edge_key)
+                g.edge(dst_nid, src_nid, color='blue', headport='s')
 
-    # Add det-twist edges for orthogonal types (B+/B-, D)
-    # Two DRCs are det-twist pairs if they have the same DRC but
-    # differ only by ε (i.e., d↔c in the first column)
-    for (drc, rt), nid in list(node_id_map.items()):
-        if rt in ('B+', 'B-', 'D'):
-            # For D type: det twist changes ε
-            # For B+/B-: the pair is B+ ↔ B- with same DRC shape
-            # Find the det-twist partner
-            if rt == 'D':
-                # Det twist for D: sign_twist with (1,1) on the MYD
-                # The partner DRC has the same shape but different ε
-                # Look for another node with same DRC and opposite ε
-                eps = epsilon(drc, rt)
-                for (drc2, rt2), nid2 in node_id_map.items():
-                    if rt2 == rt and drc2 == drc:
-                        continue
-                    if rt2 == rt and epsilon(drc2, rt2) != eps:
-                        # Check if they are truly det-twist pairs
-                        sig1 = signature(drc, rt)
-                        sig2 = signature(drc2, rt2)
-                        if sig1 == sig2:
-                            edge = tuple(sorted([nid, nid2]))
-                            if edge not in det_twist_edges:
-                                det_twist_edges.add(edge)
-                                g.edge(nid, nid2, color='red',
-                                       style='dashed', dir='both',
-                                       arrowsize='0.3',
-                                       constraint='false')
-            elif rt == 'B+':
-                # B+ ↔ B- partner: same underlying DRC
-                partner_key = (drc, 'B-')
-                if partner_key in node_id_map:
-                    nid2 = node_id_map[partner_key]
-                    edge = tuple(sorted([nid, nid2]))
-                    if edge not in det_twist_edges:
-                        det_twist_edges.add(edge)
-                        g.edge(nid, nid2, color='red',
-                               style='dashed', dir='both',
-                               arrowsize='0.3',
-                               constraint='false')
+    # Phase 4: character twist edges for B/D
+    twist_defs = [
+        ((-1, -1), 'red',     'det'),
+        ((1, -1),  'green',   '1⁺⁻'),
+        ((-1, 1),  '#9933cc', '1⁻⁺'),
+    ]
+    for lsk, nid in list(ls_node_map.items()):
+        ac_sorted, rt = lsk
+        if rt not in ('B+', 'B-', 'D'):
+            continue
+        ac_list = list(ac_sorted)
 
-    # Add group labels on the left and rank constraints
-    # Compute the group label from signatures:
-    #   C: Sp(2|τ|), M: Mp(2|τ|), B±: O(p,q), D: SO(p,q)
-    gp_nodes = []  # list of (size, gp_node_id)
+        # Find total for ghost node level
+        total = 0
+        for (d, r), n in drc_to_ls_nid.items():
+            if n == nid:
+                drcL, drcR = d
+                total = sum(len(c) for c in drcL) + sum(len(c) for c in drcR)
+                break
+
+        for twist, color, twist_label in twist_defs:
+            twisted = tuple(sorted((c, _ils_twist_BD(ils, twist)) for c, ils in ac_list))
+            if twisted == ac_sorted:
+                continue  # self-twist, skip
+            twisted_lsk = (twisted, rt)
+            if twisted_lsk in ls_node_map:
+                # Connect to existing LS node
+                target_nid = ls_node_map[twisted_lsk]
+                edge = tuple(sorted([nid, target_nid]))
+                ek = (edge, color)
+                if ek not in twist_edges:
+                    twist_edges.add(ek)
+                    g.edge(nid, target_nid, color=color, style='dashed',
+                           dir='both', arrowsize='0.3', constraint='false')
+            else:
+                # Ghost node (no DRC)
+                if twisted_lsk not in ls_node_map:
+                    gnid = f'g{node_counter[0]}'
+                    node_counter[0] += 1
+                    ls_node_map[twisted_lsk] = gnid
+
+                    sig_tw = _ils_sign(twisted[0][1]) if twisted else (0, 0)
+                    ac_lines = _format_myd_multiline(list(twisted))
+                    sep = '\\l'
+                    ac_str = sep.join(ac_lines)
+                    label = f'{rt} ({sig_tw[0]},{sig_tw[1]})\\l─────\\l{ac_str}\\l'
+                    cm = {'B+': '#fff0f0', 'B-': '#fff0f5', 'D': '#fff8ee'}
+                    g.node(gnid, label=label, style='filled,dashed',
+                           fillcolor=cm.get(rt, '#fafafa'), labeljust='l')
+                    rt_norm = 'B' if rt in ('B+', 'B-') else rt
+                    levels.setdefault((rt_norm, total), []).append(gnid)
+
+                target_nid = ls_node_map[twisted_lsk]
+                edge = tuple(sorted([nid, target_nid]))
+                ek = (edge, color)
+                if ek not in twist_edges:
+                    twist_edges.add(ek)
+                    g.edge(nid, target_nid, color=color, style='dashed',
+                           dir='both', arrowsize='0.3', constraint='false')
+
+    # Phase 5: group labels and rank constraints
+    gp_nodes = []
     for (rt, size), nids in sorted(levels.items(), key=lambda x: -x[0][1]):
         if rt in ('C', 'M'):
-            # |τ| = size (total boxes), group is Sp(2*size) or Mp(2*size)
             gp_label = RTYPE_GP[rt] % (2 * size,)
-        elif rt in ('B+', 'B-', 'D'):
-            # Collect all distinct signatures at this level
-            sigs = set()
-            for (drc, drt), nid in node_id_map.items():
-                if nid in nids:
-                    sigs.add(signature(drc, drt))
-            if len(sigs) == 1:
-                p, q = sigs.pop()
-                gp_label = RTYPE_GP[rt] % (p, q)
-            else:
-                # Multiple signatures: show the dimension
-                p, q = next(iter(sigs))
-                dim = p + q
-                if rt in ('B+', 'B-'):
-                    gp_label = f'O({dim})'
-                else:
-                    gp_label = f'SO({dim})'
+        elif rt == 'B':
+            gp_label = f'O({2 * size + 1})'
+        elif rt == 'D':
+            gp_label = f'SO({2 * size})'
         else:
             gp_label = rt
 
@@ -2208,15 +2860,13 @@ def gen_descent_tree(dpart, rtype, format='pdf', filename='descent_tree'):
                fontname='Helvetica', fontsize='11', fontcolor='#333333')
         gp_nodes.append((size, gp_nid))
 
-        # Rank constraint: group label + all nodes at this level
         with g.subgraph() as s:
             s.attr(rank='same')
             s.node(gp_nid)
             for nid in nids:
                 s.node(nid)
 
-    # Chain group label nodes vertically
-    gp_nodes_sorted = sorted(gp_nodes, key=lambda x: -x[0])
+    gp_nodes_sorted = sorted(gp_nodes, key=lambda x: x[0])
     for i in range(len(gp_nodes_sorted) - 1):
         g.edge(gp_nodes_sorted[i][1], gp_nodes_sorted[i + 1][1],
                style='invis')
@@ -2232,14 +2882,17 @@ def compute_all_pbp(dpart, rtype, report=False):
     """
     Compute all painted bipartitions for the dual partition dpart and type rtype.
 
-    Returns a list of (drc, rtype, (p, q), epsilon) tuples.
+    For B type, generates both B+ and B- entries for each DRC.
+    Returns a list of (drc, effective_rtype, (p, q), epsilon) tuples.
     """
     drcs = dpart2drc(dpart, rtype)
     results = []
+    rtypes_to_use = ['B+', 'B-'] if rtype == 'B' else [rtype]
     for drc in drcs:
-        sig = signature(drc, rtype)
-        eps = epsilon(drc, rtype)
-        results.append((drc, rtype, sig, eps))
+        for rt in rtypes_to_use:
+            sig = signature(drc, rt)
+            eps = epsilon(drc, rt)
+            results.append((drc, rt, sig, eps))
         if report:
             print(str_dgms(drc))
             print(f"  signature: {sig}, epsilon: {eps}")
@@ -2347,8 +3000,11 @@ def main():
         p, f = verify_descent(parts, rtype, report=True)
         print(f"Descent verification: {p} passed, {f} failed")
 
+    # Always generate descent tree (default behavior)
+    if not args.tree:
+        args.tree = True
     if args.tree:
-        fname = args.output or 'descent_tree'
+        fname = args.output or f'{rtype}{",".join(str(x) for x in parts)}'
         print(f"\nGenerating descent tree...")
         g = gen_descent_tree(parts, rtype, format=args.format, filename=fname)
         outfile = g.render()

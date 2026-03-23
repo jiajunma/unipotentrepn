@@ -20,6 +20,434 @@ f^S_{★,Ǒ,℘}(p,q) := Σ_{τ ∈ PBP^S_★(Ǒ,℘)} p^{p_τ} q^{q_τ}
 
 Total: `f = f^{d} + f^{c,r} + f^{s}`.
 
+## Tail and Tail Symbol
+
+Reference: [BMSZb] Section 10.5.
+
+### Definition of the tail τ_t
+
+Given a PBP τ = (P, Q) for ★ ∈ {B, D}:
+
+- **★ = B**: c₁(ι) ≤ c₁(j). The tail τ_t consists of cells in Q's first column
+  from row c₁(ι)+1 to row c₁(j). That is, the cells in Q beyond the length of P's
+  first column.
+
+- **★ = D**: c₁(ι) ≥ c₁(j). The tail τ_t consists of cells in P's first column
+  from row c₁(j)+1 to row c₁(ι). That is, the cells in P beyond the length of Q's
+  first column.
+
+Here c₁(ι) = len(P[0]) and c₁(j) = len(Q[0]) are the lengths of the first columns.
+
+### Tail signature (p_{τ_t}, q_{τ_t})
+
+The tail signature sums per-cell contributions over all cells in τ_t:
+
+```
+Cell symbol → (Δp, Δq):
+  •  → (1, 1)
+  r  → (2, 0)
+  s  → (0, 2)
+  c  → (1, 1)
+  d  → (1, 1)
+```
+
+Reference: [BMSZ] Lemma 11.3, equation (11.10).
+
+In code: `compute_tail_signature(drc, rtype)` in `standalone.py`.
+
+### Tail symbol x_τ
+
+The tail symbol x_τ := P_{τ_t}(k, 1) is the symbol in the **last box** of the tail τ_t.
+x_τ ∈ {c, d, r, s}.
+
+#### ★ = B (types B, B+, B-)
+
+Let q_{c₁(ι)} = Q(c₁(ι), 1) be the symbol at position c₁(ι) in Q's first column.
+
+- If c₁(ι) = 0 or q_{c₁(ι)} ∈ {•, s}:
+  - B+ → x_τ = c
+  - B- → x_τ = s
+- Otherwise: x_τ = q_{c₁(ι)}
+
+#### ★ = D
+
+- If c₁(ι) = c₁(j) = 0 (empty orbit): x_τ = d
+- Otherwise let p_{c₁(j)+1} = P(c₁(j)+1, 1) be the symbol at position c₁(j)+1 in P's first column.
+- **Special case** (scattered tail, r₂ = r₃ > 0):
+  If the last symbol in P's first column is r or d, and (P(c₁(j)+1, 1), P(c₁(j)+1, 2)) = (r, c),
+  then x_τ = c.
+- **General case**: x_τ = p_{c₁(j)+1}
+
+In code: `compute_tail_symbol(drc, rtype, dpart)` in `standalone.py`.
+
+## Lusztig left cells and the bipartitions (ι_℘, j_℘)
+
+Reference: [BMSZb] Section 8.3, Proposition 8.3.
+
+### Overview
+
+For each orbit Ǒ with good parity and each ℘ ∈ A(Ǒ) (a subset of primitive pairs
+PP_★(Ǒ)), formula (8.9) defines a pair of Young diagrams (ι_℘, j_℘).
+
+Proposition 8.3 establishes a bijection:
+
+```
+Ā(Ǒ) → ᴸC_Ǒ,    ℘̄ ↦ τ_b ⊗ τ_℘̄
+```
+
+where ᴸC_Ǒ is the Lusztig left cell, τ_b is the irreducible representation of W_b
+attached to Ǒ_b, and τ_{℘̄} = (ι_℘, j_℘) ∈ Irr(W'_g).
+The special representation corresponds to ℘ = ∅.
+
+### Primitive pairs PP_★(Ǒ)
+
+Primitive pairs are pairs of consecutive row indices (1-based) of Ǒ:
+
+```
+★ = B:   PP_B(Ǒ) = { (2i, 2i+1) | r_{2i}(Ǒ) > r_{2i+1}(Ǒ), i ≥ 1 }
+★ = D:   PP_D(Ǒ) = { (2i, 2i+1) | r_{2i}(Ǒ) > r_{2i+1}(Ǒ), i ≥ 1 }
+★ = C:   PP_C(Ǒ) = { (2i-1, 2i) | r_{2i-1}(Ǒ) > r_{2i}(Ǒ), i ≥ 1 }
+★ = M:   PP_M(Ǒ) = { (2i-1, 2i) | r_{2i-1}(Ǒ) > r_{2i}(Ǒ), i ≥ 1 }
+```
+
+### Formula (8.9): bipartition (ι_℘, j_℘) by type
+
+Below, r_i denotes the i-th row length of Ǒ (1-based), and column lengths
+c_i(ι), c_i(j) define the Young diagrams ι_℘, j_℘.
+
+#### ★ = B
+
+The first row is treated separately:
+
+```
+c₁(j_℘) = r₁/2
+```
+
+For each subsequent pair (2i, 2i+1), i ≥ 1:
+
+```
+(c_i(ι_℘), c_{i+1}(j_℘)) = {
+    (r_{2i+1}/2, r_{2i}/2),   if (2i, 2i+1) ∈ ℘;
+    (r_{2i}/2,   r_{2i+1}/2), otherwise.
+}
+```
+
+#### ★ = D
+
+The first row is treated separately:
+
+```
+c₁(ι_℘) = (r₁+1)/2
+```
+
+For each subsequent pair (2i, 2i+1), i ≥ 1:
+
+```
+(c_i(j_℘), c_{i+1}(ι_℘)) = {
+    ((r_{2i+1}-1)/2, (r_{2i}+1)/2),   if (2i, 2i+1) ∈ ℘;
+    ((r_{2i}-1)/2,   (r_{2i+1}+1)/2), otherwise.
+}
+```
+
+#### ★ = C
+
+No special first row. For each pair (2i-1, 2i), i ≥ 1:
+
+```
+(c_i(j_℘), c_i(ι_℘)) = {
+    ((r_{2i}-1)/2,   (r_{2i-1}+1)/2), if (2i-1, 2i) ∈ ℘;
+    (0, 0),                            if (2i-1, 2i) is vacant (r_{2i-1} = 0);
+    ((r_{2i-1}-1)/2, 0),               if (2i-1, 2i) is tailed (r_{2i-1} > 0, r_{2i} = 0);
+    ((r_{2i-1}-1)/2, (r_{2i}+1)/2),   otherwise.
+}
+```
+
+#### ★ = M (C̃)
+
+No special first row. For each pair (2i-1, 2i), i ≥ 1:
+
+```
+(c_i(ι_℘), c_i(j_℘)) = {
+    (r_{2i}/2,   r_{2i-1}/2), if (2i-1, 2i) ∈ ℘;
+    (r_{2i-1}/2, r_{2i}/2),   otherwise.
+}
+```
+
+### Implementation: `dualpart2LC` in `drc.py`
+
+The function `dualpart2LC(part, rtype)` takes a dual partition (row lengths of Ǒ)
+and returns a dictionary `{ frozenset(℘) → bipartition(ι_℘, j_℘) }`.
+
+**Padding conventions** (to make pairing uniform):
+
+| Type | Condition | Padding | Purpose |
+|------|-----------|---------|---------|
+| B | even # parts | append 0 | ensure odd length (first row special) |
+| D | even # parts | append -1 | ensure odd length; -1 trick: (−1+1)/2 = 0 |
+| C | odd # parts | append -1 | ensure even length; vacant pair gives (0,0) |
+| M | odd # parts | append 0 | ensure even length; 0/2 = 0 |
+
+**Indexing**: Code PPidx `i` corresponds to:
+- Types B, D: paper pair (2i+2, 2i+3) — i.e., starting from (2,3) after removing first row
+- Types C, M: paper pair (2i+1, 2i+2) — i.e., starting from (1,2)
+
+**Column length formulas in code**:
+
+For B, M (integer division by 2):
+
+```
+Not in ℘:  tauL[i] = part[2i]   // 2,  tauR[i] = part[2i+1] // 2
+In ℘:      tauL[i] = part[2i+1] // 2,  tauR[i] = part[2i]   // 2
+```
+
+For C, D (half-integer shift, then integer division):
+
+```
+Not in ℘:  tauL[i] = (part[2i+1]+1) // 2,  tauR[i] = (part[2i]-1) // 2
+In ℘:      tauL[i] = (part[2i]+1)   // 2,  tauR[i] = (part[2i+1]-1) // 2
+```
+
+Note: `tauL` = column lengths of ι_℘, `tauR` = column lengths of j_℘.
+
+**Verification**: `dualpart2LC` values match `dualpart2Wrepn` output (set equality)
+for all types and all tested dual partitions.
+
+## Shape shifting for types C and C̃
+
+Reference: [BMSZb] Section 10.2, Lemma 10.3.
+
+### Setup
+
+Let ★ ∈ {C, C̃} and Ǒ an orbit with good parity such that (1,2) ∈ PP_★(Ǒ).
+Let ℘ ⊆ PP_★(Ǒ) with (1,2) ∉ ℘. Put ℘↑ := ℘ ∪ {(1,2)}.
+
+The shape shifting map T_{℘,℘↑} : PBP_G(Ǒ,℘) → PBP_G(Ǒ,℘↑) is a bijection.
+Given τ = (ι_℘, P_τ) × (j_℘, Q_τ) × α ∈ PBP_G(Ǒ,℘), we define
+τ↑ = (ι_{℘↑}, P_{τ↑}) × (j_{℘↑}, Q_{τ↑}) × ℘↑.
+
+Note the column length changes:
+
+```
+★ = C:   (c₁(ι_{℘↑}), c₁(j_{℘↑})) = (c₁(j_℘) + 1, c₁(ι_℘) - 1)
+★ = C̃:  (c₁(ι_{℘↑}), c₁(j_{℘↑})) = (c₁(j_℘), c₁(ι_℘))
+```
+
+### The case ★ = C (forward: sp → nsp, i.e. `twist_C_nonspecial`)
+
+Special shape: 0 < c₁(P) ≤ c₁(Q).
+Non-special shape: c₁(P) ≥ c₁(Q) + 2.
+
+Let l = c₁(Q) - c₁(P) ≥ 0. The twist extends P's first column by (l+1) rows and
+shortens Q's first column by (l+1) rows.
+
+Let x₃ = Q(c₁(P), 1) be the symbol in Q's first column at position c₁(P)
+(i.e. `fR[-(l+1)]`). Then:
+
+**(a) P(c₁(P), 1) ≠ • (equivalently x₃ = s):**
+
+- If c₁(P) = 1 or P(c₁(P)-1, 1) ≠ c:
+  - P' first column = P[: c₁(P)-1] + r^{l+1} + P[c₁(P)-1]
+- If P(c₁(P)-1, 1) = c (i.e. fL ends with 'cd'):
+  - P' first column = P[: c₁(P)-2] + r^{l+1} + P[c₁(P)-2 :]   (preserves the 'cd' ending)
+- Q' first column = Q[: c₁(P)-1]   (remove last l+1 symbols)
+- Other columns unchanged.
+
+**(b) P(c₁(P), 1) = • (equivalently x₃ = •):**
+
+- If P's second column has length > c₁(P)-1 and P(c₁(P), 2) = r:
+  - P' first column = P[: c₁(P)-1] + r^l + r + d
+  - P' second column = sL[: -1] + c
+- Otherwise:
+  - P' first column = P[: c₁(P)-1] + r^l + c + d
+  - P' second column unchanged
+- Q' first column = Q[: c₁(P)-1]
+- Other columns unchanged.
+
+In code: `twist_C_nonspecial(drc)` in both `standalone.py` and `drclift.py`.
+
+### The case ★ = C (inverse: nsp → sp, i.e. `twist_nsp2sp`)
+
+Non-special shape: c₁(P) ≥ c₁(Q) + 2.
+Let l = c₁(P) - c₁(Q) - 2 ≥ 0. The inverse shortens P's first column and extends Q's.
+
+**(a) P(c₁(P)-1, 1) = c (i.e. fL[-2] = 'c'):**
+
+- Sub-case: c₁(Q) > 0 and P(c₁(Q), 1) = r (look at `fL[len(fR)-1]`):
+  - P' first column = P[: c₁(Q)-1] + c + d
+  - Q' first column = Q + s^{l+1}
+- Sub-case otherwise:
+  - P' first column = P[: c₁(Q)] + •
+  - Q' first column = Q + • + s^l
+
+**(b) P(c₁(P)-1, 1) = r (i.e. fL[-2] = 'r'):**
+
+- Sub-case: c₁(Q)+1 = len(sL) and (sL[-1], fL[-1]) = (c, d):
+  - P' first column = P[: c₁(Q)] + •
+  - P' second column = sL[: c₁(Q)] + r
+  - Q' first column = Q + • + s^l
+- Sub-case otherwise:
+  - P' first column = P[: c₁(Q)] + fL[-1]
+  - Q' first column = Q + s^{l+1}
+
+In code: `twist_nsp2sp(drc, 'C')` in `drclift.py`.
+
+### The case ★ = C̃ (M type)
+
+The shape shifting for C̃ is much simpler: it swaps the first columns of P and Q
+with the symbol translation c ↔ d, r ↔ s.
+
+For τ = (P, Q), define τ↑ = (P', Q') where:
+
+```
+P'(i, 1) = translate(Q(i, 1)):   s → r,  c → d,  r → s,  d → c
+Q'(i, 1) = translate(P(i, 1)):   s → r,  c → d,  r → s,  d → c
+P'(i, j) = P(i, j)  for j ≥ 2
+Q'(i, j) = Q(i, j)  for j ≥ 2
+```
+
+This corresponds to the paper's formulas (10.3) and (10.4):
+
+```
+P_{τ↑}(i, j) = { s   if j=1 and Q_τ(i,1) = r;
+                  c   if j=1 and Q_τ(i,1) = d;
+                  P_τ(i,j)  otherwise.
+
+Q_{τ↑}(i, j) = { r   if j=1 and P_τ(i,1) = s;
+                  d   if j=1 and P_τ(i,1) = c;
+                  Q_τ(i,j)  otherwise.
+```
+
+The map is an involution (applying it twice gives the identity) since the translation
+c ↔ d, r ↔ s is self-inverse.
+
+In code: `twist_M_nonspecial(drc)` in both `standalone.py` and `drclift.py`.
+Translation implemented via `str.maketrans('cdrs', 'dcsr')`.
+
+### Verification summary
+
+| Paper | Code function | Direction |
+|-------|--------------|-----------|
+| T_{℘,℘↑} for C | `twist_C_nonspecial` | special → non-special |
+| T_{℘↑,℘}⁻¹ for C | `twist_nsp2sp(drc,'C')` | non-special → special |
+| T_{℘,℘↑} for C̃ | `twist_M_nonspecial` | self-inverse (special ↔ non-special) |
+
+## Descent of a painted bipartition (Section 10.4)
+
+Reference: [BMSZb] Section 10.4.
+
+### Dual descent of ℘
+
+```
+℘' := ∇̃(℘) = { (i, i+1) | i ∈ N⁺, (i+1, i+2) ∈ ℘ } ⊆ PP_{★'}(Ǒ')
+```
+
+### Young diagram pair (ι_{℘'}, j_{℘'})
+
+The descent target bipartition depends on ★ and whether (1,2) ∈ ℘:
+
+```
+(ι_{℘'}, j_{℘'}) =
+  (ι_℘, ∇_naive(j_℘)),           if ★ = B, or ★ ∈ {C, C*} and (1,2) ∉ ℘;
+  (ι_{℘↓}, ∇_naive(j_{℘↓})),     if ★ ∈ {C, C*} and (1,2) ∈ ℘;
+  (∇_naive(ι_℘), j_℘),           if ★ ∈ {D, D*}, or ★ = C̃ and (1,2) ∉ ℘;
+  (∇_naive(ι_{℘↓}), j_{℘↓}),     if ★ = C̃ and (1,2) ∈ ℘.
+```
+
+where ℘↓ = ℘ \ {(1,2)}.
+
+### The γ' tag
+
+```
+γ' = B+    if α = C̃ and c does not occur in first column of (ι, P);
+     B-    if α = C̃ and c occurs in first column of (ι, P);
+     ★'    if α ≠ C̃.
+```
+
+### Naive descent (Lemma 10.4 / 10.5)
+
+**Lemma 10.4** (★ ∈ {B, C, C*}): remove first column of Q.
+- (ι', j') = (ι, ∇_naive(j))
+- P'_naive(i,j) = • or s if P(i,j) ∈ {•, s}; else P(i,j)
+- Q'_naive(i,j) = • or s if Q(i, j+1) ∈ {•, s}; else Q(i, j+1)
+
+**Lemma 10.5** (★ ∈ {C̃, D, D*}): remove first column of P.
+- (ι', j') = (∇_naive(ι), j)
+- P'_naive(i,j) = • or s if P(i, j+1) ∈ {•, s}; else P(i, j+1)
+- Q'_naive(i,j) = • or s if Q(i,j) ∈ {•, s}; else Q(i,j)
+
+### Descent corrections by type
+
+#### ★ = B
+
+**(a)** If γ = B+, (2,3) ∉ ℘, r₂(Ǒ) > 0, Q(c₁(ι_℘), 1) ∈ {r, d}:
+- P'(c₁(ι_{℘'}), 1) := s. Other entries from P'_naive.
+- Q' := Q'_naive.
+
+**(b)** If γ = B+, (2,3) ∈ ℘, Q(c₂(j_℘), 1) ∈ {r, d}:
+- P' := P'_naive.
+- Q'(c₁(j_{℘'}), 1) := r. Other entries from Q'_naive.
+
+**(c)** Otherwise: P' := P'_naive, Q' := Q'_naive.
+
+#### ★ = D
+
+**(a)** If r₂(Ǒ) = r₃(Ǒ) > 0, P(c₂(ι_℘), 2) = c,
+    P(i, 1) ∈ {r, d} for all c₂(ι_℘) ≤ i ≤ c₁(ι_℘):
+- P'(c₁(ι_{℘'}), 1) := r. Other entries from P'_naive.
+- Q' := Q'_naive.
+
+**(b)** If (2,3) ∈ ℘, P(c₂(ι_℘) - 1, 1) ∈ {r, c}:
+- P'(c₁(ι_{℘'}) - 1, 1) := r.
+- P'(c₁(ι_{℘'}), 1) := P(c₂(ι_℘) - 1, 1).
+- Other entries from P'_naive.
+- Q' := Q'_naive.
+
+**(c)** Otherwise: P' := P'_naive, Q' := Q'_naive.
+
+#### ★ ∈ {C, C̃, C*, D*}
+
+**(a)** If (1,2) ∉ ℘: τ' := ∇_naive(τ).
+
+**(b)** If (1,2) ∈ ℘, then ★ ∈ {C, C̃} (by Prop 10.1):
+  - τ' := ∇_naive(τ_{℘↓}), where τ_{℘↓} := T⁻¹_{℘↓,℘}(τ) (inverse shape shift).
+
+### Implementation status
+
+| Case | Code location | Status |
+|------|---------------|--------|
+| B (a): B+, (2,3)∉℘ | `standalone.py:descent` line 872 | ✓ Implemented |
+| B (b): B+, (2,3)∈℘ | — | ✗ NOT implemented |
+| B (c): otherwise | `standalone.py:descent` (fallthrough) | ✓ |
+| D (a): r₂=r₃, scattered | `standalone.py:descent` line 891 | ✓ Implemented |
+| D (b): (2,3)∈℘ | `standalone.py:descent` line 908 | ✓ Implemented |
+| D (c): otherwise | `standalone.py:descent` (fallthrough) | ✓ |
+| C/M (a): (1,2)∉℘ | `standalone.py:descent` (naive only) | ✓ |
+| C/M (b): (1,2)∈℘ | NOT in descent; handled in `build_pbp_bijection` | ✓ via shape shift |
+
+**Issues found:**
+
+1. **B case (a)**: Code does NOT check (2,3) ∉ ℘. For ℘=∅ this is fine,
+   but for arbitrary ℘ this condition matters. The check `(2,3) ∉ ℘`
+   corresponds to the DRC having special B shape (c₂(j) < c₁(ι) + 2,
+   i.e., `len(sR) < len(fL) + 2` or equivalently `len(sL) < len(fR) + 2`
+   depending on direction).
+
+2. **B case (b)**: NOT implemented. Needed for non-special B shape descent
+   when γ=B+ and Q(c₂(j_℘), 1) ∈ {r, d}. Action: Q'(c₁(j_{℘'}), 1) := r.
+
+3. **D case (a)**: Code checks endpoints only: (P(c₂,1), P(c₂,2))=(r,c) and
+   P(c₁,1) ∈ {r,d}. Paper requires P(i,1) ∈ {r,d} for ALL c₂ ≤ i ≤ c₁.
+   The additional branch at line 908-915 handles a broader condition
+   (`fL[c2-1:]` has no 's' or 'c') which subsumes the paper's condition.
+
+4. **D case (b)**: Handled implicitly via `len(sL) >= len(fR)+2` (non-special
+   shape detection). Needs verification against paper for correctness.
+
+5. **`compute_tail_symbol` for D type**: Returns P(c₁(j)+1, 1) (the FIRST
+   tail symbol), but x_τ = P_{τ_t}(k, 1) should be the LAST box of the tail.
+   Bug: for D type with k > 1, the function returns x₁ instead of x_k.
+   This affects Cor 10.10 ε computation.
+
 ## Notation
 
 In `recursive.py`:
