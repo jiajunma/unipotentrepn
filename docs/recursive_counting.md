@@ -448,6 +448,176 @@ where ℘↓ = ℘ \ {(1,2)}.
    Bug: for D type with k > 1, the function returns x₁ instead of x_k.
    This affects Cor 10.10 ε computation.
 
+## Lifting graph design (WIP)
+
+### Input
+
+- Dual partition `dpart`, root type `rtype` ∈ {B, C, D, M}
+- Compute PP = PP_★(Ǒ) from `dpart`
+- Compute DRCs = `dpart2drc(dpart, rtype)` — special shape (℘=∅)
+
+### Extended PBP enumeration
+
+An extended PBP is a triple (drc, ℘, ★) where:
+- drc ∈ DRCs (always special shape)
+- ℘ ⊆ PP (any subset of primitive pairs)
+- ★ = rtype (for B, expand to B+ and B-)
+
+Total count: |DRCs| × 2^|PP| × (2 if B, 1 otherwise)
+
+### Step 1: Build the extended PBP descent tree
+
+For each extended PBP (drc, ℘, ★), recursively descent:
+- drc' = descent(drc, ★)
+- ℘' = ∇̃(℘) = {(j-1, j) : (j, j+1) ∈ ℘, j ≥ 2}
+- ★' = Howe dual of ★
+- DRC is always special shape; ℘ descent is independent of DRC descent
+
+The descent tree, read bottom-up, is the **lifting tree**.
+Root = empty DRC (base case).
+
+### Step 2: Build lifting tree as a data structure
+
+The lifting tree is the descent tree read bottom-up. Each tree node stores:
+
+```
+TreeNode:
+    extended_pbp: (drc, ℘, ★)       # the extended PBP at this node
+    parent: TreeNode or None         # descent target (= lift source)
+    children: list of TreeNode       # all extended PBPs that descent to this node
+    ls: FrozenMultiset of ILS        # the local system L_τ = AC(τ̂)
+```
+
+**Construction**: for each extended PBP (drc, ℘, ★):
+- Compute descent: (drc', ℘', ★') where drc' = descent(drc, ★), ℘' = ∇̃(℘)
+- Find the tree node for (drc', ℘', ★') → that is the **parent**
+- The current node is a **child** of the parent
+- Root nodes: extended PBPs with empty DRC (base case)
+
+**Relationship**: (drc, ℘, ★) is a **lift** of (drc', ℘', ★') iff
+descent(drc, ℘, ★) = (drc', ℘', ★').
+
+### Step 3: Compute LS at each node (bottom-up)
+
+Walk the tree from root (leaves of descent = base case) upward:
+
+**Base case** (root, empty DRC):
+- α_τ = B+: L_τ = FrozenMultiset([((1, 0),)])
+- α_τ = B-: L_τ = FrozenMultiset([((0, -1),)])
+- Otherwise: L_τ = FrozenMultiset([()])
+
+**Lifting step** — parent (drc', ℘', ★') → child (drc, ℘, ★):
+1. source_LS = parent.ls
+2. If ★ ∈ {C, M} and (1,2) ∈ ℘: pre-twist source_LS by ⊗(1,1)
+3. target_LS = theta_lift_ls(source_LS, ★, p_τ, q_τ)
+4. If ★ ∈ {B, D} and ε_τ ≠ 0: post-twist target_LS by ⊗(0, ε_τ)
+5. child.ls = target_LS
+
+### Step 3: Draw the graph
+
+**Nodes**: each node = one LS (FrozenMultiset of ILS).
+- Multiple extended PBPs mapping to the same LS → same node.
+- Node label: signature (p,q), ILS visual, list of (drc, ℘) in this LS.
+
+**Lift edges** (blue arrows):
+- If LS₁ = theta_lift_ls(LS₂, ...), draw arrow LS₂ → LS₁.
+
+**Character twist nodes/edges** (B/D only):
+- For each B/D LS, compute:
+  - det twist (-1,-1): red
+  - (1,-1) twist: green
+  - (-1,1) twist: purple
+- If twist = self: skip (or note invariance)
+- If twist = another existing LS: connect with colored edge
+- If twist = new LS: ghost node (no DRC, dashed border)
+
+**Layout**:
+- rankdir = BT (small groups top, large groups bottom)
+- Group labels (Sp(2n), O(p+q), SO(p+q), Mp(2n)) on the left
+- B+ and B- on the same row
+
+### Visual representation of extended PBP
+
+An extended PBP (drc, ℘, ★) needs a clear visual encoding of ℘.
+
+**Type C/M**: PP_★(Ǒ) ⊆ {(1,2), (3,4), (5,6), ...}.
+- (1,2) ∈ ℘: color column 1 of drcL and drcR **red**
+- (3,4) ∈ ℘: color column 2 of drcL and drcR **red**
+- (2k-1, 2k) ∈ ℘: color column k of drcL and drcR **red**
+
+The red columns indicate which column pairs would be swapped under
+shape shifting (special ↔ non-special). The DRC itself stays in
+special shape; red marking shows which ℘ elements are "active".
+
+**Type D**: PP_★(Ǒ) ⊆ {(2,3), (4,5), (6,7), ...}.
+- (2i, 2i+1) ∈ ℘: color column (i+1) of drcL and column i of drcR **red**
+- E.g., (2,3) ∈ ℘: drcL col 2 + drcR col 1
+
+**Type B**: PP_★(Ǒ) ⊆ {(2,3), (4,5), (6,7), ...}.
+- (2i, 2i+1) ∈ ℘: color column i of drcL and column (i+1) of drcR **red**
+- E.g., (2,3) ∈ ℘: drcL col 1 + drcR col 2
+
+These conventions match [BMSZb] equation (8.9): the red columns are exactly
+the column pairs that would swap under the ℘-dependent bipartition change
+(ι_℘, j_℘) vs (ι_∅, j_∅).
+
+### Comparison plan: standalone vs lsdrcgraph.py
+
+**Context**: `lsdrcgraph.py` builds a lifting graph using DRCs from
+⊔_℘ PBP(Ǒ, ℘) (all shapes), while `standalone.py` uses
+PBP(Ǒ, ∅) × powerset(PP(Ǒ)) (special shape + ℘ label).
+
+These are related by the bijection BIJ established in `build_pbp_bijection`:
+
+```
+BIJ: ⊔_℘ PBP(Ǒ, ℘) ↔ PBP(Ǒ, ∅) × powerset(PP(Ǒ))
+     drc_℘            ↦ (drc_∅, ℘)
+```
+
+**What to verify**:
+
+1. **Lift edges match**: If `lsdrcgraph.py` draws an arrow from LS node A
+   to LS node B, then `standalone.py` draws the same arrow (between the
+   corresponding LS nodes under BIJ).
+
+2. **LS grouping matches**: DRCs drc₁, ..., drc_k are in the same node in
+   `lsdrcgraph.py` iff BIJ(drc₁), ..., BIJ(drc_k) are in the same node
+   in `standalone.py`.
+
+**Verification steps**:
+
+Step 1: For a given (dpart, rtype), generate both graphs:
+  - `lsdrcgraph.py`: produces nodes = {LS → [drc₁, ..., drc_k]}
+  - `standalone.py`: produces nodes = {LS → [(drc_∅, ℘)₁, ..., (drc_∅, ℘)_k]}
+
+Step 2: Compute BIJ via `build_pbp_bijection(dpart, rtype)`:
+  - For each drc_℘ in lsdrcgraph's node, compute BIJ(drc_℘) = (drc_∅, ℘)
+  - Check that all BIJ images land in the same standalone node
+
+Step 3: Compare LS values:
+  - For each drc_℘ in lsdrcgraph, compute its LS (via lsdrcgraph's method)
+  - For the corresponding (drc_∅, ℘) in standalone, compute its LS
+    (via compute_AC(drc_∅, ℘, rtype))
+  - Verify they are equal
+
+Step 4: Compare edges:
+  - Collect all (src_LS, dst_LS) lift edges from both graphs
+  - Verify the edge sets are equal
+
+**Key files**:
+- `standalone.py`: `gen_lift_tree`, `build_pbp_bijection`, `compute_AC`
+- `combunipotent/lsdrcgraph.py`: the reference lifting graph implementation
+- `combunipotent/drclift.py`: DRC lifting (generates ⊔_℘ PBP)
+
+### TODO / Open questions
+
+- [ ] `compute_AC` should return FrozenMultiset, not list of (coeff, ILS)
+- [ ] `theta_lift_ls` should take and return FrozenMultiset
+- [ ] Sign twist ⊗(1,1) for C/M: is this `twist_ls(ls, (-1,-1))`?
+- [ ] Sign twist ⊗(0,ε) for B/D: is this `twist_ls(ls, (1,-1))`?
+- [ ] Verify: does the lifting tree give the same LS as `compute_AC`?
+- [ ] Implement the comparison test (Steps 1-4 above)
+
 ## Notation
 
 In `recursive.py`:

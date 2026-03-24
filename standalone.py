@@ -24,6 +24,7 @@ Root system types (★):
 """
 from itertools import chain
 from copy import copy
+from multiset import FrozenMultiset
 
 
 # ============================================================================
@@ -584,15 +585,6 @@ def fill_drc(tau, rtype):
     steps = STEPS[rtype]
     ffun, fparam = steps[0]
     return list(ffun(tau, steps[1:], *fparam))
-
-
-def _allsubsets(S):
-    """Yield all subsets of S."""
-    S = list(S)
-    for i in range(len(S) + 1):
-        from itertools import combinations
-        for ss in combinations(S, i):
-            yield ss
 
 
 def dpart2Wrepns(dpart, rtype):
@@ -1922,22 +1914,26 @@ def theta_lift_ls(ls, rtype, p, q):
     """
     Theta lift a local system (FrozenMultiset of ILS tuples).
 
-    Lifts each ILS component independently. Returns FrozenMultiset of
-    lifted ILS tuples, or empty if any component has no lift.
+    Lifts each ILS component independently. Returns a FrozenMultiset.
 
     Args:
-        ls: iterable of ILS tuples (e.g., FrozenMultiset)
+        ls: FrozenMultiset of ILS tuples
         rtype: target type ★
         p, q: target signature
 
     Returns:
-        List of ILS tuples (the lifted LS), or empty list if lift fails.
+        FrozenMultiset of lifted ILS tuples.
     """
     result = []
     for irr_s in ls:
         lifted = theta_lift_ils(irr_s, rtype, p, q)
         result.extend(lifted)
-    return result
+    return FrozenMultiset(result)
+
+
+def twist_ls(ls, twist):
+    """Apply character twist to every ILS in a LS (FrozenMultiset)."""
+    return FrozenMultiset(_ils_twist_BD(irr_s, twist) for irr_s in ls)
 
 
 # ============================================================================
@@ -2005,15 +2001,13 @@ def compute_AC(drc, wp, rtype, cache=None):
     if cache is None:
         cache = {}
 
-    # ε_℘ for this step
-    e_wp = 1 if (wp is not None and (1, 2) in wp) else 0
+    # ε_℘ for this step: 1 if PPidx 0 is in ℘
+    e_wp = 1 if (wp is not None and 0 in wp) else 0
 
-    # Descend ℘
+    # Descend ℘ using _descend_wp (integer PPidx representation)
     wp_prime = None
     if wp is not None and len(wp) > 0:
-        new_wp = frozenset(
-            (j - 1, j) for (j, k) in wp if j >= 2 and k == j + 1
-        )
+        new_wp = _descend_wp(wp, rtype)
         wp_prime = new_wp if new_wp else None
 
     # Descent of DRC
@@ -2626,6 +2620,485 @@ def _format_myd_multiline(ac_list):
     return result
 
 
+def gen_lift_tree(dpart, rtype, format='svg', filename=None):
+    """
+    Generate the lifting tree graph.
+
+    Two structures:
+    1. Extended PBP tree: nodes = (drc, ℘, ★), edges = descent/lift
+    2. LS tree: nodes = distinct LS values (FrozenMultiset of ILS),
+       edges = theta lift (blue), det twist (red), 1⁺⁻ (green), 1⁻⁺ (purple)
+
+    Each LS box contains:
+    - The local system (ILS visual)
+    - All extended PBPs τ with L_τ = this LS, shown with:
+      - DRC diagram (℘ marked with red columns)
+      - B+/B- label (type B)
+      - ε_τ (type B/D) or ε_℘ (type C/M)
+    """
+    from graphviz import Digraph
+
+    if filename is None:
+        filename = f'{rtype}{",".join(str(x) for x in dpart)}'
+
+    drcs = dpart2drc(dpart, rtype)
+    PPidx = compute_PPidx(dpart, rtype)
+
+    # --- Step 1 & 2: Build extended PBP tree by recursive descent ---
+    # Start from top-level extended PBPs and descend, creating all nodes.
+    tree_nodes = {}  # (drc, wp_fs, rt) → {parent, children, ls}
+
+    def ensure_node(key):
+        if key not in tree_nodes:
+            tree_nodes[key] = {
+                'parent': None, 'children': [], 'ls': None,
+                'drc': key[0], 'wp': key[1], 'rtype': key[2],
+            }
+
+    def build_tree(drc, wp_fs, rt):
+        """Recursively build tree from this extended PBP down to root."""
+        key = (drc, wp_fs, rt)
+        if key in tree_nodes:
+            return  # already built
+        ensure_node(key)
+
+        drcL, drcR = drc
+        total = sum(len(c) for c in drcL) + sum(len(c) for c in drcR)
+        if total == 0:
+            return  # root, no parent
+
+        # Descent
+        next_drc, next_rt = descent(drc, rt)
+        next_wp = None
+        if wp_fs is not None and len(wp_fs) > 0:
+            nw = _descend_wp(wp_fs, rt)
+            next_wp = nw if nw else None
+
+        parent_key = (next_drc, next_wp, next_rt)
+        build_tree(next_drc, next_wp, next_rt)  # ensure parent exists
+
+        tree_nodes[key]['parent'] = parent_key
+        tree_nodes[parent_key]['children'].append(key)
+
+    # Start from all top-level extended PBPs
+    rtypes_expand = ['B+', 'B-'] if rtype == 'B' else [rtype]
+    for drc in drcs:
+        for wp in _allsubsets(PPidx):
+            wp_fs = frozenset(wp) if wp else None
+            for rt in rtypes_expand:
+                build_tree(drc, wp_fs, rt)
+
+    # --- Step 3: Compute LS bottom-up ---
+    # BFS from roots (empty DRC nodes)
+    from collections import deque
+    queue = deque()
+    for key, node in tree_nodes.items():
+        drc, wp_fs, rt = key
+        drcL, drcR = drc
+        total = sum(len(c) for c in drcL) + sum(len(c) for c in drcR)
+        if total == 0:
+            # Base case
+            if rt == 'B+':
+                node['ls'] = FrozenMultiset([((1, 0),)])
+            elif rt == 'B-':
+                node['ls'] = FrozenMultiset([((0, -1),)])
+            else:
+                node['ls'] = FrozenMultiset([()])
+            queue.append(key)
+
+    while queue:
+        parent_key = queue.popleft()
+        parent_node = tree_nodes[parent_key]
+        parent_ls = parent_node['ls']
+        parent_rt = parent_key[2]
+
+        for child_key in parent_node['children']:
+            child_drc, child_wp, child_rt = child_key
+            child_node = tree_nodes[child_key]
+
+            tau_p, tau_q = signature(child_drc, child_rt)
+
+            # Pre-twist for C/M with PPidx 0 ∈ ℘
+            source_ls = parent_ls
+            e_wp = 1 if (child_wp is not None and 0 in child_wp) else 0
+            if child_rt in ('C', 'M') and e_wp != 0:
+                source_ls = twist_ls(parent_ls, (-1, -1))
+
+            # Theta lift
+            target_ls = theta_lift_ls(source_ls, child_rt, tau_p, tau_q)
+
+            # Post-twist for B/D
+            if child_rt in ('B+', 'B-', 'D'):
+                tau_eps = epsilon(child_drc, child_rt)
+                if tau_eps != 0:
+                    target_ls = twist_ls(target_ls, (1, -1))
+
+            child_node['ls'] = target_ls
+            queue.append(child_key)
+
+    # --- Step 4: Collect all LS values and group ext PBPs by LS ---
+    # Group by (ls_value, total_boxes) — NO rtype, so B+/B- can merge
+    ls_groups = {}  # (ls, total) → list of (drc, wp, rt) keys
+    for key, node in tree_nodes.items():
+        drc, wp_fs, rt = key
+        ls = node['ls']
+        if ls is None:
+            continue
+        drcL, drcR = drc
+        total = sum(len(c) for c in drcL) + sum(len(c) for c in drcR)
+        group_key = (ls, total)
+        ls_groups.setdefault(group_key, []).append(key)
+
+    # Character twist definitions for B/D levels
+    twist_defs = [
+        ((-1, -1), 'red',     'det'),
+        ((1, -1),  'green',   '1⁺⁻'),
+        ((-1, 1),  '#9933cc', '1⁻⁺'),
+    ]
+
+    # Build ghost LS nodes: twist variants of B/D LS that are not realized
+    ghost_ls = {}  # ghost_gk → source_gk
+    for gk, members in list(ls_groups.items()):
+        ls_val, total = gk
+        has_bd = any(k[2] in ('B+', 'B-', 'D') for k in members)
+        if not has_bd:
+            continue
+        for twist, color, label in twist_defs:
+            twisted = twist_ls(ls_val, twist)
+            twisted_gk = (twisted, total)
+            if twisted_gk != gk and twisted_gk not in ls_groups:
+                if twisted_gk not in ghost_ls:
+                    ghost_ls[twisted_gk] = gk
+
+    # --- Step 5: Build Graphviz graph ---
+    g = Digraph(name='Lifting Tree',
+                filename=filename,
+                node_attr={'shape': 'box', 'fontname': 'Courier New',
+                           'fontsize': '8'},
+                graph_attr={'rankdir': 'BT', 'newrank': 'true',
+                            'ranksep': '1.2', 'nodesep': '0.4',
+                            'dpi': '150'},
+                engine='dot', format=format)
+
+    node_counter = [0]
+    gv_node_map = {}  # group_key → graphviz node id
+    levels = {}       # (rt_norm, total) → [nids]
+
+    def make_nid():
+        nid = f'n{node_counter[0]}'
+        node_counter[0] += 1
+        return nid
+
+    def _wp_red_cols(wp_fs, rt):
+        """Compute which columns of drcL and drcR to color red for ℘."""
+        red_L = set()
+        red_R = set()
+        if not wp_fs:
+            return red_L, red_R
+        for idx in wp_fs:
+            # idx is a PPidx integer
+            if rt in ('C', 'M'):
+                # PPidx i → column i of both L and R (0-based)
+                red_L.add(idx)
+                red_R.add(idx)
+            elif rt == 'D':
+                # PPidx i → col i+1 of L, col i of R (0-based)
+                red_L.add(idx + 1)
+                red_R.add(idx)
+            elif rt in ('B', 'B+', 'B-'):
+                # PPidx i → col i of L, col i+1 of R (0-based)
+                red_L.add(idx)
+                red_R.add(idx + 1)
+        return red_L, red_R
+
+    def _drc_html_colored(drc, wp_fs, rt):
+        """Format DRC with red-colored columns for ℘ (HTML for Graphviz)."""
+        drcL, drcR = drc
+        red_L, red_R = _wp_red_cols(wp_fs, rt)
+
+        def _col_str(columns, red_set):
+            rows = 0
+            for c in columns:
+                rows = max(rows, len(c))
+            if rows == 0:
+                return ''
+            lines = []
+            for r in range(rows):
+                parts = []
+                for ci, c in enumerate(columns):
+                    ch = c[r] if r < len(c) else ' '
+                    if ci in red_set:
+                        parts.append(f'<font color="red">{ch}</font>')
+                    else:
+                        parts.append(ch)
+                lines.append(''.join(parts))
+            return '<br align="left"/>'.join(lines)
+
+        left = _col_str(drcL, red_L)
+        right = _col_str(drcR, red_R)
+        if left and right:
+            # Side by side with separator
+            lrows = left.split('<br align="left"/>')
+            rrows = right.split('<br align="left"/>')
+            maxr = max(len(lrows), len(rrows))
+            lines = []
+            for i in range(maxr):
+                l = lrows[i] if i < len(lrows) else ' '
+                r = rrows[i] if i < len(rrows) else ' '
+                lines.append(f'{l}|{r}')
+            return '<br align="left"/>'.join(lines)
+        elif left:
+            return left
+        elif right:
+            return right
+        return '(empty)'
+
+    def format_ext_pbp_html(drc, wp_fs, rt):
+        """Format one extended PBP as HTML for Graphviz."""
+        drc_html = _drc_html_colored(drc, wp_fs, rt)
+        # B+/B- label
+        rt_str = f' {rt}' if rt in ('B+', 'B-') else ''
+        # Unified ε
+        if rt in ('B+', 'B-', 'D'):
+            eps = epsilon(drc, rt)
+        elif rt in ('C', 'M'):
+            eps = 1 if (wp_fs is not None and 0 in wp_fs) else 0
+        else:
+            eps = 0
+        return f'{drc_html}{rt_str} ε={eps}'
+
+    # Create nodes for real LS groups
+    for gk, members in ls_groups.items():
+        ls_val, total = gk
+        nid = make_nid()
+        gv_node_map[gk] = nid
+
+        # LS visual: respect FrozenMultiset multiplicities
+        ac_pairs = [(ls_val[ils], ils) for ils in ls_val.distinct_elements()]
+        ac_lines = _format_myd_multiline(ac_pairs)
+        ac_str = '<br align="left"/>'.join(ac_lines)
+
+        # List all ext PBPs with their individual signatures
+        pbp_parts = []
+        for mk in members:
+            drc_m, wp_m, rt_m = mk
+            sig_m = signature(drc_m, rt_m)
+            sig_line = f'({sig_m[0]},{sig_m[1]})'
+            pbp_html = format_ext_pbp_html(*mk)
+            pbp_parts.append(f'{sig_line}<br align="left"/>{pbp_html}')
+        pbp_str = '<br align="left"/>'.join(pbp_parts)
+
+        label = (f'<{ac_str}<br align="left"/>'
+                 f'═════<br align="left"/>'
+                 f'{pbp_str}<br align="left"/>>')
+
+        # Color based on what types appear in this node
+        rts_in_node = set(k[2] for k in members)
+        if rts_in_node <= {'C'}:
+            fillcolor = '#e6f3ff'
+        elif rts_in_node <= {'M'}:
+            fillcolor = '#e6ffe6'
+        elif rts_in_node <= {'D'}:
+            fillcolor = '#fff3e6'
+        elif rts_in_node <= {'B+', 'B-'}:
+            fillcolor = '#ffe6e6'
+        else:
+            fillcolor = '#f5f5f5'  # mixed types
+
+        g.node(nid, label=label, style='filled',
+               fillcolor=fillcolor)
+
+        rt_norm = 'B' if rts_in_node <= {'B+', 'B-'} else next(iter(rts_in_node))
+        levels.setdefault((rt_norm, total), []).append(nid)
+
+    # Create ghost nodes for twisted LS not realized by any ext PBP
+    for gk, source_gk in ghost_ls.items():
+        ls_val, total = gk
+        nid = make_nid()
+        gv_node_map[gk] = nid
+
+        ac_pairs = [(ls_val[ils], ils) for ils in ls_val.distinct_elements()]
+        ac_lines = _format_myd_multiline(ac_pairs)
+        ac_str = '<br align="left"/>'.join(ac_lines)
+        label = f'<{ac_str}<br align="left"/>>'
+
+        g.node(nid, label=label, style='filled',
+               fillcolor='#f8f8f8')
+
+        # Same level as source
+        rt_norm = None
+        for mk in ls_groups.get(source_gk, []):
+            r = mk[2]
+            rt_norm = 'B' if r in ('B+', 'B-') else r
+            break
+        if rt_norm is None:
+            rt_norm = 'B' if rtype in ('M', 'B') else 'D'
+        levels.setdefault((rt_norm, total), []).append(nid)
+
+    # --- Step 6: Lift edges (blue, solid) ---
+    lift_edges = set()
+    for key, node in tree_nodes.items():
+        if node['parent'] is None:
+            continue
+        child_drc, child_wp, child_rt = key
+        parent_key = node['parent']
+        parent_rt = parent_key[2]
+
+        child_ls = node['ls']
+        parent_ls = tree_nodes[parent_key]['ls']
+        drcL, drcR = child_drc
+        child_total = sum(len(c) for c in drcL) + sum(len(c) for c in drcR)
+        pdrc = parent_key[0]
+        pdrcL, pdrcR = pdrc
+        parent_total = sum(len(c) for c in pdrcL) + sum(len(c) for c in pdrcR)
+
+        child_gk = (child_ls, child_total)
+        parent_gk = (parent_ls, parent_total)
+
+        if child_gk not in gv_node_map:
+            continue
+
+        # Determine lift source:
+        # For C/M child with ε_℘ = 1, the lift source is parent_ls ⊗ det
+        src_gk = parent_gk
+        if child_rt in ('C', 'M'):
+            child_wp = key[1]
+            e_wp = 1 if (child_wp is not None and 0 in child_wp) else 0
+            if e_wp == 1:
+                twisted_parent_ls = twist_ls(parent_ls, (-1, -1))
+                src_gk = (twisted_parent_ls, parent_total)
+
+        if src_gk not in gv_node_map:
+            continue
+
+        src_nid = gv_node_map[src_gk]
+        dst_nid = gv_node_map[child_gk]
+        edge_key = (src_nid, dst_nid)
+        if src_nid != dst_nid and edge_key not in lift_edges:
+            lift_edges.add(edge_key)
+            g.edge(src_nid, dst_nid, color='blue', headport='s')
+
+    # --- Step 7: Character twist edges (B/D, same level, solid) ---
+    # Draw between all LS nodes (real and ghost) at B/D levels
+    twist_edges = set()
+    all_ls_keys = set(ls_groups.keys()) | set(ghost_ls.keys())
+    for gk in all_ls_keys:
+        ls_val, total = gk
+        # Check if this is a B/D level node
+        has_bd = any(k[2] in ('B+', 'B-', 'D') for k in ls_groups.get(gk, []))
+        if not has_bd and gk not in ghost_ls:
+            continue
+        if gk not in gv_node_map:
+            continue
+        nid_a = gv_node_map[gk]
+        for twist, color, label in twist_defs:
+            twisted = twist_ls(ls_val, twist)
+            target_gk = (twisted, total)
+            if target_gk == gk or target_gk not in gv_node_map:
+                continue
+            nid_b = gv_node_map[target_gk]
+            edge = tuple(sorted([nid_a, nid_b]))
+            ek = (edge, color)
+            if ek not in twist_edges:
+                twist_edges.add(ek)
+                g.edge(nid_a, nid_b, color=color,
+                       dir='both', arrowsize='0.3', constraint='false')
+
+    # --- Step 8: Layout ---
+    # Build twist orbits: group LS nodes connected by character twists
+    # so they are placed adjacently in the graph.
+    all_gk_set = set(ls_groups.keys()) | set(ghost_ls.keys())
+    gk_to_orbit = {}  # gk → orbit_id
+    orbits = []       # orbit_id → set of gks
+    for gk in all_gk_set:
+        if gk in gk_to_orbit:
+            continue
+        # BFS to find all gks in this twist orbit
+        orbit = set()
+        bfs = [gk]
+        while bfs:
+            cur = bfs.pop()
+            if cur in orbit:
+                continue
+            if cur not in all_gk_set:
+                continue
+            orbit.add(cur)
+            ls_val, total = cur
+            for twist, _, _ in twist_defs:
+                tw = twist_ls(ls_val, twist)
+                nbr = (tw, total)
+                if nbr in all_gk_set and nbr not in orbit:
+                    bfs.append(nbr)
+        oid = len(orbits)
+        orbits.append(orbit)
+        for member in orbit:
+            gk_to_orbit[member] = oid
+
+    gp_nodes = []
+    cluster_counter = [0]
+    for (rt_norm, total), nids in sorted(levels.items(), key=lambda x: -x[0][1]):
+        if rt_norm in ('C', 'M'):
+            gp_label = RTYPE_GP[rt_norm] % (2 * total,)
+        elif rt_norm == 'B':
+            gp_label = f'O({2 * total + 1})'
+        elif rt_norm == 'D':
+            gp_label = f'SO({2 * total})'
+        else:
+            gp_label = rt_norm
+
+        gp_nid = f'gp_{rt_norm}_{total}'
+        g.node(gp_nid, label=gp_label, shape='plaintext',
+               fontname='Helvetica', fontsize='11', fontcolor='#333333')
+        gp_nodes.append((total, gp_nid))
+
+        # Group nids by twist orbit for clustering
+        orbit_nids = {}  # orbit_id → [nids]
+        for gk in all_gk_set:
+            ls_val, t = gk
+            if t != total:
+                continue
+            if gk not in gv_node_map:
+                continue
+            nid = gv_node_map[gk]
+            if nid not in nids:
+                continue
+            oid = gk_to_orbit.get(gk)
+            if oid is not None:
+                orbit_nids.setdefault(oid, []).append(nid)
+
+        # Nids not in any orbit (C/M levels with no twists)
+        clustered_nids = set()
+        for onids in orbit_nids.values():
+            clustered_nids.update(onids)
+        unclustered = [n for n in nids if n not in clustered_nids]
+
+        # Create cluster subgraphs for multi-node orbits
+        for oid, onids in orbit_nids.items():
+            if len(onids) > 1:
+                cname = f'cluster_tw_{cluster_counter[0]}'
+                cluster_counter[0] += 1
+                with g.subgraph(name=cname) as c:
+                    c.attr(style='dotted', color='#999999', penwidth='0.8')
+                    for nid in onids:
+                        c.node(nid)
+            else:
+                unclustered.extend(onids)
+
+        # Rank constraint: all nids at this level on the same rank
+        with g.subgraph() as s:
+            s.attr(rank='same')
+            s.node(gp_nid)
+            for nid in nids:
+                s.node(nid)
+
+    gp_nodes_sorted = sorted(gp_nodes, key=lambda x: x[0])
+    for i in range(len(gp_nodes_sorted) - 1):
+        g.edge(gp_nodes_sorted[i][1], gp_nodes_sorted[i + 1][1],
+               style='invis')
+
+    return g
+
+
 def gen_descent_tree(dpart, rtype, format='pdf', filename='descent_tree'):
     """
     Generate a Graphviz directed graph showing the theta lifting tree.
@@ -3000,15 +3473,12 @@ def main():
         p, f = verify_descent(parts, rtype, report=True)
         print(f"Descent verification: {p} passed, {f} failed")
 
-    # Always generate descent tree (default behavior)
-    if not args.tree:
-        args.tree = True
-    if args.tree:
-        fname = args.output or f'{rtype}{",".join(str(x) for x in parts)}'
-        print(f"\nGenerating descent tree...")
-        g = gen_descent_tree(parts, rtype, format=args.format, filename=fname)
-        outfile = g.render()
-        print(f"Output: {outfile}")
+    # Always generate lift tree (default behavior)
+    fname = args.output or f'{rtype}{",".join(str(x) for x in parts)}'
+    print(f"\nGenerating lift tree...")
+    g = gen_lift_tree(parts, rtype, format=args.format, filename=fname)
+    outfile = g.render()
+    print(f"Output: {outfile}")
 
 
 def run_tests():
