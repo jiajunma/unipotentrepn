@@ -867,10 +867,12 @@ def descent(drc, rtype, dpart=None):
                 if col0R:
                     resR = (col0R[:-1] + 'r', *resR[1:])
 
-        # B case (a): (2,3) ∉ ℘, r₂(Ǒ) > 0, Q(c₁(ι), 1) ∈ {r, d}
+        # Lemma 3.10: (2,3) ∉ ℘, r₂(Ǒ) > 0, Q(c₁(ι), 1) ∈ {r, d}
         # Action: P'(c₁(ι'), 1) = s
+        # r₂(Ǒ) > 0 ⟺ DRC has at least 2 columns (non-empty)
         elif c2_j < c1 + 2:
-            r2_pos = (len(fR) > c1) or (c2_j > 0)
+            ncols = sum(1 for c in drcL if c) + sum(1 for c in drcR if c)
+            r2_pos = (ncols >= 2)
             q_c1_1 = fR[c1 - 1] if 0 < c1 <= len(fR) else ''
             if r2_pos and q_c1_1 in ('r', 'd'):
                 col0 = resL[0]
@@ -2775,7 +2777,7 @@ def gen_lift_tree(dpart, rtype, format='svg', filename=None):
                 filename=filename,
                 node_attr={'shape': 'box', 'fontname': 'Courier New',
                            'fontsize': '8'},
-                graph_attr={'rankdir': 'BT', 'newrank': 'true',
+                graph_attr={'rankdir': 'TB', 'newrank': 'true',
                             'ranksep': '1.2', 'nodesep': '0.4',
                             'dpi': '150'},
                 engine='dot', format=format)
@@ -2836,22 +2838,16 @@ def gen_lift_tree(dpart, rtype, format='svg', filename=None):
 
         left = _col_str(drcL, red_L)
         right = _col_str(drcR, red_R)
-        if left and right:
-            # Side by side with separator
-            lrows = left.split('<br align="left"/>')
-            rrows = right.split('<br align="left"/>')
-            maxr = max(len(lrows), len(rrows))
-            lines = []
-            for i in range(maxr):
-                l = lrows[i] if i < len(lrows) else ' '
-                r = rrows[i] if i < len(rrows) else ' '
-                lines.append(f'{l}|{r}')
-            return '<br align="left"/>'.join(lines)
-        elif left:
-            return left
-        elif right:
-            return right
-        return '(empty)'
+        # Always show the vertical bar separator
+        lrows = left.split('<br align="left"/>') if left else []
+        rrows = right.split('<br align="left"/>') if right else []
+        maxr = max(len(lrows), len(rrows), 1)
+        lines = []
+        for i in range(maxr):
+            l = lrows[i] if i < len(lrows) else ' '
+            r = rrows[i] if i < len(rrows) else ' '
+            lines.append(f'{l}|{r}')
+        return '<br align="left"/>'.join(lines)
 
     def format_ext_pbp_html(drc, wp_fs, rt):
         """Format one extended PBP as HTML for Graphviz."""
@@ -2976,7 +2972,7 @@ def gen_lift_tree(dpart, rtype, format='svg', filename=None):
         edge_key = (src_nid, dst_nid)
         if src_nid != dst_nid and edge_key not in lift_edges:
             lift_edges.add(edge_key)
-            g.edge(src_nid, dst_nid, color='blue', headport='s')
+            g.edge(src_nid, dst_nid, color='blue', headport='n')
 
     # --- Step 7: Character twist edges (B/D, same level, solid) ---
     # Draw between all LS nodes (real and ghost) at B/D levels
@@ -3036,7 +3032,7 @@ def gen_lift_tree(dpart, rtype, format='svg', filename=None):
 
     gp_nodes = []
     cluster_counter = [0]
-    for (rt_norm, total), nids in sorted(levels.items(), key=lambda x: -x[0][1]):
+    for (rt_norm, total), nids in sorted(levels.items(), key=lambda x: x[0][1]):
         if rt_norm in ('C', 'M'):
             gp_label = RTYPE_GP[rt_norm] % (2 * total,)
         elif rt_norm == 'B':
@@ -3048,7 +3044,8 @@ def gen_lift_tree(dpart, rtype, format='svg', filename=None):
 
         gp_nid = f'gp_{rt_norm}_{total}'
         g.node(gp_nid, label=gp_label, shape='plaintext',
-               fontname='Helvetica', fontsize='11', fontcolor='#333333')
+               fontname='Helvetica', fontsize='11', fontcolor='#333333',
+               group='gp_labels')
         gp_nodes.append((total, gp_nid))
 
         # Group nids by twist orbit for clustering
@@ -3085,11 +3082,125 @@ def gen_lift_tree(dpart, rtype, format='svg', filename=None):
                 unclustered.extend(onids)
 
         # Rank constraint: all nids at this level on the same rank
+        # Add invisible edge from gp label to first LS node to pin label left
         with g.subgraph() as s:
             s.attr(rank='same')
             s.node(gp_nid)
             for nid in nids:
                 s.node(nid)
+        if nids:
+            g.edge(gp_nid, nids[0], style='invis')
+
+    gp_nodes_sorted = sorted(gp_nodes, key=lambda x: x[0])
+    for i in range(len(gp_nodes_sorted) - 1):
+        g.edge(gp_nodes_sorted[i][1], gp_nodes_sorted[i + 1][1],
+               style='invis')
+
+    # --- Also generate the extended PBP descent tree ---
+    ext_filename = filename + '_ext'
+    g_ext = _gen_ext_pbp_tree(tree_nodes, rtype, format=format,
+                              filename=ext_filename)
+    g_ext.render()
+
+    return g
+
+
+def _gen_ext_pbp_tree(tree_nodes, rtype, format='svg', filename='ext_pbp_tree'):
+    """
+    Generate the extended PBP descent/lift tree.
+
+    Each node = one extended PBP (drc, ℘, ★).
+    Edges = descent (parent→child = lift direction, top-down).
+    """
+    from graphviz import Digraph
+
+    g = Digraph(name='Extended PBP Tree',
+                filename=filename,
+                node_attr={'shape': 'box', 'fontname': 'Courier New',
+                           'fontsize': '8'},
+                graph_attr={'rankdir': 'TB', 'newrank': 'true',
+                            'ranksep': '0.8', 'nodesep': '0.3',
+                            'dpi': '150'},
+                engine='dot', format=format)
+
+    nid_map = {}  # key → nid
+    levels = {}   # (rt_norm, total) → [nids]
+    counter = [0]
+
+    for key, node in tree_nodes.items():
+        drc, wp_fs, rt = key
+        drcL, drcR = drc
+        total = sum(len(c) for c in drcL) + sum(len(c) for c in drcR)
+
+        nid = f'e{counter[0]}'
+        counter[0] += 1
+        nid_map[key] = nid
+
+        # Signature
+        sig = signature(drc, rt)
+        # ε
+        if rt in ('B+', 'B-', 'D'):
+            eps = epsilon(drc, rt)
+        elif rt in ('C', 'M'):
+            eps = 1 if (wp_fs is not None and 0 in wp_fs) else 0
+        else:
+            eps = 0
+        # B+/B- label
+        rt_str = f' {rt}' if rt in ('B+', 'B-') else ''
+        # ℘ label
+        wp_str = ''
+        if wp_fs:
+            wp_str = f' ℘={set(wp_fs)}'
+
+        # DRC as text
+        drc_str = str_dgms(drc).replace('\n', '\\l')
+        label = f'({sig[0]},{sig[1]}){rt_str} ε={eps}{wp_str}\\l{drc_str}\\l'
+
+        # Color by type
+        colors = {'C': '#e6f3ff', 'D': '#fff3e6', 'M': '#e6ffe6',
+                  'B+': '#ffe6e6', 'B-': '#ffe6f3'}
+        fillcolor = colors.get(rt, '#f5f5f5')
+
+        g.node(nid, label=label, style='filled', fillcolor=fillcolor,
+               labeljust='l')
+
+        rt_norm = 'B' if rt in ('B+', 'B-') else rt
+        levels.setdefault((rt_norm, total), []).append(nid)
+
+    # Edges: parent → child (lift direction, top-down in TB)
+    for key, node in tree_nodes.items():
+        if node['parent'] is None:
+            continue
+        parent_key = node['parent']
+        if parent_key in nid_map and key in nid_map:
+            g.edge(nid_map[parent_key], nid_map[key], color='blue')
+
+    # Layout: group labels on left, rank constraints
+    gp_nodes = []
+    RTYPE_GP_local = {'C': 'Sp(%d)', 'M': 'Mp(%d)'}
+    for (rt_norm, total), nids in sorted(levels.items(), key=lambda x: x[0][1]):
+        if rt_norm in ('C', 'M'):
+            gp_label = RTYPE_GP_local.get(rt_norm, rt_norm) % (2 * total,)
+        elif rt_norm == 'B':
+            gp_label = f'O({2 * total + 1})'
+        elif rt_norm == 'D':
+            gp_label = f'SO({2 * total})'
+        else:
+            gp_label = rt_norm
+
+        gp_nid = f'gp_{rt_norm}_{total}'
+        g.node(gp_nid, label=gp_label, shape='plaintext',
+               fontname='Helvetica', fontsize='11', fontcolor='#333333',
+               group='gp_labels')
+        gp_nodes.append((total, gp_nid))
+
+        with g.subgraph() as s:
+            s.attr(rank='same')
+            s.node(gp_nid)
+            for nid in nids:
+                s.node(nid)
+        if nids:
+            g.edge(gp_nid, nids[0], style='invis')
 
     gp_nodes_sorted = sorted(gp_nodes, key=lambda x: x[0])
     for i in range(len(gp_nodes_sorted) - 1):
