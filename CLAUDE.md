@@ -114,7 +114,7 @@ gen_lift_graph((5, 5, 2, 2), rtype='M', format='pdf')
 ## Conventions
 
 - Every function must have a docstring or comment.
-- Commit to git after completing each set of related changes.
+- Commit to git and push to GitHub after every modification.
 - `dpart2drc` takes **dual partitions** (orbit side); `part2drc` takes **special partitions** (group side).
 - `test_dpart2drcLS` uses `test=False` for type B (det-disjointness not yet fully verified).
 - The `rich` library overrides `print` in `drc.py` and `drclift.py` for styled Jupyter output.
