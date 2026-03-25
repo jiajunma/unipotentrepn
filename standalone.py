@@ -932,6 +932,74 @@ def descent(drc, rtype, dpart=None):
     return reg_drc((resL, resR)), rtype_prime
 
 
+def descent_general(drc, rtype):
+    """
+    Compute descent ∇(τ) for general ℘ (non-special shapes).
+
+    Implements [BMSZb] Section 10.4 algorithm, which differs from
+    descent() (Lemma 3.12) in the D case (a) condition:
+    - Lemma 3.12: checks (P(c₂,1),P(c₂,2))=(r,c) and P(c₁,1)∈{r,d}
+    - General (a): checks P(c₂,2)=c and P(i,1)∈{r,d} for ALL c₂≤i≤c₁
+
+    Returns (drc', rtype').
+    """
+    drcL, drcR = drc
+    fL = getz(drcL, 0, '')
+    fR = getz(drcR, 0, '')
+    sL = getz(drcL, 1, '')
+
+    # Compute naive descent first
+    res, rtype_prime = naive_descent(drc, rtype)
+    resL, resR = res
+
+    if rtype == 'B+':
+        c1 = len(fL)
+        sR = getz(drcR, 1, '')
+        c2_j = len(sR)
+
+        # B case (b): (2,3) ∈ ℘ ⟺ c₂(j) ≥ c₁(ι) + 2
+        if c2_j >= c1 + 2:
+            # Q(c₂(j_℘), 1) ∈ {r, d}
+            q_c2j_1 = fR[c2_j - 1] if 0 < c2_j <= len(fR) else ''
+            if q_c2j_1 in ('r', 'd'):
+                col0R = resR[0] if len(resR) > 0 else ''
+                if col0R:
+                    resR = (col0R[:-1] + 'r', *resR[1:])
+
+        # B case (a): (2,3) ∉ ℘, r₂(Ǒ) > 0, Q(c₁(ι_℘), 1) ∈ {r, d}
+        else:
+            ncols = sum(1 for c in drcL if c) + sum(1 for c in drcR if c)
+            r2_pos = (ncols >= 2)
+            q_c1_1 = fR[c1 - 1] if 0 < c1 <= len(fR) else ''
+            if r2_pos and q_c1_1 in ('r', 'd'):
+                col0 = resL[0]
+                resL = (col0[:-1] + 's', *resL[1:])
+
+    elif rtype == 'D':
+        c1 = len(fL)
+        c2 = len(sL)
+        c1_j = len(fR)
+
+        # D case (a): r₂=r₃>0, P(c₂,2)=c, ALL P(i,1)∈{r,d} for c₂≤i≤c₁
+        # r₂=r₃>0 ⟺ c₂(ι) = c₁(j) + 1 (for special shape; for general
+        # shapes we check the orbit condition via the same equivalence)
+        if c2 > 0 and c2 == c1_j + 1:
+            p_c2_2 = sL[-1] if sL else ''
+            all_rd = all(fL[i] in ('r', 'd') for i in range(c2 - 1, c1))
+            if p_c2_2 == 'c' and all_rd:
+                col0 = resL[0]
+                resL = (col0[:-1] + 'r', *resL[1:])
+
+        # D case (b): (2,3) ∈ ℘ ⟺ c₂(ι) ≥ c₁(j) + 2
+        if c2 >= c1_j + 2:
+            x0 = fL[c2 - 2]  # P(c₂(ι_℘)-1, 1)
+            if x0 in ('r', 'c'):
+                col0 = resL[0]
+                resL = (col0[:-2] + 'r' + x0, *resL[1:])
+
+    return reg_drc((resL, resR)), rtype_prime
+
+
 # ============================================================================
 # Phase 10: Dual descent of ℘  (Equation 3.15 of [BMSZ])
 # ============================================================================

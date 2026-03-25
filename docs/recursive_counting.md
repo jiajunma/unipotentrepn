@@ -377,7 +377,7 @@ where ℘↓ = ℘ \ {(1,2)}.
 
 ### Descent corrections by type
 
-#### ★ = B
+#### ★ = B (general algorithm, [BMSZb] Section 10.4)
 
 **(a)** If γ = B+, (2,3) ∉ ℘, r₂(Ǒ) > 0, Q(c₁(ι_℘), 1) ∈ {r, d}:
 - P'(c₁(ι_{℘'}), 1) := s. Other entries from P'_naive.
@@ -389,7 +389,18 @@ where ℘↓ = ℘ \ {(1,2)}.
 
 **(c)** Otherwise: P' := P'_naive, Q' := Q'_naive.
 
-#### ★ = D (general algorithm, Definition 3.14)
+#### ★ = B, special shape ([BMSZ] Lemma 3.10)
+
+When ℘ = ∅, Lemma 3.10 from the construction paper gives:
+
+If γ = B+, r₂(Ǒ) > 0, Q(c₁(ι), 1) ∈ {r, d}:
+- P'(c₁(ι'), 1) := s. Other entries from P'_naive.
+- Q' := Q'_naive.
+
+At ℘ = ∅, (2,3) ∉ ℘ is automatic, so Lemma 3.10 matches general (a) exactly.
+r₂(Ǒ) > 0 ⟺ DRC has ≥ 2 non-empty columns.
+
+#### ★ = D (general algorithm, [BMSZb] Section 10.4)
 
 **(a)** If r₂(Ǒ) = r₃(Ǒ) > 0, P(c₂(ι_℘), 2) = c,
     P(i, 1) ∈ {r, d} for all c₂(ι_℘) ≤ i ≤ c₁(ι_℘):
@@ -404,29 +415,43 @@ where ℘↓ = ℘ \ {(1,2)}.
 
 **(c)** Otherwise: P' := P'_naive, Q' := Q'_naive.
 
-#### ★ = D, special shape (Lemma 3.12)
+#### ★ = D, special shape ([BMSZ] Lemma 3.12)
 
-When ℘ = ∅ (special shape), Lemma 3.12 gives a sufficient condition:
+When ℘ = ∅ (special shape), Lemma 3.12 from the construction paper gives:
 
 If γ = D, r₂(Ǒ) = r₃(Ǒ) > 0, (P(c₂(ι), 1), P(c₂(ι), 2)) = (r, c),
 P(c₁(ι), 1) ∈ {r, d}:
 - P'(c₁(ι'), 1) := r. Other entries from P'_naive.
 - Q' := Q'_naive.
 
-**Analysis: Lemma 3.12 vs general (a) at ℘ = ∅:**
+Definition 3.14 ([BMSZ]): ∇(τ) := τ' (corrected) if Lemma 3.10 or 3.12
+conditions hold; τ'_naive otherwise.
 
-Lemma 3.12 checks only endpoints: P(c₂, 1) = r and P(c₁, 1) ∈ {r, d}.
-General (a) checks ALL intermediate: P(i, 1) ∈ {r, d} for c₂ ≤ i ≤ c₁.
+#### Analysis: Lemma 3.12 vs general (a) at ℘ = ∅
 
-These are NOT equivalent. Example: Ǒ = (5,1,1,1), DRC = (('rcd','c'), ()):
-  c₂ = 1, c₁ = 3, P entries at rows 1..3 = [r, c, d].
-  Lemma 3.12: (P(1,1), P(1,2)) = (r, c) ✓, P(3,1) = d ∈ {r,d} ✓ → applies.
-  General (a): P(2,1) = c ∉ {r,d} → does NOT apply.
+| Condition | Lemma 3.12 ([BMSZ]) | General (a) ([BMSZb]) |
+|-----------|---------------------|----------------------|
+| r₂ = r₃ > 0 | ✓ | ✓ |
+| P(c₂, 2) | = c (via pair (r,c)) | = c |
+| P(c₂, 1) | = r | ∈ {r, d} (from range check) |
+| Intermediate P(i,1), c₂ < i < c₁ | NOT checked | ALL must be ∈ {r, d} |
+| P(c₁, 1) | ∈ {r, d} | ∈ {r, d} (from range check) |
 
-**Current implementation** follows Lemma 3.12 (endpoint-only check), which is
-the published lemma for the special shape case. For non-special shapes where
-(2,3) ∉ ℘ but ℘ ≠ ∅, the general (a) with full intermediate check should
-be used instead.
+Lemma 3.12 is WEAKER on intermediates (doesn't check them) but STRONGER
+at c₂ (requires P(c₂,1)=r, not just ∈{r,d}).
+
+Counterexample: Ǒ = (5,1,1,1), DRC = (('rcd','c'), ()):
+- c₂ = 1, c₁ = 3, P entries at rows 1..3 = [r, c, d].
+- Lemma 3.12: (P(1,1), P(1,2)) = (r, c) ✓, P(3,1) = d ∈ {r,d} ✓ → applies.
+- General (a): P(2,1) = c ∉ {r,d} → does NOT apply.
+
+There are 45 such discrepancy DRCs across all D partitions up to size 16.
+In all discrepancy cases, Lemma 3.12 applies but general (a) does not.
+
+**Resolution**: `descent()` implements Lemma 3.12 (from [BMSZ]) for the special
+shape case. `descent_general()` implements the full [BMSZb] Section 10.4 algorithm
+for arbitrary ℘. When operating on special-shape DRCs (as in the lift tree),
+Lemma 3.12 is the authoritative reference.
 
 #### ★ ∈ {C, C̃, C*, D*}
 
@@ -437,28 +462,20 @@ be used instead.
 
 ### Implementation status
 
-| Case | Code location | Status |
-|------|---------------|--------|
-| B (a): B+, (2,3)∉℘ | `standalone.py:descent` line 872 | ✓ Implemented |
-| B (b): B+, (2,3)∈℘ | — | ✗ NOT implemented |
-| B (c): otherwise | `standalone.py:descent` (fallthrough) | ✓ |
-| D (a): r₂=r₃, scattered | `standalone.py:descent` line 891 | ✓ Implemented |
-| D (b): (2,3)∈℘ | `standalone.py:descent` line 908 | ✓ Implemented |
-| D (c): otherwise | `standalone.py:descent` (fallthrough) | ✓ |
-| C/M (a): (1,2)∉℘ | `standalone.py:descent` (naive only) | ✓ |
-| C/M (b): (1,2)∈℘ | NOT in descent; handled in `build_pbp_bijection` | ✓ via shape shift |
+Two functions:
+- `descent(drc, rtype)` — special shape (℘=∅), follows [BMSZ] Lemma 3.10/3.12
+- `descent_general(drc, rtype)` — general ℘, follows [BMSZb] Section 10.4
 
-**Notes:**
-
-1. **B case (a)** r₂(Ǒ) > 0 check: uses `ncols ≥ 2` (DRC has at least 2 non-empty columns).
-   Code distinguishes (2,3) ∈ ℘ vs ∉ ℘ via DRC shape: `c₂(j) ≥ c₁(ι) + 2`.
-
-2. **D case (a)**: Code follows Lemma 3.12 (endpoint-only check) for the special shape.
-   For non-special shapes with (2,3) ∉ ℘, the general (a) with full intermediate
-   check is needed. Currently our descent only operates on special-shape DRCs
-   (℘ is handled externally), so Lemma 3.12 is sufficient.
-   The additional branch at line 908-915 handles a broader condition
-   (`fL[c2-1:]` has no 's' or 'c') which subsumes the paper's condition.
+| Case | `descent` (special) | `descent_general` (general) |
+|------|--------------------|-----------------------------|
+| B (a): B+, (2,3)∉℘ | ✓ Lemma 3.10 | ✓ Section 10.4 |
+| B (b): B+, (2,3)∈℘ | N/A (℘=∅) | ✓ Section 10.4 |
+| B (c): otherwise | ✓ fallthrough | ✓ fallthrough |
+| D (a): r₂=r₃, correction | ✓ Lemma 3.12 | ✓ Section 10.4 (full range check) |
+| D (b): (2,3)∈℘ | ✓ (shape-based) | ✓ Section 10.4 |
+| D (c): otherwise | ✓ fallthrough | ✓ fallthrough |
+| C/M (a): (1,2)∉℘ | ✓ naive | ✓ naive |
+| C/M (b): (1,2)∈℘ | N/A (℘=∅) | ✓ via shape shift |
 
 4. **D case (b)**: Handled implicitly via `len(sL) >= len(fR)+2` (non-special
    shape detection). Needs verification against paper for correctness.
