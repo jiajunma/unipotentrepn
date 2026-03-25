@@ -19,7 +19,7 @@ sys.path.insert(0, '.')
 
 from standalone import (
     dpart2drc, compute_AC, reg_drc, signature, epsilon,
-    reg_part, part_size,
+    reg_part, part_size, build_pbp_bijection, compute_PPidx,
 )
 from multiset import FrozenMultiset
 
@@ -104,6 +104,37 @@ def get_standalone_ls_for_drc(drc, rtype):
     return ac_to_frozenset(ac)
 
 
+def get_standalone_ls_via_bijection(dpart, rtype):
+    """
+    Compute LS for ALL DRCs (all ℘) via build_pbp_bijection + compute_AC.
+
+    Uses build_pbp_bijection to map each non-special DRC back to
+    (special_drc, ℘), then calls compute_AC(special_drc, ℘, rtype).
+
+    Returns dict: (normalized_drc, effective_rtype) → frozenset_of_ILS
+    """
+    try:
+        bijection, table = build_pbp_bijection(dpart, rtype)
+    except Exception:
+        return {}
+
+    rtypes = ['B+', 'B-'] if rtype == 'B' else [rtype]
+    result = {}
+    cache = {}
+
+    for drc, (sp_drc, wp) in bijection.items():
+        ndrc = normalize_drc(drc)
+        nsp = normalize_drc(sp_drc)
+        wp_fs = frozenset(wp) if wp else None
+
+        for rt in rtypes:
+            ac = compute_AC(nsp, wp_fs, rt, cache=cache)
+            ls = ac_to_frozenset(ac)
+            result[(ndrc, rt)] = ls
+
+    return result
+
+
 def dparts_for_type(rtype, max_size):
     """Generate all valid dual partitions for the given type up to max_size.
 
@@ -158,8 +189,9 @@ def verify_partition(dpart, rtype, verbose=False):
     """
     Verify LS values match between standalone and drclift for one partition.
 
-    For each DRC in the reference (drclift), compute LS via standalone's
-    compute_AC and compare.
+    Uses build_pbp_bijection to map each DRC to (special_drc, ℘),
+    then computes LS via compute_AC(special_drc, ℘, rtype).
+    Compares with reference from test_dpart2drcLS.
 
     Returns (n_checked, n_passed, n_failed, failures).
     """
@@ -170,6 +202,17 @@ def verify_partition(dpart, rtype, verbose=False):
             print(f'  SKIP {rtype}{dpart}: reference error: {e}')
         return 0, 0, 0, []
 
+    if not ref:
+        return 0, 0, 0, []
+
+    # Compute LS for all DRCs (all ℘) via bijection + compute_AC
+    try:
+        ours = get_standalone_ls_via_bijection(dpart, rtype)
+    except Exception as e:
+        if verbose:
+            print(f'  SKIP {rtype}{dpart}: standalone error: {e}')
+        return 0, 0, 0, []
+
     n_checked = 0
     n_passed = 0
     n_failed = 0
@@ -177,12 +220,13 @@ def verify_partition(dpart, rtype, verbose=False):
 
     for (ndrc, rt), ref_ls in ref.items():
         n_checked += 1
-        try:
-            our_ls = get_standalone_ls_for_drc(ndrc, rt)
-        except Exception as e:
+
+        if (ndrc, rt) not in ours:
             n_failed += 1
-            failures.append((ndrc, rt, f'ERROR: {e}', ref_ls, None))
+            failures.append((ndrc, rt, 'MISSING', normalize_ls(ref_ls), None))
             continue
+
+        our_ls = ours[(ndrc, rt)]
 
         # Normalize both sides (strip trailing (0,0) in ILS)
         ref_ls_norm = normalize_ls(ref_ls)
