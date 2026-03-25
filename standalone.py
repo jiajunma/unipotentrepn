@@ -920,12 +920,6 @@ def descent(drc, rtype, dpart=None):
                 col0 = resL[0]
                 resL = (col0[:-1] + 'r', *resL[1:])
 
-        # D case (a) extended: same c₂ = c₁(j)+1 condition but broader symbol check
-        elif c2 > 0 and c2 == c1_j + 1:
-            if fL.count('c') == 0 and fL[c2 - 1:].count('s') == 0 and sL[-1:] == 'c':
-                col0 = resL[0]
-                resL = (col0[:-1] + 'r', *resL[1:])
-
         # D case (b): (2,3) ∈ ℘ (non-special shape: c₂(ι) ≥ c₁(j) + 2)
         # Paper: P(c₂(ι)-1, 1) ∈ {r, c} → P'(c₁(ι')-1, 1) = r,
         #        P'(c₁(ι'), 1) = P(c₂(ι)-1, 1)
