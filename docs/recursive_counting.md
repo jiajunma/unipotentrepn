@@ -389,7 +389,7 @@ where ℘↓ = ℘ \ {(1,2)}.
 
 **(c)** Otherwise: P' := P'_naive, Q' := Q'_naive.
 
-#### ★ = D
+#### ★ = D (general algorithm, Definition 3.14)
 
 **(a)** If r₂(Ǒ) = r₃(Ǒ) > 0, P(c₂(ι_℘), 2) = c,
     P(i, 1) ∈ {r, d} for all c₂(ι_℘) ≤ i ≤ c₁(ι_℘):
@@ -403,6 +403,30 @@ where ℘↓ = ℘ \ {(1,2)}.
 - Q' := Q'_naive.
 
 **(c)** Otherwise: P' := P'_naive, Q' := Q'_naive.
+
+#### ★ = D, special shape (Lemma 3.12)
+
+When ℘ = ∅ (special shape), Lemma 3.12 gives a sufficient condition:
+
+If γ = D, r₂(Ǒ) = r₃(Ǒ) > 0, (P(c₂(ι), 1), P(c₂(ι), 2)) = (r, c),
+P(c₁(ι), 1) ∈ {r, d}:
+- P'(c₁(ι'), 1) := r. Other entries from P'_naive.
+- Q' := Q'_naive.
+
+**Analysis: Lemma 3.12 vs general (a) at ℘ = ∅:**
+
+Lemma 3.12 checks only endpoints: P(c₂, 1) = r and P(c₁, 1) ∈ {r, d}.
+General (a) checks ALL intermediate: P(i, 1) ∈ {r, d} for c₂ ≤ i ≤ c₁.
+
+These are NOT equivalent. Example: Ǒ = (5,1,1,1), DRC = (('rcd','c'), ()):
+  c₂ = 1, c₁ = 3, P entries at rows 1..3 = [r, c, d].
+  Lemma 3.12: (P(1,1), P(1,2)) = (r, c) ✓, P(3,1) = d ∈ {r,d} ✓ → applies.
+  General (a): P(2,1) = c ∉ {r,d} → does NOT apply.
+
+**Current implementation** follows Lemma 3.12 (endpoint-only check), which is
+the published lemma for the special shape case. For non-special shapes where
+(2,3) ∉ ℘ but ℘ ≠ ∅, the general (a) with full intermediate check should
+be used instead.
 
 #### ★ ∈ {C, C̃, C*, D*}
 
@@ -424,19 +448,15 @@ where ℘↓ = ℘ \ {(1,2)}.
 | C/M (a): (1,2)∉℘ | `standalone.py:descent` (naive only) | ✓ |
 | C/M (b): (1,2)∈℘ | NOT in descent; handled in `build_pbp_bijection` | ✓ via shape shift |
 
-**Issues found:**
+**Notes:**
 
-1. **B case (a)**: Code does NOT check (2,3) ∉ ℘. For ℘=∅ this is fine,
-   but for arbitrary ℘ this condition matters. The check `(2,3) ∉ ℘`
-   corresponds to the DRC having special B shape (c₂(j) < c₁(ι) + 2,
-   i.e., `len(sR) < len(fL) + 2` or equivalently `len(sL) < len(fR) + 2`
-   depending on direction).
+1. **B case (a)** r₂(Ǒ) > 0 check: uses `ncols ≥ 2` (DRC has at least 2 non-empty columns).
+   Code distinguishes (2,3) ∈ ℘ vs ∉ ℘ via DRC shape: `c₂(j) ≥ c₁(ι) + 2`.
 
-2. **B case (b)**: NOT implemented. Needed for non-special B shape descent
-   when γ=B+ and Q(c₂(j_℘), 1) ∈ {r, d}. Action: Q'(c₁(j_{℘'}), 1) := r.
-
-3. **D case (a)**: Code checks endpoints only: (P(c₂,1), P(c₂,2))=(r,c) and
-   P(c₁,1) ∈ {r,d}. Paper requires P(i,1) ∈ {r,d} for ALL c₂ ≤ i ≤ c₁.
+2. **D case (a)**: Code follows Lemma 3.12 (endpoint-only check) for the special shape.
+   For non-special shapes with (2,3) ∉ ℘, the general (a) with full intermediate
+   check is needed. Currently our descent only operates on special-shape DRCs
+   (℘ is handled externally), so Lemma 3.12 is sufficient.
    The additional branch at line 908-915 handles a broader condition
    (`fL[c2-1:]` has no 's' or 'c') which subsumes the paper's condition.
 
