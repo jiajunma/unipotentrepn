@@ -828,17 +828,19 @@ def naive_descent(drc, rtype):
 # Phase 9: Full descent  (Definition 3.14 of [BMSZ])
 # ============================================================================
 
-def descent(drc, rtype, dpart=None):
+def descent(drc, rtype, dpart=None, wp=None):
     """
     Compute the descent ∇(τ) of a painted bipartition.
 
-    Definition 3.14 of [BMSZ]:
-      ∇(τ) = τ'       if conditions of Lemma 3.10 or 3.12 hold,
-              τ'_naive  otherwise.
+    Implements [BMSZb] Section 10.4 for general ℘.
+    When wp is None, uses DRC shape to infer (2,3)∈℘ vs ∉℘.
+    When wp is provided, uses it directly (PPidx 1 ∈ wp ⟺ (2,3)∈℘).
 
     Args:
         drc: painted bipartition (drcL, drcR)
         rtype: γ ∈ {'B+', 'B-', 'C', 'D', 'M'}
+        dpart: dual partition (optional, unused)
+        wp: frozenset of PPidx values (optional)
 
     Returns (drc', rtype').
     """
@@ -857,20 +859,26 @@ def descent(drc, rtype, dpart=None):
         sR = getz(drcR, 1, '')  # second column of Q
         c2_j = len(sR)  # c₂(j)
 
-        # B case (b): (2,3) ∈ ℘ (non-special shape: c₂(j) ≥ c₁(ι) + 2)
+        # Determine (2,3) ∈ ℘: from wp if provided, otherwise from DRC shape
+        if wp is not None:
+            has_23 = (1 in wp)  # PPidx 1 ⟺ (2,3) pair
+        else:
+            has_23 = (c2_j >= c1 + 2)  # shape-based fallback
+
+        # B case (b): (2,3) ∈ ℘
         # Paper: γ=B+, (2,3)∈℘, Q(c₂(j_℘), 1) ∈ {r, d}
         # Action: Q'(c₁(j_{℘'}), 1) := r
-        if c2_j >= c1 + 2:
+        if has_23:
             q_c2j_1 = fR[c2_j - 1] if c2_j > 0 and c2_j <= len(fR) else ''
             if q_c2j_1 in ('r', 'd'):
                 col0R = resR[0] if len(resR) > 0 else ''
                 if col0R:
                     resR = (col0R[:-1] + 'r', *resR[1:])
 
-        # Lemma 3.10: (2,3) ∉ ℘, r₂(Ǒ) > 0, Q(c₁(ι), 1) ∈ {r, d}
+        # B case (a): (2,3) ∉ ℘, r₂(Ǒ) > 0, Q(c₁(ι), 1) ∈ {r, d}
         # Action: P'(c₁(ι'), 1) = s
-        # r₂(Ǒ) > 0 ⟺ DRC has at least 2 columns (non-empty)
-        elif c2_j < c1 + 2:
+        # r₂(Ǒ) > 0 ⟺ DRC has at least 2 non-empty columns
+        elif not has_23:
             ncols = sum(1 for c in drcL if c) + sum(1 for c in drcR if c)
             r2_pos = (ncols >= 2)
             q_c1_1 = fR[c1 - 1] if 0 < c1 <= len(fR) else ''
@@ -893,37 +901,36 @@ def descent(drc, rtype, dpart=None):
                 r0 = resR[0]
                 resR = (r0[:t_src] + 'r' + r0[t_src + 1:], *resR[1:])
 
-    # Lemma 3.12 correction: γ = D only
+    # D case (a) correction: [BMSZb] Section 10.4
     # Conditions:
     #   (1) γ = D
-    #   (2) r₂(Ǒ) = r₃(Ǒ) > 0
-    #   (3) (P(c₂(ι), 1), P(c₂(ι), 2)) = (r, c)
-    #   (4) P(c₁(ι), 1) ∈ {r, d}
+    #   (2) r₂(Ǒ) = r₃(Ǒ) > 0 ⟺ c₂(ι) = c₁(j) + 1
+    #   (3) P(c₂(ι), 2) = c
+    #   (4) P(i, 1) ∈ {r, d} for ALL c₂(ι) ≤ i ≤ c₁(ι)
     # Action: P'(c₁(ι'), 1) = r
-    #
-    # Condition (2): r₂ = r₃ > 0 is equivalent to c₂(ι) = c₁(j) + 1
-    # (the second column of P extends exactly one row beyond Q's first column)
     elif rtype == 'D':
         c1 = len(fL)
         c2 = len(sL)
         c1_j = len(fR)
 
-        if c2 > 0 and c2 == c1_j + 1:
-            # P(c₂(ι), 1) = symbol at row c₂ of P's first column
-            p_c2_1 = fL[c2 - 1] if c2 <= len(fL) else ''
-            # P(c₂(ι), 2) = last symbol in P's second column
-            p_c2_2 = sL[-1] if len(sL) > 0 else ''
-            # P(c₁(ι), 1) = last symbol in P's first column
-            p_c1_1 = fL[-1] if len(fL) > 0 else ''
+        # Determine (2,3) ∈ ℘: from wp if provided, otherwise from DRC shape
+        if wp is not None:
+            has_23_D = (1 in wp)
+        else:
+            has_23_D = (c2 >= c1_j + 2)
 
-            if (p_c2_1, p_c2_2) == ('r', 'c') and p_c1_1 in ('r', 'd'):
+        # D case (a): (2,3) ∉ ℘, r₂=r₃>0, P(c₂,2)=c, all P(i,1)∈{r,d}
+        if not has_23_D and c2 > 0 and c2 == c1_j + 1:
+            p_c2_2 = sL[-1] if sL else ''
+            all_rd = all(fL[i] in ('r', 'd') for i in range(c2 - 1, c1))
+            if p_c2_2 == 'c' and all_rd:
                 col0 = resL[0]
                 resL = (col0[:-1] + 'r', *resL[1:])
 
-        # D case (b): (2,3) ∈ ℘ (non-special shape: c₂(ι) ≥ c₁(j) + 2)
+        # D case (b): (2,3) ∈ ℘
         # Paper: P(c₂(ι)-1, 1) ∈ {r, c} → P'(c₁(ι')-1, 1) = r,
         #        P'(c₁(ι'), 1) = P(c₂(ι)-1, 1)
-        if c2 >= c1_j + 2:
+        if has_23_D and c2 >= 2:
             x0 = fL[c2 - 2]  # P(c₂(ι)-1, 1), 0-based: fL[c₂-2]
             if x0 in ('r', 'c'):
                 col0 = resL[0]
