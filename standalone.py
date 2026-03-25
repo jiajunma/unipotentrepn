@@ -2164,14 +2164,12 @@ def descent_chain(drc, rtype, dpart=None):
 
         result.append((cur_drc, cur_rtype, sig, eps, cur_dpart))
 
-        # Base case: |Ǒ| = 0, i.e., dual partition is empty
-        if cur_dpart is not None and part_size(cur_dpart) == 0:
-            break
-
-        # Fallback: stop if DRC is empty AND no dpart tracking
+        # Base case: trivial group
+        # B/M chain ends at Mp(0): type M, empty DRC
+        # C/D chain ends at SO(0) or Sp(0): type C or D, empty DRC
         drcL, drcR = cur_drc
         total = sum(len(c) for c in drcL) + sum(len(c) for c in drcR)
-        if total == 0 and cur_dpart is None:
+        if total == 0 and cur_rtype in ('C', 'M', 'D'):
             break
 
         try:
@@ -2728,7 +2726,10 @@ def gen_lift_tree(dpart, rtype, format='svg', filename=None):
 
         drcL, drcR = drc
         total = sum(len(c) for c in drcL) + sum(len(c) for c in drcR)
-        if total == 0:
+        # Base case: trivial group
+        # B/M chain ends at Mp(0) = type M, empty DRC
+        # C/D chain ends at Sp(0)/SO(0) = type C/D, empty DRC
+        if total == 0 and rt in ('C', 'M', 'D'):
             return  # root, no parent
 
         # Descent
@@ -2760,14 +2761,9 @@ def gen_lift_tree(dpart, rtype, format='svg', filename=None):
         drc, wp_fs, rt = key
         drcL, drcR = drc
         total = sum(len(c) for c in drcL) + sum(len(c) for c in drcR)
-        if total == 0:
-            # Base case
-            if rt == 'B+':
-                node['ls'] = FrozenMultiset([((1, 0),)])
-            elif rt == 'B-':
-                node['ls'] = FrozenMultiset([((0, -1),)])
-            else:
-                node['ls'] = FrozenMultiset([()])
+        if total == 0 and rt in ('C', 'M', 'D'):
+            # True root: trivial group
+            node['ls'] = FrozenMultiset([()])
             queue.append(key)
 
     while queue:
