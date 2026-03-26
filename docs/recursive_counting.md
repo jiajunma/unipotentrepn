@@ -448,10 +448,11 @@ Counterexample: Ǒ = (5,1,1,1), DRC = (('rcd','c'), ()):
 There are 45 such discrepancy DRCs across all D partitions up to size 16.
 In all discrepancy cases, Lemma 3.12 applies but general (a) does not.
 
-**Resolution**: `descent()` implements Lemma 3.12 (from [BMSZ]) for the special
-shape case. `descent_general()` implements the full [BMSZb] Section 10.4 algorithm
-for arbitrary ℘. When operating on special-shape DRCs (as in the lift tree),
-Lemma 3.12 is the authoritative reference.
+**Resolution**: Verified against the reference implementation (`drclift.py`):
+the general algorithm (a) with full intermediate check produces LS values
+that match the reference for **all** D type DRCs (584,224 DRCs, size ≤ 30).
+Lemma 3.12 (endpoint-only check) does NOT match — 197 DRCs give wrong LS.
+Therefore `descent()` now uses the **general algorithm**, not Lemma 3.12.
 
 #### ★ ∈ {C, C̃, C*, D*}
 
@@ -460,22 +461,101 @@ Lemma 3.12 is the authoritative reference.
 **(b)** If (1,2) ∈ ℘, then ★ ∈ {C, C̃} (by Prop 10.1):
   - τ' := ∇_naive(τ_{℘↓}), where τ_{℘↓} := T⁻¹_{℘↓,℘}(τ) (inverse shape shift).
 
-### Implementation status
+### Implementation
 
-Two functions:
-- `descent(drc, rtype)` — special shape (℘=∅), follows [BMSZ] Lemma 3.10/3.12
-- `descent_general(drc, rtype)` — general ℘, follows [BMSZb] Section 10.4
+`descent(drc, rtype, wp=None)` — implements [BMSZb] Section 10.4 for all types.
 
-| Case | `descent` (special) | `descent_general` (general) |
-|------|--------------------|-----------------------------|
-| B (a): B+, (2,3)∉℘ | ✓ Lemma 3.10 | ✓ Section 10.4 |
-| B (b): B+, (2,3)∈℘ | N/A (℘=∅) | ✓ Section 10.4 |
-| B (c): otherwise | ✓ fallthrough | ✓ fallthrough |
-| D (a): r₂=r₃, correction | ✓ Lemma 3.12 | ✓ Section 10.4 (full range check) |
-| D (b): (2,3)∈℘ | ✓ (shape-based) | ✓ Section 10.4 |
-| D (c): otherwise | ✓ fallthrough | ✓ fallthrough |
-| C/M (a): (1,2)∉℘ | ✓ naive | ✓ naive |
-| C/M (b): (1,2)∈℘ | N/A (℘=∅) | ✓ via shape shift |
+When `wp` is provided, uses it to distinguish B/D case (a) vs (b).
+When `wp=None`, uses DRC shape to infer (2,3)∈℘ (works for non-special shapes).
+
+| Case | Condition | Implementation |
+|------|-----------|---------------|
+| B (a) | B+, (2,3)∉℘, r₂>0, Q(c₁,1)∈{r,d} | P'(c₁(ι'),1):=s |
+| B (b) | B+, (2,3)∈℘, Q(c₂(j),1)∈{r,d} | Q'(c₁(j'),1):=r |
+| B (c) | otherwise | naive |
+| D (a) | r₂=r₃>0, P(c₂,2)=c, ALL P(i,1)∈{r,d} | P'(c₁(ι'),1):=r |
+| D (b) | (2,3)∈℘, P(c₂-1,1)∈{r,c} | two-position correction |
+| D (c) | otherwise | naive |
+| C/M (a) | (1,2)∉℘ | naive |
+| C/M (b) | (1,2)∈℘ | shape shift + naive |
+
+## Verification: standalone vs reference (drclift.py)
+
+### What is compared
+
+The test `tests/test_compare_ls.py` compares the **local system (LS)** attached
+to each painted bipartition τ = (drc, ℘, ★) between two implementations:
+
+1. **standalone.py** (`compute_AC`): computes LS via recursive descent of
+   extended PBPs. For each DRC in ⊔_℘ PBP_★(Ǒ, ℘):
+   - `build_pbp_bijection` maps each DRC to `(special_shape_drc, ℘)`
+   - `compute_AC(special_drc, ℘, rtype)` recursively descents the DRC,
+     lifts the LS via `theta_lift_ils`, and applies ε_℘ / ε_τ twists.
+
+2. **combunipotent/drclift.py** (`test_dpart2drcLS`): computes LS via
+   inductive theta lifting from small groups to large. For each dual partition:
+   - Starts from the trivial group (empty DRC, trivial LS)
+   - At each step, lifts both DRC and LS via `lift_drc_*` and `lift_*_*`
+   - Applies character twists from the lifting process
+
+### How the comparison works
+
+For **D and B types** (per-DRC comparison):
+1. `get_reference_drc_ls(dpart, rtype)` calls `test_dpart2drcLS` to get a dict
+   `{drc → frozenset_of_ILS}` for each DRC (including B+/B- variants for B type).
+2. `get_standalone_ls_via_bijection(dpart, rtype)` calls `build_pbp_bijection`
+   to enumerate all DRCs across all ℘, maps each to `(special_drc, ℘)`, and
+   computes `compute_AC(special_drc, ℘, rtype)`.
+3. For each DRC, the two frozensets of ILS tuples are compared
+   (after stripping trailing `(0,0)` entries).
+
+For **C and M types**: `test_dpart2drcLS` does not support C/M as the top-level
+type (its inductive lifting starts from D/B base cases). However, C/M correctness
+is verified **indirectly**: every D descent chain passes through C levels, and
+every B descent chain passes through M levels. Since D and B pass 100%, the
+intermediate C/M computations are also correct.
+
+### Key bugs found and fixed
+
+1. **D descent correction** (Lemma 3.12 vs general algorithm):
+   [BMSZ] Lemma 3.12 checks only endpoints (P(c₂,1)=r and P(c₁,1)∈{r,d}).
+   [BMSZb] Section 10.4 general algorithm (a) checks ALL intermediate entries
+   P(i,1)∈{r,d} for c₂≤i≤c₁. These differ on 197 DRCs (size ≤ 30).
+   The general algorithm matches the reference; Lemma 3.12 does not.
+   **Fix**: `descent()` now uses the general algorithm.
+
+2. **B+ descent r₂(Ǒ)>0 condition**:
+   Old formula `(len(fR) > c1) or (c2_j > 0)` was wrong for Ǒ=(2,2).
+   **Fix**: use `ncols ≥ 2` (DRC has at least 2 non-empty columns).
+
+3. **PBP bijection γ' collision**:
+   For M type, `descent_lookup` key was just `∇(τ₀)`, but two different
+   special-shape DRCs can descent to the same DRC with different γ' (B+/B-).
+   This caused 4 duplicate (sp, wp) targets, breaking injectivity.
+   **Fix**: include γ' in the lookup key: `(∇(τ₀), γ')`.
+
+4. **℘ representation mismatch**:
+   `gen_lift_tree` used integer PPidx for ℘, but `compute_AC` expected
+   pair tuples like `(1,2)`. All ε_℘ checks always returned 0.
+   **Fix**: unified to integer PPidx throughout.
+
+5. **Descent chain base case**:
+   B+/B- empty DRC stopped at O(1) instead of descending to Mp(0).
+   This created two disconnected trees instead of one.
+   **Fix**: base case is `total==0 and rtype in ('C','M','D')`.
+
+### Results
+
+```
+$ python3 tests/test_compare_ls.py 30
+
+Type D: 584224/584224 passed, 0 failed  (224s)
+Type B: 369736/369736 passed, 0 failed  (139s)
+ALL PASSED: 953960/953960 LS values match
+```
+
+All 953,960 LS values match exactly between standalone and drclift
+for all dual partitions with size ≤ 30 (D and B types).
 
 4. **D case (b)**: Handled implicitly via `len(sL) >= len(fR)+2` (non-special
    shape detection). Needs verification against paper for correctness.
