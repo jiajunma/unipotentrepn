@@ -75,8 +75,9 @@ def getz(seq, idx, default=None):
 
 def dpart_to_bipartition(dpart, rtype):
     """
-    Compute the bipartition (ι_Ǒ, j_Ǒ) from dual partition Ǒ and type ★.
+    Compute the special-shape bipartition (ι_Ǒ, j_Ǒ) from dual partition Ǒ.
 
+    Reference: [BMSZb] Equation (2.16), (8.9) with ℘ = ∅.
     Returns (tauL, tauR): column lengths of the two Young diagrams.
     tauL = (c₁(ι_Ǒ), c₂(ι_Ǒ), ...), tauR = (c₁(j_Ǒ), c₂(j_Ǒ), ...).
 
@@ -353,6 +354,7 @@ def _remove_tail_symbols(dg, symbols):
 
 
 def verify_drc(drc, rtype):
+    # Reference: [BMSZb] Definition 2.25, Proposition 2.26.
     """
     Verify that a DRC diagram satisfies all structural constraints.
 
@@ -932,74 +934,6 @@ def descent(drc, rtype, dpart=None, wp=None):
         #        P'(c₁(ι'), 1) = P(c₂(ι)-1, 1)
         if has_23_D and c2 >= 2:
             x0 = fL[c2 - 2]  # P(c₂(ι)-1, 1), 0-based: fL[c₂-2]
-            if x0 in ('r', 'c'):
-                col0 = resL[0]
-                resL = (col0[:-2] + 'r' + x0, *resL[1:])
-
-    return reg_drc((resL, resR)), rtype_prime
-
-
-def descent_general(drc, rtype):
-    """
-    Compute descent ∇(τ) for general ℘ (non-special shapes).
-
-    Implements [BMSZb] Section 10.4 algorithm, which differs from
-    descent() (Lemma 3.12) in the D case (a) condition:
-    - Lemma 3.12: checks (P(c₂,1),P(c₂,2))=(r,c) and P(c₁,1)∈{r,d}
-    - General (a): checks P(c₂,2)=c and P(i,1)∈{r,d} for ALL c₂≤i≤c₁
-
-    Returns (drc', rtype').
-    """
-    drcL, drcR = drc
-    fL = getz(drcL, 0, '')
-    fR = getz(drcR, 0, '')
-    sL = getz(drcL, 1, '')
-
-    # Compute naive descent first
-    res, rtype_prime = naive_descent(drc, rtype)
-    resL, resR = res
-
-    if rtype == 'B+':
-        c1 = len(fL)
-        sR = getz(drcR, 1, '')
-        c2_j = len(sR)
-
-        # B case (b): (2,3) ∈ ℘ ⟺ c₂(j) ≥ c₁(ι) + 2
-        if c2_j >= c1 + 2:
-            # Q(c₂(j_℘), 1) ∈ {r, d}
-            q_c2j_1 = fR[c2_j - 1] if 0 < c2_j <= len(fR) else ''
-            if q_c2j_1 in ('r', 'd'):
-                col0R = resR[0] if len(resR) > 0 else ''
-                if col0R:
-                    resR = (col0R[:-1] + 'r', *resR[1:])
-
-        # B case (a): (2,3) ∉ ℘, r₂(Ǒ) > 0, Q(c₁(ι_℘), 1) ∈ {r, d}
-        else:
-            ncols = sum(1 for c in drcL if c) + sum(1 for c in drcR if c)
-            r2_pos = (ncols >= 2)
-            q_c1_1 = fR[c1 - 1] if 0 < c1 <= len(fR) else ''
-            if r2_pos and q_c1_1 in ('r', 'd'):
-                col0 = resL[0]
-                resL = (col0[:-1] + 's', *resL[1:])
-
-    elif rtype == 'D':
-        c1 = len(fL)
-        c2 = len(sL)
-        c1_j = len(fR)
-
-        # D case (a): r₂=r₃>0, P(c₂,2)=c, ALL P(i,1)∈{r,d} for c₂≤i≤c₁
-        # r₂=r₃>0 ⟺ c₂(ι) = c₁(j) + 1 (for special shape; for general
-        # shapes we check the orbit condition via the same equivalence)
-        if c2 > 0 and c2 == c1_j + 1:
-            p_c2_2 = sL[-1] if sL else ''
-            all_rd = all(fL[i] in ('r', 'd') for i in range(c2 - 1, c1))
-            if p_c2_2 == 'c' and all_rd:
-                col0 = resL[0]
-                resL = (col0[:-1] + 'r', *resL[1:])
-
-        # D case (b): (2,3) ∈ ℘ ⟺ c₂(ι) ≥ c₁(j) + 2
-        if c2 >= c1_j + 2:
-            x0 = fL[c2 - 2]  # P(c₂(ι_℘)-1, 1)
             if x0 in ('r', 'c'):
                 col0 = resL[0]
                 resL = (col0[:-2] + 'r' + x0, *resL[1:])
@@ -1837,7 +1771,8 @@ def _compute_lsign_from_orbit(O_rows, p_target, q_target, target_rtype,
 
 
 def _ils_sign(irr_s):
-    """Compute signature (p, n) of an ILS tuple. Same as LS._sign_ILS."""
+    """Compute signature (p, n) of an ILS tuple.
+    Reference: [BMSZ] Section 9.3, LS._sign_ILS in LS.py."""
     p, n = 0, 0
     for i, (pp, nn) in enumerate(irr_s):
         dii, rii = divmod(i + 1, 2)
@@ -1847,7 +1782,8 @@ def _ils_sign(irr_s):
 
 
 def _ils_firstcol_sign(irr_s):
-    """Compute first-column signature of an ILS. Same as LS._sign_ILS_firstcol."""
+    """Compute first-column signature of an ILS.
+    Reference: [BMSZ] Section 9.3, LS._sign_ILS_firstcol in LS.py."""
     p, n = 0, 0
     for i, (pp, nn) in enumerate(irr_s):
         if i % 2 == 0:
@@ -1861,7 +1797,8 @@ def _ils_firstcol_sign(irr_s):
 
 def _ils_twist_BD(irr_s, twist):
     """
-    Determinant twist on an ILS. Same as LS._char_twist_D / _char_twist_B.
+    Determinant twist on an ILS.
+    Reference: [BMSZ] Section 9.4, LS._char_twist_D / _char_twist_B.
 
     twist = (tp, tn) where tp, tn ∈ {1, -1}.
     Acts on odd-length rows (0-based index i where (i+1) is odd).
@@ -1890,7 +1827,7 @@ def _ils_char_twist_CM(irr_s, j):
     Negate entries at positions i ≡ 2 (mod 4) when j is odd.
     T² = identity, so only parity of j matters.
 
-    This unifies _char_twist_C and _char_twist_CM from LS.py:
+    Reference: [BMSZ] Section 9.4, LS._char_twist_C / _char_twist_CM.
       _char_twist_C(irr_s, ps, ns) = _ils_char_twist_CM(irr_s, (ps-ns)//2)
       _char_twist_CM(irr_s, j)     = _ils_char_twist_CM(irr_s, j)
     """
@@ -1903,6 +1840,9 @@ def _ils_char_twist_CM(irr_s, j):
 def theta_lift_ils(irr_s, rtype, p, q):
     """
     Theta lift a single ILS to target type ★ with signature (p, q).
+
+    Reference: [BMSZ] Section 11.1-11.3.
+    Ported from LS.py: lift_irr_D_C, lift_irr_C_D, lift_irr_B_M, lift_irr_M_B.
 
     Lift directions:
       D → C:  target Sp(2n), n = p = q
@@ -2039,11 +1979,11 @@ def compute_AC(drc, wp, rtype, cache=None):
     """
     Compute the associated cycle AC(τ̂) for extended PBP τ̂ = (τ, ℘, ★).
 
-    Recursive definition (11.2 of [BMSZ]):
+    Reference: [BMSZ] Equation (3.16), Section 11.2.
     - Base case (|τ| = 0): trivial/det/genuine ILS
-    - ★ ∈ {B,D}: AC(τ̂) = ϑ̂(AC(∇τ̂)) ⊗ (0, ε_τ)
-    - ★ ∈ {C,M}: AC(τ̂) = ϑ̂(AC(∇τ̂) ⊗ (ε_℘, ε_℘))
-      where ε_℘ = 1 if (1,2) ∈ ℘, else 0.
+    - ★ ∈ {B,D}: AC(τ̂) = ϑ̂(AC(∇τ̂)) ⊗ (0, ε_τ)     (Eq. 3.16 case 1)
+    - ★ ∈ {C,M}: AC(τ̂) = ϑ̂(AC(∇τ̂) ⊗ (ε_℘, ε_℘))  (Eq. 3.16 case 2)
+      where ε_℘ = 1 iff (1,2) ∈ ℘  (below Eq. 3.16).
 
     The descent ∇ acts on BOTH the DRC and ℘:
     - DRC: ∇(drc) via the descent function
