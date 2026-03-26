@@ -57,8 +57,9 @@ primitive pairs.
 
 **Reference**: [BMSZ] Section 9.3.
 
-An ILS is a tuple `((p₁,n₁), (p₂,n₂), ..., (pₖ,nₖ))` where each
-`(pᵢ,nᵢ)` encodes the i-th row of a marked Young diagram.
+An ILS is a tuple `((p₁,n₁), (p₂,n₂), ..., (pₖ,nₖ))` where
+`(pᵢ,nᵢ)` encodes the number of rows of length i in the marked Young
+diagram: pᵢ rows marked with + and nᵢ rows marked with −.
 
 ### 1.4 Local System (LS)
 
