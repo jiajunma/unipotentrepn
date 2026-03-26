@@ -3226,169 +3226,158 @@ def _gen_ext_pbp_tree(tree_nodes, rtype, format='svg', filename='ext_pbp_tree'):
 def _gen_combined_tree(tree_nodes, ls_groups, ghost_ls, rtype,
                       format='svg', filename='combined'):
     """
-    Generate combined LS + DRC descent tree.
+    Generate combined LS + DRC descent tree with layered structure.
 
-    Each twist orbit is a dotted block containing:
-    - LS boxes (colored, with MYD label and individual DRC nodes)
-    - Ghost nodes (gray, MYD only)
-    - Twist edges (red/green/purple) between LS boxes
-    DRC descent edges (gray dashed) connect individual DRC nodes across levels.
+    C/M levels: LS box (with signature and MYD) on top, extended PBPs below.
+    B/D levels: 1⁻⁺ twist on top (if different), LS + 1⁺⁻ in middle,
+                extended PBPs below.
+    DRC descent edges (gray dashed) connect individual ext PBP nodes.
     """
     from graphviz import Digraph
 
-    twist_defs = [
-        ((-1, -1), 'red',     'det'),
-        ((1, -1),  'green',   '1⁺⁻'),
-        ((-1, 1),  '#9933cc', '1⁻⁺'),
-    ]
-
-    # --- Build twist orbits ---
-    all_gk_set = set(ls_groups.keys()) | set(ghost_ls.keys())
-    gk_to_orbit = {}
-    orbits = []
-    for gk in all_gk_set:
-        if gk in gk_to_orbit:
-            continue
-        orbit = set()
-        bfs = [gk]
-        while bfs:
-            cur = bfs.pop()
-            if cur in orbit or cur not in all_gk_set:
-                continue
-            orbit.add(cur)
-            ls_val, total = cur
-            for twist, _, _ in twist_defs:
-                tw = twist_ls(ls_val, twist)
-                nbr = (tw, total)
-                if nbr in all_gk_set and nbr not in orbit:
-                    bfs.append(nbr)
-        oid = len(orbits)
-        orbits.append(orbit)
-        for member in orbit:
-            gk_to_orbit[member] = oid
-
-    # --- Build graph, one cluster per orbit ---
     g = Digraph(name='Combined Lift Tree',
                 filename=filename,
                 node_attr={'shape': 'box', 'fontname': 'Courier New',
                            'fontsize': '7'},
                 graph_attr={'rankdir': 'TB', 'newrank': 'true',
-                            'ranksep': '1.0', 'nodesep': '0.2',
+                            'ranksep': '0.8', 'nodesep': '0.15',
                             'dpi': '150'},
                 engine='dot', format=format)
 
-    drc_nid_map = {}
-    gv_node_map = {}  # gk → anchor nid
-    levels = {}
     counter = [0]
+    drc_nid_map = {}   # tree_node key -> nid
+    ls_nid_map = {}    # gk -> LS header nid
+    ghost_nid_map = {} # gk -> ghost nid
+    levels = {}        # (level_type, total) -> [nids]
 
-    for oid, orbit in enumerate(orbits):
-        is_multi = len(orbit) > 1
-        cname = f'cluster_orbit_{oid}' if is_multi else None
+    def make_nid(prefix='n'):
+        nid = f'{prefix}{counter[0]}'
+        counter[0] += 1
+        return nid
 
-        # Determine bgcolor from real members
-        real_members = [gk for gk in orbit if gk in ls_groups]
-        rts = set()
-        for gk in real_members:
-            rts.update(k[2] for k in ls_groups[gk])
+    # --- For each LS group, create: LS header + ext PBP nodes ---
+    for gk, members in ls_groups.items():
+        ls_val, total = gk
+        rts_in = set(k[2] for k in members)
+        is_bd = rts_in <= {'B+', 'B-'} or rts_in <= {'D'}
+
+        # MYD label
+        ac_pairs = [(ls_val[ils], ils) for ils in ls_val.distinct_elements()]
+        ac_lines = _format_myd_multiline(ac_pairs)
+        myd_str = '\\l'.join(ac_lines)
+
+        # LS header node
+        ls_nid = make_nid('ls')
+        ls_nid_map[gk] = ls_nid
+
         colors_map = {'C': '#e6f3ff', 'D': '#fff3e6', 'M': '#e6ffe6'}
-        if rts <= {'B+', 'B-'}:
+        if rts_in <= {'B+', 'B-'}:
             bgcolor = '#ffe6e6'
-        elif rts:
-            bgcolor = colors_map.get(next(iter(rts)), '#f5f5f5')
         else:
-            bgcolor = '#f5f5f5'
+            bgcolor = colors_map.get(next(iter(rts_in)), '#f5f5f5')
 
-        # Build cluster content
-        cluster_nodes = []  # (nid, label, fillcolor, is_ghost)
+        g.node(ls_nid, label=f'{myd_str}\\l', style='filled',
+               fillcolor=bgcolor, labeljust='l')
 
-        # Separate real DRC nodes from ghost nodes
-        real_nodes = []   # (nid, label)
-        ghost_nodes_list = []  # (nid, label)
-
-        for gk in orbit:
-            if gk in ls_groups:
-                ls_val, total = gk
-                members = ls_groups[gk]
-
-                # MYD visual for this LS
-                ac_pairs = [(ls_val[ils], ils)
-                           for ils in ls_val.distinct_elements()]
-                ac_lines = _format_myd_multiline(ac_pairs)
-                myd_str = '\\l'.join(ac_lines)
-
-                for mk in members:
-                    drc, wp_fs, rt = mk
-                    nid = f'd{counter[0]}'
-                    counter[0] += 1
-                    drc_nid_map[mk] = nid
-
-                    sig = signature(drc, rt)
-                    if rt in ('B+', 'B-', 'D'):
-                        eps = epsilon(drc, rt)
-                    elif rt in ('C', 'M'):
-                        eps = 1 if (wp_fs is not None and 0 in wp_fs) else 0
-                    else:
-                        eps = 0
-
-                    rt_str = f' {rt}' if rt in ('B+', 'B-') else ''
-                    wp_str = f' ℘={set(wp_fs)}' if wp_fs else ''
-                    drc_str = str_dgms(drc).replace('\n', '\\l')
-                    label = (f'{myd_str}\\l'
-                             f'─────\\l'
-                             f'({sig[0]},{sig[1]}){rt_str} ε={eps}{wp_str}\\l'
-                             f'{drc_str}\\l')
-
-                    real_nodes.append((nid, label))
-
-                if not gv_node_map.get(gk):
-                    gv_node_map[gk] = real_nodes[-len(members)][0]
-
-            elif gk in ghost_ls:
-                ls_val, total = gk
-                nid = f'g{counter[0]}'
-                counter[0] += 1
-                gv_node_map[gk] = nid
-
-                ac_pairs = [(ls_val[ils], ils)
-                           for ils in ls_val.distinct_elements()]
-                ac_lines = _format_myd_multiline(ac_pairs)
-                label = '\\l'.join(ac_lines) + '\\l'
-                ghost_nodes_list.append((nid, label))
-
-        # Determine level for real nodes
-        if real_members:
-            gk0 = real_members[0]
-            _, total = gk0
-            rts0 = set(k[2] for k in ls_groups[gk0])
-            rt_norm = 'B' if rts0 <= {'B+', 'B-'} else next(iter(rts0))
+        # Determine level keys
+        if is_bd:
+            rt_base = 'B' if rts_in <= {'B+', 'B-'} else 'D'
+            levels.setdefault((f'{rt_base}_mid', total), []).append(ls_nid)
         else:
-            gk0 = list(orbit)[0]
-            _, total = gk0
-            rt_norm = 'B' if rtype in ('M', 'B') else 'D'
+            rt_base = next(iter(rts_in))
+            levels.setdefault((rt_base, total), []).append(ls_nid)
 
-        # Add real DRC nodes (in dotted cluster if multi-member orbit)
-        if is_multi and real_nodes:
-            with g.subgraph(name=cname) as c:
-                c.attr(style='dotted,filled', color='#999999',
-                       fillcolor=bgcolor, penwidth='0.8', label='')
-                for nid, label in real_nodes:
-                    c.node(nid, label=label, style='filled',
-                           fillcolor='white', labeljust='l')
-        else:
-            for nid, label in real_nodes:
-                g.node(nid, label=label, style='filled',
-                       fillcolor='white', labeljust='l')
+        # Create ext PBP nodes
+        for mk in members:
+            drc, wp_fs, rt = mk
+            nid = make_nid('d')
+            drc_nid_map[mk] = nid
 
-        if real_nodes:
-            levels.setdefault((rt_norm, total), []).append(real_nodes[0][0])
+            sig = signature(drc, rt)
+            if rt in ('B+', 'B-', 'D'):
+                eps = epsilon(drc, rt)
+            elif rt in ('C', 'M'):
+                eps = 1 if (wp_fs is not None and 0 in wp_fs) else 0
+            else:
+                eps = 0
 
-        # Add ghost nodes to a SEPARATE ghost level (between B/D and C/M)
-        ghost_level_key = ('ghost_' + rt_norm, total)
-        for nid, label in ghost_nodes_list:
+            rt_str = f' {rt}' if rt in ('B+', 'B-') else ''
+            wp_str = f' wp={set(wp_fs)}' if wp_fs else ''
+            drc_str = str_dgms(drc).replace('\n', '\\l')
+            label = (f'({sig[0]},{sig[1]}){rt_str} e={eps}{wp_str}\\l'
+                     f'{drc_str}\\l')
+
             g.node(nid, label=label, style='filled',
-                   fillcolor='#f0f0f0', labeljust='l')
-            levels.setdefault(ghost_level_key, []).append(nid)
+                   fillcolor='white', labeljust='l')
+
+            # LS header -> ext PBP (force below)
+            g.edge(ls_nid, nid, style='invis', weight='10')
+
+            if is_bd:
+                levels.setdefault((f'{rt_base}_bot', total), []).append(nid)
+            else:
+                levels.setdefault((f'{rt_base}_bot', total), []).append(nid)
+
+    # --- Ghost nodes (1^{-,+} twists) on top level ---
+    for gk, source_gk in ghost_ls.items():
+        ls_val, total = gk
+        if gk in ghost_nid_map:
+            continue
+        gnid = make_nid('g')
+        ghost_nid_map[gk] = gnid
+
+        ac_pairs = [(ls_val[ils], ils) for ils in ls_val.distinct_elements()]
+        ac_lines = _format_myd_multiline(ac_pairs)
+        glabel = '\\l'.join(ac_lines) + '\\l'
+        g.node(gnid, label=glabel, style='filled',
+               fillcolor='#f0f0f0', labeljust='l')
+
+        # Determine source type
+        rt_norm = None
+        for mk in ls_groups.get(source_gk, []):
+            r = mk[2]
+            rt_norm = 'B' if r in ('B+', 'B-') else r
+            break
+        if rt_norm is None:
+            rt_norm = 'B' if rtype in ('M', 'B') else 'D'
+        levels.setdefault((f'{rt_norm}_top', total), []).append(gnid)
+
+    # --- Twist edges between LS headers and ghosts ---
+    twist_defs = [
+        ((-1, -1), 'red'),
+        ((1, -1),  'green'),
+        ((-1, 1),  '#9933cc'),
+    ]
+    all_nid_map = {}
+    all_nid_map.update({gk: ls_nid_map[gk] for gk in ls_nid_map})
+    all_nid_map.update({gk: ghost_nid_map[gk] for gk in ghost_nid_map})
+
+    twist_edges = set()
+    for gk in all_nid_map:
+        ls_val, total = gk
+        # Only B/D levels have twists
+        is_bd = False
+        if gk in ls_groups:
+            rts = set(k[2] for k in ls_groups[gk])
+            is_bd = rts <= {'B+', 'B-'} or rts <= {'D'}
+        elif gk in ghost_ls:
+            is_bd = True
+        if not is_bd:
+            continue
+
+        nid_a = all_nid_map[gk]
+        for twist, color in twist_defs:
+            twisted = twist_ls(ls_val, twist)
+            target_gk = (twisted, total)
+            if target_gk == gk or target_gk not in all_nid_map:
+                continue
+            nid_b = all_nid_map[target_gk]
+            edge = tuple(sorted([nid_a, nid_b]))
+            ek = (edge, color)
+            if ek not in twist_edges:
+                twist_edges.add(ek)
+                g.edge(nid_a, nid_b, color=color,
+                       dir='both', arrowsize='0.3', constraint='false')
 
     # --- DRC descent edges ---
     for key, node in tree_nodes.items():
@@ -3399,59 +3388,36 @@ def _gen_combined_tree(tree_nodes, ls_groups, ghost_ls, rtype,
             g.edge(drc_nid_map[parent_key], drc_nid_map[key],
                    color='#888888', style='dashed', arrowsize='0.5')
 
-    # --- Twist edges (within dotted blocks) ---
-    twist_edges = set()
-    for gk in all_gk_set:
-        if gk not in gv_node_map:
-            continue
-        ls_val, total = gk
-        has_bd = any(k[2] in ('B+', 'B-', 'D') for k in ls_groups.get(gk, []))
-        if not has_bd and gk not in ghost_ls:
-            continue
-        nid_a = gv_node_map[gk]
-        for twist, color, _ in twist_defs:
-            twisted = twist_ls(ls_val, twist)
-            target_gk = (twisted, total)
-            if target_gk == gk or target_gk not in gv_node_map:
-                continue
-            nid_b = gv_node_map[target_gk]
-            edge = tuple(sorted([nid_a, nid_b]))
-            ek = (edge, color)
-            if ek not in twist_edges:
-                twist_edges.add(ek)
-                g.edge(nid_a, nid_b, color=color,
-                       dir='both', arrowsize='0.3', constraint='false')
-
     # --- Layout ---
-    # Sort levels: real levels by total, ghost levels between their source
-    # level and the adjacent C/M level above.
-    # Ordering: total=0 at top (TB mode). Within same total, ghost before real.
     def level_sort_key(item):
-        (rt_norm, total) = item[0]
-        is_ghost = rt_norm.startswith('ghost_')
-        # Ghost levels sort at same total but slightly before (above) real
-        return (total, 0 if is_ghost else 1, rt_norm)
+        rt, total = item[0]
+        order = {'C': 0, 'M': 0,
+                 'D_top': 1, 'B_top': 1,
+                 'D_mid': 2, 'B_mid': 2,
+                 'D_bot': 3, 'B_bot': 3,
+                 'C_bot': 4, 'M_bot': 4}
+        return (total, order.get(rt, 5), rt)
 
     gp_nodes = []
-    for (rt_norm, total), nids in sorted(levels.items(), key=level_sort_key):
-        is_ghost = rt_norm.startswith('ghost_')
-
-        if is_ghost:
-            gp_label = 'twist'
-        elif rt_norm in ('C', 'M'):
-            gp_label = RTYPE_GP[rt_norm] % (2 * total,)
-        elif rt_norm == 'B':
+    for (rt, total), nids in sorted(levels.items(), key=level_sort_key):
+        if rt in ('C', 'M'):
+            gp_label = RTYPE_GP[rt] % (2 * total,)
+        elif rt == 'B_mid':
             gp_label = f'O({2 * total + 1})'
-        elif rt_norm == 'D':
+        elif rt == 'D_mid':
             gp_label = f'SO({2 * total})'
         else:
-            gp_label = rt_norm
+            gp_label = ''
 
-        gp_nid = f'gp_{rt_norm}_{total}'
-        g.node(gp_nid, label=gp_label, shape='plaintext',
-               fontname='Helvetica', fontsize='9', fontcolor='#999999' if is_ghost else '#333333',
-               group='gp_labels')
-        gp_nodes.append((total, 0 if is_ghost else 1, gp_nid))
+        gp_nid = f'gp_{rt}_{total}'
+        if gp_label:
+            g.node(gp_nid, label=gp_label, shape='plaintext',
+                   fontname='Helvetica', fontsize='10', fontcolor='#333333',
+                   group='gp_labels')
+        else:
+            g.node(gp_nid, label='', shape='none', width='0', height='0',
+                   group='gp_labels')
+        gp_nodes.append(gp_nid)
 
         with g.subgraph() as s:
             s.attr(rank='same')
@@ -3461,12 +3427,11 @@ def _gen_combined_tree(tree_nodes, ls_groups, ghost_ls, rtype,
         if nids:
             g.edge(gp_nid, nids[0], style='invis')
 
-    gp_nodes_sorted = sorted(gp_nodes, key=lambda x: (x[0], x[1]))
-    for i in range(len(gp_nodes_sorted) - 1):
-        g.edge(gp_nodes_sorted[i][2], gp_nodes_sorted[i + 1][2],
-               style='invis')
+    for i in range(len(gp_nodes) - 1):
+        g.edge(gp_nodes[i], gp_nodes[i + 1], style='invis')
 
     return g
+
 
 
 def gen_descent_tree(dpart, rtype, format='pdf', filename='descent_tree'):
