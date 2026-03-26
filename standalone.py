@@ -3307,11 +3307,11 @@ def _gen_combined_tree(tree_nodes, ls_groups, ghost_ls, rtype,
                 ls_val, total = gk
                 members = ls_groups[gk]
 
-                # MYD header
+                # MYD visual for this LS
                 ac_pairs = [(ls_val[ils], ils)
                            for ils in ls_val.distinct_elements()]
                 ac_lines = _format_myd_multiline(ac_pairs)
-                myd_str = ' '.join(ac_lines)
+                myd_str = '\\l'.join(ac_lines)
 
                 for mk in members:
                     drc, wp_fs, rt = mk
@@ -3327,13 +3327,14 @@ def _gen_combined_tree(tree_nodes, ls_groups, ghost_ls, rtype,
                     else:
                         eps = 0
 
-                    parts = [f'({sig[0]},{sig[1]})']
-                    if rt in ('B+', 'B-'):
-                        parts.append(rt)
-                    parts.append(f'ε={eps}')
-                    if wp_fs:
-                        parts.append(f'℘={set(wp_fs)}')
-                    label = ' '.join(parts)
+                    # Label: MYD + signature + DRC
+                    rt_str = f' {rt}' if rt in ('B+', 'B-') else ''
+                    wp_str = f' ℘={set(wp_fs)}' if wp_fs else ''
+                    drc_str = str_dgms(drc).replace('\n', '\\l')
+                    label = (f'{myd_str}\\l'
+                             f'─────\\l'
+                             f'({sig[0]},{sig[1]}){rt_str} ε={eps}{wp_str}\\l'
+                             f'{drc_str}\\l')
 
                     cluster_nodes.append((nid, label, 'white', False))
 
@@ -3349,8 +3350,8 @@ def _gen_combined_tree(tree_nodes, ls_groups, ghost_ls, rtype,
                 ac_pairs = [(ls_val[ils], ils)
                            for ils in ls_val.distinct_elements()]
                 ac_lines = _format_myd_multiline(ac_pairs)
-                label = ' '.join(ac_lines)
-                cluster_nodes.append((nid, label, '#f0f0f0', True))
+                label = '\\l'.join(ac_lines)
+                cluster_nodes.append((nid, label + '\\l', '#f0f0f0', True))
 
         # Determine level
         if real_members:
@@ -3372,7 +3373,8 @@ def _gen_combined_tree(tree_nodes, ls_groups, ghost_ls, rtype,
                 c.attr(style='dotted,filled', color='#999999',
                        fillcolor=bgcolor, penwidth='0.8', label='')
                 for nid, label, fc, is_ghost in cluster_nodes:
-                    c.node(nid, label=label, style='filled', fillcolor=fc)
+                    c.node(nid, label=label, style='filled', fillcolor=fc,
+                           labeljust='l')
                 # Force ghost nodes one level above real nodes
                 for gnid in ghost_nids:
                     for rnid in real_nids[:1]:
@@ -3381,7 +3383,8 @@ def _gen_combined_tree(tree_nodes, ls_groups, ghost_ls, rtype,
             levels.setdefault((rt_norm, total), []).append(anchor)
         else:
             for nid, label, fc, is_ghost in cluster_nodes:
-                g.node(nid, label=label, style='filled', fillcolor=fc)
+                g.node(nid, label=label, style='filled', fillcolor=fc,
+                       labeljust='l')
             if cluster_nodes:
                 anchor = real_nids[0] if real_nids else cluster_nodes[0][0]
                 levels.setdefault((rt_norm, total), []).append(anchor)
