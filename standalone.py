@@ -3310,8 +3310,9 @@ def _gen_combined_tree(tree_nodes, ls_groups, ghost_ls, rtype,
             g.node(nid, label=label, style='filled',
                    fillcolor='white', labeljust='l')
 
-            # LS header -> ext PBP (force below)
-            g.edge(ls_nid, nid, style='invis', weight='10')
+            # LS header -> ext PBP (solid line, force below)
+            g.edge(ls_nid, nid, color='#aaaaaa', arrowsize='0.4',
+                   weight='10')
 
             if is_bd:
                 levels.setdefault((f'{rt_base}_bot', total), []).append(nid)
@@ -3342,7 +3343,7 @@ def _gen_combined_tree(tree_nodes, ls_groups, ghost_ls, rtype,
             rt_norm = 'B' if rtype in ('M', 'B') else 'D'
         levels.setdefault((f'{rt_norm}_top', total), []).append(gnid)
 
-    # --- Twist edges between LS headers and ghosts ---
+    # --- Build twist orbits and wrap in dashed clusters ---
     twist_defs = [
         ((-1, -1), 'red'),
         ((1, -1),  'green'),
@@ -3352,10 +3353,51 @@ def _gen_combined_tree(tree_nodes, ls_groups, ghost_ls, rtype,
     all_nid_map.update({gk: ls_nid_map[gk] for gk in ls_nid_map})
     all_nid_map.update({gk: ghost_nid_map[gk] for gk in ghost_nid_map})
 
+    # Collect all ext PBP nids for each gk
+    gk_ext_nids = {}  # gk → [ext PBP nids]
+    for gk, members in ls_groups.items():
+        gk_ext_nids[gk] = [drc_nid_map[mk] for mk in members
+                           if mk in drc_nid_map]
+
+    # Build orbits
+    all_gk_set = set(ls_nid_map.keys()) | set(ghost_nid_map.keys())
+    visited = set()
+    orbit_counter = [0]
+    for gk in all_gk_set:
+        if gk in visited:
+            continue
+        orbit = set()
+        bfs = [gk]
+        while bfs:
+            cur = bfs.pop()
+            if cur in orbit or cur not in all_gk_set:
+                continue
+            orbit.add(cur)
+            ls_val, total = cur
+            for twist, _ in twist_defs:
+                tw = twist_ls(ls_val, twist)
+                nbr = (tw, total)
+                if nbr in all_gk_set and nbr not in orbit:
+                    bfs.append(nbr)
+        visited.update(orbit)
+
+        if len(orbit) > 1:
+            # Wrap all nids of this orbit in a dashed cluster
+            cname = f'cluster_tw_{orbit_counter[0]}'
+            orbit_counter[0] += 1
+            with g.subgraph(name=cname) as c:
+                c.attr(style='dashed', color='#bbbbbb',
+                       penwidth='0.8', label='')
+                for ogk in orbit:
+                    if ogk in all_nid_map:
+                        c.node(all_nid_map[ogk])
+                    for enid in gk_ext_nids.get(ogk, []):
+                        c.node(enid)
+
+    # --- Twist edges ---
     twist_edges = set()
     for gk in all_nid_map:
         ls_val, total = gk
-        # Only B/D levels have twists
         is_bd = False
         if gk in ls_groups:
             rts = set(k[2] for k in ls_groups[gk])
