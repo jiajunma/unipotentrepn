@@ -219,65 +219,49 @@ p = q = n_• + n_r + n_s + n_c + n_d
 
 ## 4. Descent Algorithm
 
-### `naive_descent(drc, rtype)` — Line 784
+### 4.1 Naive descent: `naive_descent(drc, rtype)` — Line 784
 
-**Reference**: [BMSZb] Lemma 10.4 (★ ∈ {B, C}), Lemma 10.5 (★ ∈ {M, D}).
+**Reference**: [BMSZ] Section 3.3, Lemma 3.7.
 
 Computes τ'_naive by removing one column and redistributing •/s symbols.
 
-| rtype | Column removed | Target type γ' | Redistribution |
-|-------|---------------|----------------|---------------|
+| ★ | Column removed | Target type ★' | Redistribution |
+|---|---------------|----------------|---------------|
 | C | first col of Q (drcR) | D | `_fill_ds_D` |
 | B⁺/B⁻ | first col of Q (drcR) | M | `_fill_ds_M` |
 | D | first col of P (drcL) | C | `_fill_ds_C` |
 | M | first col of P (drcL) | B⁺ or B⁻ | `_fill_ds_B` |
 
-**γ' for M → B** ([BMSZ] Equation (3.11)):
+**★' for M → B** ([BMSZ] Equation (3.11)):
 ```
-γ' = B⁺  if 'c' does NOT occur in first column of P
+★' = B⁺  if 'c' does NOT occur in first column of P
    = B⁻  if 'c' occurs in first column of P
 ```
 
-**Redistribution rule** ([BMSZb] Lemma 10.4–10.5):
-Symbols r, c, d are preserved from the source column (shifted by one position).
-Positions with • or s in the source become • or s in the target, filled
-to satisfy the painting constraints ([BMSZb] Definition 2.25).
+**Redistribution rule** ([BMSZ] Lemma 3.7):
+The bipartition (ι', j') of τ'_naive is determined by removing one column.
+Symbols r, c, d are preserved from the source (shifted by one position).
+Positions with • or s are redistributed to satisfy the painting constraints
+([BMSZb] Definition 2.25).
 
-### `descent(drc, rtype, dpart=None, wp=None)` — Line 833
+### 4.2 Full descent for ℘ = ∅: `descent(drc, rtype)` — Line 833
 
-**Reference**: [BMSZb] Section 10.4 (general ℘ algorithm).
+**Reference**: [BMSZ] Section 3.3, Definition 3.14.
 
-Full descent ∇(τ) = naive descent + corrections.
+The descent ∇(τ) equals the naive descent τ'_naive unless the conditions
+of Lemma 3.10 or Lemma 3.12 hold, in which case a correction is applied.
 
-**Determining (2,3) ∈ ℘**:
-- If `wp` is provided: `has_23 = (1 in wp)` (PPidx 1 ⟺ pair (2,3))
-- If `wp` is None: infer from DRC shape
-  - B type: `has_23 = (c₂(j) ≥ c₁(ι) + 2)`
-  - D type: `has_23 = (c₂(ι) ≥ c₁(j) + 2)`
+#### ★ = B⁺ correction (Lemma 3.10)
 
-#### ★ = B⁺ corrections
-
-**(a)** If (2,3) ∉ ℘, r₂(Ǒ) > 0, Q(c₁(ι_℘), 1) ∈ {r, d}:
-
-**Reference**: [BMSZ] Lemma 3.10; [BMSZb] Section 10.4 case B(a).
-
+If γ = B⁺, r₂(Ǒ) > 0, Q(c₁(ι), 1) ∈ {r, d}:
 ```
-P'(c₁(ι_{℘'}), 1) := s
+P'(c₁(ι'), 1) := s
 ```
 All other entries from P'_naive. Q' := Q'_naive.
 
 Condition r₂(Ǒ) > 0 is checked as: DRC has ≥ 2 non-empty columns.
 
-**(b)** If (2,3) ∈ ℘, Q(c₂(j_℘), 1) ∈ {r, d}:
-
-**Reference**: [BMSZb] Section 10.4 case B(b).
-
-```
-Q'(c₁(j_{℘'}), 1) := r
-```
-P' := P'_naive. Other Q' entries from Q'_naive.
-
-**(c)** Otherwise: P' := P'_naive, Q' := Q'_naive.
+B⁻ has no corrections.
 
 **B⁺ additional correction** (lines 891–904):
 
@@ -285,38 +269,75 @@ Reverses the lift algorithm's `tR='r' → nsR='d'` conversion when
 P is "shorter" than Q's second column. Ported from
 `combunipotent/drclift.py` lines 256–268.
 
-**Note**: B⁻ has no corrections (only B⁺ does).
+#### ★ = D correction (Lemma 3.12 → generalized)
 
-#### ★ = D corrections
-
-**(a)** If (2,3) ∉ ℘, r₂(Ǒ) = r₃(Ǒ) > 0, P(c₂(ι_℘), 2) = c,
-P(i, 1) ∈ {r, d} for ALL c₂(ι_℘) ≤ i ≤ c₁(ι_℘):
-
-**Reference**: [BMSZb] Section 10.4 case D(a).
-
+If γ = D, r₂(Ǒ) = r₃(Ǒ) > 0, P(c₂(ι), 2) = c,
+P(i, 1) ∈ {r, d} for ALL c₂(ι) ≤ i ≤ c₁(ι):
 ```
-P'(c₁(ι_{℘'}), 1) := r
+P'(c₁(ι'), 1) := r
 ```
 All other entries from P'_naive. Q' := Q'_naive.
 
 Condition r₂ = r₃ > 0 is equivalent to c₂(ι) = c₁(j) + 1.
 
-**Important**: This uses the **general algorithm** from [BMSZb] which checks
-ALL intermediate entries P(i,1) ∈ {r,d}, not just endpoints. [BMSZ] Lemma 3.12
-checks only endpoints (P(c₂,1)=r and P(c₁,1)∈{r,d}) which is weaker and
-produces incorrect LS for 197 DRCs (size ≤ 30). Verified against reference.
+**Note**: [BMSZ] Lemma 3.12 checks only endpoints (P(c₂,1)=r and
+P(c₁,1)∈{r,d}). The implementation uses the stronger condition from
+[BMSZb] Section 10.4 which checks ALL intermediate entries. The two
+formulations agree when ℘ = ∅ and no intermediate entry violates {r,d},
+but the general condition is necessary for correctness with non-special
+shapes.
 
-**(b)** If (2,3) ∈ ℘, P(c₂(ι_℘) − 1, 1) ∈ {r, c}:
+#### ★ ∈ {C, M}: no correction
 
-**Reference**: [BMSZb] Section 10.4 case D(b).
+∇(τ) = τ'_naive.
 
+### 4.3 Full descent for general ℘ (relevant only for counting)
+
+> *This section describes the general descent algorithm from [BMSZb]
+> Section 10.4. It extends Section 4.2 to handle non-special shapes
+> (℘ ≠ ∅). Readers interested only in the construction of
+> representations ([BMSZ]) may skip this section.*
+
+**Reference**: [BMSZb] Section 10.4.
+
+The `descent` function accepts an optional `wp` parameter to handle
+general ℘. When `wp` is provided, it determines (2,3) ∈ ℘ directly.
+When `wp` is None, the DRC shape is used to infer (2,3) ∈ ℘:
+- B type: `(2,3) ∈ ℘  ⟺  c₂(j) ≥ c₁(ι) + 2`
+- D type: `(2,3) ∈ ℘  ⟺  c₂(ι) ≥ c₁(j) + 2`
+
+#### ★ = B⁺
+
+**(a)** (2,3) ∉ ℘: same as Lemma 3.10 (Section 4.2).
+
+**(b)** (2,3) ∈ ℘, Q(c₂(j_℘), 1) ∈ {r, d}:
+```
+Q'(c₁(j_{℘'}), 1) := r
+```
+P' := P'_naive. Other Q' entries from Q'_naive.
+
+**(c)** Otherwise: naive.
+
+#### ★ = D
+
+**(a)** (2,3) ∉ ℘, r₂ = r₃ > 0, P(c₂(ι_℘), 2) = c,
+P(i, 1) ∈ {r, d} for ALL c₂(ι_℘) ≤ i ≤ c₁(ι_℘):
+```
+P'(c₁(ι_{℘'}), 1) := r
+```
+
+**(b)** (2,3) ∈ ℘, P(c₂(ι_℘) − 1, 1) ∈ {r, c}:
 ```
 P'(c₁(ι_{℘'}) − 1, 1) := r
 P'(c₁(ι_{℘'}), 1) := P(c₂(ι_℘) − 1, 1)
 ```
-Other entries from P'_naive. Q' := Q'_naive.
 
-**(c)** Otherwise: P' := P'_naive, Q' := Q'_naive.
+**(c)** Otherwise: naive.
+
+#### ★ ∈ {C, M}
+
+**(a)** (1,2) ∉ ℘: naive.
+**(b)** (1,2) ∈ ℘: shape shift first (Section 8), then naive.
 
 ---
 
