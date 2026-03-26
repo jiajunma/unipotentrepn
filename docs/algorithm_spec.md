@@ -53,18 +53,49 @@ primitive pairs.
 - `wp`: `frozenset` of PPidx integers (or `None` for ℘ = ∅)
 - `rtype`: string `'B+'`, `'B-'`, `'C'`, `'D'`, or `'M'`
 
-### 1.3 Irreducible Local System (ILS)
+### 1.3 Marked Young Diagram (MYD) and Irreducible Local System (ILS)
 
-**Reference**: [BMSZ] Section 9.3.
+**Reference**: [BMSZ] Section 9.3, Definition 9.2.
 
-An ILS is a tuple `((p₁,n₁), (p₂,n₂), ..., (pₖ,nₖ))` where
-`(pᵢ,nᵢ)` encodes the number of rows of length i in the marked Young
-diagram: pᵢ rows marked with + and nᵢ rows marked with −.
+A **marked Young diagram** (MYD) is a Young diagram where each row is
+marked with + or −. In [BMSZ], this parametrizes an irreducible
+representation of a product of classical groups ([BMSZ] Definition 9.2,
+Proposition 9.3).
+
+An MYD is encoded in the code as an **ILS tuple**:
+
+```
+ILS = ((p₁, n₁), (p₂, n₂), ..., (pₖ, nₖ))
+```
+
+where `(pᵢ, nᵢ)` records the rows of length i:
+- pᵢ = number of rows of length i marked with +
+- nᵢ = number of rows of length i marked with −
+
+**Example**: the MYD with rows [+3, −3, +1] (two rows of length 3 with
+marks +,−, one row of length 1 with mark +) is encoded as:
+
+```
+ILS = ((1, 0), (0, 0), (1, -1))
+      level 1   level 2   level 3
+```
+
+The sign convention follows [BMSZ] Section 9.3: pᵢ ≥ 0, but nᵢ can be
+negative (encoding the − mark as a negative count in certain twist
+operations). After character twists, entries may become negative.
+
+**Conversion functions** (in standalone.py):
+- `myd_to_ils(myd)`: converts MYD dict `{level: (p, n)}` → ILS tuple
+- `ils_to_myd(ils)`: converts ILS tuple → MYD dict
 
 ### 1.4 Local System (LS)
 
-A LS is a `FrozenMultiset` of ILS tuples, representing a direct sum
-of irreducible local systems.
+**Reference**: [BMSZ] Section 9.3, Equation (9.8).
+
+A **local system** (LS) is a `FrozenMultiset` of ILS tuples, representing
+a direct sum of irreducible local systems. Each element of the multiset
+corresponds to one irreducible component of the local system on the
+associated cycle ([BMSZ] Theorem 5.1).
 
 ---
 
