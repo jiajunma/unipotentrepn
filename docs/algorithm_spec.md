@@ -495,9 +495,10 @@ The return value is a list of `(multiplicity, MYD)` pairs.
 
 #### Recursive step
 
-1. Compute ε_℘ ([BMSZ] below Equation (3.16)): ε_℘ = 1 if PPidx 0 ∈ ℘,
-   i.e., the first primitive pair belongs to ℘. Otherwise ε_℘ = 0.
-   In particular, ε_℘ = 0 when ℘ = ∅ or when PP_★(Ǒ) is empty.
+1. Compute ε_℘ ([BMSZ] below Equation (3.16)):
+   ε_℘ = 1  ⟺  (1,2) ∈ ℘.
+   In code: `e_wp = 1 if (wp is not None and 0 in wp) else 0`,
+   since PPidx 0 corresponds to the pair (1,2).
 2. Descend ℘: `℘' = ∇̃(℘)` via `_descend_wp`.
 3. Compute (p_τ, q_τ) = `signature(drc, rtype)`.
 4. Compute ε_τ = `epsilon(drc, rtype)`.
