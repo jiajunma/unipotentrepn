@@ -68,9 +68,12 @@ An MYD is encoded in the code as an **ILS tuple**:
 ILS = ((p₁, n₁), (p₂, n₂), ..., (pₖ, nₖ))
 ```
 
-where `(pᵢ, nᵢ)` records the rows of length i:
-- pᵢ = number of rows of length i marked with +
-- nᵢ = number of rows of length i marked with −
+where `(pᵢ, nᵢ)` records the rows of length i. Before any twist,
+pᵢ ≥ 0 is the count of +-marked rows and nᵢ ≥ 0 is the count of
+−-marked rows. After character twist operations (Section 5 below),
+pᵢ and nᵢ can become **negative**, encoding the twist as a sign change.
+The absolute values |pᵢ|, |nᵢ| still give the row counts, and the
+signs record the accumulated twist.
 
 **Example**: the MYD with rows [+3, −3, +1] (two rows of length 3 with
 marks +,−, one row of length 1 with mark +) is encoded as:
@@ -80,9 +83,9 @@ ILS = ((1, 0), (0, 0), (1, -1))
       level 1   level 2   level 3
 ```
 
-The sign convention follows [BMSZ] Section 9.3: pᵢ ≥ 0, but nᵢ can be
-negative (encoding the − mark as a negative count in certain twist
-operations). After character twists, entries may become negative.
+After a det twist `_ils_twist_BD(ils, (−1,−1))`, the level-1 entry
+`(1, 0)` may become `(−1, 0)`, meaning the same row count but with
+an additional det factor.
 
 **Conversion functions** (in standalone.py):
 - `myd_to_ils(myd)`: converts MYD dict `{level: (p, n)}` → ILS tuple
