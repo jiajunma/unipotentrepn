@@ -3302,6 +3302,10 @@ def _gen_combined_tree(tree_nodes, ls_groups, ghost_ls, rtype,
         # Build cluster content
         cluster_nodes = []  # (nid, label, fillcolor, is_ghost)
 
+        # Separate real DRC nodes from ghost nodes
+        real_nodes = []   # (nid, label)
+        ghost_nodes_list = []  # (nid, label)
+
         for gk in orbit:
             if gk in ls_groups:
                 ls_val, total = gk
@@ -3327,7 +3331,6 @@ def _gen_combined_tree(tree_nodes, ls_groups, ghost_ls, rtype,
                     else:
                         eps = 0
 
-                    # Label: MYD + signature + DRC
                     rt_str = f' {rt}' if rt in ('B+', 'B-') else ''
                     wp_str = f' ℘={set(wp_fs)}' if wp_fs else ''
                     drc_str = str_dgms(drc).replace('\n', '\\l')
@@ -3336,10 +3339,10 @@ def _gen_combined_tree(tree_nodes, ls_groups, ghost_ls, rtype,
                              f'({sig[0]},{sig[1]}){rt_str} ε={eps}{wp_str}\\l'
                              f'{drc_str}\\l')
 
-                    cluster_nodes.append((nid, label, 'white', False))
+                    real_nodes.append((nid, label))
 
                 if not gv_node_map.get(gk):
-                    gv_node_map[gk] = cluster_nodes[-len(members)][0]
+                    gv_node_map[gk] = real_nodes[-len(members)][0]
 
             elif gk in ghost_ls:
                 ls_val, total = gk
@@ -3350,10 +3353,10 @@ def _gen_combined_tree(tree_nodes, ls_groups, ghost_ls, rtype,
                 ac_pairs = [(ls_val[ils], ils)
                            for ils in ls_val.distinct_elements()]
                 ac_lines = _format_myd_multiline(ac_pairs)
-                label = '\\l'.join(ac_lines)
-                cluster_nodes.append((nid, label + '\\l', '#f0f0f0', True))
+                label = '\\l'.join(ac_lines) + '\\l'
+                ghost_nodes_list.append((nid, label))
 
-        # Determine level
+        # Determine level for real nodes
         if real_members:
             gk0 = real_members[0]
             _, total = gk0
@@ -3364,30 +3367,28 @@ def _gen_combined_tree(tree_nodes, ls_groups, ghost_ls, rtype,
             _, total = gk0
             rt_norm = 'B' if rtype in ('M', 'B') else 'D'
 
-        # Add nodes to graph
-        ghost_nids = [nid for nid, _, _, ig in cluster_nodes if ig]
-        real_nids = [nid for nid, _, _, ig in cluster_nodes if not ig]
-
-        if is_multi and cluster_nodes:
+        # Add real DRC nodes (in dotted cluster if multi-member orbit)
+        if is_multi and real_nodes:
             with g.subgraph(name=cname) as c:
                 c.attr(style='dotted,filled', color='#999999',
                        fillcolor=bgcolor, penwidth='0.8', label='')
-                for nid, label, fc, is_ghost in cluster_nodes:
-                    c.node(nid, label=label, style='filled', fillcolor=fc,
-                           labeljust='l')
-                # Force ghost nodes one level above real nodes
-                for gnid in ghost_nids:
-                    for rnid in real_nids[:1]:
-                        c.edge(gnid, rnid, style='invis')
-            anchor = real_nids[0] if real_nids else cluster_nodes[0][0]
-            levels.setdefault((rt_norm, total), []).append(anchor)
+                for nid, label in real_nodes:
+                    c.node(nid, label=label, style='filled',
+                           fillcolor='white', labeljust='l')
         else:
-            for nid, label, fc, is_ghost in cluster_nodes:
-                g.node(nid, label=label, style='filled', fillcolor=fc,
-                       labeljust='l')
-            if cluster_nodes:
-                anchor = real_nids[0] if real_nids else cluster_nodes[0][0]
-                levels.setdefault((rt_norm, total), []).append(anchor)
+            for nid, label in real_nodes:
+                g.node(nid, label=label, style='filled',
+                       fillcolor='white', labeljust='l')
+
+        if real_nodes:
+            levels.setdefault((rt_norm, total), []).append(real_nodes[0][0])
+
+        # Add ghost nodes to a SEPARATE ghost level (between B/D and C/M)
+        ghost_level_key = ('ghost_' + rt_norm, total)
+        for nid, label in ghost_nodes_list:
+            g.node(nid, label=label, style='filled',
+                   fillcolor='#f0f0f0', labeljust='l')
+            levels.setdefault(ghost_level_key, []).append(nid)
 
     # --- DRC descent edges ---
     for key, node in tree_nodes.items():
@@ -3422,9 +3423,22 @@ def _gen_combined_tree(tree_nodes, ls_groups, ghost_ls, rtype,
                        dir='both', arrowsize='0.3', constraint='false')
 
     # --- Layout ---
+    # Sort levels: real levels by total, ghost levels between their source
+    # level and the adjacent C/M level above.
+    # Ordering: total=0 at top (TB mode). Within same total, ghost before real.
+    def level_sort_key(item):
+        (rt_norm, total) = item[0]
+        is_ghost = rt_norm.startswith('ghost_')
+        # Ghost levels sort at same total but slightly before (above) real
+        return (total, 0 if is_ghost else 1, rt_norm)
+
     gp_nodes = []
-    for (rt_norm, total), nids in sorted(levels.items(), key=lambda x: x[0][1]):
-        if rt_norm in ('C', 'M'):
+    for (rt_norm, total), nids in sorted(levels.items(), key=level_sort_key):
+        is_ghost = rt_norm.startswith('ghost_')
+
+        if is_ghost:
+            gp_label = 'twist'
+        elif rt_norm in ('C', 'M'):
             gp_label = RTYPE_GP[rt_norm] % (2 * total,)
         elif rt_norm == 'B':
             gp_label = f'O({2 * total + 1})'
@@ -3435,9 +3449,9 @@ def _gen_combined_tree(tree_nodes, ls_groups, ghost_ls, rtype,
 
         gp_nid = f'gp_{rt_norm}_{total}'
         g.node(gp_nid, label=gp_label, shape='plaintext',
-               fontname='Helvetica', fontsize='11', fontcolor='#333333',
+               fontname='Helvetica', fontsize='9', fontcolor='#999999' if is_ghost else '#333333',
                group='gp_labels')
-        gp_nodes.append((total, gp_nid))
+        gp_nodes.append((total, 0 if is_ghost else 1, gp_nid))
 
         with g.subgraph() as s:
             s.attr(rank='same')
@@ -3447,9 +3461,9 @@ def _gen_combined_tree(tree_nodes, ls_groups, ghost_ls, rtype,
         if nids:
             g.edge(gp_nid, nids[0], style='invis')
 
-    gp_nodes_sorted = sorted(gp_nodes, key=lambda x: x[0])
+    gp_nodes_sorted = sorted(gp_nodes, key=lambda x: (x[0], x[1]))
     for i in range(len(gp_nodes_sorted) - 1):
-        g.edge(gp_nodes_sorted[i][1], gp_nodes_sorted[i + 1][1],
+        g.edge(gp_nodes_sorted[i][2], gp_nodes_sorted[i + 1][2],
                style='invis')
 
     return g
