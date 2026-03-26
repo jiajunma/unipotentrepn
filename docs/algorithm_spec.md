@@ -158,13 +158,13 @@ Given dual partition Ǒ and type ★, compute the special-shape bipartition
 
 **For ★ = B**: first row r₁ contributes c₁(j) = r₁/2. Remaining rows are paired:
 ```
-(c_i(ι), c_{i+1}(j)) = (r_{2i}/2, r_{2i+1}/2)    if PPidx i ∉ ℘
+(c_i(ι), c_{i+1}(j)) = (r_{2i}/2, r_{2i+1}/2)    if PPidx i not in ℘
                       = (r_{2i+1}/2, r_{2i}/2)      if PPidx i ∈ ℘
 ```
 
 **For ★ = D**: first row r₁ contributes c₁(ι) = (r₁+1)/2. Remaining rows:
 ```
-(c_{i+1}(ι), c_i(j)) = ((r_{2i}+1)/2, (r_{2i+1}−1)/2)    if PPidx i ∉ ℘
+(c_{i+1}(ι), c_i(j)) = ((r_{2i}+1)/2, (r_{2i+1}−1)/2)    if PPidx i not in ℘
 ```
 
 **For ★ = C, M**: rows are paired directly (no first-row offset):
@@ -308,7 +308,8 @@ When `wp` is None, the DRC shape is used to infer (2,3) ∈ ℘:
 
 #### ★ = B⁺
 
-**(a)** γ = B⁺, (2,3) ∉ ℘, r₂(Ǒ) > 0, Q(c₁(ι_℘), 1) ∈ {r, d}:
+**(a)** γ = B⁺, (2,3) not in ℘, r₂(Ǒ) > 0, Q(c₁(ι_℘), 1) ∈ {r, d}
+(same as the ℘ = ∅ case in Section 4.2):
 ```
 P'(c₁(ι_{℘'}), 1) := s
 ```
@@ -324,8 +325,9 @@ P' := P'_naive. Other Q' entries from Q'_naive.
 
 #### ★ = D
 
-**(a)** (2,3) ∉ ℘, r₂ = r₃ > 0, P(c₂(ι_℘), 2) = c,
-P(i, 1) ∈ {r, d} for ALL c₂(ι_℘) ≤ i ≤ c₁(ι_℘):
+**(a)** (2,3) not in ℘, r₂ = r₃ > 0, P(c₂(ι_℘), 2) = c,
+P(i, 1) ∈ {r, d} for ALL c₂(ι_℘) ≤ i ≤ c₁(ι_℘)
+(same as the ℘ = ∅ case in Section 4.2):
 ```
 P'(c₁(ι_{℘'}), 1) := r
 ```
@@ -340,7 +342,7 @@ P'(c₁(ι_{℘'}), 1) := P(c₂(ι_℘) − 1, 1)
 
 #### ★ ∈ {C, M}
 
-**(a)** (1,2) ∉ ℘: naive.
+**(a)** (1,2) not in ℘: naive.
 **(b)** (1,2) ∈ ℘: shape shift first (Section 8), then naive.
 
 ---
