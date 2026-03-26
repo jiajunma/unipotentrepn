@@ -244,7 +244,7 @@ Symbols r, c, d are preserved from the source (shifted by one position).
 Positions with • or s are redistributed to satisfy the painting constraints
 ([BMSZb] Definition 2.25).
 
-### 4.2 Full descent for ℘ = ∅: `descent(drc, rtype)` — Line 833
+### 4.2 Descent for ℘ = ∅: `descent(drc, rtype)` — Line 833
 
 **Reference**: [BMSZ] Section 3.3, Definition 3.14.
 
@@ -291,7 +291,7 @@ shapes.
 
 ∇(τ) = τ'_naive.
 
-### 4.3 Full descent for general ℘ (relevant only for counting)
+### 4.3 Descent for general ℘ (relevant only for counting)
 
 > *This section describes the general descent algorithm from [BMSZb]
 > Section 10.4. It extends Section 4.2 to handle non-special shapes
@@ -341,22 +341,22 @@ P'(c₁(ι_{℘'}), 1) := P(c₂(ι_℘) − 1, 1)
 
 ---
 
-## 5. ILS Operations
+## 5. MYD Operations
 
-### `_ils_sign(irr_s)` — Line 1773
+### `_ils_sign(myd)` — Line 1773
 
-**Reference**: [BMSZ] Section 9.3 (LS.py: `_sign_ILS`).
+**Reference**: [BMSZ] Section 9.3.
 
-Signature (p, n) of an ILS tuple irr_s = ((p₁,n₁), ..., (pₖ,nₖ)):
+Signature (p, n) of MYD = ((p₁,n₁), ..., (pₖ,nₖ)):
 ```
 For each row i (0-based), let (hrl, rrl) = divmod(i+1, 2):
   p += |pᵢ|·(hrl + rrl) + |nᵢ|·hrl
   n += |nᵢ|·(hrl + rrl) + |pᵢ|·hrl
 ```
 
-### `_ils_firstcol_sign(irr_s)` — Line 1783
+### `_ils_firstcol_sign(myd)` — Line 1783
 
-**Reference**: [BMSZ] Section 9.3 (LS.py: `_sign_ILS_firstcol`).
+**Reference**: [BMSZ] Section 9.3.
 
 First-column signature:
 ```
@@ -364,9 +364,9 @@ For i even (0-based):  p += |pᵢ|, n += |nᵢ|
 For i odd:             p += |nᵢ|, n += |pᵢ|
 ```
 
-### `_ils_twist_BD(irr_s, twist)` — Line 1796
+### `_ils_twist_BD(myd, twist)` — Line 1796
 
-**Reference**: [BMSZ] Section 9.4 (LS.py: `_char_twist_D`, `_char_twist_B`).
+**Reference**: [BMSZ] Section 9.4.
 
 Determinant twist with `twist = (tp, tn)` where tp, tn ∈ {1, −1}.
 
@@ -383,9 +383,9 @@ Common cases:
 - `(−1, −1)`: ⊗ det twist (C/M pre-twist when ε_℘ = 1)
 - `(1, 1)`: identity
 
-### `_ils_char_twist_CM(irr_s, j)` — Line 1821
+### `_ils_char_twist_CM(myd, j)` — Line 1821
 
-**Reference**: [BMSZ] Section 9.4 (LS.py: `_char_twist_C`, `_char_twist_CM`).
+**Reference**: [BMSZ] Section 9.4.
 
 Character twist T^j: negate entries at positions i where (i+1) ≡ 2 (mod 4),
 but only when j is odd. T² = identity.
@@ -397,14 +397,13 @@ _char_twist_C(irr_s, ps, ns) = _ils_char_twist_CM(irr_s, (ps−ns)//2)
 
 ---
 
-## 6. Theta Lifting of ILS
+## 6. Theta Lifting of MYD
 
-### `theta_lift_ils(irr_s, rtype, p, q)` — Line 1837
+### `theta_lift_ils(myd, rtype, p, q)` — Line 1837
 
-**Reference**: [BMSZ] Section 11.1–11.3 (LS.py: `lift_irr_D_C`, `lift_irr_C_D`,
-`lift_irr_B_M`, `lift_irr_M_B`).
+**Reference**: [BMSZ] Section 11.1–11.3.
 
-Theta lift a single ILS to target type ★ with target signature (p, q).
+Theta lift a single MYD to target type ★ with target signature (p, q).
 
 In all cases, first compute:
 ```
@@ -457,7 +456,7 @@ Same structure as C→D but twist parameter is `(p−q+1)//2` instead of `(p−q
 
 ### `theta_lift_ls(ls, rtype, p, q)` — Line 1920
 
-Lifts each ILS in the `FrozenMultiset` independently:
+Lifts each MYD in the `FrozenMultiset` independently:
 ```
 result = []
 for irr_s in ls:
@@ -467,7 +466,7 @@ return FrozenMultiset(result)
 
 ### `twist_ls(ls, twist)` — Line 1941
 
-Apply `_ils_twist_BD` to every ILS in the multiset.
+Apply `_ils_twist_BD` to every MYD in the multiset.
 
 ---
 
@@ -485,7 +484,7 @@ Computes AC(τ̂) for extended PBP τ̂ = (τ, ℘, ★) via recursive descent.
 |-------|---------|
 | B⁺ | `[(1, ((1, 0),))]` — trivial character of O(1,0) |
 | B⁻ | `[(1, ((0, −1),))]` — det character of O(0,1) |
-| C, D, M | `[(1, ())]` — trivial (empty ILS) |
+| C, D, M | `[(1, ())]` — trivial (empty MYD) |
 
 #### Recursive step
 
@@ -496,12 +495,12 @@ Computes AC(τ̂) for extended PBP τ̂ = (τ, ℘, ★) via recursive descent.
 5. Descent DRC: `(drc', ★') = descent(drc, rtype)`.
 6. Recursively compute `source_AC = compute_AC(drc', ℘', ★')`.
 
-Then for each `(coeff, ils)` in source_AC:
+Then for each `(coeff, myd)` in source_AC:
 
 **★ ∈ {C, M}** ([BMSZ] Eq. 3.16 case 2):
 ```
 if ε_℘ = 1:
-    source_ils = _ils_twist_BD(ils, (−1, −1))   # pre-twist by det
+    source_myd = _ils_twist_BD(myd, (−1, −1))   # pre-twist by det
 lifted = theta_lift_ils(source_ils, rtype, p_τ, q_τ)
 # No post-twist for C/M
 ```
@@ -509,7 +508,7 @@ lifted = theta_lift_ils(source_ils, rtype, p_τ, q_τ)
 **★ ∈ {B⁺, B⁻, D}** ([BMSZ] Eq. 3.16 case 1):
 ```
 # No pre-twist for B/D
-lifted = theta_lift_ils(ils, rtype, p_τ, q_τ)
+lifted = theta_lift_ils(myd, rtype, p_τ, q_τ)
 if ε_τ ≠ 0:
     lifted_ils = _ils_twist_BD(lifted_ils, (1, −1))   # post-twist by 1⁺⁻
 ```
