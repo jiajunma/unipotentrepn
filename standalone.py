@@ -3388,6 +3388,52 @@ def _gen_combined_tree(tree_nodes, ls_groups, ghost_ls, rtype,
                 g.edge(nid_a, nid_b, color=color,
                        dir='both', arrowsize='0.3', constraint='false')
 
+    # --- Build twist orbits to group related LS clusters ---
+    all_gk_set = set(ls_groups.keys()) | set(ghost_ls.keys())
+    gk_to_orbit = {}
+    orbits = []
+    for gk in all_gk_set:
+        if gk in gk_to_orbit:
+            continue
+        orbit = set()
+        bfs = [gk]
+        while bfs:
+            cur = bfs.pop()
+            if cur in orbit or cur not in all_gk_set:
+                continue
+            orbit.add(cur)
+            ls_val, total = cur
+            for twist, _, _ in twist_defs:
+                tw = twist_ls(ls_val, twist)
+                nbr = (tw, total)
+                if nbr in all_gk_set and nbr not in orbit:
+                    bfs.append(nbr)
+        oid = len(orbits)
+        orbits.append(orbit)
+        for member in orbit:
+            gk_to_orbit[member] = oid
+
+    # Wrap multi-member twist orbits in outer dotted clusters
+    tw_cluster_counter = [0]
+    for orbit in orbits:
+        if len(orbit) <= 1:
+            continue
+        # Collect all DRC nids and ghost nids in this orbit
+        orbit_nids = []
+        for gk in orbit:
+            if gk in ls_cluster_nids:
+                orbit_nids.extend(ls_cluster_nids[gk])
+            elif gk in gv_node_map:
+                orbit_nids.append(gv_node_map[gk])
+        if len(orbit_nids) > 1:
+            twname = f'cluster_tworbit_{tw_cluster_counter[0]}'
+            tw_cluster_counter[0] += 1
+            with g.subgraph(name=twname) as tw:
+                tw.attr(style='dotted', color='#999999', penwidth='0.8',
+                        label='')
+                for nid in orbit_nids:
+                    tw.node(nid)
+
     # --- Layout ---
     gp_nodes = []
     for (rt_norm, total), nids in sorted(levels.items(), key=lambda x: x[0][1]):
