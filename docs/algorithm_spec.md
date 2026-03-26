@@ -53,19 +53,19 @@ primitive pairs.
 - `wp`: `frozenset` of PPidx integers (or `None` for ℘ = ∅)
 - `rtype`: string `'B+'`, `'B-'`, `'C'`, `'D'`, or `'M'`
 
-### 1.3 Marked Young Diagram (MYD) and Irreducible Local System (ILS)
+### 1.3 Marked Young Diagram (MYD)
 
 **Reference**: [BMSZ] Section 9.3, Definition 9.2.
 
 A **marked Young diagram** (MYD) is a Young diagram where each row is
 marked with + or −. In [BMSZ], this parametrizes an irreducible
-representation of a product of classical groups ([BMSZ] Definition 9.2,
+representation of a product of classical groups (Definition 9.2,
 Proposition 9.3).
 
-An MYD is encoded in the code as an **ILS tuple**:
+An MYD is encoded as a tuple:
 
 ```
-ILS = ((p₁, n₁), (p₂, n₂), ..., (pₖ, nₖ))
+MYD = ((p₁, n₁), (p₂, n₂), ..., (pₖ, nₖ))
 ```
 
 where `(pᵢ, nᵢ)` records the rows of length i. Before any twist,
@@ -79,26 +79,28 @@ signs record the accumulated twist.
 marks +,−, one row of length 1 with mark +) is encoded as:
 
 ```
-ILS = ((1, 0), (0, 0), (1, -1))
-      level 1   level 2   level 3
+((1, 0), (0, 0), (1, -1))
+ level 1  level 2  level 3
 ```
 
-After a det twist `_ils_twist_BD(ils, (−1,−1))`, the level-1 entry
+After a det twist `_ils_twist_BD(myd, (−1,−1))`, the level-1 entry
 `(1, 0)` may become `(−1, 0)`, meaning the same row count but with
 an additional det factor.
 
-**Conversion functions** (in standalone.py):
-- `myd_to_ils(myd)`: converts MYD dict `{level: (p, n)}` → ILS tuple
-- `ils_to_myd(ils)`: converts ILS tuple → MYD dict
+**Code naming**: In standalone.py, MYD tuples are called "ILS" (irreducible
+local system) in function names: `_ils_sign`, `theta_lift_ils`, etc.
+This reflects that each MYD parametrizes an irreducible LS component.
 
 ### 1.4 Local System (LS)
 
 **Reference**: [BMSZ] Section 9.3, Equation (9.8).
 
-A **local system** (LS) is a `FrozenMultiset` of ILS tuples, representing
+A **local system** (LS) is a `FrozenMultiset` of MYD tuples, representing
 a direct sum of irreducible local systems. Each element of the multiset
 corresponds to one irreducible component of the local system on the
 associated cycle ([BMSZ] Theorem 5.1).
+
+The LS attached to an extended PBP τ̂ is computed by `compute_AC` (Section 7).
 
 ---
 
