@@ -3364,20 +3364,27 @@ def _gen_combined_tree(tree_nodes, ls_groups, ghost_ls, rtype,
             rt_norm = 'B' if rtype in ('M', 'B') else 'D'
 
         # Add nodes to graph
+        ghost_nids = [nid for nid, _, _, ig in cluster_nodes if ig]
+        real_nids = [nid for nid, _, _, ig in cluster_nodes if not ig]
+
         if is_multi and cluster_nodes:
             with g.subgraph(name=cname) as c:
                 c.attr(style='dotted,filled', color='#999999',
                        fillcolor=bgcolor, penwidth='0.8', label='')
                 for nid, label, fc, is_ghost in cluster_nodes:
                     c.node(nid, label=label, style='filled', fillcolor=fc)
-            levels.setdefault((rt_norm, total), []).append(
-                cluster_nodes[0][0])
+                # Force ghost nodes one level above real nodes
+                for gnid in ghost_nids:
+                    for rnid in real_nids[:1]:
+                        c.edge(gnid, rnid, style='invis')
+            anchor = real_nids[0] if real_nids else cluster_nodes[0][0]
+            levels.setdefault((rt_norm, total), []).append(anchor)
         else:
             for nid, label, fc, is_ghost in cluster_nodes:
                 g.node(nid, label=label, style='filled', fillcolor=fc)
             if cluster_nodes:
-                levels.setdefault((rt_norm, total), []).append(
-                    cluster_nodes[0][0])
+                anchor = real_nids[0] if real_nids else cluster_nodes[0][0]
+                levels.setdefault((rt_norm, total), []).append(anchor)
 
     # --- DRC descent edges ---
     for key, node in tree_nodes.items():
