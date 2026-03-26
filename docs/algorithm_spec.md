@@ -94,49 +94,64 @@ The LS attached to an extended PBP τ̂ is computed by `compute_AC` (Section 7).
 
 ## 2. Orbit → Bipartition
 
-### `dpart_to_bipartition(dpart, rtype)` — Line 76
+### 2.1 Primitive pairs: `compute_PPidx(dpart, rtype)` — Line 1158
+
+**Reference**: [BMSZb] Definition 2.21.
+
+Given dual partition Ǒ with row lengths r₁ ≥ r₂ ≥ ⋯, the **primitive
+pairs** PP_★(Ǒ) are the pairs of adjacent rows where the row lengths
+are strictly decreasing. Each primitive pair is indexed by an integer
+(PPidx).
+
+**For ★ ∈ {B, D}**: rows are paired starting from the second row:
+```
+PPidx i  ⟺  pair (r_{2i+1}, r_{2i+2})  with  r_{2i+1} > r_{2i+2} ≥ 0
+```
+
+**For ★ ∈ {C, M}**: rows are paired from the first row:
+```
+PPidx i  ⟺  pair (r_{2i}, r_{2i+1})  with  r_{2i} > r_{2i+1} ≥ 0
+```
+
+(Here rows use 0-based indexing after appropriate padding.)
+
+A subset ℘ ⊆ PP_★(Ǒ) is represented as a `frozenset` of PPidx integers.
+
+### 2.2 Bipartition: `dpart_to_bipartition(dpart, rtype)` — Line 76
 
 **Reference**: [BMSZb] Equation (2.16), (8.9) with ℘ = ∅.
 
-Given dual partition Ǒ = `dpart` (row lengths in decreasing order) and
-type ★ = `rtype`, compute the special-shape bipartition (ι_Ǒ, j_Ǒ).
-
-Returns `(tauL, tauR)`: column lengths of the two Young diagrams.
+Given dual partition Ǒ and type ★, compute the special-shape bipartition
+(ι_Ǒ, j_Ǒ). Returns `(tauL, tauR)`: column lengths of the two Young diagrams.
 
 **For ★ = B**: first row r₁ contributes c₁(j) = r₁/2. Remaining rows are paired:
 ```
-(c_i(ι), c_{i+1}(j)) = (r_{2i}/2, r_{2i+1}/2)    if (2i, 2i+1) ∉ ℘
-                      = (r_{2i+1}/2, r_{2i}/2)      if (2i, 2i+1) ∈ ℘
+(c_i(ι), c_{i+1}(j)) = (r_{2i}/2, r_{2i+1}/2)    if PPidx i ∉ ℘
+                      = (r_{2i+1}/2, r_{2i}/2)      if PPidx i ∈ ℘
 ```
 
-**For ★ = D**: first row r₁ contributes c₁(ι) = (r₁+1)/2. Remaining rows are paired:
+**For ★ = D**: first row r₁ contributes c₁(ι) = (r₁+1)/2. Remaining rows:
 ```
-(c_{i+1}(ι), c_i(j)) = ((r_{2i}+1)/2, (r_{2i+1}-1)/2)    if (2i, 2i+1) ∉ ℘
+(c_{i+1}(ι), c_i(j)) = ((r_{2i}+1)/2, (r_{2i+1}−1)/2)    if PPidx i ∉ ℘
 ```
 
 **For ★ = C, M**: rows are paired directly (no first-row offset):
 ```
-(c_i(ι), c_i(j)) = (r_{2i-1}/2, r_{2i}/2)    for M
-                  = ((r_{2i-1}+1)/2, (r_{2i}-1)/2)    for C
+(c_i(ι), c_i(j)) = (r_{2i−1}/2, r_{2i}/2)              for M, PPidx i ∉ ℘
+                  = ((r_{2i−1}+1)/2, (r_{2i}−1)/2)      for C, PPidx i ∉ ℘
 ```
 
-### `dpart2Wrepns_with_wp(dpart, rtype)` — Line 1204
+### 2.3 All W-representations: `dpart2Wrepns_with_wp(dpart, rtype)` — Line 1204
 
 **Reference**: [BMSZb] Equation (8.9), Section 8.3.
 
-Computes all W-representations labelled by ℘. Returns dict:
+Computes all bipartitions labelled by ℘ ⊆ PP_★(Ǒ). For each ℘, the
+bipartition is obtained by swapping the row pairs at positions in ℘.
+
+Returns dict:
 ```
 { frozenset(PPidx subset) → bipartition (tauL, tauR) }
 ```
-
-### `compute_PPidx(dpart, rtype)` — Line 1158
-
-**Reference**: [BMSZb] Definition 2.21.
-
-Computes the list of primitive pair indices for the dual partition Ǒ.
-
-**For B/D**: `PPidx = [i : rows[2i+1] > rows[2i+2] ≥ 0]`
-**For C/M**: `PPidx = [i : rows[2i] > rows[2i+1] ≥ 0]`
 
 ---
 
