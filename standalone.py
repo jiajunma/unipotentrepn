@@ -1390,11 +1390,12 @@ def build_pbp_bijection(dpart, rtype):
 
     if rtype in ('C', 'M'):
         # Inductive definition using Prop 10.8:
-        # Build descent lookup: ∇(τ₀) → τ₀ for τ₀ ∈ PBP(Ǒ, ∅)
+        # Build descent lookup: (∇(τ₀), γ') → τ₀ for τ₀ ∈ PBP(Ǒ, ∅)
+        # Include γ' (B+/B- for M type) in key to avoid collisions
         descent_lookup = {}
         for tau0 in sp_drcs:
-            d_tau0, _ = descent(tau0, eff_rtype)
-            descent_lookup[d_tau0] = tau0
+            d_tau0, d_rt = descent(tau0, eff_rtype)
+            descent_lookup[(d_tau0, d_rt)] = tau0
 
         # Recursively build bijection at the descended level
         dpart_prime, rtype_prime = orbit_descent(dpart, rtype)
@@ -1419,14 +1420,14 @@ def build_pbp_bijection(dpart, rtype):
                         bijection[drc] = (current, wp)
                         continue
 
-                # Descent ∇
-                tau_prime, _ = descent(current, eff_rtype)
+                # Descent ∇ (include γ' tag)
+                tau_prime, tau_prime_rt = descent(current, eff_rtype)
 
                 # Recursively biject τ' → τ'' ∈ PBP(Ǒ', ∅)
                 tau_double_prime, _ = rec_bij[tau_prime]
 
-                # Inverse descent: ∇(τ₀) = τ''
-                tau_0 = descent_lookup[tau_double_prime]
+                # Inverse descent: find τ₀ with (∇(τ₀), γ') = (τ'', γ')
+                tau_0 = descent_lookup[(tau_double_prime, tau_prime_rt)]
                 bijection[drc] = (tau_0, wp)
 
     elif rtype in ('B', 'D'):
@@ -1435,7 +1436,7 @@ def build_pbp_bijection(dpart, rtype):
         # then inverse descent using (∇, sig, ε) lookup.
         descent_lookup = {}
         for tau0 in sp_drcs:
-            d_tau0, _ = descent(tau0, eff_rtype)
+            d_tau0, d_rt0 = descent(tau0, eff_rtype)
             sig0 = signature(tau0, eff_rtype)
             xt0 = compute_tail_symbol(tau0, eff_rtype, dpart)
             eps0 = 0 if xt0 == 'd' else 1
@@ -1449,7 +1450,7 @@ def build_pbp_bijection(dpart, rtype):
             if wp == frozenset():
                 continue
             for drc in drcs:
-                tau_prime, _ = descent(drc, eff_rtype)
+                tau_prime, tau_prime_rt = descent(drc, eff_rtype)
                 sig = signature(drc, eff_rtype)
                 xt = compute_tail_symbol(drc, eff_rtype, dpart)
                 eps = 0 if xt == 'd' else 1
@@ -1460,9 +1461,10 @@ def build_pbp_bijection(dpart, rtype):
                 if key in descent_lookup:
                     bijection[drc] = (descent_lookup[key], wp)
                 else:
-                    # Fallback: pair by enumeration index within this wp
-                    idx = drcs.index(drc)
-                    bijection[drc] = (sp_drcs[idx], wp)
+                    raise ValueError(
+                        f"PBP bijection failed: no match for "
+                        f"drc={drc}, wp={set(wp)}, key=({tau_prime_0}, {sig}, {eps})"
+                    )
 
     return bijection, table
 
