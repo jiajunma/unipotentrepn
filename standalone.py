@@ -3112,7 +3112,8 @@ def gen_lift_tree(dpart, rtype, format='svg', filename=None):
     # --- Also generate combined LS + DRC descent tree ---
     comb_filename = filename + '_comb'
     g_comb = _gen_combined_tree(tree_nodes, ls_groups, ghost_ls, rtype,
-                                format=format, filename=comb_filename)
+                                format=format, filename=comb_filename,
+                                drc_html_fn=_drc_html_colored)
     g_comb.render()
 
     return g
@@ -3224,7 +3225,7 @@ def _gen_ext_pbp_tree(tree_nodes, rtype, format='svg', filename='ext_pbp_tree'):
 
 
 def _gen_combined_tree(tree_nodes, ls_groups, ghost_ls, rtype,
-                      format='svg', filename='combined'):
+                      format='svg', filename='combined', drc_html_fn=None):
     """
     Generate combined LS + DRC descent tree with layered structure.
 
@@ -3302,13 +3303,14 @@ def _gen_combined_tree(tree_nodes, ls_groups, ghost_ls, rtype,
                 eps = 0
 
             rt_str = f' {rt}' if rt in ('B+', 'B-') else ''
-            wp_str = f' wp={set(wp_fs)}' if wp_fs else ''
-            drc_str = str_dgms(drc).replace('\n', '\\l')
-            label = (f'({sig[0]},{sig[1]}){rt_str} e={eps}{wp_str}\\l'
-                     f'{drc_str}\\l')
+            # Use HTML label with red-colored columns for ℘
+            drc_html = drc_html_fn(drc, wp_fs, rt) if drc_html_fn else str_dgms(drc).replace('\n', '<br align="left"/>')
+            label = (f'<({sig[0]},{sig[1]}){rt_str} ε={eps}'
+                     f'<br align="left"/>'
+                     f'{drc_html}<br align="left"/>>')
 
             g.node(nid, label=label, style='filled',
-                   fillcolor='white', labeljust='l')
+                   fillcolor='white')
 
             # LS header -> ext PBP (solid line, force below)
             g.edge(ls_nid, nid, color='#aaaaaa', arrowsize='0.4',
