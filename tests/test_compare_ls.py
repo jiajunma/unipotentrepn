@@ -63,34 +63,19 @@ def dpart_to_spart(dpart, rtype):
 
 def get_reference_drc_ls(dpart, rtype):
     """
-    Get DRC → LS mapping from drclift reference implementation.
+    Get DRC → LS mapping from drclift.test_dpart2drcLS.
 
-    For D/B types: uses test_dpart2drcLS (takes dual partition).
-    For C/M types: uses test_purelyeven (takes special partition,
-                   requires purely even special partition).
-
+    Works for all types (B, C, D, M) using dual partition convention.
     Returns dict: (normalized_drc, effective_rtype) → frozenset_of_ILS
     """
-    from combunipotent.drclift import split_extdrc_B
+    from combunipotent.drclift import test_dpart2drcLS, split_extdrc_B
     import io
     import contextlib
 
-    if rtype in ('D', 'B'):
-        from combunipotent.drclift import test_dpart2drcLS
-        with contextlib.redirect_stdout(io.StringIO()):
-            lDRCLS, lLSDRC = test_dpart2drcLS(dpart, rtype, test=False)
-        DRCLS = lDRCLS[0]
-    else:
-        # C/M: use test_purelyeven with special partition
-        from combunipotent.drclift import test_purelyeven
-        from combunipotent.tool import dualBVW
-        spart = tuple(sorted(dualBVW(dpart, rtype, partrc='c'), reverse=True))
-        # Only works for purely even special partitions
-        if not all(p % 2 == 0 for p in spart if p > 0):
-            return {}  # Skip non-purely-even
-        with contextlib.redirect_stdout(io.StringIO()):
-            lDRCLS, lLSDRC = test_purelyeven(spart, rtype)
-        DRCLS = lDRCLS[-1]
+    with contextlib.redirect_stdout(io.StringIO()):
+        lDRCLS, lLSDRC = test_dpart2drcLS(dpart, rtype, test=False)
+
+    DRCLS = lDRCLS[0]
 
     result = {}
     for drc, ls in DRCLS.items():
@@ -151,13 +136,17 @@ def dparts_for_type(rtype, max_size):
     """Generate all valid dual partitions for the given type up to max_size.
 
     Dual partition parity rules:
-      C: all parts odd, total even (Sp(2n), n = total/2)
-      D: all parts odd, total even (SO(2n), n = total/2)
+      C: all parts odd, total ODD  (Sp(2n), orbit size = 2n+1)
+      D: all parts odd, total EVEN (SO(2n), orbit size = 2n)
       B: all parts even, total even (SO(2n+1))
       M: all parts even, total even (Mp(2n))
-    Note: C and D both have odd parts with even total, but their BV duals differ.
     """
-    if rtype in ('C', 'D'):
+    if rtype == 'C':
+        # All parts odd, total odd
+        for n in range(1, max_size + 1, 2):
+            for p in _odd_partitions(n):
+                yield p
+    elif rtype == 'D':
         # All parts odd, total even
         for n in range(2, max_size + 1, 2):
             for p in _odd_partitions(n):
@@ -230,35 +219,20 @@ def verify_partition(dpart, rtype, verbose=False):
     n_failed = 0
     failures = []
 
-    if rtype in ('C', 'M'):
-        # C/M: DRC conventions differ, compare LS value multisets
-        ref_ls_set = sorted([normalize_ls(ls) for ls in ref.values()], key=str)
-        our_ls_set = sorted([normalize_ls(ls) for ls in ours.values()], key=str)
-        n_checked = 1
-        if ref_ls_set == our_ls_set:
-            n_passed = 1
+    for (ndrc, rt), ref_ls in ref.items():
+        n_checked += 1
+        if (ndrc, rt) not in ours:
+            n_failed += 1
+            failures.append((ndrc, rt, 'MISSING', normalize_ls(ref_ls), None))
+            continue
+        our_ls = ours[(ndrc, rt)]
+        ref_ls_norm = normalize_ls(ref_ls)
+        our_ls_norm = normalize_ls(our_ls)
+        if ref_ls_norm == our_ls_norm:
+            n_passed += 1
         else:
-            n_failed = 1
-            ref_only = [ls for ls in ref_ls_set if ls not in our_ls_set]
-            our_only = [ls for ls in our_ls_set if ls not in ref_ls_set]
-            failures.append((None, rtype, 'SET_MISMATCH',
-                           f'ref_only={len(ref_only)}', f'our_only={len(our_only)}'))
-    else:
-        # D/B: per-DRC comparison
-        for (ndrc, rt), ref_ls in ref.items():
-            n_checked += 1
-            if (ndrc, rt) not in ours:
-                n_failed += 1
-                failures.append((ndrc, rt, 'MISSING', normalize_ls(ref_ls), None))
-                continue
-            our_ls = ours[(ndrc, rt)]
-            ref_ls_norm = normalize_ls(ref_ls)
-            our_ls_norm = normalize_ls(our_ls)
-            if ref_ls_norm == our_ls_norm:
-                n_passed += 1
-            else:
-                n_failed += 1
-                failures.append((ndrc, rt, 'MISMATCH', ref_ls_norm, our_ls_norm))
+            n_failed += 1
+            failures.append((ndrc, rt, 'MISMATCH', ref_ls_norm, our_ls_norm))
 
     return n_checked, n_passed, n_failed, failures
 
