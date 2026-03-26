@@ -92,7 +92,39 @@ The LS attached to an extended PBP τ̂ is computed by `compute_AC` (Section 7).
 
 ---
 
-## 2. Orbit → Bipartition
+## 2. Orbit and Good Parity
+
+### 2.0 Good parity dual partition
+
+**Reference**: [BMSZb] Section 2.4, Theorem 2.27.
+
+A nilpotent orbit Ǒ in the Langlands dual Lie algebra is represented
+by its **dual partition** `dpart = (r₁, r₂, ..., rₘ)` with r₁ ≥ r₂ ≥ ⋯ > 0.
+
+Ǒ has **good parity** with respect to ★ if all its nonzero row lengths
+have the same parity determined by ★:
+
+| ★ | Good parity condition | Row lengths |
+|---|----------------------|-------------|
+| B, M (= C̃) | all rᵢ even | purely even partition |
+| C, D | all rᵢ odd | purely odd partition |
+
+Additionally, the total size must satisfy:
+
+| ★ | Total |
+|---|-------|
+| B | even (SO(2n+1), Ǒ in sp(2n)) |
+| M | even (Mp(2n), Ǒ in so(2n+1)) |
+| C | odd (Sp(2n), Ǒ in so(2n+1)) |
+| D | even (SO(2n), Ǒ in sp(2n)) |
+
+The main theorem ([BMSZb] Theorem 2.27) states:
+```
+#Unip_Ǒ(G) = 2^(#PP_★(Ǒ)) · #PBP_G(Ǒ)    if ★ ∈ {B, C, D, C̃}
+```
+
+Our implementation handles only good parity orbits. The reduction from
+general orbits to good parity is described in [BMSZb] Section 9.
 
 ### 2.1 Primitive pairs: `compute_PPidx(dpart, rtype)` — Line 1158
 
