@@ -542,7 +542,90 @@ B/D → C/M:  PPidx i maps to PPidx i (no shift)
 
 ---
 
-## 8. PBP Bijection
+## 8. Lifting Tree Visualization
+
+### `gen_lift_tree(dpart, rtype, format, filename)` — Line 2628
+
+Generates two Graphviz graphs:
+1. **LS lift graph** (`{filename}.svg`): nodes grouped by LS value
+2. **Extended PBP descent tree** (`{filename}_ext.svg`): one node per extended PBP
+
+#### 8.1 Tree construction (lines 2669–2703)
+
+Recursively build the extended PBP tree from top-level DRCs down to the
+trivial group:
+- Start from all DRCs × all ℘ subsets × {B⁺, B⁻} (for B type)
+- At each node: `descent(drc, rtype)` gives the parent
+- Base case: empty DRC with type ∈ {C, M, D}
+
+For B/M type: B⁺ and B⁻ both descent to Mp(0) = (empty, M), forming
+a single connected tree.
+
+#### 8.2 LS computation (lines 2705–2750)
+
+BFS from root upward. At each child node:
+
+```
+source_ls = parent_ls
+if child is C/M and ε_℘ = 1:
+    source_ls = twist_ls(parent_ls, (−1, −1))  # det pre-twist
+target_ls = theta_lift_ls(source_ls, child_rtype, p, q)
+if child is B/D and ε_τ ≠ 0:
+    target_ls = twist_ls(target_ls, (1, −1))    # 1⁺⁻ post-twist
+```
+
+This is equivalent to `compute_AC` but computed bottom-up instead of
+top-down.
+
+#### 8.3 LS lift graph node labels
+
+Each node in the LS lift graph represents one LS value (FrozenMultiset).
+Multiple extended PBPs with the same LS are grouped into one node.
+
+**Node contents**:
+1. **MYD visual**: the marked Young diagram pattern (+/−/*/=)
+2. **Per-DRC entries**: for each extended PBP with this LS:
+   - `(p,q)`: signature from `signature(drc, rtype)`
+   - DRC diagram with red-colored columns for ℘
+   - B⁺/B⁻ label (for B type)
+   - ε value: `epsilon(drc, rtype)` for B/D, ε_℘ for C/M
+
+**℘ column coloring** ([BMSZb] Equation (8.9)):
+
+| Type | PPidx i → red columns |
+|------|----------------------|
+| C/M | column i of both L and R |
+| D | column (i+1) of L, column i of R |
+| B | column i of L, column (i+1) of R |
+
+#### 8.4 Edges
+
+**Lift edges** (blue, solid): from parent LS node to child LS node.
+For C/M children with ε_℘ = 1, the lift source is the **det-twisted**
+parent LS (which may be a ghost node).
+
+**Character twist edges** (same level, bidirectional):
+- Red: det twist `(−1, −1)`
+- Green: 1⁺⁻ twist `(1, −1)`
+- Purple: 1⁻⁺ twist `(−1, 1)`
+
+**Ghost nodes**: LS values that appear as det-twisted variants of real
+LS nodes but are not realized by any extended PBP. Shown with gray
+background. Grouped in dotted boxes with their twist-related nodes.
+
+#### 8.5 Layout
+
+- `rankdir=TB`: small groups at top, large groups at bottom
+- Group labels (Sp(2n), O(2n+1), etc.) on the left
+- Nodes colored by type: blue=C, green=M, orange=D, red=B
+
+---
+
+The following sections describe algorithms from [BMSZb] that are relevant
+only for counting and the PBP bijection. They are not needed to understand
+the construction of representations in [BMSZ].
+
+## 9. PBP Bijection
 
 ### `build_pbp_bijection(dpart, rtype)` — Line 1288
 
@@ -560,8 +643,8 @@ Returns `(bijection, table)` where:
 
 For τ ∈ PBP(Ǒ, ℘):
 
-1. If PPidx 0 ∈ ℘ (i.e., (1,2) ∈ ℘ for C, or first pair for M):
-   shape shift τ → τ₁ ∈ PBP(Ǒ, ℘ \ {0}) via `twist_nsp2sp` (C) or
+1. If (1,2) ∈ ℘:
+   shape shift τ → τ₁ ∈ PBP(Ǒ, ℘ \ {(1,2)}) via `twist_nsp2sp` (C) or
    `twist_M_nonspecial` (M).
 
 2. If ℘ = ∅ after step 1: bijection[τ] = (τ₁, original ℘). Done.
@@ -572,7 +655,7 @@ For τ ∈ PBP(Ǒ, ℘):
 
 **Key**: The descent lookup key includes γ' (B⁺/B⁻ tag) to avoid
 collisions when two different DRCs descent to the same DRC with
-different γ' values. This was a bug that caused 700 B-type LS failures.
+different γ' values.
 
 #### B/D types (Corollary 10.10)
 
@@ -587,7 +670,7 @@ For τ ∈ PBP(Ǒ, ℘):
 
 ---
 
-## 9. Tail Symbol
+## 10. Tail Symbol
 
 ### `compute_tail_symbol(drc, rtype, dpart)` — Line 2211
 
@@ -606,7 +689,7 @@ has length > 1. For length ≤ 1, correction based on B⁺/B⁻.
 
 ---
 
-## 10. Recursive Counting
+## 11. Recursive Counting
 
 ### `countPBP(dpart, rtype)` — Line 2299
 
@@ -624,85 +707,6 @@ Recursive formula based on whether (2,3) is a primitive pair.
 ```
 #PBP_C(Ǒ) = DD_D(Ǒ[1:]) + RC_D(Ǒ[1:]) + [SS_D(Ǒ[1:]) if (1,2) primitive]
 ```
-
----
-
-## 11. Lifting Tree Visualization
-
-### `gen_lift_tree(dpart, rtype, format, filename)` — Line 2628
-
-Generates two Graphviz graphs:
-1. **LS lift graph** (`{filename}.svg`): nodes grouped by LS value
-2. **Extended PBP descent tree** (`{filename}_ext.svg`): one node per extended PBP
-
-#### 11.1 Tree construction (lines 2669–2703)
-
-Recursively build the extended PBP tree from top-level DRCs down to the
-trivial group:
-- Start from all DRCs × all ℘ subsets × {B⁺, B⁻} (for B type)
-- At each node: `descent(drc, rtype)` gives the parent
-- Base case: empty DRC with type ∈ {C, M, D}
-
-For B/M type: B⁺ and B⁻ both descent to Mp(0) = (empty, M), forming
-a single connected tree.
-
-#### 11.2 LS computation (lines 2705–2750)
-
-BFS from root upward. At each child node:
-
-```
-source_ls = parent_ls
-if child is C/M and ε_℘ = 1:
-    source_ls = twist_ls(parent_ls, (−1, −1))  # det pre-twist
-target_ls = theta_lift_ls(source_ls, child_rtype, p, q)
-if child is B/D and ε_τ ≠ 0:
-    target_ls = twist_ls(target_ls, (1, −1))    # 1⁺⁻ post-twist
-```
-
-This is equivalent to `compute_AC` but computed bottom-up instead of
-top-down.
-
-#### 11.3 LS lift graph node labels
-
-Each node in the LS lift graph represents one LS value (FrozenMultiset).
-Multiple extended PBPs with the same LS are grouped into one node.
-
-**Node contents**:
-1. **ILS visual**: the marked Young diagram pattern (+/−/*/=)
-2. **Per-DRC entries**: for each extended PBP with this LS:
-   - `(p,q)`: signature from `signature(drc, rtype)`
-   - DRC diagram with red-colored columns for ℘
-   - B⁺/B⁻ label (for B type)
-   - ε value: `epsilon(drc, rtype)` for B/D, `1 if 0∈℘` for C/M
-
-**℘ column coloring** ([BMSZb] Equation (8.9)):
-
-| Type | PPidx i → red columns |
-|------|----------------------|
-| C/M | column i of both L and R |
-| D | column (i+1) of L, column i of R |
-| B | column i of L, column (i+1) of R |
-
-#### 11.4 Edges
-
-**Lift edges** (blue, solid): from parent LS node to child LS node.
-For C/M children with ε_℘ = 1, the lift source is the **det-twisted**
-parent LS (which may be a ghost node).
-
-**Character twist edges** (same level, bidirectional):
-- Red: det twist `(−1, −1)`
-- Green: 1⁺⁻ twist `(1, −1)`
-- Purple: 1⁻⁺ twist `(−1, 1)`
-
-**Ghost nodes**: LS values that appear as det-twisted variants of real
-LS nodes but are not realized by any extended PBP. Shown with gray
-background. Grouped in dotted boxes with their twist-related nodes.
-
-#### 11.5 Layout
-
-- `rankdir=TB`: small groups at top, large groups at bottom
-- Group labels (Sp(2n), O(2n+1), etc.) on the left
-- Nodes colored by type: blue=C, green=M, orange=D, red=B
 
 ---
 
