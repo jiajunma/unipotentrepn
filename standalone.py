@@ -3423,7 +3423,7 @@ def _gen_combined_tree(tree_nodes, ls_groups, ghost_ls, rtype,
                 g.edge(nid_a, nid_b, color=color,
                        dir='both', arrowsize='0.3', constraint='false')
 
-    # --- DRC descent edges ---
+    # --- DRC descent edges (gray dashed) ---
     for key, node in tree_nodes.items():
         if node['parent'] is None:
             continue
@@ -3431,6 +3431,43 @@ def _gen_combined_tree(tree_nodes, ls_groups, ghost_ls, rtype,
         if key in drc_nid_map and parent_key in drc_nid_map:
             g.edge(drc_nid_map[parent_key], drc_nid_map[key],
                    color='#888888', style='dashed', arrowsize='0.5')
+
+    # --- LS theta lift edges (blue) ---
+    # Connect parent LS header to child LS header based on tree structure.
+    # For C/M with ε_℘=1, source is the det-twisted LS (ghost if exists).
+    lift_edges = set()
+    for key, node in tree_nodes.items():
+        if node['parent'] is None:
+            continue
+        child_ls = node['ls']
+        parent_ls = tree_nodes[node['parent']]['ls']
+        child_drc, child_wp, child_rt = key
+        drcL, drcR = child_drc
+        child_total = sum(len(c) for c in drcL) + sum(len(c) for c in drcR)
+        pdrc = node['parent'][0]
+        pdrcL, pdrcR = pdrc
+        parent_total = sum(len(c) for c in pdrcL) + sum(len(c) for c in pdrcR)
+
+        child_gk = (child_ls, child_total)
+        parent_gk = (parent_ls, parent_total)
+
+        # Determine source: for C/M with ε_℘=1, source is det-twisted parent
+        src_gk = parent_gk
+        if child_rt in ('C', 'M'):
+            e_wp = 1 if (child_wp is not None and 0 in child_wp) else 0
+            if e_wp == 1:
+                twisted_parent = twist_ls(parent_ls, (-1, -1))
+                src_gk = (twisted_parent, parent_total)
+
+        # Find nids
+        src_nid = ls_nid_map.get(src_gk) or ghost_nid_map.get(src_gk)
+        dst_nid = ls_nid_map.get(child_gk)
+        if src_nid and dst_nid:
+            edge_key = (src_nid, dst_nid)
+            if src_nid != dst_nid and edge_key not in lift_edges:
+                lift_edges.add(edge_key)
+                g.edge(src_nid, dst_nid, color='blue', penwidth='1.5',
+                       headport='n')
 
     # --- Layout ---
     def level_sort_key(item):
