@@ -3277,7 +3277,14 @@ def _gen_combined_tree(tree_nodes, ls_groups, ghost_ls, rtype,
         else:
             bgcolor = colors_map.get(next(iter(rts_in)), '#f5f5f5')
 
-        g.node(ls_nid, label=f'{myd_str}\\l', style='filled',
+        # Collect distinct signatures for this LS
+        sigs = set()
+        for mk in members:
+            drc_m, _, rt_m = mk
+            sigs.add(signature(drc_m, rt_m))
+        sig_strs = ', '.join(f'({p},{q})' for p, q in sorted(sigs))
+
+        g.node(ls_nid, label=f'{sig_strs}\\l{myd_str}\\l', style='filled',
                fillcolor=bgcolor, labeljust='l')
 
         # Determine level keys
@@ -3302,10 +3309,10 @@ def _gen_combined_tree(tree_nodes, ls_groups, ghost_ls, rtype,
             else:
                 eps = 0
 
-            rt_str = f' {rt}' if rt in ('B+', 'B-') else ''
+            rt_str = f'{rt} ' if rt in ('B+', 'B-') else ''
             # Use HTML label with red-colored columns for ℘
             drc_html = drc_html_fn(drc, wp_fs, rt) if drc_html_fn else str_dgms(drc).replace('\n', '<br align="left"/>')
-            label = (f'<({sig[0]},{sig[1]}){rt_str} ε={eps}'
+            label = (f'<{rt_str}ε={eps}'
                      f'<br align="left"/>'
                      f'{drc_html}<br align="left"/>>')
 
@@ -3433,41 +3440,51 @@ def _gen_combined_tree(tree_nodes, ls_groups, ghost_ls, rtype,
                    color='#888888', style='dashed', arrowsize='0.5')
 
     # --- LS theta lift edges (blue) ---
-    # Connect parent LS header to child LS header based on tree structure.
-    # For C/M with ε_℘=1, source is the det-twisted LS (ghost if exists).
+    # Same logic as non-combined version (Step 6 in gen_lift_tree).
+    # For C/M with ε_℘=1, source is det-twisted parent (ghost if exists).
+    combined_nid_map = {}  # gk → nid (LS headers + ghosts)
+    combined_nid_map.update(ls_nid_map)
+    combined_nid_map.update(ghost_nid_map)
+
     lift_edges = set()
     for key, node in tree_nodes.items():
         if node['parent'] is None:
             continue
-        child_ls = node['ls']
-        parent_ls = tree_nodes[node['parent']]['ls']
         child_drc, child_wp, child_rt = key
+        parent_key = node['parent']
+
+        child_ls = node['ls']
+        parent_ls = tree_nodes[parent_key]['ls']
         drcL, drcR = child_drc
         child_total = sum(len(c) for c in drcL) + sum(len(c) for c in drcR)
-        pdrc = node['parent'][0]
+        pdrc = parent_key[0]
         pdrcL, pdrcR = pdrc
         parent_total = sum(len(c) for c in pdrcL) + sum(len(c) for c in pdrcR)
 
         child_gk = (child_ls, child_total)
         parent_gk = (parent_ls, parent_total)
 
-        # Determine source: for C/M with ε_℘=1, source is det-twisted parent
+        if child_gk not in combined_nid_map:
+            continue
+
+        # Determine source
         src_gk = parent_gk
         if child_rt in ('C', 'M'):
             e_wp = 1 if (child_wp is not None and 0 in child_wp) else 0
             if e_wp == 1:
-                twisted_parent = twist_ls(parent_ls, (-1, -1))
-                src_gk = (twisted_parent, parent_total)
+                twisted = twist_ls(parent_ls, (-1, -1))
+                src_gk = (twisted, parent_total)
 
-        # Find nids
-        src_nid = ls_nid_map.get(src_gk) or ghost_nid_map.get(src_gk)
-        dst_nid = ls_nid_map.get(child_gk)
-        if src_nid and dst_nid:
-            edge_key = (src_nid, dst_nid)
-            if src_nid != dst_nid and edge_key not in lift_edges:
-                lift_edges.add(edge_key)
-                g.edge(src_nid, dst_nid, color='blue', penwidth='1.5',
-                       headport='n')
+        if src_gk not in combined_nid_map:
+            continue
+
+        src_nid = combined_nid_map[src_gk]
+        dst_nid = combined_nid_map[child_gk]
+        edge_key = (src_nid, dst_nid)
+        if src_nid != dst_nid and edge_key not in lift_edges:
+            lift_edges.add(edge_key)
+            g.edge(src_nid, dst_nid, color='blue', penwidth='1.5',
+                   headport='n')
 
     # --- Layout ---
     def level_sort_key(item):
