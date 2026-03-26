@@ -527,10 +527,17 @@ if ε_τ ≠ 0:
 
 **Reference**: [BMSZ] Equation (3.15); [BMSZb] Section 10.4.
 
+The paper's definition is type-independent:
 ```
-℘' = ∇̃(℘):
-  For C/M → D/B:  PPidx i maps to PPidx (i−1), discard i=0
-  For B/D → C/M:  PPidx i maps to PPidx i (no shift)
+∇̃(℘) := { (i, i+1) : (i+1, i+2) ∈ ℘ }
+```
+i.e., each pair shifts down by 1 in the row numbering.
+
+In the code, PPidx encoding differs between C/M and B/D (see Section 2.1),
+so the index shift depends on the source type:
+```
+C/M → D/B:  PPidx i maps to PPidx (i−1), discard i=0
+B/D → C/M:  PPidx i maps to PPidx i (no shift)
 ```
 
 ---
