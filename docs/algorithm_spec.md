@@ -55,12 +55,11 @@ primitive pairs.
 
 ### 1.3 Marked Young Diagram (MYD)
 
-**Reference**: [BMSZ] Section 9.3, Definition 9.2.
+**Reference**: [BMSZ] Definition 9.3, Equation (9.14).
 
-A **marked Young diagram** (MYD) is a Young diagram where each row is
-marked with + or −. In [BMSZ], this parametrizes an irreducible
-representation of a product of classical groups (Definition 9.2,
-Proposition 9.3).
+A **marked Young diagram** (MYD) is a map N⁺ → Z × Z, i ↦ (pᵢ, qᵢ)
+with finite support ([BMSZ] Definition 9.3). Each MYD parametrizes an
+irreducible component of an admissible orbit datum via Equation (9.14).
 
 An MYD is encoded as a tuple:
 
@@ -81,12 +80,11 @@ This reflects that each MYD parametrizes an irreducible LS component.
 
 ### 1.4 Local System (LS)
 
-**Reference**: [BMSZ] Section 9.3, Equation (9.8).
+**Reference**: [BMSZ] Equation (9.28), Corollary 8.24.
 
 A **local system** (LS) is a `FrozenMultiset` of MYD tuples, representing
-a direct sum of irreducible local systems. Each element of the multiset
-corresponds to one irreducible component of the local system on the
-associated cycle ([BMSZ] Theorem 5.1).
+an element of Z[MYD_★(O)] ([BMSZ] Equation (11.3)). Each element of the
+multiset corresponds to one irreducible component of the associated cycle.
 
 The LS attached to an extended PBP τ̂ is computed by `compute_AC` (Section 7).
 
@@ -351,7 +349,7 @@ P'(c₁(ι_{℘'}), 1) := P(c₂(ι_℘) − 1, 1)
 
 ### `_ils_sign(myd)` — Line 1773
 
-**Reference**: [BMSZ] Section 9.3.
+**Reference**: [BMSZ] Equation (9.10).
 
 Signature (p, n) of MYD = ((p₁,n₁), ..., (pₖ,nₖ)):
 ```
@@ -362,7 +360,7 @@ For each row i (0-based), let (hrl, rrl) = divmod(i+1, 2):
 
 ### `_ils_firstcol_sign(myd)` — Line 1783
 
-**Reference**: [BMSZ] Section 9.3.
+**Reference**: [BMSZ] Equation (9.12), first column of Lemma 9.2.
 
 First-column signature:
 ```
@@ -372,7 +370,7 @@ For i odd:             p += |nᵢ|, n += |pᵢ|
 
 ### `_ils_twist_BD(myd, twist)` — Line 1796
 
-**Reference**: [BMSZ] Section 9.4.
+**Reference**: [BMSZ] Equation (9.15), sign twist operation.
 
 Determinant twist with `twist = (tp, tn)` where tp, tn ∈ {1, −1}.
 
@@ -391,14 +389,14 @@ Common cases:
 
 ### `_ils_char_twist_CM(myd, j)` — Line 1821
 
-**Reference**: [BMSZ] Section 9.4.
+**Reference**: [BMSZ] Equation (9.16)–(9.17), involution T.
 
 Character twist T^j: negate entries at positions i where (i+1) ≡ 2 (mod 4),
 but only when j is odd. T² = identity.
 
 Equivalence with LS.py:
 ```
-_char_twist_C(irr_s, ps, ns) = _ils_char_twist_CM(irr_s, (ps−ns)//2)
+_char_twist_C(myd, ps, ns) = _ils_char_twist_CM(myd, (ps−ns)//2)
 ```
 
 ---
@@ -407,9 +405,10 @@ _char_twist_C(irr_s, ps, ns) = _ils_char_twist_CM(irr_s, (ps−ns)//2)
 
 ### `theta_lift_ils(myd, rtype, p, q)` — Line 1837
 
-**Reference**: [BMSZ] Section 11.1–11.3.
+**Reference**: [BMSZ] Equations (9.29)–(9.30), Section 9.5.
 
-Theta lift a single MYD to target type ★ with target signature (p, q).
+Theta lift of a single MYD to target type ★ with target signature (p, q).
+Implements ϑ̌ from Equation (9.29) for ★ ∈ {B, D} and (9.30) for ★ ∈ {C, C̃}.
 
 In all cases, first compute:
 ```
@@ -480,7 +479,7 @@ Apply `_ils_twist_BD` to every MYD in the multiset.
 
 ### `compute_AC(drc, wp, rtype, cache=None)` — Line 1978
 
-**Reference**: [BMSZ] Equation (3.16), Section 11.2.
+**Reference**: [BMSZ] Equation (3.16), (11.2).
 
 Computes AC(τ̂) for extended PBP τ̂ = (τ, ℘, ★) via recursive descent.
 
@@ -580,7 +579,7 @@ For τ ∈ PBP(Ǒ, ℘):
 
 ### `compute_tail_symbol(drc, rtype, dpart)` — Line 2211
 
-**Reference**: [BMSZb] Section 10.5, Equation (10.7).
+**Reference**: [BMSZ] Section 11.2, Equation (11.5); [BMSZb] Section 10.5.
 
 Computes x_τ ∈ {c, d, r, s} for ★ ∈ {B, D}.
 
