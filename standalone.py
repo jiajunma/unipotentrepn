@@ -3109,6 +3109,12 @@ def gen_lift_tree(dpart, rtype, format='svg', filename=None):
                               filename=ext_filename)
     g_ext.render()
 
+    # --- Also generate combined LS + DRC descent tree ---
+    comb_filename = filename + '_comb'
+    g_comb = _gen_combined_tree(tree_nodes, ls_groups, ghost_ls, rtype,
+                                format=format, filename=comb_filename)
+    g_comb.render()
+
     return g
 
 
@@ -3208,6 +3214,206 @@ def _gen_ext_pbp_tree(tree_nodes, rtype, format='svg', filename='ext_pbp_tree'):
                 s.node(nid)
         if nids:
             g.edge(gp_nid, nids[0], style='invis')
+
+    gp_nodes_sorted = sorted(gp_nodes, key=lambda x: x[0])
+    for i in range(len(gp_nodes_sorted) - 1):
+        g.edge(gp_nodes_sorted[i][1], gp_nodes_sorted[i + 1][1],
+               style='invis')
+
+    return g
+
+
+def _gen_combined_tree(tree_nodes, ls_groups, ghost_ls, rtype,
+                      format='svg', filename='combined'):
+    """
+    Generate combined LS + DRC descent tree.
+
+    Each LS value is a cluster containing individual DRC nodes.
+    Edges:
+      - Blue: theta lift (between LS clusters)
+      - Gray dashed: DRC descent (between individual DRC nodes)
+      - Red/green/purple: character twists (between LS clusters)
+
+    Reference: [BMSZ] Equation (3.16), Section 11.
+    """
+    from graphviz import Digraph
+
+    g = Digraph(name='Combined Lift Tree',
+                filename=filename,
+                node_attr={'shape': 'box', 'fontname': 'Courier New',
+                           'fontsize': '7'},
+                graph_attr={'rankdir': 'TB', 'newrank': 'true',
+                            'ranksep': '1.5', 'nodesep': '0.3',
+                            'dpi': '150', 'compound': 'true'},
+                engine='dot', format=format)
+
+    # Character twist definitions
+    twist_defs = [
+        ((-1, -1), 'red',     'det'),
+        ((1, -1),  'green',   '1⁺⁻'),
+        ((-1, 1),  '#9933cc', '1⁻⁺'),
+    ]
+
+    # --- Build DRC node IDs ---
+    drc_nid_map = {}  # tree_node key → nid
+    counter = [0]
+
+    def make_nid(prefix='d'):
+        nid = f'{prefix}{counter[0]}'
+        counter[0] += 1
+        return nid
+
+    # --- Map each tree_node key to its LS group ---
+    key_to_gk = {}
+    for gk, members in ls_groups.items():
+        for key in members:
+            key_to_gk[key] = gk
+
+    # --- Create LS cluster with DRC nodes inside ---
+    ls_cluster_nids = {}  # gk → list of drc nids in this cluster
+    gv_node_map = {}      # gk → first drc nid (for LS-level edges)
+    levels = {}           # (rt_norm, total) → [cluster anchor nids]
+
+    cluster_counter = [0]
+    for gk, members in ls_groups.items():
+        ls_val, total = gk
+
+        # LS visual (MYD)
+        ac_pairs = [(ls_val[ils], ils) for ils in ls_val.distinct_elements()]
+        ac_lines = _format_myd_multiline(ac_pairs)
+        ac_str = '\\l'.join(ac_lines)
+
+        # Create cluster
+        cname = f'cluster_ls_{cluster_counter[0]}'
+        cluster_counter[0] += 1
+
+        rts_in_node = set(k[2] for k in members)
+        if rts_in_node <= {'C'}:
+            bgcolor = '#e6f3ff'
+        elif rts_in_node <= {'M'}:
+            bgcolor = '#e6ffe6'
+        elif rts_in_node <= {'D'}:
+            bgcolor = '#fff3e6'
+        elif rts_in_node <= {'B+', 'B-'}:
+            bgcolor = '#ffe6e6'
+        else:
+            bgcolor = '#f5f5f5'
+
+        with g.subgraph(name=cname) as c:
+            c.attr(style='filled', color='#aaaaaa', fillcolor=bgcolor,
+                   label=f'{ac_str}\\l', labeljust='l',
+                   fontname='Courier New', fontsize='8')
+
+            drc_nids = []
+            for mk in members:
+                drc, wp_fs, rt = mk
+                nid = make_nid('d')
+                drc_nid_map[mk] = nid
+
+                sig = signature(drc, rt)
+                if rt in ('B+', 'B-', 'D'):
+                    eps = epsilon(drc, rt)
+                elif rt in ('C', 'M'):
+                    eps = 1 if (wp_fs is not None and 0 in wp_fs) else 0
+                else:
+                    eps = 0
+                rt_str = f' {rt}' if rt in ('B+', 'B-') else ''
+                drc_str = str_dgms(drc).replace('\n', '\\l')
+                label = (f'({sig[0]},{sig[1]}){rt_str} ε={eps}\\l'
+                         f'{drc_str}\\l')
+
+                c.node(nid, label=label, shape='box', style='filled',
+                       fillcolor='white', fontsize='7')
+                drc_nids.append(nid)
+
+            ls_cluster_nids[gk] = drc_nids
+            if drc_nids:
+                gv_node_map[gk] = drc_nids[0]
+
+        rt_norm = 'B' if rts_in_node <= {'B+', 'B-'} else next(iter(rts_in_node))
+        levels.setdefault((rt_norm, total), []).append(
+            drc_nids[0] if drc_nids else None)
+
+    # --- Ghost LS clusters (no DRC nodes) ---
+    for gk, source_gk in ghost_ls.items():
+        ls_val, total = gk
+        nid = make_nid('g')
+        gv_node_map[gk] = nid
+
+        ac_pairs = [(ls_val[ils], ils) for ils in ls_val.distinct_elements()]
+        ac_lines = _format_myd_multiline(ac_pairs)
+        ac_str = '\\l'.join(ac_lines)
+        g.node(nid, label=f'{ac_str}\\l', style='filled',
+               fillcolor='#f8f8f8', fontsize='7', labeljust='l')
+
+        rt_norm = None
+        for mk in ls_groups.get(source_gk, []):
+            r = mk[2]
+            rt_norm = 'B' if r in ('B+', 'B-') else r
+            break
+        if rt_norm is None:
+            rt_norm = 'B' if rtype in ('M', 'B') else 'D'
+        levels.setdefault((rt_norm, total), []).append(nid)
+
+    # --- DRC descent edges (gray dashed) ---
+    for key, node in tree_nodes.items():
+        if node['parent'] is None:
+            continue
+        parent_key = node['parent']
+        if key in drc_nid_map and parent_key in drc_nid_map:
+            g.edge(drc_nid_map[parent_key], drc_nid_map[key],
+                   color='#888888', style='dashed', arrowsize='0.5')
+
+    # --- Character twist edges ---
+    twist_edges = set()
+    all_ls_keys = set(ls_groups.keys()) | set(ghost_ls.keys())
+    for gk in all_ls_keys:
+        ls_val, total = gk
+        has_bd = any(k[2] in ('B+', 'B-', 'D') for k in ls_groups.get(gk, []))
+        if not has_bd and gk not in ghost_ls:
+            continue
+        if gk not in gv_node_map:
+            continue
+        nid_a = gv_node_map[gk]
+        for twist, color, label in twist_defs:
+            twisted = twist_ls(ls_val, twist)
+            target_gk = (twisted, total)
+            if target_gk == gk or target_gk not in gv_node_map:
+                continue
+            nid_b = gv_node_map[target_gk]
+            edge = tuple(sorted([nid_a, nid_b]))
+            ek = (edge, color)
+            if ek not in twist_edges:
+                twist_edges.add(ek)
+                g.edge(nid_a, nid_b, color=color,
+                       dir='both', arrowsize='0.3', constraint='false')
+
+    # --- Layout ---
+    gp_nodes = []
+    for (rt_norm, total), nids in sorted(levels.items(), key=lambda x: x[0][1]):
+        if rt_norm in ('C', 'M'):
+            gp_label = RTYPE_GP[rt_norm] % (2 * total,)
+        elif rt_norm == 'B':
+            gp_label = f'O({2 * total + 1})'
+        elif rt_norm == 'D':
+            gp_label = f'SO({2 * total})'
+        else:
+            gp_label = rt_norm
+
+        gp_nid = f'gp_{rt_norm}_{total}'
+        g.node(gp_nid, label=gp_label, shape='plaintext',
+               fontname='Helvetica', fontsize='11', fontcolor='#333333',
+               group='gp_labels')
+        gp_nodes.append((total, gp_nid))
+
+        valid_nids = [n for n in nids if n is not None]
+        with g.subgraph() as s:
+            s.attr(rank='same')
+            s.node(gp_nid)
+            for nid in valid_nids:
+                s.node(nid)
+        if valid_nids:
+            g.edge(gp_nid, valid_nids[0], style='invis')
 
     gp_nodes_sorted = sorted(gp_nodes, key=lambda x: x[0])
     for i in range(len(gp_nodes_sorted) - 1):
