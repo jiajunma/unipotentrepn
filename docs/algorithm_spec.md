@@ -483,13 +483,15 @@ Apply `_ils_twist_BD` to every MYD in the multiset.
 
 Computes AC(τ̂) for extended PBP τ̂ = (τ, ℘, ★) via recursive descent.
 
-#### Base case (|τ| = 0)
+#### Base case (|Ǒ| = 0)
 
-| rtype | Base LS |
-|-------|---------|
-| B⁺ | `[(1, ((1, 0),))]` — trivial character of O(1,0) |
-| B⁻ | `[(1, ((0, −1),))]` — det character of O(0,1) |
-| C, D, M | `[(1, ())]` — trivial (empty MYD) |
+The return value is a list of `(multiplicity, MYD)` pairs.
+
+| rtype | Base LS | Meaning |
+|-------|---------|---------|
+| B⁺ | `[(1, ((1, 0),))]` | 1 × MYD with one row of length 1 marked + |
+| B⁻ | `[(1, ((0, −1),))]` | 1 × MYD with one row of length 1 marked − |
+| C, D, M | `[(1, ())]` | 1 × empty MYD (trivial representation) |
 
 #### Recursive step
 
