@@ -5,9 +5,6 @@ Precise correspondence between `standalone.py` and the papers:
 - **[BMSZ]** Barbasch–Ma–Sun–Zhu, *Special unipotent representations: construction and unitarity*, arXiv:1712.05552v6
 - **[BMSZb]** Barbasch–Ma–Sun–Zhu, *Special unipotent representations: counting and reduction*, arXiv:2205.05266v4
 
-Verified against the reference implementation `combunipotent/drclift.py`:
-953,960 LS values match exactly for all dual partitions with size ≤ 30 (D and B types).
-
 ---
 
 ## 1. Data Structures
@@ -620,28 +617,3 @@ ensuring a single connected tree.
 Special case: if ★ = D and |Ǒ| = 0, then Ǒ' = (1,)
 ```
 
----
-
-## 13. Verification
-
-### Test: `tests/test_compare_ls.py`
-
-Compares LS values between standalone and reference (`drclift.py`).
-
-**Method for D/B types**:
-1. `get_reference_drc_ls(dpart, rtype)`: calls `test_dpart2drcLS` from
-   `drclift.py` to get reference `{drc → frozenset(ILS)}`.
-2. `get_standalone_ls_via_bijection(dpart, rtype)`: calls `build_pbp_bijection`
-   to map each DRC to `(special_drc, ℘)`, then `compute_AC(special_drc, ℘, rtype)`.
-3. Per-DRC comparison after normalizing trailing `(0,0)` in ILS tuples.
-
-**C/M types**: `test_dpart2drcLS` does not support C/M as top-level type.
-Correctness verified indirectly: every D chain passes through C levels,
-every B chain passes through M levels. 100% D/B pass ⟹ C/M correct.
-
-**Results** (size ≤ 30):
-```
-D: 584,224 / 584,224 passed (100%)
-B: 369,736 / 369,736 passed (100%)
-Total: 953,960 / 953,960 ALL PASSED
-```
