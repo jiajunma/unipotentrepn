@@ -3241,9 +3241,9 @@ def _gen_combined_tree(tree_nodes, ls_groups, ghost_ls, rtype,
     g = Digraph(name='Combined Lift Tree',
                 filename=filename,
                 node_attr={'shape': 'box', 'fontname': 'Courier New',
-                           'fontsize': '7'},
+                           'fontsize': '6', 'margin': '0.04,0.02'},
                 graph_attr={'rankdir': 'TB', 'newrank': 'true',
-                            'ranksep': '1.5', 'nodesep': '0.3',
+                            'ranksep': '0.6', 'nodesep': '0.15',
                             'dpi': '150', 'compound': 'true'},
                 engine='dot', format=format)
 
@@ -3317,13 +3317,13 @@ def _gen_combined_tree(tree_nodes, ls_groups, ghost_ls, rtype,
                     eps = 1 if (wp_fs is not None and 0 in wp_fs) else 0
                 else:
                     eps = 0
-                rt_str = f' {rt}' if rt in ('B+', 'B-') else ''
-                drc_str = str_dgms(drc).replace('\n', '\\l')
-                label = (f'({sig[0]},{sig[1]}){rt_str} ε={eps}\\l'
-                         f'{drc_str}\\l')
+                rt_str = f'{rt}' if rt in ('B+', 'B-') else ''
+                wp_str = f'℘{set(wp_fs)}' if wp_fs else ''
+                label = f'({sig[0]},{sig[1]}){rt_str}ε{eps}{wp_str}'
 
                 c.node(nid, label=label, shape='box', style='filled',
-                       fillcolor='white', fontsize='7')
+                       fillcolor='white', fontsize='6',
+                       width='0', height='0')
                 drc_nids.append(nid)
 
             ls_cluster_nids[gk] = drc_nids
@@ -3388,51 +3388,24 @@ def _gen_combined_tree(tree_nodes, ls_groups, ghost_ls, rtype,
                 g.edge(nid_a, nid_b, color=color,
                        dir='both', arrowsize='0.3', constraint='false')
 
-    # --- Build twist orbits to group related LS clusters ---
+    # --- Keep twist-related clusters adjacent via invisible edges ---
+    # Use constraint=true invisible edges between twist-related LS anchors
+    # so Graphviz places them next to each other.
     all_gk_set = set(ls_groups.keys()) | set(ghost_ls.keys())
-    gk_to_orbit = {}
-    orbits = []
+    twist_linked = set()
     for gk in all_gk_set:
-        if gk in gk_to_orbit:
+        if gk not in gv_node_map:
             continue
-        orbit = set()
-        bfs = [gk]
-        while bfs:
-            cur = bfs.pop()
-            if cur in orbit or cur not in all_gk_set:
-                continue
-            orbit.add(cur)
-            ls_val, total = cur
-            for twist, _, _ in twist_defs:
-                tw = twist_ls(ls_val, twist)
-                nbr = (tw, total)
-                if nbr in all_gk_set and nbr not in orbit:
-                    bfs.append(nbr)
-        oid = len(orbits)
-        orbits.append(orbit)
-        for member in orbit:
-            gk_to_orbit[member] = oid
-
-    # Wrap multi-member twist orbits in outer dotted clusters
-    tw_cluster_counter = [0]
-    for orbit in orbits:
-        if len(orbit) <= 1:
-            continue
-        # Collect all DRC nids and ghost nids in this orbit
-        orbit_nids = []
-        for gk in orbit:
-            if gk in ls_cluster_nids:
-                orbit_nids.extend(ls_cluster_nids[gk])
-            elif gk in gv_node_map:
-                orbit_nids.append(gv_node_map[gk])
-        if len(orbit_nids) > 1:
-            twname = f'cluster_tworbit_{tw_cluster_counter[0]}'
-            tw_cluster_counter[0] += 1
-            with g.subgraph(name=twname) as tw:
-                tw.attr(style='dotted', color='#999999', penwidth='0.8',
-                        label='')
-                for nid in orbit_nids:
-                    tw.node(nid)
+        ls_val, total = gk
+        for twist, _, _ in twist_defs:
+            tw = twist_ls(ls_val, twist)
+            target_gk = (tw, total)
+            if target_gk != gk and target_gk in gv_node_map:
+                pair = tuple(sorted([gv_node_map[gk], gv_node_map[target_gk]]))
+                if pair not in twist_linked:
+                    twist_linked.add(pair)
+                    g.edge(pair[0], pair[1], style='invis',
+                           constraint='true', weight='10')
 
     # --- Layout ---
     gp_nodes = []
@@ -3452,12 +3425,9 @@ def _gen_combined_tree(tree_nodes, ls_groups, ghost_ls, rtype,
                group='gp_labels')
         gp_nodes.append((total, gp_nid))
 
+        # No rank='same' constraint — let descent edges determine layout
+        # Just connect group label to first node
         valid_nids = [n for n in nids if n is not None]
-        with g.subgraph() as s:
-            s.attr(rank='same')
-            s.node(gp_nid)
-            for nid in valid_nids:
-                s.node(nid)
         if valid_nids:
             g.edge(gp_nid, valid_nids[0], style='invis')
 
