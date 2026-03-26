@@ -63,22 +63,34 @@ def dpart_to_spart(dpart, rtype):
 
 def get_reference_drc_ls(dpart, rtype):
     """
-    Get DRC → LS mapping from drclift.test_dpart2drcLS.
+    Get DRC → LS mapping from drclift reference implementation.
 
-    Takes dual partition (orbit side).
+    For D/B types: uses test_dpart2drcLS (takes dual partition).
+    For C/M types: uses test_purelyeven (takes special partition,
+                   requires purely even special partition).
+
     Returns dict: (normalized_drc, effective_rtype) → frozenset_of_ILS
-    For B type, returns extended DRCs with B+/B- tag.
     """
-    from combunipotent.drclift import test_dpart2drcLS, split_extdrc_B
-
-    # Suppress print output
+    from combunipotent.drclift import split_extdrc_B
     import io
     import contextlib
-    with contextlib.redirect_stdout(io.StringIO()):
-        lDRCLS, lLSDRC = test_dpart2drcLS(dpart, rtype, test=False)
 
-    # The first element has the full partition's DRC→LS mapping
-    DRCLS = lDRCLS[0]
+    if rtype in ('D', 'B'):
+        from combunipotent.drclift import test_dpart2drcLS
+        with contextlib.redirect_stdout(io.StringIO()):
+            lDRCLS, lLSDRC = test_dpart2drcLS(dpart, rtype, test=False)
+        DRCLS = lDRCLS[0]
+    else:
+        # C/M: use test_purelyeven with special partition
+        from combunipotent.drclift import test_purelyeven
+        from combunipotent.tool import dualBVW
+        spart = tuple(sorted(dualBVW(dpart, rtype, partrc='c'), reverse=True))
+        # Only works for purely even special partitions
+        if not all(p % 2 == 0 for p in spart if p > 0):
+            return {}  # Skip non-purely-even
+        with contextlib.redirect_stdout(io.StringIO()):
+            lDRCLS, lLSDRC = test_purelyeven(spart, rtype)
+        DRCLS = lDRCLS[-1]
 
     result = {}
     for drc, ls in DRCLS.items():
@@ -189,9 +201,9 @@ def verify_partition(dpart, rtype, verbose=False):
     """
     Verify LS values match between standalone and drclift for one partition.
 
-    Uses build_pbp_bijection to map each DRC to (special_drc, ℘),
-    then computes LS via compute_AC(special_drc, ℘, rtype).
-    Compares with reference from test_dpart2drcLS.
+    For D/B: per-DRC comparison using build_pbp_bijection.
+    For C/M: compare the multiset of all LS values (DRC sets differ
+             between dpart2drc and part2drc conventions).
 
     Returns (n_checked, n_passed, n_failed, failures).
     """
@@ -218,25 +230,35 @@ def verify_partition(dpart, rtype, verbose=False):
     n_failed = 0
     failures = []
 
-    for (ndrc, rt), ref_ls in ref.items():
-        n_checked += 1
-
-        if (ndrc, rt) not in ours:
-            n_failed += 1
-            failures.append((ndrc, rt, 'MISSING', normalize_ls(ref_ls), None))
-            continue
-
-        our_ls = ours[(ndrc, rt)]
-
-        # Normalize both sides (strip trailing (0,0) in ILS)
-        ref_ls_norm = normalize_ls(ref_ls)
-        our_ls_norm = normalize_ls(our_ls)
-
-        if ref_ls_norm == our_ls_norm:
-            n_passed += 1
+    if rtype in ('C', 'M'):
+        # C/M: DRC conventions differ, compare LS value multisets
+        ref_ls_set = sorted([normalize_ls(ls) for ls in ref.values()], key=str)
+        our_ls_set = sorted([normalize_ls(ls) for ls in ours.values()], key=str)
+        n_checked = 1
+        if ref_ls_set == our_ls_set:
+            n_passed = 1
         else:
-            n_failed += 1
-            failures.append((ndrc, rt, 'MISMATCH', ref_ls_norm, our_ls_norm))
+            n_failed = 1
+            ref_only = [ls for ls in ref_ls_set if ls not in our_ls_set]
+            our_only = [ls for ls in our_ls_set if ls not in ref_ls_set]
+            failures.append((None, rtype, 'SET_MISMATCH',
+                           f'ref_only={len(ref_only)}', f'our_only={len(our_only)}'))
+    else:
+        # D/B: per-DRC comparison
+        for (ndrc, rt), ref_ls in ref.items():
+            n_checked += 1
+            if (ndrc, rt) not in ours:
+                n_failed += 1
+                failures.append((ndrc, rt, 'MISSING', normalize_ls(ref_ls), None))
+                continue
+            our_ls = ours[(ndrc, rt)]
+            ref_ls_norm = normalize_ls(ref_ls)
+            our_ls_norm = normalize_ls(our_ls)
+            if ref_ls_norm == our_ls_norm:
+                n_passed += 1
+            else:
+                n_failed += 1
+                failures.append((ndrc, rt, 'MISMATCH', ref_ls_norm, our_ls_norm))
 
     return n_checked, n_passed, n_failed, failures
 
