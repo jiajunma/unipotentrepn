@@ -75,18 +75,6 @@ pᵢ and nᵢ can become **negative**, encoding the twist as a sign change.
 The absolute values |pᵢ|, |nᵢ| still give the row counts, and the
 signs record the accumulated twist.
 
-**Example**: the MYD with rows [+3, −3, +1] (two rows of length 3 with
-marks +,−, one row of length 1 with mark +) is encoded as:
-
-```
-((1, 0), (0, 0), (1, -1))
- level 1  level 2  level 3
-```
-
-After a det twist `_ils_twist_BD(myd, (−1,−1))`, the level-1 entry
-`(1, 0)` may become `(−1, 0)`, meaning the same row count but with
-an additional det factor.
-
 **Code naming**: In standalone.py, MYD tuples are called "ILS" (irreducible
 local system) in function names: `_ils_sign`, `theta_lift_ils`, etc.
 This reflects that each MYD parametrizes an irreducible LS component.
