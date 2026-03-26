@@ -3440,50 +3440,51 @@ def _gen_combined_tree(tree_nodes, ls_groups, ghost_ls, rtype,
                    color='#888888', style='dashed', arrowsize='0.5')
 
     # --- LS theta lift edges (blue) ---
-    # Same logic as non-combined version (Step 6 in gen_lift_tree).
-    # For C/M with ε_℘=1, source is det-twisted parent (ghost if exists).
-    combined_nid_map = {}  # gk → nid (LS headers + ghosts)
+    # For each source LS at level L, compute theta_lift_ls to each
+    # target (p,q) that appears among its ext PBPs' children.
+    # Draw one blue edge per (source_LS_nid, target_LS_nid) pair.
+    # Source can be ghost (for ε_℘=1 cases), target is always real LS.
+    combined_nid_map = {}
     combined_nid_map.update(ls_nid_map)
     combined_nid_map.update(ghost_nid_map)
 
     lift_edges = set()
-    for key, node in tree_nodes.items():
-        if node['parent'] is None:
-            continue
-        child_drc, child_wp, child_rt = key
-        parent_key = node['parent']
+    for src_gk in ls_nid_map:
+        src_ls, src_total = src_gk
+        # Find all children LS values reachable from ext PBPs of this LS
+        for mk in ls_groups[src_gk]:
+            node = tree_nodes.get(mk)
+            if node is None:
+                continue
+            for child_key in node.get('children', []):
+                child_node = tree_nodes.get(child_key)
+                if child_node is None or child_node['ls'] is None:
+                    continue
+                child_drc, child_wp, child_rt = child_key
+                child_ls = child_node['ls']
+                cdL, cdR = child_drc
+                child_total = sum(len(c) for c in cdL) + sum(len(c) for c in cdR)
+                child_gk = (child_ls, child_total)
 
-        child_ls = node['ls']
-        parent_ls = tree_nodes[parent_key]['ls']
-        drcL, drcR = child_drc
-        child_total = sum(len(c) for c in drcL) + sum(len(c) for c in drcR)
-        pdrc = parent_key[0]
-        pdrcL, pdrcR = pdrc
-        parent_total = sum(len(c) for c in pdrcL) + sum(len(c) for c in pdrcR)
+                if child_gk not in ls_nid_map:
+                    continue
 
-        child_gk = (child_ls, child_total)
-        parent_gk = (parent_ls, parent_total)
+                # Source: for C/M with ε_℘=1, use det-twisted parent
+                actual_src_gk = src_gk
+                if child_rt in ('C', 'M'):
+                    e_wp = 1 if (child_wp is not None and 0 in child_wp) else 0
+                    if e_wp == 1:
+                        twisted = twist_ls(src_ls, (-1, -1))
+                        actual_src_gk = (twisted, src_total)
 
-        if child_gk not in combined_nid_map:
-            continue
-
-        # Determine source
-        src_gk = parent_gk
-        if child_rt in ('C', 'M'):
-            e_wp = 1 if (child_wp is not None and 0 in child_wp) else 0
-            if e_wp == 1:
-                twisted = twist_ls(parent_ls, (-1, -1))
-                src_gk = (twisted, parent_total)
-
-        if src_gk not in combined_nid_map:
-            continue
-
-        src_nid = combined_nid_map[src_gk]
-        dst_nid = combined_nid_map[child_gk]
-        edge_key = (src_nid, dst_nid)
-        if src_nid != dst_nid and edge_key not in lift_edges:
-            lift_edges.add(edge_key)
-            g.edge(src_nid, dst_nid, color='blue', headport='n')
+                src_nid = combined_nid_map.get(actual_src_gk)
+                dst_nid = ls_nid_map[child_gk]
+                if src_nid and dst_nid and src_nid != dst_nid:
+                    edge_key = (src_nid, dst_nid)
+                    if edge_key not in lift_edges:
+                        lift_edges.add(edge_key)
+                        g.edge(src_nid, dst_nid, color='blue',
+                               headport='n')
 
     # --- Layout ---
     def level_sort_key(item):
