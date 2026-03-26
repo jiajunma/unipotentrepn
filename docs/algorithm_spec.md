@@ -495,20 +495,23 @@ The return value is a list of `(multiplicity, MYD)` pairs.
 
 #### Recursive step
 
-1. Compute ε_℘ = 1 if PPidx 0 ∈ ℘, else 0.
+1. Compute ε_℘: this is the character twist associated to the first
+   primitive pair. ε_℘ = 1 if the first primitive pair (1,2) belongs
+   to ℘ (equivalently, PPidx 0 ∈ ℘ in the code's indexing), and
+   ε_℘ = 0 otherwise. See [BMSZ] below Equation (3.16).
 2. Descend ℘: `℘' = ∇̃(℘)` via `_descend_wp`.
 3. Compute (p_τ, q_τ) = `signature(drc, rtype)`.
 4. Compute ε_τ = `epsilon(drc, rtype)`.
 5. Descent DRC: `(drc', ★') = descent(drc, rtype)`.
 6. Recursively compute `source_AC = compute_AC(drc', ℘', ★')`.
 
-Then for each `(coeff, myd)` in source_AC:
+Then for each `(mult, myd)` in source_AC:
 
 **★ ∈ {C, M}** ([BMSZ] Eq. 3.16 case 2):
 ```
 if ε_℘ = 1:
-    source_myd = _ils_twist_BD(myd, (−1, −1))   # pre-twist by det
-lifted = theta_lift_ils(source_ils, rtype, p_τ, q_τ)
+    myd = _ils_twist_BD(myd, (−1, −1))     # pre-twist by det
+lifted = theta_lift_ils(myd, rtype, p_τ, q_τ)
 # No post-twist for C/M
 ```
 
@@ -517,7 +520,7 @@ lifted = theta_lift_ils(source_ils, rtype, p_τ, q_τ)
 # No pre-twist for B/D
 lifted = theta_lift_ils(myd, rtype, p_τ, q_τ)
 if ε_τ ≠ 0:
-    lifted_ils = _ils_twist_BD(lifted_ils, (1, −1))   # post-twist by 1⁺⁻
+    lifted = _ils_twist_BD(lifted, (1, −1))  # post-twist by 1⁺⁻
 ```
 
 ### `_descend_wp(wp, rtype)` — Line 1271
