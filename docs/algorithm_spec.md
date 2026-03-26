@@ -106,8 +106,8 @@ have the same parity determined by ★:
 
 | ★ | Good parity condition | Row lengths |
 |---|----------------------|-------------|
-| B, M (= C̃) | all rᵢ even | purely even partition |
-| C, D | all rᵢ odd | purely odd partition |
+| B, M (= C̃) | all rᵢ even | |
+| C, D | all rᵢ odd | |
 
 Additionally, the total size must satisfy:
 
