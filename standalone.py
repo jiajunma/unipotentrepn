@@ -2939,13 +2939,25 @@ def gen_lift_tree(dpart, rtype, format='svg', filename=None):
         levels.setdefault((rt_norm, total), []).append(nid)
 
     # --- Step 6: Lift edges (blue, solid) ---
+    # Pure theta_lift edges: skip ε_℘=1 (C/M) and ε_τ=1 (B/D) cases.
+    # Those twisted lift paths are shown via twist edges + blue edges.
     lift_edges = set()
     for key, node in tree_nodes.items():
         if node['parent'] is None:
             continue
         child_drc, child_wp, child_rt = key
         parent_key = node['parent']
-        parent_rt = parent_key[2]
+
+        # Skip ε_℘=1 (C/M pre-twist)
+        if child_rt in ('C', 'M'):
+            e_wp = 1 if (child_wp is not None and 0 in child_wp) else 0
+            if e_wp == 1:
+                continue
+
+        # Skip ε_τ=1 (B/D post-twist)
+        if child_rt in ('B+', 'B-', 'D'):
+            if epsilon(child_drc, child_rt) != 0:
+                continue
 
         child_ls = node['ls']
         parent_ls = tree_nodes[parent_key]['ls']
@@ -2958,28 +2970,13 @@ def gen_lift_tree(dpart, rtype, format='svg', filename=None):
         child_gk = (child_ls, child_total)
         parent_gk = (parent_ls, parent_total)
 
-        if child_gk not in gv_node_map:
-            continue
-
-        # Determine lift source:
-        # For C/M child with ε_℘ = 1, the lift source is parent_ls ⊗ det
-        src_gk = parent_gk
-        if child_rt in ('C', 'M'):
-            child_wp = key[1]
-            e_wp = 1 if (child_wp is not None and 0 in child_wp) else 0
-            if e_wp == 1:
-                twisted_parent_ls = twist_ls(parent_ls, (-1, -1))
-                src_gk = (twisted_parent_ls, parent_total)
-
-        if src_gk not in gv_node_map:
-            continue
-
-        src_nid = gv_node_map[src_gk]
-        dst_nid = gv_node_map[child_gk]
-        edge_key = (src_nid, dst_nid)
-        if src_nid != dst_nid and edge_key not in lift_edges:
-            lift_edges.add(edge_key)
-            g.edge(src_nid, dst_nid, color='blue', headport='n')
+        src_nid = gv_node_map.get(parent_gk)
+        dst_nid = gv_node_map.get(child_gk)
+        if src_nid and dst_nid and src_nid != dst_nid:
+            edge_key = (src_nid, dst_nid)
+            if edge_key not in lift_edges:
+                lift_edges.add(edge_key)
+                g.edge(src_nid, dst_nid, color='blue', headport='n')
 
     # --- Step 7: Character twist edges (B/D, same level, solid) ---
     # Draw between all LS nodes (real and ghost) at B/D levels
