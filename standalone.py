@@ -3477,7 +3477,7 @@ def _gen_combined_tree(tree_nodes, ls_groups, ghost_ls, rtype,
             edge_key = (src_nid, dst_nid)
             if edge_key not in lift_edges:
                 lift_edges.add(edge_key)
-                g.edge(src_nid, dst_nid, color='blue', headport='n')
+                g.edge(src_nid, dst_nid, color='blue')
 
     # --- Layout ---
     def level_sort_key(item):
