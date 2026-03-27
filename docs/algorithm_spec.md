@@ -577,18 +577,34 @@ if child is B/D and ε_τ ≠ 0:
 This is equivalent to `compute_AC` but computed bottom-up instead of
 top-down.
 
-#### 8.3 LS lift graph node labels
+#### 8.3 Three output graphs
 
-Each node in the LS lift graph represents one LS value (FrozenMultiset).
-Multiple extended PBPs with the same LS are grouped into one node.
+`gen_lift_tree` produces three SVG files:
 
-**Node contents**:
-1. **MYD visual**: the marked Young diagram pattern (+/−/*/=)
-2. **Per-DRC entries**: for each extended PBP with this LS:
-   - `(p,q)`: signature from `signature(drc, rtype)`
-   - DRC diagram with red-colored columns for ℘
-   - B⁺/B⁻ label (for B type)
-   - ε value: `epsilon(drc, rtype)` for B/D, ε_℘ for C/M
+| File | Description |
+|------|-------------|
+| `{name}.svg` | LS lift graph: one node per LS value, ext PBPs merged inside |
+| `{name}_ext.svg` | Extended PBP descent tree: one node per ext PBP |
+| `{name}_comb.svg` | Combined: LS headers with ext PBPs hanging below, plus descent edges |
+
+#### 8.4 Nodes
+
+**LS lift graph** (`{name}.svg`):
+Each node = one LS value (FrozenMultiset). Contains:
+1. MYD visual (the marked Young diagram pattern)
+2. All extended PBPs with this LS, each showing:
+   - `(p,q)` signature, B⁺/B⁻ label, ε value
+   - DRC diagram with red columns for ℘
+
+**Combined graph** (`{name}_comb.svg`):
+Two kinds of nodes:
+1. **LS header** (colored box): shows signature(s) `(p,q)` and MYD visual
+2. **Ext PBP** (white box): shows B⁺/B⁻, ε, DRC diagram with red ℘ columns
+
+LS headers connect to their ext PBPs via gray arrows (parent→child).
+
+**Ghost nodes** (gray box): LS values from character twists not realized
+by any ext PBP. Placed beside (same rank as) real LS headers.
 
 **℘ column coloring** ([BMSZb] Equation (8.9)):
 
@@ -598,35 +614,49 @@ Multiple extended PBPs with the same LS are grouped into one node.
 | D | column (i+1) of L, column i of R |
 | B | column i of L, column (i+1) of R |
 
-#### 8.4 Edges
+#### 8.5 Edges
 
-**Lift edges** (blue, solid): represent `theta_lift_ls(source, ★, p, q)`.
+**Blue edges (theta lift)**: represent `theta_lift_ls(source, ★, p, q)`.
 
 For ★ ∈ {B, D}: L_τ = θ(L_{∇τ}) ⊗ (0, ε_τ).
-- ε_τ = 0: draw blue edge `L_{∇τ} → θ(L_{∇τ}) = L_τ`.
-- ε_τ ≠ 0: draw blue edge `L_{∇τ} → θ(L_{∇τ})`.
-  The target `θ(L_{∇τ})` may be a ghost node. L_τ is then reached
-  via `θ(L_{∇τ}) →[1⁺⁻ twist]→ L_τ`.
+- ε_τ = 0: blue edge `L_{∇τ} → θ(L_{∇τ}) = L_τ`.
+- ε_τ ≠ 0: blue edge `L_{∇τ} → θ(L_{∇τ})`.
+  Target θ(L_{∇τ}) may be a ghost node. L_τ is reached via
+  θ(L_{∇τ}) →[1⁺⁻ twist edge]→ L_τ.
 
 For ★ ∈ {C, M}: L_τ = θ(L_{∇τ} ⊗ (ε_℘, ε_℘)).
-- ε_℘ = 0: draw blue edge `L_{∇τ} → θ(L_{∇τ}) = L_τ`.
-- ε_℘ = 1: draw blue edge `(L_{∇τ} ⊗ det) → L_τ`.
-  The source `L_{∇τ} ⊗ det` may be a ghost node.
+- ε_℘ = 0: blue edge `L_{∇τ} → θ(L_{∇τ}) = L_τ`.
+- ε_℘ = 1: blue edge `(L_{∇τ} ⊗ det) → L_τ`.
+  Source L_{∇τ} ⊗ det may be a ghost node.
 
 **Character twist edges** (same level, bidirectional):
-- Red: det twist `(−1, −1)`
-- Green: 1⁺⁻ twist `(1, −1)`
-- Purple: 1⁻⁺ twist `(−1, 1)`
+- Red: det twist (−1, −1)
+- Green: 1⁺⁻ twist (1, −1)
+- Purple: 1⁻⁺ twist (−1, 1)
 
-**Ghost nodes**: LS values that appear as det-twisted variants of real
-LS nodes but are not realized by any extended PBP. Shown with gray
-background. Grouped in dotted boxes with their twist-related nodes.
+Only drawn at B/D levels between real LS headers and ghost nodes.
 
-#### 8.5 Layout
+**Gray dashed edges** (combined graph only): DRC descent edges connecting
+individual ext PBP nodes across levels. One edge per parent→child pair
+in the extended PBP descent tree.
+
+**Gray solid arrows** (combined graph only): LS header → ext PBP,
+showing which ext PBPs belong to each LS.
+
+**Twist orbit clusters** (combined graph only): dashed box grouping
+twist-related LS headers, ghost nodes, and their ext PBPs.
+
+#### 8.6 Layout
 
 - `rankdir=TB`: small groups at top, large groups at bottom
+- Within same DRC total: C/M levels above B/D levels
+  (parent above child in descent direction)
+- Combined graph sub-levels per B/D group:
+  - B/D_mid: LS headers + ghost nodes (same rank, side by side)
+  - B/D_bot: ext PBP nodes
 - Group labels (Sp(2n), O(2n+1), etc.) on the left
-- Nodes colored by type: blue=C, green=M, orange=D, red=B
+- Node colors: blue=#e6f3ff (C), green=#e6ffe6 (M),
+  orange=#fff3e6 (D), red=#ffe6e6 (B), gray=#f0f0f0 (ghost)
 
 ---
 
