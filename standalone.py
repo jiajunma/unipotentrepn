@@ -2962,14 +2962,20 @@ def gen_lift_tree(dpart, rtype, format='svg', filename=None):
         pdrcL, pdrcR = pdrc
         parent_total = sum(len(c) for c in pdrcL) + sum(len(c) for c in pdrcR)
 
-        # Blue edge: parent_LS → child_LS
-        # child_LS already has ε_τ post-twist applied, so the edge
-        # correctly points to the final LS value.
-        child_gk = (child_ls, child_total)
+        # Blue edge: source_LS → theta_lift_result
+        # source_LS = parent_LS (always, since ε_℘=1 is skipped)
+        # theta_lift_result = child_LS if ε_τ=0,
+        #                   = 1⁺⁻(child_LS) if ε_τ≠0
         parent_gk = (parent_ls, parent_total)
+        if child_rt in ('B+', 'B-', 'D') and epsilon(child_drc, child_rt) != 0:
+            # theta_lift result is 1⁺⁻ twist of child_LS
+            lift_result = twist_ls(child_ls, (1, -1))
+        else:
+            lift_result = child_ls
+        target_gk = (lift_result, child_total)
 
         src_nid = gv_node_map.get(parent_gk)
-        dst_nid = gv_node_map.get(child_gk)
+        dst_nid = gv_node_map.get(target_gk)
         if src_nid and dst_nid and src_nid != dst_nid:
             edge_key = (src_nid, dst_nid)
             if edge_key not in lift_edges:
@@ -3458,11 +3464,19 @@ def _gen_combined_tree(tree_nodes, ls_groups, ghost_ls, rtype,
         pdrc = parent_key[0]
         parent_total = sum(len(c) for c in pdrc[0]) + sum(len(c) for c in pdrc[1])
 
-        child_gk = (child_ls, child_total)
         parent_gk = (parent_ls, parent_total)
+        # theta_lift target: undo ε_τ post-twist to get pure lift result
+        if child_rt in ('B+', 'B-', 'D') and epsilon(child_drc, child_rt) != 0:
+            lift_result = twist_ls(child_ls, (1, -1))
+        else:
+            lift_result = child_ls
+        target_gk = (lift_result, child_total)
 
+        combined_nid = {}
+        combined_nid.update(ls_nid_map)
+        combined_nid.update(ghost_nid_map)
         src_nid = ls_nid_map.get(parent_gk)
-        dst_nid = ls_nid_map.get(child_gk)
+        dst_nid = combined_nid.get(target_gk)
         if src_nid and dst_nid and src_nid != dst_nid:
             edge_key = (src_nid, dst_nid)
             if edge_key not in lift_edges:
