@@ -3360,7 +3360,7 @@ def _gen_combined_tree(tree_nodes, ls_groups, ghost_ls, rtype,
             break
         if rt_norm is None:
             rt_norm = 'B' if rtype in ('M', 'B') else 'D'
-        levels.setdefault((f'{rt_norm}_top', total), []).append(gnid)
+        levels.setdefault((f'{rt_norm}_mid', total), []).append(gnid)
 
     # --- Build twist orbits and wrap in dashed clusters ---
     twist_defs = [
@@ -3498,10 +3498,9 @@ def _gen_combined_tree(tree_nodes, ls_groups, ghost_ls, rtype,
     def level_sort_key(item):
         rt, total = item[0]
         order = {'C': 0, 'M': 0,
-                 'D_top': 1, 'B_top': 1,
-                 'D_mid': 2, 'B_mid': 2,
-                 'D_bot': 3, 'B_bot': 3,
-                 'C_bot': 4, 'M_bot': 4}
+                 'D_mid': 1, 'B_mid': 1,
+                 'D_bot': 2, 'B_bot': 2,
+                 'C_bot': 3, 'M_bot': 3}
         return (total, order.get(rt, 5), rt)
 
     gp_nodes = []
