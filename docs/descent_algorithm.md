@@ -148,6 +148,12 @@ overriding whatever the naive descent produced.
 
 All other cells use the naive descent values.
 
+**Important**: The implementation uses the **general algorithm** from [BMSZb] Section 10.4
+instead of Lemma 3.12. The general condition checks P(i,1) ∈ {r,d} for ALL rows
+c₂(ι) ≤ i ≤ c₁(ι), not just the endpoints. The two differ on 197 DRCs (size ≤ 30);
+the general algorithm matches the reference (drclift.py) while Lemma 3.12 does not.
+See `docs/algorithm_spec.md` Section 4.2 for details.
+
 ## Step 4: Complete Descent (Definition 3.14)
 
 ```
