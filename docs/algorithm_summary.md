@@ -11,7 +11,7 @@ This document summarizes the complete computational pipeline implemented in
 
 ## Step 1: Orbit → Bipartition
 
-**Function**: `orbit_to_bipartition(Ǒ, ★)`
+**Function**: `dpart_to_bipartition(dpart, rtype)`
 **Reference**: [BMSZb] Section 2.8, equation (2.16).
 
 Attach a pair of Young diagrams (ι_Ǒ, j_Ǒ) to Ǒ, given by column lengths.
@@ -378,5 +378,5 @@ where τ' = ∇(τ), and:
 
 ## Verification
 
-Sign(L_τ) = (p_τ, q_τ) verified for all D, M, C types (152+ DRCs).
-B type has remaining ±1 offset issue related to B⁺/B⁻ convention in multi-step chains.
+Sign(L_τ) = (p_τ, q_τ) verified for all types (953,960 DRCs, size ≤ 30).
+See `tests/test_compare_ls.py` for the full verification.
