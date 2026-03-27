@@ -770,3 +770,112 @@ ensuring a single connected tree.
 Special case: if ★ = D and |Ǒ| = 0, then Ǒ' = (1,)
 ```
 
+
+---
+
+## 13. Reference Implementation: lsdrcgraph.py
+
+The original implementation in `combunipotent/lsdrcgraph.py` generates the
+lifting graph using a **bottom-up theta lifting** approach, in contrast to
+standalone.py's **top-down descent** approach.
+
+### 13.1 Architecture
+
+`gen_lift_graph(part, rtype)` takes a **special partition** (group side,
+not dual partition) and orchestrates three steps:
+
+1. **`test_purelyeven(part, rtype)`** (in `drclift.py`):
+   Iteratively lifts DRC and LS from small groups to the target group.
+   At each step, `lift_pedrcs` lifts both the DRC (via `lift_drc_*`)
+   and the LS (via `lift_*_*` from `LS.py`). Returns `(lDRCLS, lLSDRC)`:
+   - `lDRCLS`: list of `{drc → frozenset(LS)}` dicts at each level
+   - `lLSDRC`: list of `{LS → (signature, packet)}` dicts
+
+2. **`LS_graph(tdict, part, rtype)`** (in `lsdrcgraph.py`):
+   Recursively builds the LS lifting tree. For C/M types, removes one
+   row and lifts from the Howe dual type. For B/D types, iterates over
+   all possible signatures (p,q) at the target level.
+   Records edges in `tdict`: `{(rtype, partsize, LS) → set of sources}`.
+
+3. **`tdict_LSDRC_tograph(g, tdict, dLSDRC)`**:
+   Converts `tdict` + DRC matching data into a Graphviz graph.
+
+### 13.2 Node labels
+
+Each node in the lsdrcgraph output represents one LS value and shows:
+1. LS visual (MYD pattern)
+2. DRC packet: all DRCs matching this LS, each with its ε indicator (0 or 1)
+3. Signature (p,q)
+
+### 13.3 Edge types
+
+| Symbol | Color | Meaning |
+|--------|-------|---------|
+| `l` | Blue | Standard descent theta lifting |
+| `L` | Navy | Generalized descent theta lifting |
+| `d` | Red | Det twist (−1,−1) |
+| `q` | Green | 1⁺⁻ twist (1,−1) |
+| `p` | Purple | 1⁻⁺ twist (−1,1) |
+
+### 13.4 Key differences from standalone.py
+
+| Aspect | standalone.py | lsdrcgraph.py |
+|--------|---------------|---------------|
+| Input | Dual partition (orbit side) | Special partition (group side) |
+| Direction | Top-down descent | Bottom-up theta lifting |
+| DRC generation | `dpart2drc` (from dual partition) | `lift_drc_*` (inductive lifting) |
+| LS computation | `compute_AC` (recursive descent) | `LS_graph` / `lift_*_*` (inductive lifting) |
+| ℘ handling | Explicit via `build_pbp_bijection` | Implicit via shape (special vs non-special) |
+| Graph structure | Extended PBP tree + LS grouping | LS tree + DRC packet annotation |
+
+---
+
+## 14. Verification: standalone vs lsdrcgraph
+
+### 14.1 What is verified
+
+The test `tests/test_compare_ls.py` verifies that both implementations
+produce the **same LS value** for each DRC in the orbit.
+
+### 14.2 How the correspondence works
+
+The two systems use different partition conventions:
+- **standalone**: dual partition Ǒ → `dpart2drc` → DRCs with bipartition (ι_Ǒ, j_Ǒ)
+- **lsdrcgraph**: special partition → `test_purelyeven` → DRCs via inductive lifting
+
+For D and B types, `test_dpart2drcLS(dpart, rtype)` in `drclift.py` takes a
+dual partition and produces DRCs in the **same convention** as standalone.
+This makes per-DRC comparison possible.
+
+### 14.3 The PBP bijection bridge
+
+Each DRC in the reference may be a non-special shape (℘ ≠ ∅).
+`build_pbp_bijection(dpart, rtype)` maps every DRC to a pair
+`(special_shape_drc, ℘)`. Then `compute_AC(special_drc, ℘, rtype)`
+computes the LS. The test verifies:
+
+```
+For each DRC in test_dpart2drcLS output:
+  (special_drc, ℘) = build_pbp_bijection[DRC]
+  standalone_LS = compute_AC(special_drc, ℘, rtype)
+  reference_LS = test_dpart2drcLS[DRC]
+  assert normalize(standalone_LS) == normalize(reference_LS)
+```
+
+Normalization strips trailing (0,0) entries from MYD tuples.
+
+### 14.4 Coverage
+
+For D and B types with dual partition size ≤ 30:
+- D: 584,224 DRCs verified
+- B: 369,736 DRCs verified
+- Total: 953,960 per-DRC LS matches
+
+C and M types are verified indirectly: every D descent chain passes
+through C levels, every B chain through M levels.
+
+### 14.5 Running the test
+
+```bash
+python3 tests/test_compare_ls.py 30    # size ≤ 30, takes ~8 minutes
+```
