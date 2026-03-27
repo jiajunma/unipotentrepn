@@ -600,9 +600,17 @@ Multiple extended PBPs with the same LS are grouped into one node.
 
 #### 8.4 Edges
 
-**Lift edges** (blue, solid): from parent LS node to child LS node.
-For C/M children with ε_℘ = 1, the lift source is the **det-twisted**
-parent LS (which may be a ghost node).
+**Lift edges** (blue, solid): represent `theta_lift_ls(source, ★, p, q)`.
+
+For ★ ∈ {B, D}: L_τ = θ(L_{∇τ}) ⊗ (0, ε_τ).
+- ε_τ = 0: draw blue edge `L_{∇τ} → θ(L_{∇τ}) = L_τ`.
+- ε_τ ≠ 0: do NOT draw blue edge. L_τ is reached via
+  `L_{∇τ} →[blue]→ θ(L_{∇τ}) →[1⁺⁻ twist]→ L_τ`.
+
+For ★ ∈ {C, M}: L_τ = θ(L_{∇τ} ⊗ (ε_℘, ε_℘)).
+- ε_℘ = 0: draw blue edge `L_{∇τ} → θ(L_{∇τ}) = L_τ`.
+- ε_℘ = 1: draw blue edge `(L_{∇τ} ⊗ det) → L_τ`.
+  The source `L_{∇τ} ⊗ det` may be a ghost node.
 
 **Character twist edges** (same level, bidirectional):
 - Red: det twist `(−1, −1)`

@@ -2939,8 +2939,11 @@ def gen_lift_tree(dpart, rtype, format='svg', filename=None):
         levels.setdefault((rt_norm, total), []).append(nid)
 
     # --- Step 6: Lift edges (blue, solid) ---
-    # Pure theta_lift edges: skip ε_℘=1 (C/M) and ε_τ=1 (B/D) cases.
-    # Those twisted lift paths are shown via twist edges + blue edges.
+    # Blue edge = theta_lift_ls(source, ★, p, q).
+    # B/D ε_τ=0: parent_LS → child_LS (= theta_lift result)
+    # B/D ε_τ≠0: NO blue edge (use twist edge path instead)
+    # C/M ε_℘=0: parent_LS → child_LS
+    # C/M ε_℘=1: ghost(det·parent_LS) → child_LS
     lift_edges = set()
     for key, node in tree_nodes.items():
         if node['parent'] is None:
@@ -2948,34 +2951,31 @@ def gen_lift_tree(dpart, rtype, format='svg', filename=None):
         child_drc, child_wp, child_rt = key
         parent_key = node['parent']
 
-        # Skip ε_℘=1 (C/M pre-twist)
-        if child_rt in ('C', 'M'):
-            e_wp = 1 if (child_wp is not None and 0 in child_wp) else 0
-            if e_wp == 1:
-                continue
-
         child_ls = node['ls']
         parent_ls = tree_nodes[parent_key]['ls']
         drcL, drcR = child_drc
         child_total = sum(len(c) for c in drcL) + sum(len(c) for c in drcR)
         pdrc = parent_key[0]
-        pdrcL, pdrcR = pdrc
-        parent_total = sum(len(c) for c in pdrcL) + sum(len(c) for c in pdrcR)
+        parent_total = sum(len(c) for c in pdrc[0]) + sum(len(c) for c in pdrc[1])
 
-        # Blue edge: source_LS → theta_lift_result
-        # source_LS = parent_LS (always, since ε_℘=1 is skipped)
-        # theta_lift_result = child_LS if ε_τ=0,
-        #                   = 1⁺⁻(child_LS) if ε_τ≠0
-        parent_gk = (parent_ls, parent_total)
-        if child_rt in ('B+', 'B-', 'D') and epsilon(child_drc, child_rt) != 0:
-            # theta_lift result is 1⁺⁻ twist of child_LS
-            lift_result = twist_ls(child_ls, (1, -1))
+        child_gk = (child_ls, child_total)
+
+        if child_rt in ('B+', 'B-', 'D'):
+            if epsilon(child_drc, child_rt) != 0:
+                continue  # ε_τ≠0: no blue edge
+            src_gk = (parent_ls, parent_total)
+        elif child_rt in ('C', 'M'):
+            e_wp = 1 if (child_wp is not None and 0 in child_wp) else 0
+            if e_wp == 1:
+                # ε_℘=1: source is det-twisted parent (ghost)
+                src_gk = (twist_ls(parent_ls, (-1, -1)), parent_total)
+            else:
+                src_gk = (parent_ls, parent_total)
         else:
-            lift_result = child_ls
-        target_gk = (lift_result, child_total)
+            src_gk = (parent_ls, parent_total)
 
-        src_nid = gv_node_map.get(parent_gk)
-        dst_nid = gv_node_map.get(target_gk)
+        src_nid = gv_node_map.get(src_gk)
+        dst_nid = gv_node_map.get(child_gk)
         if src_nid and dst_nid and src_nid != dst_nid:
             edge_key = (src_nid, dst_nid)
             if edge_key not in lift_edges:
@@ -3441,21 +3441,17 @@ def _gen_combined_tree(tree_nodes, ls_groups, ghost_ls, rtype,
                    color='#888888', style='dashed', arrowsize='0.5')
 
     # --- LS theta lift edges (blue) ---
-    # Draw one blue edge per unique (parent_LS, child_LS) pair.
-    # Only between real LS headers (no ghost sources).
-    # ε_℘ pre-twist paths go through twist edges + lift edges separately.
+    # Same logic as original lift graph (Step 6).
+    combined_nid = {}
+    combined_nid.update(ls_nid_map)
+    combined_nid.update(ghost_nid_map)
+
     lift_edges = set()
     for key, node in tree_nodes.items():
         if node['parent'] is None:
             continue
         child_drc, child_wp, child_rt = key
         parent_key = node['parent']
-
-        # Skip ε_℘=1 cases (C/M pre-twist goes via ghost → twist edge path)
-        if child_rt in ('C', 'M'):
-            e_wp = 1 if (child_wp is not None and 0 in child_wp) else 0
-            if e_wp == 1:
-                continue
 
         child_ls = node['ls']
         parent_ls = tree_nodes[parent_key]['ls']
@@ -3464,19 +3460,23 @@ def _gen_combined_tree(tree_nodes, ls_groups, ghost_ls, rtype,
         pdrc = parent_key[0]
         parent_total = sum(len(c) for c in pdrc[0]) + sum(len(c) for c in pdrc[1])
 
-        parent_gk = (parent_ls, parent_total)
-        # theta_lift target: undo ε_τ post-twist to get pure lift result
-        if child_rt in ('B+', 'B-', 'D') and epsilon(child_drc, child_rt) != 0:
-            lift_result = twist_ls(child_ls, (1, -1))
-        else:
-            lift_result = child_ls
-        target_gk = (lift_result, child_total)
+        child_gk = (child_ls, child_total)
 
-        combined_nid = {}
-        combined_nid.update(ls_nid_map)
-        combined_nid.update(ghost_nid_map)
-        src_nid = ls_nid_map.get(parent_gk)
-        dst_nid = combined_nid.get(target_gk)
+        if child_rt in ('B+', 'B-', 'D'):
+            if epsilon(child_drc, child_rt) != 0:
+                continue  # ε_τ≠0: no blue edge
+            src_gk = (parent_ls, parent_total)
+        elif child_rt in ('C', 'M'):
+            e_wp = 1 if (child_wp is not None and 0 in child_wp) else 0
+            if e_wp == 1:
+                src_gk = (twist_ls(parent_ls, (-1, -1)), parent_total)
+            else:
+                src_gk = (parent_ls, parent_total)
+        else:
+            src_gk = (parent_ls, parent_total)
+
+        src_nid = combined_nid.get(src_gk)
+        dst_nid = combined_nid.get(child_gk)
         if src_nid and dst_nid and src_nid != dst_nid:
             edge_key = (src_nid, dst_nid)
             if edge_key not in lift_edges:
