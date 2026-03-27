@@ -603,8 +603,9 @@ Two kinds of nodes:
 
 LS headers connect to their ext PBPs via gray arrows (parent→child).
 
-**Ghost nodes** (gray box): LS values from character twists not realized
-by any ext PBP. Placed beside (same rank as) real LS headers.
+**Det twist nodes** (gray box): LS values obtained by det twist of real
+LS nodes, not realized by any ext PBP. Placed beside (same rank as)
+real LS headers.
 
 **℘ column coloring** ([BMSZb] Equation (8.9)):
 
@@ -621,20 +622,20 @@ by any ext PBP. Placed beside (same rank as) real LS headers.
 For ★ ∈ {B, D}: L_τ = θ(L_{∇τ}) ⊗ (0, ε_τ).
 - ε_τ = 0: blue edge `L_{∇τ} → θ(L_{∇τ}) = L_τ`.
 - ε_τ ≠ 0: blue edge `L_{∇τ} → θ(L_{∇τ})`.
-  Target θ(L_{∇τ}) may be a ghost node. L_τ is reached via
+  Target θ(L_{∇τ}) may be a det twist node. L_τ is reached via
   θ(L_{∇τ}) →[1⁺⁻ twist edge]→ L_τ.
 
 For ★ ∈ {C, M}: L_τ = θ(L_{∇τ} ⊗ (ε_℘, ε_℘)).
 - ε_℘ = 0: blue edge `L_{∇τ} → θ(L_{∇τ}) = L_τ`.
 - ε_℘ = 1: blue edge `(L_{∇τ} ⊗ det) → L_τ`.
-  Source L_{∇τ} ⊗ det may be a ghost node.
+  Source L_{∇τ} ⊗ det may be a det twist node.
 
 **Character twist edges** (same level, bidirectional):
 - Red: det twist (−1, −1)
 - Green: 1⁺⁻ twist (1, −1)
 - Purple: 1⁻⁺ twist (−1, 1)
 
-Only drawn at B/D levels between real LS headers and ghost nodes.
+Only drawn at B/D levels between real LS headers and det twist nodes.
 
 **Gray dashed edges** (combined graph only): DRC descent edges connecting
 individual ext PBP nodes across levels. One edge per parent→child pair
@@ -644,7 +645,7 @@ in the extended PBP descent tree.
 showing which ext PBPs belong to each LS.
 
 **Twist orbit clusters** (combined graph only): dashed box grouping
-twist-related LS headers, ghost nodes, and their ext PBPs.
+twist-related LS headers, det twist nodes, and their ext PBPs.
 
 #### 8.6 Layout
 
@@ -652,11 +653,11 @@ twist-related LS headers, ghost nodes, and their ext PBPs.
 - Within same DRC total: C/M levels above B/D levels
   (parent above child in descent direction)
 - Combined graph sub-levels per B/D group:
-  - B/D_mid: LS headers + ghost nodes (same rank, side by side)
+  - B/D_mid: LS headers + det twist nodes (same rank, side by side)
   - B/D_bot: ext PBP nodes
 - Group labels (Sp(2n), O(2n+1), etc.) on the left
 - Node colors: blue=#e6f3ff (C), green=#e6ffe6 (M),
-  orange=#fff3e6 (D), red=#ffe6e6 (B), gray=#f0f0f0 (ghost)
+  orange=#fff3e6 (D), red=#ffe6e6 (B), gray=#f0f0f0 (det twist)
 
 ---
 
