@@ -2939,9 +2939,9 @@ def gen_lift_tree(dpart, rtype, format='svg', filename=None):
         levels.setdefault((rt_norm, total), []).append(nid)
 
     # --- Step 6: Lift edges (blue, solid) ---
-    # Blue edge = theta_lift_ls(source, ★, p, q).
+    # Blue edge = source → theta_lift_ls(source, ★, p, q).
     # B/D ε_τ=0: parent_LS → child_LS (= theta_lift result)
-    # B/D ε_τ≠0: NO blue edge (use twist edge path instead)
+    # B/D ε_τ≠0: parent_LS → θ(parent_LS) (undo post-twist, may be ghost)
     # C/M ε_℘=0: parent_LS → child_LS
     # C/M ε_℘=1: ghost(det·parent_LS) → child_LS
     lift_edges = set()
@@ -2958,24 +2958,26 @@ def gen_lift_tree(dpart, rtype, format='svg', filename=None):
         pdrc = parent_key[0]
         parent_total = sum(len(c) for c in pdrc[0]) + sum(len(c) for c in pdrc[1])
 
-        child_gk = (child_ls, child_total)
-
         if child_rt in ('B+', 'B-', 'D'):
-            if epsilon(child_drc, child_rt) != 0:
-                continue  # ε_τ≠0: no blue edge
             src_gk = (parent_ls, parent_total)
+            if epsilon(child_drc, child_rt) != 0:
+                # ε_τ≠0: target is theta_lift result (undo post-twist)
+                dst_gk = (twist_ls(child_ls, (1, -1)), child_total)
+            else:
+                dst_gk = (child_ls, child_total)
         elif child_rt in ('C', 'M'):
             e_wp = 1 if (child_wp is not None and 0 in child_wp) else 0
             if e_wp == 1:
-                # ε_℘=1: source is det-twisted parent (ghost)
                 src_gk = (twist_ls(parent_ls, (-1, -1)), parent_total)
             else:
                 src_gk = (parent_ls, parent_total)
+            dst_gk = (child_ls, child_total)
         else:
             src_gk = (parent_ls, parent_total)
+            dst_gk = (child_ls, child_total)
 
         src_nid = gv_node_map.get(src_gk)
-        dst_nid = gv_node_map.get(child_gk)
+        dst_nid = gv_node_map.get(dst_gk)
         if src_nid and dst_nid and src_nid != dst_nid:
             edge_key = (src_nid, dst_nid)
             if edge_key not in lift_edges:
@@ -3040,7 +3042,13 @@ def gen_lift_tree(dpart, rtype, format='svg', filename=None):
 
     gp_nodes = []
     cluster_counter = [0]
-    for (rt_norm, total), nids in sorted(levels.items(), key=lambda x: x[0][1]):
+    # Sort: by total, then C/M before B/D (parent above child)
+    def _level_key(item):
+        rt, total = item[0]
+        rt_order = 0 if rt in ('C', 'M') else 1
+        return (total, rt_order, rt)
+
+    for (rt_norm, total), nids in sorted(levels.items(), key=_level_key):
         if rt_norm in ('C', 'M'):
             gp_label = RTYPE_GP[rt_norm] % (2 * total,)
         elif rt_norm == 'B':
@@ -3054,7 +3062,8 @@ def gen_lift_tree(dpart, rtype, format='svg', filename=None):
         g.node(gp_nid, label=gp_label, shape='plaintext',
                fontname='Helvetica', fontsize='11', fontcolor='#333333',
                group='gp_labels')
-        gp_nodes.append((total, gp_nid))
+        rt_order = 0 if rt_norm in ('C', 'M') else 1
+        gp_nodes.append((total, rt_order, gp_nid))
 
         # Group nids by twist orbit for clustering
         orbit_nids = {}  # orbit_id → [nids]
@@ -3099,9 +3108,9 @@ def gen_lift_tree(dpart, rtype, format='svg', filename=None):
         if nids:
             g.edge(gp_nid, nids[0], style='invis')
 
-    gp_nodes_sorted = sorted(gp_nodes, key=lambda x: x[0])
+    gp_nodes_sorted = sorted(gp_nodes, key=lambda x: (x[0], x[1]))
     for i in range(len(gp_nodes_sorted) - 1):
-        g.edge(gp_nodes_sorted[i][1], gp_nodes_sorted[i + 1][1],
+        g.edge(gp_nodes_sorted[i][2], gp_nodes_sorted[i + 1][2],
                style='invis')
 
     # --- Also generate the extended PBP descent tree ---
@@ -3460,23 +3469,25 @@ def _gen_combined_tree(tree_nodes, ls_groups, ghost_ls, rtype,
         pdrc = parent_key[0]
         parent_total = sum(len(c) for c in pdrc[0]) + sum(len(c) for c in pdrc[1])
 
-        child_gk = (child_ls, child_total)
-
         if child_rt in ('B+', 'B-', 'D'):
-            if epsilon(child_drc, child_rt) != 0:
-                continue  # ε_τ≠0: no blue edge
             src_gk = (parent_ls, parent_total)
+            if epsilon(child_drc, child_rt) != 0:
+                dst_gk = (twist_ls(child_ls, (1, -1)), child_total)
+            else:
+                dst_gk = (child_ls, child_total)
         elif child_rt in ('C', 'M'):
             e_wp = 1 if (child_wp is not None and 0 in child_wp) else 0
             if e_wp == 1:
                 src_gk = (twist_ls(parent_ls, (-1, -1)), parent_total)
             else:
                 src_gk = (parent_ls, parent_total)
+            dst_gk = (child_ls, child_total)
         else:
             src_gk = (parent_ls, parent_total)
+            dst_gk = (child_ls, child_total)
 
         src_nid = combined_nid.get(src_gk)
-        dst_nid = combined_nid.get(child_gk)
+        dst_nid = combined_nid.get(dst_gk)
         if src_nid and dst_nid and src_nid != dst_nid:
             edge_key = (src_nid, dst_nid)
             if edge_key not in lift_edges:

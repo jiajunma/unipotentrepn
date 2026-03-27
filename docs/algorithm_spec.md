@@ -604,8 +604,9 @@ Multiple extended PBPs with the same LS are grouped into one node.
 
 For ★ ∈ {B, D}: L_τ = θ(L_{∇τ}) ⊗ (0, ε_τ).
 - ε_τ = 0: draw blue edge `L_{∇τ} → θ(L_{∇τ}) = L_τ`.
-- ε_τ ≠ 0: do NOT draw blue edge. L_τ is reached via
-  `L_{∇τ} →[blue]→ θ(L_{∇τ}) →[1⁺⁻ twist]→ L_τ`.
+- ε_τ ≠ 0: draw blue edge `L_{∇τ} → θ(L_{∇τ})`.
+  The target `θ(L_{∇τ})` may be a ghost node. L_τ is then reached
+  via `θ(L_{∇τ}) →[1⁺⁻ twist]→ L_τ`.
 
 For ★ ∈ {C, M}: L_τ = θ(L_{∇τ} ⊗ (ε_℘, ε_℘)).
 - ε_℘ = 0: draw blue edge `L_{∇τ} → θ(L_{∇τ}) = L_τ`.
