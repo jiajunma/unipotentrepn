@@ -8,8 +8,9 @@ Implements the combinatorics of special unipotent representations following:
   [BMSZb] Barbasch–Ma–Sun–Zhu, "Special unipotent representations of real
           classical groups: counting and reduction", arXiv:2205.05266v4
 
-This file is self-contained and uses only the descent algorithm (Definition 3.14
-of [BMSZ]) — no theta lifting is used.
+This file is self-contained. Extended PBPs (DRC diagrams) are computed via the
+descent algorithm (Definition 3.14 of [BMSZ]) — no theta lifting of extended PBPs
+is used. Theta lifting of local systems (LS) is used.
 
 Key objects:
   - Painted bipartition τ = (ι, P) × (j, Q) × γ  (Definition 2.24 of [BMSZb])
