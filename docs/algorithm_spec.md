@@ -773,13 +773,68 @@ Special case: if ★ = D and |Ǒ| = 0, then Ǒ' = (1,)
 
 ---
 
-## 13. Reference Implementation: lsdrcgraph.py
+> *The following sections describe the reference implementation in
+> `combunipotent/drclift.py` and `combunipotent/lsdrcgraph.py`.
+> These are independent of [BMSZ] — they implement the inductive
+> theta lifting algorithm used to verify standalone.py.*
+
+## 13. DRC Lifting (drclift.py)
+
+The module `combunipotent/drclift.py` implements inductive theta lifting
+of DRC diagrams. Given a DRC at a smaller group, it constructs all
+possible DRCs at the next larger group by attaching a new column.
+
+### 13.1 Lifting functions
+
+Each lift direction has a dedicated function:
+
+| Function | Direction | Input | Output |
+|----------|-----------|-------|--------|
+| `lift_drc_D_C(drc, cR)` | D → C | D-type DRC, column length | one C-type DRC |
+| `lift_drc_D_C_gd(drc)` | D → C | D-type DRC (generalized descent) | one C-type DRC or None |
+| `lift_drc_C_D(drc, a)` | C → D | C-type DRC, column length | list of (D-type DRC, twist) |
+| `lift_extdrc_B_M(drc, a)` | B → M | B-type extended DRC, col length | one M-type DRC or None |
+| `lift_drc_M_B(drc, a)` | M → B | M-type DRC, column length | list of (B-type extended DRC, twist) |
+
+The C→D and M→B lifts return **(DRC, twist)** pairs where `twist ∈ {(1,1), (1,−1), (−1,1), (−1,−1)}`
+indicates the character twist applied to the LS.
+
+### 13.2 lift_DRCLS: simultaneous DRC + LS lifting
+
+`lift_DRCLS(DRCLS, LSDRC, dpart, rtype)` lifts all DRC-LS pairs from
+one level to the next. For each source `(drc, LS)`:
+
+**C target** (D → C):
+1. Compute target Sp(2n) rank from dual partition
+2. Lift DRC: `ndrc = lift_drc_D_C(drc, crow)` (standard) or `lift_drc_D_C_gd(drc)` (generalized)
+3. Lift LS: `nLS = lift_D_C(LS, n)`
+4. If (1,2) is a primitive pair: also lift det twist `dLS = char_twist_D(LS, (−1,−1))`,
+   `ndLS = lift_D_C(dLS, n)`, and the DRC becomes non-special via `twist_sp2nsp`
+
+**D target** (C → D):
+1. Lift DRC: `NDRCS = lift_drc_C_D(drc, crow)` → list of (ndrc, twist) pairs
+2. For each (ndrc, twist): compute signature `(pO, nO) = gp_form_D(ndrc)`,
+   lift LS `nLS = lift_C_D(LS, pO, nO)`, apply twist `nLS = char_twist_D(nLS, twist)`
+
+**M and B targets**: similar structure with `lift_extdrc_B_M` / `lift_drc_M_B`.
+
+### 13.3 test_dpart2drcLS: full induction from dual partition
+
+`test_dpart2drcLS(dpart, rtype)` iterates over the dual partition rows
+from bottom to top, alternating between Howe dual types (D↔C or B↔M).
+At each step it calls `lift_DRCLS` and verifies the result against
+independently computed DRCs (`dpart2drc`) and LS values (`part2LS`).
+
+Returns `(lDRCLS, lLSDRC)` where `lDRCLS[0]` is the final level's
+`{drc → LS}` mapping.
+
+## 14. Lifting Graph: lsdrcgraph.py
 
 The original implementation in `combunipotent/lsdrcgraph.py` generates the
 lifting graph using a **bottom-up theta lifting** approach, in contrast to
 standalone.py's **top-down descent** approach.
 
-### 13.1 Architecture
+### 14.1 Architecture
 
 `gen_lift_graph(part, rtype)` takes a **special partition** (group side,
 not dual partition) and orchestrates three steps:
@@ -800,14 +855,14 @@ not dual partition) and orchestrates three steps:
 3. **`tdict_LSDRC_tograph(g, tdict, dLSDRC)`**:
    Converts `tdict` + DRC matching data into a Graphviz graph.
 
-### 13.2 Node labels
+### 14.2 Node labels
 
 Each node in the lsdrcgraph output represents one LS value and shows:
 1. LS visual (MYD pattern)
 2. DRC packet: all DRCs matching this LS, each with its ε indicator (0 or 1)
 3. Signature (p,q)
 
-### 13.3 Edge types
+### 14.3 Edge types
 
 | Symbol | Color | Meaning |
 |--------|-------|---------|
@@ -817,7 +872,7 @@ Each node in the lsdrcgraph output represents one LS value and shows:
 | `q` | Green | 1⁺⁻ twist (1,−1) |
 | `p` | Purple | 1⁻⁺ twist (−1,1) |
 
-### 13.4 Key differences from standalone.py
+### 14.4 Key differences from standalone.py
 
 | Aspect | standalone.py | lsdrcgraph.py |
 |--------|---------------|---------------|
@@ -830,14 +885,14 @@ Each node in the lsdrcgraph output represents one LS value and shows:
 
 ---
 
-## 14. Verification: standalone vs lsdrcgraph
+## 15. Verification: standalone vs lsdrcgraph
 
-### 14.1 What is verified
+### 15.1 What is verified
 
 The test `tests/test_compare_ls.py` verifies that both implementations
 produce the **same LS value** for each DRC in the orbit.
 
-### 14.2 How the correspondence works
+### 15.2 How the correspondence works
 
 The two systems use different partition conventions:
 - **standalone**: dual partition Ǒ → `dpart2drc` → DRCs with bipartition (ι_Ǒ, j_Ǒ)
@@ -847,7 +902,7 @@ For D and B types, `test_dpart2drcLS(dpart, rtype)` in `drclift.py` takes a
 dual partition and produces DRCs in the **same convention** as standalone.
 This makes per-DRC comparison possible.
 
-### 14.3 The PBP bijection bridge
+### 15.3 The PBP bijection bridge
 
 Each DRC in the reference may be a non-special shape (℘ ≠ ∅).
 `build_pbp_bijection(dpart, rtype)` maps every DRC to a pair
@@ -864,7 +919,7 @@ For each DRC in test_dpart2drcLS output:
 
 Normalization strips trailing (0,0) entries from MYD tuples.
 
-### 14.4 Coverage
+### 15.4 Coverage
 
 For D and B types with dual partition size ≤ 30:
 - D: 584,224 DRCs verified
@@ -874,7 +929,7 @@ For D and B types with dual partition size ≤ 30:
 C and M types are verified indirectly: every D descent chain passes
 through C levels, every B chain through M levels.
 
-### 14.5 Running the test
+### 15.5 Running the test
 
 ```bash
 python3 tests/test_compare_ls.py 30    # size ≤ 30, takes ~8 minutes
