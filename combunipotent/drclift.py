@@ -1,21 +1,57 @@
+"""
+drclift.py - DRC-LS Matching via Theta Lifting Framework
+
+This module implements the core algorithm for matching DRC diagrams with local systems
+through the theta lifting (Howe correspondence) framework. It provides:
+
+1. **DRC Lifting**: Lift DRC diagrams between dual pairs
+   - lift_drc_D_C: lift from SO(p,q) to Sp(2n) (attach column to right diagram)
+   - lift_drc_C_D: lift from Sp(2n) to SO(p,q) (attach column to left diagram)
+   - lift_extdrc_B_M: lift from SO(2n+1) to Mp(2n) using extended DRC
+   - lift_drc_M_B: lift from Mp(2n) to SO(2n+1)
+
+2. **Shape Twisting**: Map between special and non-special shape DRC diagrams
+   - twist_sp2nsp: special shape -> non-special shape (det twist on DRC)
+   - twist_nsp2sp: non-special shape -> special shape (inverse)
+   - twist_C_nonspecial: type C specific implementation
+   - twist_M_nonspecial: type M specific (swap and translate first columns)
+
+3. **Descent Operations**: inverse of lifting (removing a column)
+   - descent_drc: remove the outermost column to recover the source diagram
+
+4. **Verification and Testing**:
+   - test_dpart2drcLS: comprehensive test for purely even dual partitions
+   - test_purelyeven: test the purely even case with packet tracking
+
+The algorithm works inductively on the partition: start from the trivial group,
+lift both the DRC and LS using theta correspondence at each step, and verify
+against independently computed DRC and LS sets.
+
+Key data structures:
+   DRCLS: dict mapping drc -> LS (DRC diagram to matched local system)
+   LSDRC: dict mapping LS -> (sign, [(drc, LS, origin_drc, epsilon, origin_LS)])
+"""
 from rich import print
 from itertools import chain, zip_longest
 from copy import copy, deepcopy
 from multiset import FrozenMultiset as frozenset
 from .tool import getz, dualBVW, concat_strblocks
-from .drc import str_dgms, reg_drc, verify_drc, gp_form_D, gp_form_B,gp_form_C, gp_form_M, dpart2drc, countdrcform
+from .drc import str_dgms, reg_drc, verify_drc, gp_form_D, gp_form_B,gp_form_C, gp_form_M, dpart2drc, countdrcform, part2drc, fill_rdot, fill_r,fill_c
 from .LS import lift_C_D, lift_D_C, lift_B_M, lift_M_B, char_twist_D, char_twist_B, part2LS, str_LS, sign_LS
 
 """
-Following lifting only realize the algorithm for the orbits
-after the reduction. These orbits satisfies C_{2i} = C_{2i-1}.
-So we only realize the algorithm 
-for adding a column of lenght equal to the longest lenght column in type D
-or the generalized descent case (C_{2i} = C_{2i-1} is odd).  
+The lifting algorithms below are for orbits after reduction to the purely even case.
+These orbits satisfy C_{2i} = C_{2i-1} (balanced column pairs).
+We implement: adding a column of length equal to the longest column (for type D),
+and the generalized descent case when C_{2i} = C_{2i-1} is odd.
 """
 
 
 def _combine_tab(drca, drcb):
+    """
+    Combine two column tuples: extend each column in drca with the tail of the
+    corresponding column in drcb. Used to overlay a dot/s pattern onto a DRC diagram.
+    """
     res = []
     for i, cb in enumerate(drcb):
         ca = getz(drca, i, '')
@@ -25,14 +61,22 @@ def _combine_tab(drca, drcb):
 
 
 def _combine_tab(drca, drcb):
+    """
+    Combine two column tuples (zip_longest version).
+    For each column pair, append the suffix of drcb not already in drca.
+    """
     res = tuple(ca+cb[len(ca):] for ca, cb in
                 zip_longest(drca, drcb, fillvalue=''))
     return res
 
 
 def lift_extdrc_B_M(drc, a):
-    # Attache a length 'a' columne on the left diagram
-    # We assume a > 0
+    """
+    Lift an extended DRC diagram from SO(2n+1) to Mp(2n).
+    Attaches a new column of length 'a' on the left diagram.
+    The extended DRC has an extra character ('a' or 'b') appended to drcR[0]
+    to track the lift type.
+    """
     drcL, drcR = drc
     assert(len(drcR[0])>0)
     exttype = drcR[0][-1]
@@ -53,6 +97,10 @@ def lift_extdrc_B_M(drc, a):
 
 
 def lift_extdrc_B_M_trivial(drc, cL=None):
+    """
+    Lift extended DRC from SO(2n+1) to Mp(2n) with trivial twist.
+    If cL is not specified, uses the length of the first column of drcR.
+    """
     drcL, drcR = drc
     exttype = drcR[0][-1]
     drcR = (drcR[0][:-1], *drcR[1:])
@@ -88,6 +136,7 @@ def lift_extdrc_B_M_trivial(drc, cL=None):
 
 
 def lift_drc_B_M_det(drc, cL=None):
+    """Lift extended DRC from SO to Mp with determinant twist (adds extra 'c')."""
     drcL, drcR = drc
     if cL is None:
         cL = len(getz(drcR, 0, ''))+1
@@ -101,6 +150,8 @@ def lift_drc_B_M_det(drc, cL=None):
         return (ndrcL, ndrcR)
 
 
+# Rules for the non-special shape twist in type M.
+# Maps (suffix_of_fL, suffix_of_fR) -> (new_suffix_fL, new_suffix_fR)
 NONSPEC_M_TWIST = {
     ('ss', 'd'): ('s', 'rd'),
     ('ss', 'r'): ('s', 'rr'),
@@ -113,6 +164,12 @@ NONSPEC_M_TWIST = {
 }
 
 def descent_drc(drc, rtype):
+    """
+    Compute the descent (inverse of lifting) of a DRC diagram.
+    Removes the outermost column and adjusts symbols to recover the source diagram.
+    For type C: removes the first column of drcR.
+    For type D: removes the first column of drcL.
+    """
     drcL, drcR = drc
     fL, sL, fR = getz(drcL, 0, ''), getz(drcL, 1, ''), getz(drcR, 0, '')
     if rtype == 'C':
@@ -139,8 +196,72 @@ def descent_drc(drc, rtype):
             x0 = fL[len(sL)-2]
             if x0 in 'rc':
                 res = ((resL[0][:-2]+'r'+x0, *resL[1:]), resR)
-        elif rtype == 'M':
-            pass
+    elif rtype == 'M':
+        if len(fL)<len(fR):
+            # Non-special shape case:
+            # Twist back to the spacial partition
+            drcL,drcR = twist_nsp2sp(drc,'M')
+        # naive descent
+        nrtype = 'B+' 
+        if len(fL) > 0 and fL[-1] == 'c':
+            nrtype = 'B-'
+        res = _fill_ds_B((drcL[1:], drcR),nrtype)
+        res = make_extdrc_B(res, nrtype)
+        assert(verify_drc(res,'B'))
+    elif rtype == 'B':
+        # Strip the a/b tag and determine sub-type
+        # Corresponds to descent from ★=B (SO(2n+1)) to ★'=M=C̃ (Mp)
+        if fR[-1] == 'a':
+            nrtype = 'B+'
+        elif fR[-1] == 'b':
+            nrtype = 'B-'
+        else:
+            raise ValueError(f"Expected 'a' or 'b' at end of drcR[0], got '{fR[-1]}'")
+        drcR = (drcR[0][:-1], *drcR[1:])
+        # Re-read fR after stripping the tag
+        fR = getz(drcR, 0, '')
+        # Naive descent: remove first column of Q (drcR)
+        sR = getz(drcR, 1, '')  # second column of drcR (before removing first col)
+        res = _fill_ds_M((drcL, drcR[1:]))
+        resL, resR = res
+        # Case (a) from [BMSZb, Section 10.4, The case ★=B]:
+        # Conditions: γ=B+, (2,3)∉℘, r₂(Ǒ)>0, Q(c₁(ι_℘),1) ∈ {r,d}.
+        # For purely even case, ℘=∅ so (2,3)∉℘ is automatic.
+        # c₁(ι_℘) = c₁(ι) = len(fL) (first column length of left diagram).
+        # Q(c₁(ι),1) = fR[len(fL)-1]: the char at row c₁(ι) of drcR's first column.
+        # Action: set P'(c₁(ι_℘'),1) = s, i.e. last char of resL's first column.
+        c1 = len(fL)
+        q_c1 = fR[c1 - 1] if 0 < c1 <= len(fR) else ''
+        # Recover t: number of leading '*' in fR (from lift's '*'*t prefix)
+        t = 0
+        while t < len(fR) and fR[t] == '*':
+            t += 1
+        if nrtype == 'B+' and q_c1 in ['r', 'd']:
+            # Case (a): set P'(c₁(ι'),1) = s
+            col0 = resL[0]
+            resL = (col0[:-1] + 's', *resL[1:])
+        # Reverse the second column tail conversion:
+        # During lift, gen_drc_B_two_new('', 'r', n) produces special entries
+        # with nsR='d' and tag='a' (B+). gen_drc_B_two_new('', 'd', n)
+        # produces nsR='d' with tag='b' (B-). So:
+        # - If nrtype='B+' and tL='' and sR[t_src]='d' → source had tR='r', restore d→r
+        # - tL='' iff len(fL_src) <= t_src iff len(sR) > len(resL[0])
+        # - t_src = max(len(resL[0]), len(sR)) - 1
+        if nrtype == 'B+' and len(sR) > 0 and len(resR) > 0:
+            nL_src = len(resL[0]) if len(resL) > 0 else 0
+            t_src = max(nL_src, len(sR)) - 1
+            tL_empty = (len(sR) > nL_src)  # tL = '' in the lift
+            # Reverse the nsR conversion: tR='r' → nsR='d' in special cases.
+            # Use fR[t_src] (NOT fR[t]) to check nR[0], since t_src is the
+            # correct boundary from the lift algorithm.
+            fR_at_tsrc = fR[t_src] if t_src < len(fR) else ''
+            if (tL_empty and t_src >= 0 and t_src < len(resR[0])
+                    and resR[0][t_src] == 'd'
+                    and fR_at_tsrc in ('r', 'd')):
+                r0 = resR[0]
+                resR = (r0[:t_src] + 'r' + r0[t_src+1:], *resR[1:])
+        res = (resL, resR)
+        assert(verify_drc(res, 'M'))
     res = reg_drc(res)
     return res
 
@@ -172,7 +293,7 @@ def _fill_ds_C(drc):
     return res
 
 
-def _fill_ds_B(drc):
+def _fill_ds_B(drc,rtype='B'):
     drcL, drcR = drc
     ndrcR = [] #tuple('*'*len(col) for col in drcR)
     ndrcL = []
@@ -185,7 +306,7 @@ def _fill_ds_B(drc):
         ndrcL.append('*'*cL+colL[cL:])
         ndrcR.append('*'*cL+'s'*(cR-cL)+colR[cR:])
     res = (tuple(ndrcL), tuple(ndrcR))
-    assert(verify_drc(res,'B'))
+    assert(verify_drc(res, rtype))
     return reg_drc(res)
 
 def _fill_ds_M(drc):
@@ -1279,6 +1400,63 @@ def ext_drc2drc(edrc):
     return (edrcL, drcR)
 
 
+def split_extdrc_B(edrc):
+    """
+    Split an extended type-B DRC diagram into (drc, sub_rtype).
+
+    An extended type-B DRC has an extra character appended to drcR[0]:
+      'a' -> sub_rtype = 'B+' (the "plus" real form)
+      'b' -> sub_rtype = 'B-' (the "minus" real form)
+
+    Returns:
+      (drc, sub_rtype) where drc has the 'a'/'b' stripped,
+      and sub_rtype is 'B+' or 'B-'.
+
+    Raises ValueError if the last character of drcR[0] is not 'a' or 'b'.
+    """
+    edrcL, edrcR = edrc
+    tag = edrcR[0][-1]
+    if tag == 'a':
+        sub_rtype = 'B+'
+    elif tag == 'b':
+        sub_rtype = 'B-'
+    else:
+        raise ValueError(f"Expected 'a' or 'b' at end of drcR[0], got '{tag}'")
+    drcR = (edrcR[0][:-1], *edrcR[1:])
+    return (edrcL, drcR), sub_rtype
+
+
+def make_extdrc_B(drc, sub_rtype):
+    """
+    Construct an extended type-B DRC diagram from (drc, sub_rtype).
+
+    Inverse of split_extdrc_B: appends 'a' or 'b' to drcR[0] based on sub_rtype.
+
+    Args:
+      drc: a type-B DRC diagram (drcL, drcR) WITHOUT the 'a'/'b' tag.
+      sub_rtype: 'B+' (appends 'a') or 'B-' (appends 'b').
+
+    Returns:
+      Extended DRC diagram with the tag appended to drcR[0].
+
+    Raises ValueError if sub_rtype is not 'B+' or 'B-'.
+    Asserts that the input drc passes verify_drc(drc, sub_rtype).
+    """
+    assert verify_drc(drc, sub_rtype), \
+        f"Input drc does not pass verify_drc with rtype='{sub_rtype}'"
+    if sub_rtype == 'B+':
+        tag = 'a'
+    elif sub_rtype == 'B-':
+        tag = 'b'
+    else:
+        raise ValueError(f"sub_rtype must be 'B+' or 'B-', got '{sub_rtype}'")
+    drcL, drcR = drc
+    if len(drcR) == 0:
+        drcR = ('',)
+    edrcR = (drcR[0] + tag, *drcR[1:])
+    return (drcL, edrcR)
+
+
 def test_LSDRC(part, rtype='D', report=False, reportann=False):
     Ltypes = LtypesLST[rtype]
     DRCLS = dict()
@@ -1638,6 +1816,7 @@ def lift_DRCLS(DRCLS, LSDRC, dpart, rtype='C', ltype='l', report=False, reportan
                 if ndrc is None:
                     #print('drc has no lift', drc)
                     continue
+                assert(reg_drc(descent_drc(ndrc,'M')) == reg_drc(drc))
                 nLS = lift_B_M(LS, nSp)
                 updatepeDRCLS(nDRCLS, nLSDRC, drc, oeps, LS, ndrc, nLS, reportann=reportann)
                 # Lift the determinant twist
@@ -1680,6 +1859,7 @@ def lift_DRCLS(DRCLS, LSDRC, dpart, rtype='C', ltype='l', report=False, reportan
             #     print('Exception on lift_drc_M_B')
             #     print(str_dgms(drc))
             for ndrc, twist in NDRCS:
+                assert(reg_drc(descent_drc(ndrc,'B')) == reg_drc(drc))
                 pO, nO = gp_form_B_ext(ndrc)
                 nLS = lift_M_B(LS, pO, nO)
                 if len(nLS) == 0:

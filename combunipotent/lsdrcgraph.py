@@ -1,3 +1,27 @@
+"""
+lsdrcgraph.py - Visualization of Theta Lifting Graphs with DRC Packet Annotations
+
+This module generates Graphviz directed graphs showing the theta lifting tree
+for local systems, annotated with the DRC diagram packets at each node.
+
+The graph shows:
+    - Vertical edges (blue/navy): theta lifting maps between dual groups
+      'l' (blue): standard descent lifting
+      'L' (navy): generalized descent lifting
+    - Horizontal edges (bidirectional): character twists within the same group
+      'p' (green): (1,-1) twist
+      'q' (purple): (-1,1) twist
+      'd' (red): (-1,-1) = determinant twist
+
+Each node displays:
+    - The local system (LS) in visual form
+    - The signature (p,n) of the associated real form
+    - The DRC diagram packet (set of DRC diagrams matched to this LS)
+
+Main function:
+    gen_lift_graph(part, rtype, increase=False, format='svg')
+        Generate and render the lifting graph for a given partition and type.
+"""
 from rich import print
 from itertools import chain, zip_longest
 from copy import copy, deepcopy
@@ -13,6 +37,10 @@ from graphviz import Digraph
 from IPython.display import display, Image, SVG
 
 def _update_tdict(tdict, tkey, fkey):
+    """
+    Update the tree dictionary: record that tkey was lifted from fkey.
+    Avoids adding duplicate reverse edges. tdict maps (rtype, partsize, LS) -> set of (ltype, source_key).
+    """
     ltype, ffkey = fkey
     if (ltype, tkey) not in tdict.get(ffkey,set()):
         tlist = tdict.get(tkey, set())
@@ -20,7 +48,8 @@ def _update_tdict(tdict, tkey, fkey):
         tdict[tkey] = tlist
 
 
-# RDATA records (dual type, good parity, liftfun)
+# RDATA: for each root system type, records (dual type, good parity, lift function).
+# Used to determine which lifting function to call at each induction step.
 RDATA= {
     'D': ('C', 0, lift_C_D),
     'C': ('D', 0, lift_D_C),
@@ -172,6 +201,10 @@ line_attr_dict = {
 }
 
 def tdict_LSDRC_tograph(g, tdict, dLSDRC):
+    """
+    Build a Graphviz directed graph from the tree dictionary, annotating each
+    LS node with its DRC diagram packet from dLSDRC.
+    """
     lsets = {}
     lnodes = {}
     lgps = []  # list of complex forms of the groups
@@ -237,6 +270,7 @@ def _find_source(tdict, fkey, lftsym):
         return None
 
 def mergedicts(dicts):
+    """Merge a list of dictionaries into a single dictionary."""
     res = dict(chain(*(d.items() for d in dicts)))
     return res
 

@@ -1,3 +1,41 @@
+"""
+drc.py - DRC Diagram Construction, Verification, and Display
+
+This module implements the construction of DRC (dot-r-c) diagrams that parametrize
+unipotent representations of classical groups. The diagrams are built from Weyl group
+representations (bipartitions) through a multi-step filling algorithm.
+
+Key concepts:
+    - A DRC diagram is a pair (drcL, drcR) of tuples of strings.
+      Each string represents a column; characters encode the cell type:
+        '*' (dot) : complex parameter
+        'r'       : real parameter (left diagram)
+        's'       : real parameter (right diagram, dual to 'r')
+        'c'       : compact parameter
+        'd'       : discrete/non-compact parameter (dual to 'c')
+
+    - The filling algorithm proceeds in layers:
+        1. fill_c with 'd' : place 'd' symbols at column bottoms (left diagram)
+        2. fill_c with 'c' : place 'c' symbols at column bottoms (left diagram)
+        3. fill_r with 'r' or 's' : place real symbols along rows
+        4. fill_rdot with 's' or 'r' : fill remaining cells with dots and dual real symbols
+
+    - The precise order and placement rules (left vs right diagram) depend on the
+      root system type, defined in the steps_B/C/D/M/CS/DS tuples.
+
+    - Group form signatures are computed from the diagram:
+        gp_form_D(drc) -> (p, q) for SO(p,q)
+        gp_form_C(drc) -> n for Sp(2n)
+        gp_form_B(drc) -> (p, q) for SO(p,q)
+        gp_form_M(drc) -> n for Mp(2n)
+
+Main API:
+    part2drc(partition, rtype)   : special partition -> all DRC diagrams
+    dpart2drc(dpart, rtype)      : dual partition -> all DRC diagrams
+    Wrepn2pbps(tau, rtype)       : W-representation -> DRC diagrams (PBPs)
+    str_dgms(drc)                : format a DRC diagram as a string
+    verify_drc(drc, rtype)       : verify a DRC diagram satisfies all constraints
+"""
 from rich.table import Table
 import itertools
 from copy import copy, deepcopy
@@ -31,6 +69,7 @@ is the corresponding representation for type C
 """
 
 def allsubsets(S):
+    """Yield all subsets of S, from empty set to S itself."""
     k  = len(S)
     for i in range(k+1):
         for SS in itertools.combinations(S,i):
@@ -39,7 +78,8 @@ def allsubsets(S):
 
 def is_part_valid(part,rtype):
     """
-    rtype in {B,C,D}
+    Check if a partition is valid (i.e., equals its own collapse) for the given rtype.
+    rtype in {B, C, D}. Returns False if the parity condition fails.
     """
     part = reg_part(part)
     # The total parity must be correct!
@@ -796,6 +836,7 @@ def fill_c(tau, reststeps=[], sym = 'c', LRdgm = IDdgm):
 
 
 def reg_tau(tau):
+    """Regularize a bipartition: remove zeros and sort each component in decreasing order."""
     tauL,tauR=tau
     tauL = sorted([x for x in tauL if x!=0],reverse=True)
     tauR = sorted([x for x in tauR if x!=0],reverse=True)
@@ -804,6 +845,11 @@ def reg_tau(tau):
 
 
 def countdrcform(drc):
+    """
+    Count the occurrences of each symbol type in a DRC diagram.
+    Returns (dots, r_count, s_count, c_count, d_count).
+    These counts determine the real form signature of the group.
+    """
     dot = sum(c.count('*') for c in itertools.chain(*drc))
     r = sum(c.count('r') for c in itertools.chain(*drc))
     s = sum(c.count('s') for c in itertools.chain(*drc))
@@ -813,12 +859,14 @@ def countdrcform(drc):
     
 
 def gp_form_D(drc):
+    """Compute the signature (p,q) of the real form SO(p,q) from a type D DRC diagram."""
     #print(drc)
     cplx, cpt1, cpt2, real1, real2  = countdrcform(drc)
     p, q = cplx+real1+real2+cpt1*2, cplx+real1+real2+cpt2*2
     return (p,q)
 
 def dual_form_D(drc):
+    """Compute the dual form signature from a type D DRC diagram."""
     cplx, real1, real2, cpt1, cpt2  = countdrcform(drc)
     dp, dq = cplx+real1+real2+cpt1*2, cplx+real1+real2+cpt2*2
     return (dp,dq)
@@ -826,20 +874,24 @@ def dual_form_D(drc):
 
 
 def gp_form_C(drc):
+    """Compute n for Sp(2n) from a type C DRC diagram (total number of cells)."""
     n = sum(len(c) for c in itertools.chain(*drc))
     return n
 
 def gp_form_DS(drc):
+    """Compute the form (n,n) for the DS (quaternionic) type."""
     n = sum(len(c) for c in itertools.chain(*drc))
     return (n,n)
 
 def gp_form_CS(drc):
+    """Compute the form signature for the CS (compact/split symplectic) type."""
     cplx, cpt1, cpt2, real1, real2  = countdrcform(drc)
     dp, dq = cplx+real1+real2+cpt1*2, cplx+real1+real2+cpt2*2
     return (dp,dq)
 
 
 def gp_form_C_signature(drc):
+    """Return (n,n) signature for Sp(2n)."""
     n = gp_form_C(drc)
     return (n,n)
 
@@ -853,6 +905,7 @@ def dual_form_C(drc):
 
 
 def gp_form_B(drc):
+    """Compute the signature (p,q) of SO(p,q) from a type B DRC diagram."""
     cplx, cpt1, cpt2, real1, real2  = countdrcform(drc)
     dp, dq = cplx+real1+real2+cpt1*2, cplx+real1+real2+cpt2*2
     if dp % 2 == 1:
@@ -862,43 +915,49 @@ def gp_form_B(drc):
     return (dp,dq)
 
 def dual_form_B(drc):
+    """Compute the dual form signature from a type B DRC diagram."""
     cplx, real1, real2, cpt1, cpt2  = countdrcform(drc)
     dp, dq = cplx+real1+real2+cpt1*2+1, cplx+real1+real2+cpt2*2
     return (dp,dq)
 
-steps_D  =[
-    (fill_c, ('d',)),
-    (fill_c, ('c',)),
-    (fill_r, ('r',)),
-    (fill_rdot, ('s',))]
+# DRC construction pipelines for each root system type.
+# Each pipeline is a list of (fill_function, (symbol, [LRdgm_transform])) steps.
+# IDdgm = identity (left diagram), SWdgm = swap left/right diagrams.
+# The pipeline fills the diagram bottom-up: d -> c -> r/s -> dots.
+steps_D  =[                          # Type D: SO(2n)
+    (fill_c, ('d',)),                 # 1. fill 'd' on left diagram
+    (fill_c, ('c',)),                 # 2. fill 'c' on left diagram
+    (fill_r, ('r',)),                 # 3. fill 'r' on left diagram
+    (fill_rdot, ('s',))]              # 4. fill dots + 's' on right diagram
 
-steps_C  =[
-    (fill_c, ('d',)),
-    (fill_c, ('c',)),
-    (fill_r, ('s', SWdgm)),
-    (fill_rdot, ('r', SWdgm))]
+steps_C  =[                          # Type C: Sp(2n)
+    (fill_c, ('d',)),                 # 1. fill 'd' on left diagram
+    (fill_c, ('c',)),                 # 2. fill 'c' on left diagram
+    (fill_r, ('s', SWdgm)),           # 3. fill 's' on right diagram (swap)
+    (fill_rdot, ('r', SWdgm))]        # 4. fill dots + 'r' on right diagram (swap)
 
-steps_B  =[
-    (fill_c, ('d', SWdgm)),
-    (fill_c, ('c', SWdgm)),
-    (fill_r, ('r', SWdgm)),
-    (fill_rdot, ('s', ))]
+steps_B  =[                          # Type B: SO(2n+1)
+    (fill_c, ('d', SWdgm)),           # 1. fill 'd' on right diagram (swap)
+    (fill_c, ('c', SWdgm)),           # 2. fill 'c' on right diagram (swap)
+    (fill_r, ('r', SWdgm)),           # 3. fill 'r' on right diagram (swap)
+    (fill_rdot, ('s', ))]             # 4. fill dots + 's' on left diagram
 
-steps_M  =[
-    (fill_c, ('d', SWdgm)),
-    (fill_c, ('c', SWdgm)),
-    (fill_r, ('r', SWdgm)),
-    (fill_rdot, ('s', SWdgm))]
+steps_M  =[                          # Type M: Mp(2n)
+    (fill_c, ('d', SWdgm)),           # 1. fill 'd' on right diagram (swap)
+    (fill_c, ('c', SWdgm)),           # 2. fill 'c' on right diagram (swap)
+    (fill_r, ('r', SWdgm)),           # 3. fill 'r' on right diagram (swap)
+    (fill_rdot, ('s', SWdgm))]        # 4. fill dots + 's' on right diagram (swap)
 
-steps_CS  =[
+steps_CS  =[                         # Type CS: compact/split symplectic
     (fill_r, ('r',SWdgm)),
     (fill_rdot, ('s',))]
 
-steps_DS  =[
+steps_DS  =[                         # Type DS: quaternionic orthogonal
     (fill_r, ('r',SWdgm)),
     (fill_rdot, ('s',SWdgm))]
 
 def drc_form_Sp(drc):
+    """Return 2n for Sp(2n) (total number of cells times 2)."""
     return 2*gp_form_C(drc)
 
 # DRCRule = {
@@ -950,6 +1009,10 @@ def part2drc(partition, rtype = 'D',
     return Adrc
 
 
+# Master dispatch table for DRC diagram construction.
+# For each rtype, stores:
+#   (special_Wrepn_fun, coherent_family_fun, filling_steps,
+#    group_format_str, group_form_fun, dual_format_str, dual_form_fun)
 DRCRule = {
     'D': (S_Wrepn_D, S_Wrepns_D, steps_D,
           r'SO(%d,%d)', gp_form_D, r'SO(%d,%d)', dual_form_D),
@@ -966,6 +1029,7 @@ DRCRule = {
     }
 
 
+# Map from rtype to the function computing the real form signature from a DRC diagram.
 GPSIGN = {
     'DS': gp_form_DS,
     'CS': gp_form_CS,
@@ -977,6 +1041,7 @@ GPSIGN = {
 
 
 def count_signs(ldrc,rtype):
+    """Count DRC diagrams grouped by their real form signature."""
     count_fun = lambda drc: GPSIGN[rtype](drc)
     DD = dict()
     for drc in ldrc:
@@ -1251,6 +1316,33 @@ def verify_drc(drc, rtype='C'):
         if rddrcR is None or \
             test_young_dg(rddrcR) == False or \
             test_bullets_drc((scdrcL,rddrcR)) is False:
+            return False
+    elif rtype in ('B', 'B+', 'B-'):
+        # rtype='B': input is an extended DRC with 'a'/'b' tag on drcR[0],
+        #            strip the tag before structural verification.
+        # rtype='B+'/'B-': input is already stripped.
+        drcL, drcR = drc
+        if rtype == 'B':
+            # Strip the 'a'/'b' tag from the extended DRC
+            tag = drcR[0][-1] if (len(drcR) > 0 and len(drcR[0]) > 0) else ''
+            if tag not in ('a', 'b'):
+                return False
+            drcR = (drcR[0][:-1], *drcR[1:])
+        if test_young_dg(drcL) is False or test_young_dg(drcR) is False:
+            return False
+        cdrcL = remove_tail_letter(drcL,'c',onerow=True)
+        if cdrcL is None or test_young_dg(cdrcL) is False:
+            return False
+        ddrcR = remove_tail_letter(drcR,'d',onerow=True)
+        if ddrcR is None or \
+            test_young_dg(ddrcR) == False:
+            return False
+        rddrcR = remove_tail_letter(ddrcR,'r')
+        if rddrcR is None or test_young_dg(rddrcR) == False:
+            return False
+        srddrcR = remove_tail_letter(rddrcR,'s')
+        if  srddrcR is None or test_young_dg(srddrcR) == False or \
+            test_bullets_drc((cdrcL,srddrcR)) is False:
             return False
     return True
 

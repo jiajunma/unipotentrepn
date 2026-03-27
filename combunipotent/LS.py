@@ -1,3 +1,47 @@
+"""
+LS.py - Local Systems on Nilpotent Orbits and Theta Lifting
+
+This module implements the combinatorics of local systems attached to nilpotent orbits
+of classical groups, and the theta lifting (Howe correspondence) algorithms that
+relate representations across dual pairs.
+
+Key concepts:
+
+1. **Irreducible Local Systems (ILS)**:
+   An ILS is a tuple ((p_1,n_1), (p_2,n_2), ..., (p_k,n_k)) where:
+   - p_i: count of rows of length i ending with '+' (positive sign)
+     sign of p_i encodes trivial (>0) vs non-trivial (<0) local system
+   - n_i: count of rows of length i ending with '-' (negative sign)
+     sign of n_i encodes trivial (>0) vs non-trivial (<0) local system
+
+2. **Local Systems (LS)**:
+   A local system is a FrozenMultiset of irreducible local systems.
+   Each LS corresponds to a collection of ILS components from different
+   irreducible factors of the centralizer.
+
+3. **Theta Lifting**:
+   The theta correspondence relates representations between dual pairs:
+   - (Sp(2n), O(V)) : lift_D_C (O -> Sp) and lift_C_D (Sp -> O)
+   - (Mp(2n), O(V)) : lift_B_M (O -> Mp) and lift_M_B (Mp -> O)
+
+4. **Character Twists**:
+   - char_twist_D: twist by (det^a, det^b) on O(p,q)
+   - char_twist_B: twist on odd orthogonal group
+   - _char_twist_C: twist on symplectic group (by orthogonal signature)
+   - _char_twist_CM: twist on metaplectic group
+
+Display conventions:
+   '+' : trivial system on positive sign row
+   '*' : non-trivial system on positive sign row
+   '-' : trivial system on negative sign row
+   '=' : non-trivial system on negative sign row
+
+Main API:
+   LS_C(part), LS_D(part), LS_B(part), LS_M(part) : compute all local systems
+   part2LS(part, rtype) : unified interface
+   str_LS(SS) : format a local system for display
+   sign_LS(ls) : compute the signature (p, n) of a local system
+"""
 import itertools
 from copy import copy, deepcopy
 from multiset import FrozenMultiset as frozenset
@@ -602,6 +646,11 @@ Warnning: Don't flip the sign.
     
 
 def _sign_ILS(irr_s):
+    """
+    Compute the total signature (p, n) of an irreducible local system.
+    p = total number of '+' rows, n = total number of '-' rows,
+    taking into account the alternating sign pattern along row lengths.
+    """
     p, n = 0, 0
     for i,(pp,nn) in enumerate(irr_s):
         dii, rii = divmod(i+1,2)
@@ -610,6 +659,10 @@ def _sign_ILS(irr_s):
     return (p,n)
 
 def _sign_ILS_firstcol(irr_s):
+    """
+    Compute the signature of the first column of an irreducible local system.
+    This determines the parity constraint for theta lifting.
+    """
     p,n = 0,0
     #print(irr_s)
     for i, (pp,nn) in enumerate(irr_s):
@@ -623,6 +676,11 @@ def _sign_ILS_firstcol(irr_s):
         
     
 def leading_ILS(LS):
+    """
+    Find the leading (maximal) irreducible local system in a local system LS.
+    The ordering is lexicographic on the first-column signature data.
+    Returns None if LS is empty.
+    """
     nLS = []
     if len(LS) == 0:
         print(LS)
@@ -658,7 +716,8 @@ def test_leading_ILS(LLS):
         return True
 
 def contragrident_LS(LS):
-    nLS = [] 
+    """Compute the contragredient of a local system by swapping (p,n) pairs."""
+    nLS = []
     for irr_s in LS:
         nLS.append(tuple((nn,pp) for pp,nn in irr_s))
     return frozenset(nLS)
