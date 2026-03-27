@@ -3242,7 +3242,7 @@ def _gen_combined_tree(tree_nodes, ls_groups, ghost_ls, rtype,
                            'fontsize': '7'},
                 graph_attr={'rankdir': 'TB', 'newrank': 'true',
                             'ranksep': '0.8', 'nodesep': '0.15',
-                            'dpi': '150'},
+                            'dpi': '150', 'splines': 'line'},
                 engine='dot', format=format)
 
     counter = [0]
