@@ -2954,11 +2954,6 @@ def gen_lift_tree(dpart, rtype, format='svg', filename=None):
             if e_wp == 1:
                 continue
 
-        # Skip ε_τ=1 (B/D post-twist)
-        if child_rt in ('B+', 'B-', 'D'):
-            if epsilon(child_drc, child_rt) != 0:
-                continue
-
         child_ls = node['ls']
         parent_ls = tree_nodes[parent_key]['ls']
         drcL, drcR = child_drc
@@ -2967,6 +2962,9 @@ def gen_lift_tree(dpart, rtype, format='svg', filename=None):
         pdrcL, pdrcR = pdrc
         parent_total = sum(len(c) for c in pdrcL) + sum(len(c) for c in pdrcR)
 
+        # Blue edge: parent_LS → child_LS
+        # child_LS already has ε_τ post-twist applied, so the edge
+        # correctly points to the final LS value.
         child_gk = (child_ls, child_total)
         parent_gk = (parent_ls, parent_total)
 
@@ -3451,11 +3449,6 @@ def _gen_combined_tree(tree_nodes, ls_groups, ghost_ls, rtype,
         if child_rt in ('C', 'M'):
             e_wp = 1 if (child_wp is not None and 0 in child_wp) else 0
             if e_wp == 1:
-                continue
-
-        # Skip ε_τ=1 cases (B/D post-twist goes via twist edge path)
-        if child_rt in ('B+', 'B-', 'D'):
-            if epsilon(child_drc, child_rt) != 0:
                 continue
 
         child_ls = node['ls']
