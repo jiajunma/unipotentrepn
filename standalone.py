@@ -3450,10 +3450,15 @@ def _gen_combined_tree(tree_nodes, ls_groups, ghost_ls, rtype,
         child_drc, child_wp, child_rt = key
         parent_key = node['parent']
 
-        # Skip ε_℘=1 cases (those go via ghost → twist edge path)
+        # Skip ε_℘=1 cases (C/M pre-twist goes via ghost → twist edge path)
         if child_rt in ('C', 'M'):
             e_wp = 1 if (child_wp is not None and 0 in child_wp) else 0
             if e_wp == 1:
+                continue
+
+        # Skip ε_τ=1 cases (B/D post-twist goes via twist edge path)
+        if child_rt in ('B+', 'B-', 'D'):
+            if epsilon(child_drc, child_rt) != 0:
                 continue
 
         child_ls = node['ls']
