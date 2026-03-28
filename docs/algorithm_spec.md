@@ -151,8 +151,11 @@ A subset ℘ ⊆ PP_★(Ǒ) is represented as a `frozenset` of PPidx integers.
 
 **Reference**: [BMSZb] Equation (2.16), (8.9) with ℘ = ∅.
 
-Given dual partition Ǒ and type ★, compute the special-shape bipartition
-(ι_Ǒ, j_Ǒ). Returns `(tauL, tauR)`: column lengths of the two Young diagrams.
+Given dual partition Ǒ and type ★, compute the bipartition (ι_Ǒ, j_Ǒ) with ℘ = ∅.
+This corresponds to the **special representation** of the Weyl group. [BMSZ] works
+exclusively with special representations; the general ℘ ≠ ∅ case (Section 2.3)
+extends to all W-representations. Returns `(tauL, tauR)`: column lengths of the
+two Young diagrams.
 
 **For ★ = B**: first row r₁ contributes c₁(j) = r₁/2. Remaining rows are paired:
 ```
