@@ -157,22 +157,35 @@ exclusively with special representations; the general ℘ ≠ ∅ case (Section 
 extends to all W-representations. Returns `(tauL, tauR)`: column lengths of the
 two Young diagrams.
 
-**For ★ = B**: first row r₁ contributes c₁(j) = r₁/2. Remaining rows are paired:
+All row indices below are 1-based: r₁ ≥ r₂ ≥ ⋯.
+
+**For ★ = B**: first row r₁ contributes c₁(j) = r₁/2. Remaining rows are paired
+(i = 1, 2, ...):
 ```
-(c_i(ι), c_{i+1}(j)) = (r_{2i}/2, r_{2i+1}/2)    if PPidx i not in ℘
-                      = (r_{2i+1}/2, r_{2i}/2)      if PPidx i ∈ ℘
+(c_i(ι), c_{i+1}(j)) = (r_{2i}/2, r_{2i+1}/2)
 ```
 
-**For ★ = D**: first row r₁ contributes c₁(ι) = (r₁+1)/2. Remaining rows:
+**For ★ = D**: first row r₁ contributes c₁(ι) = (r₁+1)/2. Remaining rows
+(i = 1, 2, ...):
 ```
-(c_{i+1}(ι), c_i(j)) = ((r_{2i}+1)/2, (r_{2i+1}−1)/2)    if PPidx i not in ℘
+vacant  (r_{2i} = r_{2i+1} = 0):  skip
+tailed  (r_{2i} > 0, r_{2i+1} = 0):  c_i(j) = (r_{2i}−1)/2
+normal:  (c_i(j), c_{i+1}(ι)) = ((r_{2i}−1)/2, (r_{2i+1}+1)/2)
 ```
 
-**For ★ = C, M**: rows are paired directly (no first-row offset):
+**For ★ = M**: rows are paired directly (i = 1, 2, ...):
 ```
-(c_i(ι), c_i(j)) = (r_{2i−1}/2, r_{2i}/2)              for M, PPidx i ∉ ℘
-                  = ((r_{2i−1}+1)/2, (r_{2i}−1)/2)      for C, PPidx i ∉ ℘
+(c_i(ι), c_i(j)) = (r_{2i−1}/2, r_{2i}/2)
 ```
+
+**For ★ = C**: rows are paired directly (i = 1, 2, ...):
+```
+vacant  (r_{2i−1} = r_{2i} = 0):  skip
+tailed  (r_{2i−1} > 0, r_{2i} = 0):  c_i(j) = (r_{2i−1}−1)/2
+normal:  (c_i(j), c_i(ι)) = ((r_{2i−1}−1)/2, (r_{2i}+1)/2)
+```
+Note: for C, tauR corresponds to j (using `(r_{odd}−1)/2`) and tauL to ι
+(using `(r_{even}+1)/2`).
 
 ### 2.3 All W-representations: `dpart2Wrepns_with_wp(dpart, rtype)` — Line 1204
 
