@@ -191,13 +191,53 @@ Note: for C, tauR corresponds to j (using `(r_{odd}−1)/2`) and tauL to ι
 
 **Reference**: [BMSZb] Equation (8.9), Section 8.3.
 
-Computes all bipartitions labelled by ℘ ⊆ PP_★(Ǒ). For each ℘, the
-bipartition is obtained by swapping the row pairs at positions in ℘.
+Computes all bipartitions (ι_℘, j_℘) labelled by ℘ ⊆ PP_★(Ǒ). For each ℘,
+the bipartition is obtained from the ℘ = ∅ formulas (Section 2.2) by swapping
+the row pair at each PPidx i ∈ ℘.
 
 Returns dict:
 ```
 { frozenset(PPidx subset) → bipartition (tauL, tauR) }
 ```
+
+**Padding**: rows are padded to make pairing uniform:
+
+| Type | Condition | Pad | Purpose |
+|------|-----------|-----|---------|
+| B | even # rows | append 0 | first row is special |
+| D | even # rows | append −1 | (−1+1)/2 = 0 trick |
+| M | odd # rows | append 0 | ensure even count |
+| C | odd # rows | append −1 | ensure even count |
+
+After padding, for B/D the first row is split off; remaining rows form pairs.
+For C/M all rows form pairs directly.
+
+**PPidx enumeration** (0-based):
+
+For ★ ∈ {B, D}: after removing the first row, pair rows at (2i+1, 2i+2).
+PPidx i is primitive iff rows[2i+1] > rows[2i+2] ≥ 0.
+
+For ★ ∈ {C, M}: pair rows at (2i, 2i+1).
+PPidx i is primitive iff rows[2i] > rows[2i+1] ≥ 0.
+
+**Bipartition formulas**: for each pair at PPidx i, when i ∉ ℘ the formula
+is identical to Section 2.2. When i ∈ ℘, the two row values swap:
+
+**★ ∈ {B, M}** (integer division by 2):
+```
+i ∉ ℘:  (c(ι), c(j)) = (rows[2i]   // 2,  rows[2i+1] // 2)
+i ∈ ℘:  (c(ι), c(j)) = (rows[2i+1] // 2,  rows[2i]   // 2)
+```
+
+**★ ∈ {D, C}** (half-integer shift):
+```
+i ∉ ℘:  (c(ι), c(j)) = ((rows[2i+1]+1)//2,  (rows[2i]−1)//2)
+i ∈ ℘:  (c(ι), c(j)) = ((rows[2i]+1)//2,    (rows[2i+1]−1)//2)
+```
+
+Here `rows` refers to the post-padding, post-first-row-removal array (for B/D)
+or the post-padding array (for C/M). Column lengths are sorted decreasingly
+and zeros are stripped to produce the final bipartition.
 
 ---
 
