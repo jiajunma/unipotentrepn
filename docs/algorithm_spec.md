@@ -151,37 +151,93 @@ A subset ℘ ⊆ PP_★(Ǒ) is represented as a `frozenset` of PPidx integers.
 
 **Reference**: [BMSZb] Equation (2.16), (8.9) with ℘ = ∅.
 
-Given dual partition Ǒ and type ★, compute the special-shape bipartition
-(ι_Ǒ, j_Ǒ). Returns `(tauL, tauR)`: column lengths of the two Young diagrams.
+Given dual partition Ǒ and type ★, compute the bipartition (ι_Ǒ, j_Ǒ) with ℘ = ∅.
+This corresponds to the **special representation** of the Weyl group. [BMSZ] works
+exclusively with special representations; the general ℘ ≠ ∅ case (Section 2.3)
+extends to all W-representations. Returns `(tauL, tauR)`: column lengths of the
+two Young diagrams.
 
-**For ★ = B**: first row r₁ contributes c₁(j) = r₁/2. Remaining rows are paired:
+All row indices below are 1-based: r₁ ≥ r₂ ≥ ⋯.
+
+**For ★ = B**: first row r₁ contributes c₁(j) = r₁/2. Remaining rows are paired
+(i = 1, 2, ...):
 ```
-(c_i(ι), c_{i+1}(j)) = (r_{2i}/2, r_{2i+1}/2)    if PPidx i not in ℘
-                      = (r_{2i+1}/2, r_{2i}/2)      if PPidx i ∈ ℘
+(c_i(ι), c_{i+1}(j)) = (r_{2i}/2, r_{2i+1}/2)
 ```
 
-**For ★ = D**: first row r₁ contributes c₁(ι) = (r₁+1)/2. Remaining rows:
+**For ★ = D**: first row r₁ contributes c₁(ι) = (r₁+1)/2. Remaining rows
+(i = 1, 2, ...):
 ```
-(c_{i+1}(ι), c_i(j)) = ((r_{2i}+1)/2, (r_{2i+1}−1)/2)    if PPidx i not in ℘
+vacant  (r_{2i} = r_{2i+1} = 0):  skip
+tailed  (r_{2i} > 0, r_{2i+1} = 0):  c_i(j) = (r_{2i}−1)/2
+normal:  (c_i(j), c_{i+1}(ι)) = ((r_{2i}−1)/2, (r_{2i+1}+1)/2)
 ```
 
-**For ★ = C, M**: rows are paired directly (no first-row offset):
+**For ★ = M**: rows are paired directly (i = 1, 2, ...):
 ```
-(c_i(ι), c_i(j)) = (r_{2i−1}/2, r_{2i}/2)              for M, PPidx i ∉ ℘
-                  = ((r_{2i−1}+1)/2, (r_{2i}−1)/2)      for C, PPidx i ∉ ℘
+(c_i(ι), c_i(j)) = (r_{2i−1}/2, r_{2i}/2)
 ```
+
+**For ★ = C**: rows are paired directly (i = 1, 2, ...):
+```
+vacant  (r_{2i−1} = r_{2i} = 0):  skip
+tailed  (r_{2i−1} > 0, r_{2i} = 0):  c_i(j) = (r_{2i−1}−1)/2
+normal:  (c_i(j), c_i(ι)) = ((r_{2i−1}−1)/2, (r_{2i}+1)/2)
+```
+Note: for C, tauR corresponds to j (using `(r_{odd}−1)/2`) and tauL to ι
+(using `(r_{even}+1)/2`).
 
 ### 2.3 All W-representations: `dpart2Wrepns_with_wp(dpart, rtype)` — Line 1204
 
 **Reference**: [BMSZb] Equation (8.9), Section 8.3.
 
-Computes all bipartitions labelled by ℘ ⊆ PP_★(Ǒ). For each ℘, the
-bipartition is obtained by swapping the row pairs at positions in ℘.
+Computes all bipartitions (ι_℘, j_℘) labelled by ℘ ⊆ PP_★(Ǒ). For each ℘,
+the bipartition is obtained from the ℘ = ∅ formulas (Section 2.2) by swapping
+the row pair at each PPidx i ∈ ℘.
 
 Returns dict:
 ```
 { frozenset(PPidx subset) → bipartition (tauL, tauR) }
 ```
+
+**Padding**: rows are padded to make pairing uniform:
+
+| Type | Condition | Pad | Purpose |
+|------|-----------|-----|---------|
+| B | even # rows | append 0 | first row is special |
+| D | even # rows | append −1 | (−1+1)/2 = 0 trick |
+| M | odd # rows | append 0 | ensure even count |
+| C | odd # rows | append −1 | ensure even count |
+
+After padding, for B/D the first row is split off; remaining rows form pairs.
+For C/M all rows form pairs directly.
+
+**PPidx enumeration** (0-based):
+
+For ★ ∈ {B, D}: after removing the first row, pair rows at (2i+1, 2i+2).
+PPidx i is primitive iff rows[2i+1] > rows[2i+2] ≥ 0.
+
+For ★ ∈ {C, M}: pair rows at (2i, 2i+1).
+PPidx i is primitive iff rows[2i] > rows[2i+1] ≥ 0.
+
+**Bipartition formulas**: for each pair at PPidx i, when i ∉ ℘ the formula
+is identical to Section 2.2. When i ∈ ℘, the two row values swap:
+
+**★ ∈ {B, M}** (integer division by 2):
+```
+i ∉ ℘:  (c(ι), c(j)) = (rows[2i]   // 2,  rows[2i+1] // 2)
+i ∈ ℘:  (c(ι), c(j)) = (rows[2i+1] // 2,  rows[2i]   // 2)
+```
+
+**★ ∈ {D, C}** (half-integer shift):
+```
+i ∉ ℘:  (c(ι), c(j)) = ((rows[2i+1]+1)//2,  (rows[2i]−1)//2)
+i ∈ ℘:  (c(ι), c(j)) = ((rows[2i]+1)//2,    (rows[2i+1]−1)//2)
+```
+
+Here `rows` refers to the post-padding, post-first-row-removal array (for B/D)
+or the post-padding array (for C/M). Column lengths are sorted decreasingly
+and zeros are stripped to produce the final bipartition.
 
 ---
 
