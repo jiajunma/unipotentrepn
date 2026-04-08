@@ -10,7 +10,7 @@ A painted bipartition (PBP) τ = (ι, P) × (j, Q) × γ consists of:
 
 The painting must satisfy five constraints:
 1. Symbol sets are type-dependent ([BMSZb] Def 2.25)
-2. P and Q paint the same cells with • ([BMSZb] Def 2.3)
+2. P and Q have the same •-sub-diagram ([BMSZb] Def 2.3)
 3. Layer monotonicity ↔ layer stripping ([BMSZ] Def 3.1 (1))
 4. Row uniqueness for s, r ([BMSZ] Def 3.1 (2))
 5. Column uniqueness for c, d ([BMSZ] Def 3.1 (3))
@@ -23,7 +23,8 @@ import CombUnipotent.Basic
     assigning a DRC symbol to each cell.
 
     The painting is extended to all of ℕ × ℕ by setting paint = • outside μ.
-    This simplifies cross-diagram comparisons (dot matching, row uniqueness). -/
+    This is a convention for cells not in the diagram; the mathematically
+    meaningful painting is only on cells within the shape. -/
 structure PaintedYoungDiagram where
   /-- The underlying Young diagram (shape). -/
   shape : YoungDiagram
@@ -37,25 +38,11 @@ namespace PaintedYoungDiagram
 /-- Layer monotonicity: within the shape, the layer order of symbols is
     non-decreasing when moving down (increasing row) or right (increasing column).
 
-    This is equivalent to the layer stripping condition in [BMSZ] Definition 3.1 (1):
-    for each k ∈ {0,1,2,3}, the set of cells with `layerOrd ≤ k` forms a Young diagram
-    (i.e., is a lower set in ℕ × ℕ with the product order).
-
-    **Proof of equivalence**:
-    (⇒) If layerOrd is monotone and (i₂,j₂) has layerOrd ≤ k with (i₁,j₁) ≤ (i₂,j₂),
-    then layerOrd(i₁,j₁) ≤ layerOrd(i₂,j₂) ≤ k.
-    (⇐) Given (i₁,j₁) ≤ (i₂,j₂), let k = layerOrd(i₂,j₂). Then (i₂,j₂) is in the
-    k-th sub-diagram. By lower set, so is (i₁,j₁), meaning layerOrd(i₁,j₁) ≤ k. -/
+    Equivalent to the layer stripping condition [BMSZ] Def 3.1 (1):
+    for each k, the cells with `layerOrd ≤ k` form a Young diagram (lower set). -/
 def layerMonotone (D : PaintedYoungDiagram) : Prop :=
   ∀ i₁ j₁ i₂ j₂, i₁ ≤ i₂ → j₁ ≤ j₂ → (i₂, j₂) ∈ D.shape →
     (D.paint i₁ j₁).layerOrd ≤ (D.paint i₂ j₂).layerOrd
-
-/-- In a layer-monotone diagram, cells above-and-left of a shape cell
-    are also in the shape (inherited from YoungDiagram.isLowerSet). -/
-theorem mem_of_le_of_mem (D : PaintedYoungDiagram) {i₁ j₁ i₂ j₂ : ℕ}
-    (hi : i₁ ≤ i₂) (hj : j₁ ≤ j₂) (h : (i₂, j₂) ∈ D.shape) :
-    (i₁, j₁) ∈ D.shape :=
-  D.shape.isLowerSet (Prod.mk_le_mk.mpr ⟨hi, hj⟩) h
 
 end PaintedYoungDiagram
 
@@ -89,20 +76,24 @@ structure PBP where
   sym_Q : ∀ i j, (i, j) ∈ Q.shape → (Q.paint i j).allowed γ .R
 
   -- (2) Dot matching: [BMSZb] Definition 2.3 (1)
-  /-- P and Q agree on which cells are painted •.
-      Since paint = • outside each shape, this implies that non-• cells
-      of one diagram lie within the shape of the other (see lemmas below). -/
-  dot_match : ∀ i j, P.paint i j = .dot ↔ Q.paint i j = .dot
+  /-- P and Q have identical •-sub-diagrams: a cell is a •-cell of P
+      (i.e., in P.shape and painted •) iff it is a •-cell of Q.
+
+      This replaces the earlier `∀ i j, P.paint i j = .dot ↔ Q.paint i j = .dot`
+      which was too strong: for D type, Q is entirely •, and that formulation
+      would force P to also be entirely •. The correct constraint only requires
+      the •-cells *within each shape* to agree. -/
+  dot_match : ∀ i j, ((i, j) ∈ P.shape ∧ P.paint i j = .dot) ↔
+                      ((i, j) ∈ Q.shape ∧ Q.paint i j = .dot)
 
   -- (3) Layer monotonicity ↔ layer stripping: [BMSZ] Definition 3.1 (1)
-  /-- P satisfies the layer ordering • < s < r < c < d from top-left to bottom-right. -/
+  /-- P satisfies the layer ordering • < s < r < c < d. -/
   mono_P : P.layerMonotone
   /-- Q satisfies the layer ordering. -/
   mono_Q : Q.layerMonotone
 
   -- (4) Row uniqueness: [BMSZ] Definition 3.1 (2)
-  /-- Each row has at most one cell painted `s`, across both P and Q combined.
-      (Outside both shapes, paint = • ≠ s, so this constrains only cells in shapes.) -/
+  /-- Each row has at most one cell painted `s`, across both P and Q combined. -/
   row_s : ∀ i (s₁ s₂ : Side) (j₁ j₂ : ℕ),
     paintBySide P Q s₁ i j₁ = .s →
     paintBySide P Q s₂ i j₂ = .s →
@@ -125,34 +116,102 @@ structure PBP where
 
 namespace PBP
 
-/-! ## Basic consequences -/
+/-! ## The dot sub-diagram -/
 
-/-- The bipartition (ι, j) = (P.shape, Q.shape). -/
-def bipartition (τ : PBP) : YoungDiagram × YoungDiagram :=
-  (τ.P.shape, τ.Q.shape)
+/-- The •-cells of a layer-monotone painted Young diagram form a Young diagram.
 
-/-- A cell painted non-• in P must lie within Q's shape.
-    Proof: if (i,j) ∉ Q.shape then Q.paint = • (paint_outside),
-    so P.paint = • (dot_match.mpr), contradicting the hypothesis. -/
-theorem mem_Q_of_P_nonDot (τ : PBP) {i j : ℕ} (h : τ.P.paint i j ≠ .dot) :
-    (i, j) ∈ τ.Q.shape := by
-  by_contra h_not
-  exact h ((τ.dot_match i j).mpr (τ.Q.paint_outside i j h_not))
+    `IsLowerSet` convention: `∀ a b, b ≤ a → a ∈ S → b ∈ S`.
+    Here a = ⟨i₁, j₁⟩ ∈ S (a dot cell), b = ⟨i₂, j₂⟩ with b ≤ a.
+    By monotonicity, paint(i₂,j₂).layerOrd ≤ paint(i₁,j₁).layerOrd = 0,
+    so paint(i₂,j₂) = •. -/
+def dotDiag (D : PaintedYoungDiagram) (hm : D.layerMonotone) : YoungDiagram where
+  cells := D.shape.cells.filter fun c => D.paint c.1 c.2 = .dot
+  isLowerSet := by
+    -- IsLowerSet: ∀ a b, b ≤ a → a ∈ S → b ∈ S
+    -- a = ⟨i₁, j₁⟩ (in set), b = ⟨i₂, j₂⟩ (to prove in set)
+    -- hle : ⟨i₂, j₂⟩ ≤ ⟨i₁, j₁⟩, i.e., i₂ ≤ i₁ and j₂ ≤ j₁
+    intro ⟨i₁, j₁⟩ ⟨i₂, j₂⟩ hle hmem
+    simp only [Finset.mem_coe, Finset.mem_filter, YoungDiagram.mem_cells] at hmem ⊢
+    obtain ⟨hmem₁, hpaint₁⟩ := hmem
+    refine ⟨D.shape.isLowerSet hle hmem₁, ?_⟩
+    -- hm : i₂ ≤ i₁ → j₂ ≤ j₁ → (i₁, j₁) ∈ shape → layerOrd(i₂,j₂) ≤ layerOrd(i₁,j₁)
+    have hle' := Prod.mk_le_mk.mp hle
+    have hmono := hm i₂ j₂ i₁ j₁ hle'.1 hle'.2 hmem₁
+    rw [hpaint₁, DRCSymbol.layerOrd] at hmono
+    -- paint(i₂,j₂).layerOrd ≤ 0
+    match h : D.paint i₂ j₂, hmono with
+    | .dot, _ => rfl
 
-/-- A cell painted non-• in Q must lie within P's shape. -/
-theorem mem_P_of_Q_nonDot (τ : PBP) {i j : ℕ} (h : τ.Q.paint i j ≠ .dot) :
-    (i, j) ∈ τ.P.shape := by
-  by_contra h_not
-  exact h (((τ.dot_match i j).mp (τ.P.paint_outside i j h_not)).symm ▸ rfl)
+/-- The dot sub-diagrams of P and Q are equal (from dot_match). -/
+theorem dotDiag_eq (τ : PBP) : dotDiag τ.P τ.mono_P = dotDiag τ.Q τ.mono_Q := by
+  ext ⟨i, j⟩
+  simp only [dotDiag, YoungDiagram.mem_mk, Finset.mem_filter, YoungDiagram.mem_cells]
+  exact τ.dot_match i j
 
-/-- The non-• cells of P are exactly the non-• cells of Q.
-    This is a direct restatement of dot_match in contrapositive form. -/
-theorem nonDot_iff (τ : PBP) (i j : ℕ) :
-    τ.P.paint i j ≠ .dot ↔ τ.Q.paint i j ≠ .dot := by
+/-! ## Shape constraints by type -/
+
+/-- For D type: Q is entirely •, so Q.shape equals the dot sub-diagram. -/
+theorem Q_all_dot_of_D (τ : PBP) (hγ : τ.γ = .D) (i j : ℕ) (h : (i, j) ∈ τ.Q.shape) :
+    τ.Q.paint i j = .dot := by
+  have := τ.sym_Q i j h
+  rw [hγ] at this
+  -- allowed D R σ ↔ σ = .dot
+  simp [DRCSymbol.allowed] at this
+  exact this
+
+/-- For D type: Q.shape ≤ P.shape (Q is contained in P as Young diagrams).
+    Proof: every cell of Q is • (by Q_all_dot_of_D), so by dot_match
+    it is also a •-cell of P, hence in P.shape. -/
+theorem Q_le_P_of_D (τ : PBP) (hγ : τ.γ = .D) : τ.Q.shape ≤ τ.P.shape := by
+  intro ⟨i, j⟩ hmem
+  have hq_dot := τ.Q_all_dot_of_D hγ i j hmem
+  exact ((τ.dot_match i j).mpr ⟨hmem, hq_dot⟩).1
+
+/-- For D type: Q.shape equals the dot diagram of P. -/
+theorem Q_eq_dotDiag_of_D (τ : PBP) (hγ : τ.γ = .D) :
+    τ.Q.shape = (dotDiag τ.P τ.mono_P) := by
+  ext ⟨i, j⟩
+  simp only [dotDiag, YoungDiagram.mem_mk, Finset.mem_filter, YoungDiagram.mem_cells]
   constructor
-  · intro h
-    exact fun hq => h ((τ.dot_match i j).mpr hq)
-  · intro h
-    exact fun hp => h ((τ.dot_match i j).mp hp)
+  · intro hmem
+    exact (τ.dot_match i j).mpr ⟨hmem, τ.Q_all_dot_of_D hγ i j hmem⟩
+  · intro ⟨_, hp_dot⟩
+    exact ((τ.dot_match i j).mp ⟨‹_›, hp_dot⟩).1
+
+/-- For B⁺/B⁻ type: P has only {•, c}. Non-• cells in P are all c. -/
+theorem P_nonDot_eq_c_of_B (τ : PBP) (hγ : τ.γ = .Bplus ∨ τ.γ = .Bminus)
+    (i j : ℕ) (h : (i, j) ∈ τ.P.shape) (hne : τ.P.paint i j ≠ .dot) :
+    τ.P.paint i j = .c := by
+  have hsym := τ.sym_P i j h
+  rcases hγ with h₁ | h₁ <;> rw [h₁] at hsym <;> simp [DRCSymbol.allowed] at hsym <;> tauto
+
+/-- For C type: Q has only {•, s}. Non-• cells in Q are all s. -/
+theorem Q_nonDot_eq_s_of_C (τ : PBP) (hγ : τ.γ = .C)
+    (i j : ℕ) (h : (i, j) ∈ τ.Q.shape) (hne : τ.Q.paint i j ≠ .dot) :
+    τ.Q.paint i j = .s := by
+  have := τ.sym_Q i j h
+  rw [hγ] at this
+  simp [DRCSymbol.allowed] at this
+  tauto
+
+/-! ## Descent type and direction -/
+
+/-- The Howe dual type under descent.
+    Reference: [BMSZ] Section 3.3.
+    C ↔ D, B⁺ → M, B⁻ → M, M → B⁺ (default; actual B⁺/B⁻ determined by P). -/
+def descentTargetType : RootType → RootType
+  | .C => .D
+  | .D => .C
+  | .Bplus => .M
+  | .Bminus => .M
+  | .M => .Bplus  -- default; corrected to B⁻ when c ∈ first column of P
+
+/-- Which side's first column is removed in descent.
+    C, B⁺, B⁻: remove first column of Q (right).
+    D, M: remove first column of P (left).
+    Reference: [BMSZ] Section 3.3, Lemma 3.7. -/
+def descentSide : RootType → Side
+  | .C | .Bplus | .Bminus => .R
+  | .D | .M => .L
 
 end PBP
