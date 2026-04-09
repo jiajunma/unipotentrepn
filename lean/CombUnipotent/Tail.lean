@@ -179,7 +179,69 @@ theorem prop_10_9_partB (τ₁ τ₂ : PBP)
     τ₁.P.paint i 0 = τ₂.P.paint i 0 := by
   rw [col0_dot_above_P τ₁ hi, col0_dot_above_P τ₂ (hshapeP ▸ hi)]
 
-/-! ## Part C: Tail counts determined -/
+/-! ## Part C: Tail counts determined
+
+Split into:
+- Part C1 (arithmetic): the system of equations from signature + column
+  uniqueness determines all tail counts uniquely.
+- Part C2 (decomposition): the signature difference reduces to weighted
+  sums on the tail (Finset decomposition, sorry'd). -/
+
+/-- **Part C1 (arithmetic core)**: if two tuples (n_s, n_r, n_c, n_d) in ℕ satisfy:
+    - same total: n_s₁ + n_r₁ + n_c₁ + n_d₁ = n_s₂ + n_r₂ + n_c₂ + n_d₂
+    - same weighted r-sum: 2·n_r₁ + n_c₁ + n_d₁ = 2·n_r₂ + n_c₂ + n_d₂
+    - same n_d: n_d₁ = n_d₂
+    - n_c bounded: n_c₁ ≤ 1 and n_c₂ ≤ 1
+    then all components are equal. -/
+theorem tail_counts_arith
+    {ns₁ nr₁ nc₁ nd₁ ns₂ nr₂ nc₂ nd₂ : ℕ}
+    (htot : ns₁ + nr₁ + nc₁ + nd₁ = ns₂ + nr₂ + nc₂ + nd₂)
+    (hwr : 2 * nr₁ + nc₁ + nd₁ = 2 * nr₂ + nc₂ + nd₂)
+    (hnd : nd₁ = nd₂)
+    (hc1 : nc₁ ≤ 1) (hc2 : nc₂ ≤ 1) :
+    ns₁ = ns₂ ∧ nr₁ = nr₂ ∧ nc₁ = nc₂ := by
+  -- From hwr and hnd: 2·nr₁ + nc₁ = 2·nr₂ + nc₂
+  have hwr' : 2 * nr₁ + nc₁ = 2 * nr₂ + nc₂ := by omega
+  -- If nr₁ > nr₂, then nc₂ - nc₁ = 2(nr₁ - nr₂) ≥ 2, but nc₂ ≤ 1. Contradiction.
+  -- If nr₂ > nr₁, symmetric. So nr₁ = nr₂, hence nc₁ = nc₂.
+  have hnr : nr₁ = nr₂ := by
+    by_contra h
+    rcases Nat.lt_or_gt_of_ne h with h | h
+    · -- nr₁ < nr₂: then 2nr₂ > 2nr₁, so nc₁ > nc₂ + 2(nr₂-nr₁-1) + 2 > nc₂ + 1
+      -- but nc₁ ≤ 1. So nc₂ + 2 ≤ 2nr₂ - 2nr₁ + nc₂ = nc₁ ≤ 1
+      omega
+    · omega
+  have hnc : nc₁ = nc₂ := by omega
+  have hns : ns₁ = ns₂ := by omega
+  exact ⟨hns, hnr, hnc⟩
+
+/-- **Part C2 (Finset decomposition)**: the signature difference for D type
+    reduces to weighted sums on the tail counts.
+    This requires decomposing PaintedYoungDiagram.countSym into
+    column 0 (dot part + tail) + columns ≥ 1.
+
+    The conclusion: the "weighted r-sum" 2·n_r_tail + n_c_tail + n_d_tail
+    is determined by (signature, shapes, columns ≥ 1). -/
+theorem tail_weighted_sums_eq (τ₁ τ₂ : PBP)
+    (hγ₁ : τ₁.γ = .D) (hγ₂ : τ₂.γ = .D)
+    (hshapeP : τ₁.P.shape = τ₂.P.shape)
+    (hshapeQ : τ₁.Q.shape = τ₂.Q.shape)
+    (hdescent_P : ∀ i j, 1 ≤ j → τ₁.P.paint i j = τ₂.P.paint i j)
+    (hsig : PBP.signature τ₁ = PBP.signature τ₂)
+    (a : ℕ) (ha : a = τ₁.Q.shape.colLen 0) (n : ℕ) (hn : a + n = τ₁.P.shape.colLen 0) :
+    -- Weighted r-sum
+    2 * countCol0 τ₁.P.paint .r a n + countCol0 τ₁.P.paint .c a n + countCol0 τ₁.P.paint .d a n =
+    2 * countCol0 τ₂.P.paint .r a n + countCol0 τ₂.P.paint .c a n + countCol0 τ₂.P.paint .d a n := by
+  sorry -- Finset decomposition of signature
+
+/-- D type epsilon determines n_d in tail. -/
+theorem tail_nd_eq (τ₁ τ₂ : PBP)
+    (hγ₁ : τ₁.γ = .D) (hγ₂ : τ₂.γ = .D)
+    (hshapeP : τ₁.P.shape = τ₂.P.shape)
+    (heps : PBP.epsilon τ₁ = PBP.epsilon τ₂)
+    (a : ℕ) (ha : a = τ₁.Q.shape.colLen 0) (n : ℕ) (hn : a + n = τ₁.P.shape.colLen 0) :
+    countCol0 τ₁.P.paint .d a n = countCol0 τ₂.P.paint .d a n := by
+  sorry -- From epsilon + column uniqueness (n_d ∈ {0,1}) + monotonicity
 
 theorem prop_10_9_partC (τ₁ τ₂ : PBP)
     (hγ₁ : τ₁.γ = .D) (hγ₂ : τ₂.γ = .D)
@@ -191,7 +253,36 @@ theorem prop_10_9_partC (τ₁ τ₂ : PBP)
     (a : ℕ) (ha : a = τ₁.Q.shape.colLen 0)
     (n : ℕ) (hn : a + n = τ₁.P.shape.colLen 0) :
     ∀ σ, countCol0 τ₁.P.paint σ a n = countCol0 τ₂.P.paint σ a n := by
-  sorry
+  -- n_dot in tail = 0 for both (by col0_nonDot_tail_D)
+  have hnd_dot : countCol0 τ₁.P.paint .dot a n = countCol0 τ₂.P.paint .dot a n := by
+    rw [countCol0_eq_zero_of_ne _ _ _ _ (fun k hk => col0_nonDot_tail_D τ₁ hγ₁ (by omega) (by omega)),
+        countCol0_eq_zero_of_ne _ _ _ _ (fun k hk => col0_nonDot_tail_D τ₂ hγ₂
+          (by rw [← hshapeQ]; omega) (by rw [← hshapeP]; omega))]
+  -- n_d in tail: determined by epsilon
+  have hnd_d := tail_nd_eq τ₁ τ₂ hγ₁ hγ₂ hshapeP heps a ha n hn
+  -- Weighted r-sum: from signature decomposition
+  have hwr := tail_weighted_sums_eq τ₁ τ₂ hγ₁ hγ₂ hshapeP hshapeQ hdescent_P hsig a ha n hn
+  -- Total tail cells: same (from shapes)
+  have htot : countCol0 τ₁.P.paint .s a n + countCol0 τ₁.P.paint .r a n +
+              countCol0 τ₁.P.paint .c a n + countCol0 τ₁.P.paint .d a n =
+              countCol0 τ₂.P.paint .s a n + countCol0 τ₂.P.paint .r a n +
+              countCol0 τ₂.P.paint .c a n + countCol0 τ₂.P.paint .d a n := by
+    sorry -- total = n (tail length, same for both) minus dot count (0 for both)
+  -- Column uniqueness: n_c ≤ 1 in column 0
+  have hc1 : countCol0 τ₁.P.paint .c a n ≤ 1 := by
+    sorry -- from col_c_P: at most one c per column
+  have hc2 : countCol0 τ₂.P.paint .c a n ≤ 1 := by
+    sorry -- same
+  -- Apply arithmetic core
+  have ⟨hns, hnr, hnc⟩ := tail_counts_arith htot hwr hnd_d hc1 hc2
+  -- Now handle each symbol
+  intro σ
+  cases σ with
+  | dot => exact hnd_dot
+  | s => exact hns
+  | r => exact hnr
+  | c => exact hnc
+  | d => exact hnd_d
 
 /-! ## Proposition 10.9 assembly -/
 
