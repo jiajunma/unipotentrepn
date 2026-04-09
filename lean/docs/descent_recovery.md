@@ -203,9 +203,111 @@ P'(i, j) = dot if i < cR, s if cR ≤ i < cL, P(i,j) if i ≥ cL
 Q'(i, j) = dot if i < cR, Q(i, j+1) if i ≥ cR
 ```
 
-From ∇τ₁ = ∇τ₂ (same P' and Q'):
+From ∇τ₁ = ∇τ₂ (same P' and Q').
 
-**Step 1: Recover Q on columns ≥ 1.**
+This has the SAME structure as C→D! P keeps shape, Q shifts left.
+The proof is symmetric:
+
+**Step 1: Recover P on all columns.**
+
+Same 4-way case split as C→D. Key facts for B type P ({•, c}):
+- Non-dot in B-type P is c (layerOrd = 3 > 1). ✓ (analogue of layerOrd_gt_one_of_nonDot_C)
+- dotScolLen(P, j) = dot count (no s in B-type P). ✓ 
+- descent_preserves_nonDot: P non-dot → P' = P. Uses cR ≤ cL.
+  For B type: cR = dotScolLen(Q, j+1) ≤ dotScolLen(P, j) = cL?
+  NEED: interlacing cR ≤ cL for B type.
+  
+  For B type: dotScolLen(Q, j+1) = dot+s count in Q col j+1.
+  dotScolLen(P, j) = dot count in P col j.
+  By dot_match: dot cells in P = dot cells in Q (same sub-diagram δ).
+  So dotScolLen(P, j) = δ.colLen(j) (for B type P, all dot+s = all dot).
+  And dotScolLen(Q, j+1) counts cells in Q col j+1 with layerOrd ≤ 1.
+  
+  Need: δ.colLen(j) ≥ dotScolLen(Q, j+1).
+  
+  Hmm, dotScolLen(Q, j+1) ≥ δ.colLen(j+1) (dot+s ≥ dot in Q col j+1).
+  And δ.colLen(j) ≥ δ.colLen(j+1) (δ is a YD, colLen non-increasing).
+  But we need δ.colLen(j) ≥ dotScolLen(Q, j+1), not just ≥ δ.colLen(j+1).
+  
+  dotScolLen(Q, j+1) = dot + s count in Q col j+1. But s can add extra rows
+  beyond δ. So dotScolLen(Q, j+1) could be > δ.colLen(j+1).
+  
+  Is δ.colLen(j) ≥ dotScolLen(Q, j+1)?
+  
+  This is analogous to the C-type interlacing: dotDiag_colLen ≥ Q.colLen(succ).
+  For C type Q ({•, s}), Q.colLen = δ.colLen + s count, and we proved
+  δ.colLen(j) ≥ Q.colLen(j+1). By the same argument (s only at rightmost
+  cell of each row in Q): δ.colLen(j) ≥ Q.colLen(j+1) ≥ dotScolLen(Q, j+1).
+  
+  Wait, Q.colLen(j+1) ≥ dotScolLen(Q, j+1)? No, dotScolLen counts dot+s,
+  which for B type Q could include non-dot/s symbols too... Actually
+  dotScolLen counts layerOrd ≤ 1 = {dot, s}. For B type Q ({•, s, r, d}),
+  this counts dot and s cells, excluding r (layerOrd 2) and d (layerOrd 4).
+  So dotScolLen(Q, j+1) ≤ Q.colLen(j+1).
+  
+  And we already know Q.colLen(j+1) ≤ ... hmm, but Q of B type has a
+  different interlacing from C type.
+  
+  Actually, for B type, the interlacing condition analogous to C type is:
+  P.colLen(j) ≥ Q.colLen(j+1) (roughly). Wait, the B→M descent removes
+  Q's column 0. The interlacing needed is cR ≤ cL, i.e.,
+  dotScolLen(Q, j+1) ≤ dotScolLen(P, j).
+  
+  For B type P ({•, c}): dotScolLen(P, j) = dot count = dotDiag.colLen(j).
+  For B type Q: dotScolLen(Q, j+1) = dot+s count in Q col j+1.
+  
+  By the s-rightmost property for Q (same as C type): in B type Q,
+  if (i, j+1) has s, then (i, j+2) ∉ Q.shape. By layer monotonicity
+  of Q, dot+s cells are at the top of each column. And by the
+  Q_dot_left_of_C analogue for B type:
+  
+  Actually, for B type, is there a Q_dot_left analogue? The argument
+  used that Q has {•, s} for C type. For B type, Q has {•, s, r, d}.
+  The s cells are NOT necessarily at the rightmost position of each row,
+  because r and d also appear.
+  
+  Hmm, this is different from C type! For B type Q, the row uniqueness
+  for s says: at most one s per row across P and Q. Since B type P has
+  {•, c} (no s), this means at most one s per row in Q. But Q also has
+  r and d. So the s-rightmost argument doesn't directly apply.
+  
+  Actually, in B type Q, s has layerOrd 1. By layer monotonicity going
+  right: if (i, k) has s (layerOrd 1) and (i, k+1) ∈ Q.shape, then
+  (i, k+1) has layerOrd ≥ 1. So (i, k+1) could be s, r, or d.
+  By row uniqueness for s: at most one s per row. So (i, k+1) ≠ s,
+  meaning (i, k+1) ∈ {r, d} (layerOrd ≥ 2).
+  
+  So s in B-type Q is followed by r or d (or nothing) to the right.
+  This means s DOES NOT satisfy the "s only at rightmost" property
+  of C type Q.
+  
+  For the interlacing: we need cR ≤ cL, i.e., dotScolLen(Q, j+1) ≤ dotScolLen(P, j).
+  
+  dotScolLen(Q, j+1) counts dot+s cells in Q col j+1. These are at
+  the top of the column (by layer monotonicity). By the property above,
+  if (i, j+1) has s, then (i, j+2) has layerOrd ≥ 2 (if exists).
+  
+  Actually, I think the interlacing for B type follows from a different
+  argument. The B→M descent formula requires cL ≥ cR (otherwise we'd
+  get negative s counts). This is guaranteed by the orbit structure
+  (the bipartition formulas ensure the shapes satisfy this).
+  
+  For a formal proof, we could ADD this as a hypothesis (interlacing
+  condition from the orbit), or derive it from the PBP axioms.
+  
+  FOR NOW: assume interlacing cR ≤ cL holds. Then the proof proceeds
+  exactly as C→D.
+
+**Step 1 (assuming interlacing cR ≤ cL):**
+Same 4-way case split as C→D Step 1. Needs B-type analogues:
+- `layerOrd_gt_one_of_nonDot_B`: B-type P non-dot is c, layerOrd = 3 > 1.
+- `Q_colLen_succ_le_dotScolLen_B`: interlacing cR ≤ cL.
+  This does NOT follow from PBP axioms alone for B type.
+  It requires the orbit structure (dual partition constraints).
+  
+  **TODO**: Either add as hypothesis or derive from DualPartition. ✓ (pending)
+
+**Step 2: Recover Q on columns ≥ 1.**
 
 Q' at (i, j) = `if i < cR(j) then dot else Q(i, j+1)`.
 For i ≥ cR: Q'₁ = Q₁(i, j+1), Q'₂ = Q₂(i, j+1). From Q'₁ = Q'₂: Q₁ = Q₂. ✓
