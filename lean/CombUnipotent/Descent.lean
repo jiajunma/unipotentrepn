@@ -272,8 +272,61 @@ noncomputable def fullDescentPaintR_BM := @descentPaintR_BM
 noncomputable def fullDescentPaintL_MB := @descentPaintL_MB
 noncomputable def fullDescentPaintR_MB := @descentPaintR_MB
 
--- TODO: B⁺ → M full descent (with B⁺ corrections)
--- Similar structure to D → C but corrections on P' col 0 and Q' col 0.
+/-- **B⁺ → M full descent** left paint.
+    Naive descent + B⁺ correction (a) on P' column 0.
+
+    Correction (a): (2,3) ∉ ℘ ∧ r₂ > 0 ∧ Q.paint(c₁(ι)-1, 0) ∈ {r,d}
+    → P'(last row of col 0) := s
+
+    In shape terms:
+    - (2,3) ∉ ℘: ¬has23_B τ, i.e., Q.colLen(1) < P.colLen(0) + 2
+    - r₂ > 0: r2_pos τ
+    - Q boundary symbol: Q.paint(P.colLen(0) - 1, 0) ∈ {r, d} -/
+noncomputable def fullDescentPaintL_BpM (τ : PBP) : ℕ → ℕ → DRCSymbol :=
+  fun i j =>
+    let naive := descentPaintL_BM τ i j
+    if j ≠ 0 then naive
+    else
+      -- Correction (a): change last cell of P' col 0 to s
+      let c₁ι := τ.P.shape.colLen 0
+      let qSym := τ.Q.paint (c₁ι - 1) 0
+      if ¬has23_B τ ∧ r2_pos τ ∧ (qSym = .r ∨ qSym = .d) then
+        -- P' col 0 has same shape as P (B→M keeps P shape)
+        if i = τ.P.shape.colLen 0 - 1 then .s else naive
+      else naive
+
+/-- **B⁺ → M full descent** right paint.
+    Naive descent + B⁺ correction (b) on Q' column 0 +
+    additional d→r correction.
+
+    Correction (b): (2,3) ∈ ℘ ∧ Q.paint(c₂(j)-1, 0) ∈ {r,d}
+    → Q'(last row of col 0) := r
+
+    Additional: when P is "shorter" than Q's second column,
+    reverse the lift's tR='r' → nsR='d' conversion. -/
+noncomputable def fullDescentPaintR_BpM (τ : PBP) : ℕ → ℕ → DRCSymbol :=
+  fun i j =>
+    let naive := descentPaintR_BM τ i j
+    if j ≠ 0 then naive
+    else
+      let c₂j := τ.Q.shape.colLen 1
+      let qSym := τ.Q.paint (c₂j - 1) 0
+      -- Correction (b)
+      if has23_B τ ∧ (qSym = .r ∨ qSym = .d) then
+        -- Q' col 0: change last cell to r
+        -- Q' col 0 length = dotScolLen(Q, 1) (from naive)
+        -- Last row of Q' col 0:
+        let q'len := τ.Q.shape.colLen 1  -- Q shifted: col 0 = old col 1
+        if i = q'len - 1 then .r else naive
+      else
+        -- Additional correction: d→r at specific position
+        let sR := τ.Q.shape.colLen 1
+        let nL := τ.P.shape.colLen 0
+        let t := max nL sR - 1
+        let tL_empty := sR > nL
+        if tL_empty ∧ naive = .d ∧ i = t ∧
+           (τ.Q.paint t 0 = .r ∨ τ.Q.paint t 0 = .d) then .r
+        else naive
 
 /-! ## Recovery lemma for D type
 
