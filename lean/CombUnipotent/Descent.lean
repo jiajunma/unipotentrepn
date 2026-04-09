@@ -15,6 +15,8 @@ the new PBP has the correct symbol constraints for the target type.
 -/
 import CombUnipotent.PBP
 
+open Classical
+
 namespace PBP
 
 /-! ## Shape lemmas for descent -/
@@ -183,6 +185,95 @@ def descentType (γ : RootType) : RootType :=
 def descentType_M (τ : PBP) (hγ : τ.γ = .M) : RootType :=
   if (τ.P.shape.cells.filter (fun c => c.2 = 0 ∧ τ.P.paint c.1 c.2 = .c)).Nonempty
   then .Bminus else .Bplus
+
+/-! ## Shape-based conditions for descent corrections
+
+Reference: [BMSZb] Section 10.4.
+
+The corrections to naive descent depend on orbit data (r₂, r₃, etc.)
+which can equivalently be expressed using PBP column lengths:
+  c₁(ι) = P.shape.colLen 0,  c₂(ι) = P.shape.colLen 1
+  c₁(j) = Q.shape.colLen 0,  c₂(j) = Q.shape.colLen 1
+-/
+
+/-- (2,3) ∈ ℘ inferred from B-type PBP shape:
+    c₂(j) ≥ c₁(ι) + 2, i.e., Q's second column exceeds P's first by ≥ 2.
+    Reference: [BMSZb] Section 10.4, shape-based inference for B type. -/
+def has23_B (τ : PBP) : Prop :=
+  τ.Q.shape.colLen 1 ≥ τ.P.shape.colLen 0 + 2
+
+/-- (2,3) ∈ ℘ inferred from D-type PBP shape:
+    c₂(ι) ≥ c₁(j) + 2, i.e., P's second column exceeds Q's first by ≥ 2.
+    Reference: [BMSZb] Section 10.4, shape-based inference for D type. -/
+def has23_D (τ : PBP) : Prop :=
+  τ.P.shape.colLen 1 ≥ τ.Q.shape.colLen 0 + 2
+
+instance (τ : PBP) : Decidable (has23_B τ) := Nat.decLe _ _
+instance (τ : PBP) : Decidable (has23_D τ) := Nat.decLe _ _
+
+/-- r₂(Ǒ) > 0 ↔ at least 2 non-empty columns in the combined PBP.
+    Equivalently: P.colLen(1) > 0 ∨ Q.colLen(0) > 0 (for B type).
+    Reference: algorithm_spec.md Section 4.2. -/
+def r2_pos (τ : PBP) : Prop :=
+  τ.P.shape.colLen 1 > 0 ∨ τ.Q.shape.colLen 0 > 0
+
+/-- r₂ = r₃ > 0 for D type ↔ c₂(ι) = c₁(j) + 1.
+    Reference: algorithm_spec.md Section 4.2 (D correction condition). -/
+def r2_eq_r3_D (τ : PBP) : Prop :=
+  τ.P.shape.colLen 1 = τ.Q.shape.colLen 0 + 1 ∧ τ.P.shape.colLen 1 > 0
+
+/-! ## Full descent paint (naive + corrections)
+
+For B⁺ and D types, the full descent modifies 1-2 cells in column 0
+of the result, compared to the naive descent.
+
+For C and M types, full descent = naive descent (no corrections). -/
+
+/-- **D → C full descent** left paint.
+    Naive descent + D correction on column 0.
+
+    D correction (a): when (2,3) ∉ ℘ ∧ r₂=r₃>0 ∧ P(c₂(ι)-1, 1)=c ∧
+    all P(i, 0) ∈ {r,d} for c₂(ι)-1 ≤ i < c₁(ι):
+    Set P'(c₁(ι')-1, 0) := r.
+
+    D correction (b): when (2,3) ∈ ℘ ∧ P(c₂(ι)-2, 0) ∈ {r,c}:
+    Set P'(c₁(ι')-2, 0) := r, P'(c₁(ι')-1, 0) := P(c₂(ι)-2, 0). -/
+noncomputable def fullDescentPaintL_DC (τ : PBP) : ℕ → ℕ → DRCSymbol :=
+  fun i j =>
+    let naive := descentPaintL_DC τ i j
+    if j ≠ 0 then naive  -- corrections only affect column 0
+    else
+      let c₂ι := τ.P.shape.colLen 1
+      let c₁j := τ.Q.shape.colLen 0
+      let c₁ι' := dotScolLen τ.P 1 + (τ.P.shape.colLen 1 - dotScolLen τ.P 1)
+        -- = P.shape.colLen(1) = P'.shape.colLen(0) since D→C shifts P left
+      if ¬has23_D τ ∧ r2_eq_r3_D τ
+         ∧ τ.P.paint (c₂ι - 1) 1 = .c
+         ∧ (∀ k, c₂ι - 1 ≤ k → k < τ.P.shape.colLen 0 →
+            τ.P.paint k 0 = .r ∨ τ.P.paint k 0 = .d) then
+        -- Correction (a): last cell of P' col 0 := r
+        if i = c₁ι' - 1 then .r else naive
+      else if has23_D τ ∧ c₂ι ≥ 2 ∧ (τ.P.paint (c₂ι - 2) 0 = .r ∨ τ.P.paint (c₂ι - 2) 0 = .c) then
+        -- Correction (b): modify last two cells of P' col 0
+        if i = c₁ι' - 2 then .r
+        else if i = c₁ι' - 1 then τ.P.paint (c₂ι - 2) 0
+        else naive
+      else naive
+
+/-- D → C full descent right paint = naive (corrections only affect left). -/
+noncomputable def fullDescentPaintR_DC (τ : PBP) : ℕ → ℕ → DRCSymbol :=
+  descentPaintR_DC τ
+
+/-- Full descent paints for C → D, B → M, M → B: same as naive (no corrections). -/
+noncomputable def fullDescentPaintL_CD := @descentPaintL_CD
+noncomputable def fullDescentPaintR_CD := @descentPaintR_CD
+noncomputable def fullDescentPaintL_BM := @descentPaintL_BM
+noncomputable def fullDescentPaintR_BM := @descentPaintR_BM
+noncomputable def fullDescentPaintL_MB := @descentPaintL_MB
+noncomputable def fullDescentPaintR_MB := @descentPaintR_MB
+
+-- TODO: B⁺ → M full descent (with B⁺ corrections)
+-- Similar structure to D → C but corrections on P' col 0 and Q' col 0.
 
 /-! ## Recovery lemma for D type
 
