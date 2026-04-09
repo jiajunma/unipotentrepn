@@ -488,6 +488,10 @@ theorem descent_eq_implies_cols_ge1_MB (τ₁ τ₂ : PBP)
     (hdescR : ∀ i j, descentPaintR_MB τ₁ i j = descentPaintR_MB τ₂ i j) :
     (∀ i j, 1 ≤ j → τ₁.P.paint i j = τ₂.P.paint i j) ∧
     (∀ i j, τ₁.Q.paint i j = τ₂.Q.paint i j) := by
+  -- M→B has the SAME structure as D→C for the P (left) side:
+  -- P' = if i < cL then dot else P(i, j+1), cL = dotScolLen(P, j+1).
+  -- Recovery of P cols ≥ 1: same 3-way case split as D→C.
+  -- Q recovery: from Q' directly (M→B Q' preserves Q's non-dot+s part).
   sorry
 
 /-! ## B → M Recovery: descent is injective
