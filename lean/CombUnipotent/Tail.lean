@@ -289,7 +289,24 @@ theorem countSym_split (D : PaintedYoungDiagram) (σ : DRCSymbol) :
 /-- Bridge: countSymCol0 = countCol0 over the full column. -/
 theorem countSymCol0_eq_countCol0 (D : PaintedYoungDiagram) (σ : DRCSymbol) :
     countSymCol0 D σ = countCol0 D.paint σ 0 (D.shape.colLen 0) := by
-  sorry -- Finset.filter.card on cells col=0 ↔ List.range.filter.length
+  -- LHS = card of {(i,0) ∈ D.shape.cells | paint i 0 = σ}
+  -- RHS = length of (List.range (colLen 0)).filter(k => paint k 0 = σ)
+  -- Bijection: (i, 0) ↦ i. Uses: (i, 0) ∈ shape ↔ i < colLen 0.
+  simp only [countSymCol0, countCol0, Nat.zero_add]
+  -- Rewrite LHS Finset as image of a filtered Finset.range
+  have h_eq : D.shape.cells.filter (fun c => c.2 = 0 ∧ D.paint c.1 c.2 = σ) =
+    (Finset.range (D.shape.colLen 0) |>.filter (fun k => D.paint k 0 = σ)).image (fun k => (k, 0)) := by
+    ext ⟨i, j⟩
+    simp only [Finset.mem_filter, YoungDiagram.mem_cells, Finset.mem_image, Finset.mem_range,
+      YoungDiagram.mem_iff_lt_colLen]
+    constructor
+    · rintro ⟨hmem, rfl, hpaint⟩; exact ⟨i, ⟨hmem, hpaint⟩, rfl⟩
+    · rintro ⟨k, ⟨hk, hpaint⟩, heq⟩
+      obtain ⟨rfl, rfl⟩ := Prod.mk.inj heq; exact ⟨hk, rfl, hpaint⟩
+  rw [h_eq, Finset.card_image_of_injective _ (fun a b h => (Prod.mk.inj h).1)]
+  -- Now: card of Finset.range(n).filter(p) = length of List.range(n).filter(p)
+  -- Finset.range is the same as List.range.toFinset, and List.range has no dups
+  rfl
 
 /-- For D type, Q has no non-dot symbols. -/
 theorem Q_countSym_eq_zero_of_D (τ : PBP) (hγ : τ.γ = .D)
@@ -362,13 +379,61 @@ theorem tail_weighted_sums_eq (τ₁ τ₂ : PBP)
     have hge1_r := countSymColGe1_eq τ₁.P τ₂.P hshapeP hdescent_P .r
     have hge1_c := countSymColGe1_eq τ₁.P τ₂.P hshapeP hdescent_P .c
     have hge1_d := countSymColGe1_eq τ₁.P τ₂.P hshapeP hdescent_P .d
-    -- From hsig: signature τ₁ = signature τ₂
-    -- For D type: sig.1 = P.countSym .dot + Q.countSym .dot + 2*P.countSym .r + P.countSym .c + P.countSym .d
-    -- Rewrite P.countSym σ using decomposition h
-    -- Cancel common colGe1 parts
-    -- Result: 2*countCol0 .r + countCol0 .c + countCol0 .d agree
-    -- This requires unfolding PBP.signature which is noncomputable
-    sorry
+    -- Extract signature.1 equation for D type
+    have hsig1 := congr_arg Prod.fst hsig
+    -- Unfold signature for D type
+    simp only [PBP.signature, hγ₁, hγ₂] at hsig1
+    -- hsig1 : nDot₁ + 2*nR₁ + nC₁ + nD₁ = nDot₂ + 2*nR₂ + nC₂ + nD₂
+    -- where nR = P.countSym .r + Q.countSym .r, etc.
+    -- For D type: Q.countSym .r/c/d = 0 (Q is all dots)
+    rw [Q_countSym_zero_of_D τ₁ hγ₁ .r (by decide),
+        Q_countSym_zero_of_D τ₁ hγ₁ .c (by decide),
+        Q_countSym_zero_of_D τ₁ hγ₁ .d (by decide),
+        Q_countSym_zero_of_D τ₂ hγ₂ .r (by decide),
+        Q_countSym_zero_of_D τ₂ hγ₂ .c (by decide),
+        Q_countSym_zero_of_D τ₂ hγ₂ .d (by decide)] at hsig1
+    -- Now hsig1 involves P.countSym and Q.countSym .dot only
+    -- Rewrite P.countSym .r/.c/.d using decomposition
+    rw [hr₁, hr₂, hc₁, hc₂, hd₁, hd₂] at hsig1
+    -- Cancel equal colGe1 parts
+    rw [hge1_r, hge1_c, hge1_d] at hsig1
+    -- Q.countSym .dot: for D type, Q is all dots, so countSym .dot = Q.card
+    -- Q.card is determined by shape
+    have hQ_dot : τ₁.Q.countSym .dot = τ₂.Q.countSym .dot := by
+      simp only [PaintedYoungDiagram.countSym]
+      congr 1; rw [hshapeQ]
+      ext ⟨i, j⟩; simp only [Finset.mem_filter]
+      constructor
+      · rintro ⟨hm, hp⟩; exact ⟨hm, Q_all_dot_of_D τ₂ hγ₂ i j hm⟩
+      · rintro ⟨hm, hp⟩; exact ⟨hm, Q_all_dot_of_D τ₁ hγ₁ i j (hshapeQ ▸ hm)⟩
+    rw [hQ_dot] at hsig1
+    -- P.countSym .dot decomposes: countSym_split + countSymColGe1 agrees
+    rw [countSym_split τ₁.P .dot, countSym_split τ₂.P .dot] at hsig1
+    have hP_dot_ge1 := countSymColGe1_eq τ₁.P τ₂.P hshapeP hdescent_P .dot
+    -- countSymCol0 .dot agrees (by shapes + dot_match)
+    have hcol0_dot : countSymCol0 τ₁.P .dot = countSymCol0 τ₂.P .dot := by
+      -- Use bridge: countSymCol0 = countCol0, then both equal a (=Q.colLen 0)
+      rw [countSymCol0_eq_countCol0, countSymCol0_eq_countCol0]
+      rw [show τ₂.P.shape.colLen 0 = τ₁.P.shape.colLen 0 from by rw [hshapeP]]
+      -- Both count dots in P's column 0 over [0, P.colLen(0))
+      -- In the dot region [0, a), paint = dot for both. In the tail [a, P.colLen), paint ≠ dot.
+      -- So both counts = a.
+      have hle := Q_colLen0_le_P_colLen0_D τ₁ hγ₁
+      -- Split at a
+      conv_lhs => rw [countCol0_split _ _ 0 a _ (by omega)]
+      conv_rhs => rw [countCol0_split _ _ 0 a _ (by omega)]
+      simp only [Nat.zero_add, show τ₁.P.shape.colLen 0 - a = n from by omega]
+      -- Tail part: 0 dots
+      rw [countCol0_eq_zero_of_ne _ _ a n (fun k hk => col0_nonDot_tail_D τ₁ hγ₁ (by omega) (by omega))]
+      rw [countCol0_eq_zero_of_ne _ _ a n (fun k hk => col0_nonDot_tail_D τ₂ hγ₂
+            (by rw [← hshapeQ]; omega) (by rw [← hshapeP]; omega))]
+      -- Dot region: both paint dot, so same count
+      congr 1
+      exact countCol0_congr _ _ .dot 0 a (fun k hk => by
+        rw [col0_dot_below_Q_D τ₁ hγ₁ (by omega)]
+        rw [col0_dot_below_Q_D τ₂ hγ₂ (by rw [← hshapeQ]; omega)])
+    rw [hcol0_dot, hP_dot_ge1] at hsig1
+    omega
   -- Proof of the decomposition: countSym = tail + colGe1
   intro σ hσ τ hγ ha' hn'
   rw [countSym_split τ.P σ, countSymCol0_eq_countCol0]
