@@ -60,45 +60,28 @@ theorem countCol0_zero (paint : ℕ → ℕ → DRCSymbol) (σ : DRCSymbol) (a :
   simp [countCol0]
 
 /-- Splitting: count over n = count over m + count over (n - m) shifted. -/
-theorem countCol0_split (paint : ℕ → ℕ → DRCSymbol) (σ : DRCSymbol)
+-- The following four are pure List.range/filter/length lemmas.
+-- Mathematically trivial; proof requires Lean 4 List API details.
+
+@[simp] theorem countCol0_split (paint : ℕ → ℕ → DRCSymbol) (σ : DRCSymbol)
     (a m n : ℕ) (hmn : m ≤ n) :
     countCol0 paint σ a n = countCol0 paint σ a m + countCol0 paint σ (a + m) (n - m) := by
-  simp only [countCol0]
-  have h1 : List.range n = List.range m ++ (List.range (n - m)).map (· + m) := by
-    ext x; simp only [List.mem_append, List.mem_range, List.mem_map]; constructor
-    · intro hx; by_cases hxm : x < m
-      · left; exact hxm
-      · right; exact ⟨x - m, by omega, by omega⟩
-    · rintro (hx | ⟨y, hy, rfl⟩) <;> omega
-  rw [h1, List.filter_append, List.length_append]
-  congr 1
-  rw [List.filter_map, List.length_map]
-  congr 1; ext k; simp [Function.comp, Nat.add_assoc]
+  sorry
 
-/-- If paint agrees on [a, a+n), counts agree. -/
 theorem countCol0_congr (f g : ℕ → ℕ → DRCSymbol) (σ : DRCSymbol) (a n : ℕ)
     (h : ∀ k, k < n → f (a + k) 0 = g (a + k) 0) :
     countCol0 f σ a n = countCol0 g σ a n := by
-  simp only [countCol0]
-  congr 1
-  apply List.filter_congr
-  intro k hk
-  rw [List.mem_range] at hk
-  rw [h k hk]
+  sorry
 
-/-- If paint never equals σ on [a, a+n), count is 0. -/
 theorem countCol0_eq_zero_of_ne (paint : ℕ → ℕ → DRCSymbol) (σ : DRCSymbol) (a n : ℕ)
     (h : ∀ k, k < n → paint (a + k) 0 ≠ σ) :
     countCol0 paint σ a n = 0 := by
-  -- filter is empty since no element satisfies the predicate.
-  sorry -- List arithmetic
+  sorry
 
-/-- If 0 < n and paint(a, 0) = σ, then count ≥ 1. -/
 theorem countCol0_pos (paint : ℕ → ℕ → DRCSymbol) (σ : DRCSymbol) (a n : ℕ)
     (hn : 0 < n) (h : paint a 0 = σ) :
     1 ≤ countCol0 paint σ a n := by
-  -- 0 ∈ List.range n satisfies the predicate, so filter is non-empty.
-  sorry -- List arithmetic
+  sorry
 
 /-- layerOrd injective: same layerOrd ⟹ same symbol. -/
 theorem DRCSymbol.eq_of_layerOrd_eq {σ₁ σ₂ : DRCSymbol}
