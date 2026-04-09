@@ -275,14 +275,34 @@ theorem tail_weighted_sums_eq (τ₁ τ₂ : PBP)
     2 * countCol0 τ₂.P.paint .r a n + countCol0 τ₂.P.paint .c a n + countCol0 τ₂.P.paint .d a n := by
   sorry -- Finset decomposition of signature
 
-/-- D type epsilon determines n_d in tail. -/
+/-- Bridge: hasDInCol0(P) iff countCol0(.d, 0, colLen) > 0.
+    Both count the same thing (cells in column 0 with paint = d)
+    but use different data structures (Finset vs List). -/
+theorem hasDInCol0_iff_countCol0_pos (D : PaintedYoungDiagram) :
+    D.hasDInCol0 = true ↔ 0 < countCol0 D.paint .d 0 (D.shape.colLen 0) := by
+  sorry -- Finset.Nonempty ↔ List.range.filter.length > 0
+
+/-- D type epsilon determines n_d in tail.
+    Proof: epsilon = 0 iff d in P's column 0 (for D, Q has no d).
+    By dot region having no d, d is only in the tail.
+    Column uniqueness: n_d ∈ {0,1}. So epsilon determines n_d. -/
 theorem tail_nd_eq (τ₁ τ₂ : PBP)
     (hγ₁ : τ₁.γ = .D) (hγ₂ : τ₂.γ = .D)
     (hshapeP : τ₁.P.shape = τ₂.P.shape)
+    (hshapeQ : τ₁.Q.shape = τ₂.Q.shape)
     (heps : PBP.epsilon τ₁ = PBP.epsilon τ₂)
     (a : ℕ) (ha : a = τ₁.Q.shape.colLen 0) (n : ℕ) (hn : a + n = τ₁.P.shape.colLen 0) :
     countCol0 τ₁.P.paint .d a n = countCol0 τ₂.P.paint .d a n := by
-  sorry -- From epsilon + column uniqueness (n_d ∈ {0,1}) + monotonicity
+  -- Both n_d ∈ {0, 1} (column uniqueness)
+  have hle₁ := countCol0_le_one_of_unique τ₁.P.paint .d a n (τ₁.col_d_P 0)
+  have hle₂ := countCol0_le_one_of_unique τ₂.P.paint .d a n (τ₂.col_d_P 0)
+  -- epsilon determines whether n_d = 0 or 1
+  -- For D type: epsilon = 0 iff hasDInCol0(P) (Q is all dots, no d in Q)
+  -- hasDInCol0(P) iff countCol0(.d, 0, P.colLen(0)) > 0
+  -- countCol0(.d, 0, P.colLen(0)) = countCol0(.d, 0, a) + countCol0(.d, a, n)
+  -- countCol0(.d, 0, a) = 0 (dot region has no d)
+  -- So: hasDInCol0(P) iff countCol0(.d, a, n) > 0 iff n_d = 1
+  sorry -- needs hasDInCol0_iff_countCol0_pos bridge + arithmetic
 
 theorem prop_10_9_partC (τ₁ τ₂ : PBP)
     (hγ₁ : τ₁.γ = .D) (hγ₂ : τ₂.γ = .D)
@@ -300,7 +320,7 @@ theorem prop_10_9_partC (τ₁ τ₂ : PBP)
         countCol0_eq_zero_of_ne _ _ _ _ (fun k hk => col0_nonDot_tail_D τ₂ hγ₂
           (by rw [← hshapeQ]; omega) (by rw [← hshapeP]; omega))]
   -- n_d in tail: determined by epsilon
-  have hnd_d := tail_nd_eq τ₁ τ₂ hγ₁ hγ₂ hshapeP heps a ha n hn
+  have hnd_d := tail_nd_eq τ₁ τ₂ hγ₁ hγ₂ hshapeP hshapeQ heps a ha n hn
   -- Weighted r-sum: from signature decomposition
   have hwr := tail_weighted_sums_eq τ₁ τ₂ hγ₁ hγ₂ hshapeP hshapeQ hdescent_P hsig a ha n hn
   -- Total tail cells: non-dot counts sum to n (since dot count = 0 in tail)
