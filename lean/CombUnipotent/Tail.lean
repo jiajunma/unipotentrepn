@@ -647,4 +647,52 @@ theorem prop_10_9_D (τ₁ τ₂ : PBP)
     · push_neg at h2
       exact prop_10_9_partB τ₁ τ₂ hshapeP h2
 
+/-- **Proposition 10.9** ([BMSZb]), correct statement for D type:
+    The map τ ↦ (∇τ, (p_τ, q_τ), ε_τ) is injective on PBP_D(Ǒ).
+
+    Here ∇τ is the D → C naive descent, defined by `descentPaintL_D`.
+    The hypothesis `hdesc` says the descended left paint agrees;
+    the right descent paint is automatically the same (Q is all dots,
+    and the descent Q' depends only on shapes + cL).
+
+    This follows from:
+    1. `descent_eq_implies_cols_ge1_D`: same descent → same cols ≥ 1
+    2. `prop_10_9_D`: same cols ≥ 1 + same sig/eps → same col 0 -/
+theorem prop_10_9_D' (τ₁ τ₂ : PBP)
+    (hγ₁ : τ₁.γ = .D) (hγ₂ : τ₂.γ = .D)
+    (hshapeP : τ₁.P.shape = τ₂.P.shape)
+    (hshapeQ : τ₁.Q.shape = τ₂.Q.shape)
+    -- Same descent (∇τ₁ = ∇τ₂): descended left paint agrees
+    (hdesc : ∀ i j, descentPaintL_D τ₁ i j = descentPaintL_D τ₂ i j)
+    -- Same signature and epsilon
+    (hsig : PBP.signature τ₁ = PBP.signature τ₂)
+    (heps : PBP.epsilon τ₁ = PBP.epsilon τ₂) :
+    -- Then τ₁ = τ₂ (as paint functions on P; Q is determined by shapes for D type)
+    (∀ i j, τ₁.P.paint i j = τ₂.P.paint i j) ∧
+    (∀ i j, τ₁.Q.paint i j = τ₂.Q.paint i j) := by
+  constructor
+  · intro i j
+    by_cases hj : j = 0
+    · -- Column 0: use prop_10_9_D
+      subst hj
+      exact prop_10_9_D τ₁ τ₂ hγ₁ hγ₂ hshapeP hshapeQ
+        (descent_eq_implies_cols_ge1_D τ₁ τ₂ hγ₁ hγ₂ hshapeP hshapeQ hdesc)
+        (fun i j => by
+          by_cases hm : (i, j) ∈ τ₁.Q.shape
+          · rw [Q_all_dot_of_D τ₁ hγ₁ i j hm,
+                Q_all_dot_of_D τ₂ hγ₂ i j (hshapeQ ▸ hm)]
+          · rw [τ₁.Q.paint_outside i j hm,
+                τ₂.Q.paint_outside i j (hshapeQ ▸ hm)])
+        hsig heps i
+    · -- Columns ≥ 1: from recovery lemma
+      exact descent_eq_implies_cols_ge1_D τ₁ τ₂ hγ₁ hγ₂ hshapeP hshapeQ hdesc i j (by omega)
+  · -- Q: both all dots for D type
+    intro i j
+    by_cases hm : (i, j) ∈ τ₁.Q.shape
+    · rw [Q_all_dot_of_D τ₁ hγ₁ i j hm]
+      have hm₂ : (i, j) ∈ τ₂.Q.shape := hshapeQ ▸ hm
+      rw [Q_all_dot_of_D τ₂ hγ₂ i j hm₂]
+    · have hm₂ : (i, j) ∉ τ₂.Q.shape := hshapeQ ▸ hm
+      rw [τ₁.Q.paint_outside i j hm, τ₂.Q.paint_outside i j hm₂]
+
 end PBP
