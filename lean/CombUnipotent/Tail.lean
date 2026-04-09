@@ -8,6 +8,36 @@ import CombUnipotent.Descent
 
 namespace PBP
 
+/-! ## Tail of a PBP (B/D types)
+
+For ★ ∈ {B, D}, the **tail** τ_t of a PBP τ = (P, Q) consists of cells
+in the first column of one diagram that extend beyond the other:
+
+- **D type**: Q ⊆ P (since Q is all dots). Tail = cells in P's col 0
+  beyond Q's col 0, i.e., rows [Q.colLen(0), P.colLen(0)).
+  These cells carry non-dot symbols from {s, r, c, d}.
+  Tail symbol x_τ = P.paint(P.colLen(0) - 1, 0).
+
+- **B type**: For B⁺/B⁻, P has {dot, c} and Q has {dot, s, r, d}.
+  Tail = cells in Q's col 0 beyond P's col 0,
+  i.e., rows [P.colLen(0), Q.colLen(0)).
+  Tail symbol x_τ = Q.paint(Q.colLen(0) - 1, 0).
+
+The tail symbol x_τ ∈ {c, d, r, s} (never dot).
+ε_τ = 0 iff x_τ = d (for both B and D types). -/
+
+/-- Tail length for D type: how many cells in P's col 0 extend beyond Q. -/
+def tailLen_D (τ : PBP) : ℕ := τ.P.shape.colLen 0 - τ.Q.shape.colLen 0
+
+/-- Tail symbol for D type: paint of the bottom cell of P's col 0. -/
+def tailSymbol_D (τ : PBP) : DRCSymbol := τ.P.paint (τ.P.shape.colLen 0 - 1) 0
+
+/-- Tail length for B type: how many cells in Q's col 0 extend beyond P. -/
+def tailLen_B (τ : PBP) : ℕ := τ.Q.shape.colLen 0 - τ.P.shape.colLen 0
+
+/-- Tail symbol for B type: paint of the bottom cell of Q's col 0. -/
+def tailSymbol_B (τ : PBP) : DRCSymbol := τ.Q.paint (τ.Q.shape.colLen 0 - 1) 0
+
 /-! ## D type: column 0 structure -/
 
 theorem col0_dot_below_Q_D (τ : PBP) (hγ : τ.γ = .D)
@@ -650,7 +680,7 @@ theorem prop_10_9_D (τ₁ τ₂ : PBP)
 /-- **Proposition 10.9** ([BMSZb]), correct statement for D type:
     The map τ ↦ (∇τ, (p_τ, q_τ), ε_τ) is injective on PBP_D(Ǒ).
 
-    Here ∇τ is the D → C naive descent, defined by `descentPaintL_D`.
+    Here ∇τ is the D → C naive descent, defined by `descentPaintL_DC`.
     The hypothesis `hdesc` says the descended left paint agrees;
     the right descent paint is automatically the same (Q is all dots,
     and the descent Q' depends only on shapes + cL).
@@ -663,7 +693,7 @@ theorem prop_10_9_D' (τ₁ τ₂ : PBP)
     (hshapeP : τ₁.P.shape = τ₂.P.shape)
     (hshapeQ : τ₁.Q.shape = τ₂.Q.shape)
     -- Same descent (∇τ₁ = ∇τ₂): descended left paint agrees
-    (hdesc : ∀ i j, descentPaintL_D τ₁ i j = descentPaintL_D τ₂ i j)
+    (hdesc : ∀ i j, descentPaintL_DC τ₁ i j = descentPaintL_DC τ₂ i j)
     -- Same signature and epsilon
     (hsig : PBP.signature τ₁ = PBP.signature τ₂)
     (heps : PBP.epsilon τ₁ = PBP.epsilon τ₂) :
