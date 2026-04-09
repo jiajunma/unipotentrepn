@@ -484,112 +484,18 @@ theorem descent_eq_implies_cols_ge1_MB (τ₁ τ₂ : PBP)
     (hγ₁ : τ₁.γ = .M) (hγ₂ : τ₂.γ = .M)
     (hshapeP : τ₁.P.shape = τ₂.P.shape)
     (hshapeQ : τ₁.Q.shape = τ₂.Q.shape)
+    -- Interlacing: descent well-defined (non-negative s count in Q').
+    -- Required for both τ₁ and τ₂ (follows from orbit structure).
+    (hinterl₁ : ∀ j, dotScolLen τ₁.Q j ≥ dotScolLen τ₁.P (j + 1))
+    (hinterl₂ : ∀ j, dotScolLen τ₂.Q j ≥ dotScolLen τ₂.P (j + 1))
     (hdescL : ∀ i j, descentPaintL_MB τ₁ i j = descentPaintL_MB τ₂ i j)
     (hdescR : ∀ i j, descentPaintR_MB τ₁ i j = descentPaintR_MB τ₂ i j) :
     (∀ i j, 1 ≤ j → τ₁.P.paint i j = τ₂.P.paint i j) ∧
     (∀ i j, τ₁.Q.paint i j = τ₂.Q.paint i j) := by
-  -- P recovery: descentPaintL_MB has the SAME structure as descentPaintL_DC.
-  -- P'(i, j) = if i < dotScolLen(P, j+1) then dot else P(i, j+1).
-  -- The 3-way case split from D→C applies identically.
-  have hP : ∀ i j, 1 ≤ j → τ₁.P.paint i j = τ₂.P.paint i j := by
-    intro i j hj
-    have key := hdescL i (j - 1)
-    simp only [descentPaintL_MB, Nat.sub_add_cancel hj] at key
-    by_cases hp : (i, j) ∈ τ₁.P.shape
-    · have hp₂ : (i, j) ∈ τ₂.P.shape := hshapeP ▸ hp
-      by_cases hd₁ : τ₁.P.paint i j = .dot <;> by_cases hd₂ : τ₂.P.paint i j = .dot
-      · rw [hd₁, hd₂]
-      · -- P₁ = dot, P₂ ≠ dot → contradiction
-        -- P₁ dot → i < dotScolLen → descent = dot.
-        -- P₂ non-dot: two sub-cases based on dotScolLen.
-        -- If i ≥ dotScolLen₂: descent gives P₂ directly. descent = dot = P₂. But P₂ ≠ dot.
-        -- If i < dotScolLen₂: descent gives dot. dot = dot OK. But P₂ = s (non-dot + layerOrd ≤ 1).
-        -- Wait: both descent give dot (both in then-branch). But P₁ = dot, P₂ = s ≠ dot. Not equal!
-        -- Hmm, we want P₁ = P₂, and P₁ = dot, P₂ ≠ dot. Can this happen?
-        -- If i < dotScolLen₁ AND i < dotScolLen₂: descent both = dot. key is trivially true.
-        -- But P₁ = dot ≠ P₂ = s. So we can't derive contradiction from key alone!
-        -- This IS a problem. For M type, unlike D type, two different paints
-        -- (dot and s) can both be in the dot+s region. The descent maps both to dot.
-        -- So the descent CANNOT distinguish dot from s in the dot+s region.
-        -- We need dot_match to distinguish. P = dot ↔ (i,j) ∈ Q.shape ∧ Q = dot.
-        -- Same Q.shape needed. But we don't know Q yet!
-        -- HOWEVER: P = dot ↔ (i,j) ∈ P.shape ∧ dot_match. We need to KNOW Q to use this.
-        -- For M→B, we recover Q FIRST (from Q'), THEN use Q to determine P's dot vs s.
-        sorry
-      · sorry -- symmetric
-      · -- Both non-dot: direct from descent (i ≥ dotScolLen for both)
-        have paint_s : ∀ (τ : PBP), τ.P.paint i j ≠ .dot →
-            i < dotScolLen τ.P j → τ.P.paint i j = .s := by
-          intro τ hne hlt
-          rw [dotScolLen_eq_dotSdiag_colLen _ τ.mono_P] at hlt
-          have hlo := layerOrd_le_one_of_lt_dotSdiag_colLen τ.P τ.mono_P hlt
-          revert hlo hne; cases τ.P.paint i j <;> simp [DRCSymbol.layerOrd]
-        by_cases h1 : i < dotScolLen τ₁.P j
-        · by_cases h2 : i < dotScolLen τ₂.P j
-          · rw [paint_s τ₁ hd₁ h1, paint_s τ₂ hd₂ h2]
-          · rw [if_pos h1, if_neg h2] at key; exact absurd key.symm hd₂
-        · by_cases h2 : i < dotScolLen τ₂.P j
-          · rw [if_neg h1, if_pos h2] at key; exact absurd key hd₁
-          · rw [if_neg h1, if_neg h2] at key; exact key
-    · rw [τ₁.P.paint_outside i j hp, τ₂.P.paint_outside i j (hshapeP ▸ hp)]
-  -- Q recovery FIRST (needed for P's dot/s case).
-  -- M→B Q' right paint: Q'(i,j) = if i < cL then dot else if i < cR then s else Q(i,j)
-  -- where cL = dotScolLen(P, j+1), cR = dotScolLen(Q, j).
-  -- For M type Q ({•, r, d}): dot+s region = dot region (no s in Q).
-  -- So Q non-dot has layerOrd > 1.
-  -- Exact same structure as C→D P recovery (4-way case split).
-  have hQ : ∀ i j, τ₁.Q.paint i j = τ₂.Q.paint i j := by
-    intro i j
-    have key := hdescR i j
-    simp only [descentPaintR_MB] at key
-    by_cases hq : (i, j) ∈ τ₁.Q.shape
-    · have hq₂ : (i, j) ∈ τ₂.Q.shape := hshapeQ ▸ hq
-      -- M type Q has {•, r, d}. Non-dot has layerOrd > 1 (r=2, d=4).
-      -- Q'(i,j) structure: if i < cL then dot, else if i < cR then s, else Q(i,j).
-      -- Non-dot Q → i ≥ cR (layerOrd > 1 → past dot+s boundary) → Q' = Q directly.
-      -- Dot Q → i < cR → Q' ∈ {dot, s}.
-      -- 4-way case split on dot/non-dot:
-      by_cases hd₁ : τ₁.Q.paint i j = .dot <;> by_cases hd₂ : τ₂.Q.paint i j = .dot
-      · rw [hd₁, hd₂]
-      · -- Q₁ = dot, Q₂ ≠ dot → contradiction via key
-        exfalso
-        -- Q₂ non-dot: layerOrd > 1 (M type Q {•,r,d}: non-dot is r or d)
-        have h₂ := ge_dotScolLen_of_nonDot τ₂.Q τ₂.mono_Q hq₂ hd₂ (by
-          have hsym := τ₂.sym_Q i j hq₂; rw [hγ₂] at hsym
-          revert hd₂ hsym; cases τ₂.Q.paint i j <;> simp [DRCSymbol.layerOrd, DRCSymbol.allowed])
-        -- Q₁ = dot: i < cR₁ (dot in M-type Q → layerOrd = 0 ≤ 1 → i < dotScolLen)
-        have h₁ : i < dotScolLen τ₁.Q j := by
-          rw [dotScolLen_eq_dotSdiag_colLen _ τ₁.mono_Q, YoungDiagram.mem_iff_lt_colLen.symm]
-          simp [dotSdiag, Finset.mem_filter, YoungDiagram.mem_cells, hq, hd₁, DRCSymbol.layerOrd]
-        -- Q'₁ ∈ {dot, s}. Q'₂ = Q₂ (i ≥ cR₂ ≥ cL₂).
-        -- Need cL₂ ≤ cR₂... actually Q' has: if i < cL then dot, else if i < cR then s, else Q.
-        -- At i ≥ cR₂: Q'₂ = Q₂. At i < cL₁: Q'₁ = dot.
-        -- But we don't know the relation between cL₁, cL₂, cR₁, cR₂ for Q'!
-        -- cL in Q' = dotScolLen(P, j+1). cR = dotScolLen(Q, j).
-        -- P is the same? No, we don't know P yet for M→B...
-        -- Actually we DO know P cols ≥ 1 partially (the non-dot/s part from descent).
-        sorry
-      · sorry -- symmetric
-      · -- Both non-dot: same as C→D both non-dot case
-        -- Both have layerOrd > 1.
-        have h₁ := ge_dotScolLen_of_nonDot τ₁.Q τ₁.mono_Q hq hd₁ (by
-          have hsym := τ₁.sym_Q i j hq; rw [hγ₁] at hsym
-          revert hd₁ hsym; cases τ₁.Q.paint i j <;> simp [DRCSymbol.layerOrd, DRCSymbol.allowed])
-        have h₂ := ge_dotScolLen_of_nonDot τ₂.Q τ₂.mono_Q hq₂ hd₂ (by
-          have hsym := τ₂.sym_Q i j hq₂; rw [hγ₂] at hsym
-          revert hd₂ hsym; cases τ₂.Q.paint i j <;> simp [DRCSymbol.layerOrd, DRCSymbol.allowed])
-        -- Q'₁ = Q₁, Q'₂ = Q₂ (both past the dot+s boundary in Q)
-        -- But Q' has cL threshold from P, not Q!
-        -- Q'(i,j) = if i < dotScolLen(P, j+1) then dot else if i < dotScolLen(Q, j) then s else Q(i,j)
-        -- i ≥ dotScolLen(Q, j): Q'(i,j) = Q(i,j) if also i ≥ dotScolLen(P, j+1).
-        -- Need: dotScolLen(P, j+1) ≤ dotScolLen(Q, j) or at least both ≤ i.
-        -- Since i ≥ dotScolLen(Q, j), and Q' checks i < dotScolLen(P, j+1) first:
-        -- If i ≥ dotScolLen(P, j+1): then also ≥ dotScolLen(Q, j): Q' = Q. ✓
-        -- If i < dotScolLen(P, j+1): Q' = dot. But Q ≠ dot. contradiction.
-        -- So need: i ≥ dotScolLen(P, j+1).
-        sorry
-    · rw [τ₁.Q.paint_outside i j hq, τ₂.Q.paint_outside i j (hshapeQ ▸ hq)]
-  exact ⟨hP, hQ⟩
+  sorry -- See lean/docs/MB_BM_recovery_detailed.md for full proof plan.
+  -- Needs: Step 0 (dotScolLen P eq from hdescL), Step 1 (Q recovery via
+  -- 4-way split using interlacing), Step 2 (P from Q + dot_match).
+  -- Same structure as C→D but with M/B type-specific layerOrd facts.
 
 /-! ## B → M Recovery: descent is injective
 
@@ -602,10 +508,18 @@ theorem descent_inj_BM (τ₁ τ₂ : PBP)
     (hγ₂ : τ₂.γ = .Bplus ∨ τ₂.γ = .Bminus)
     (hshapeP : τ₁.P.shape = τ₂.P.shape)
     (hshapeQ : τ₁.Q.shape = τ₂.Q.shape)
+    -- Interlacing: descent is well-defined
+    (hinterl : ∀ j, dotScolLen τ₁.P j ≥ dotScolLen τ₁.Q (j + 1))
     (hdescL : ∀ i j, descentPaintL_BM τ₁ i j = descentPaintL_BM τ₂ i j)
     (hdescR : ∀ i j, descentPaintR_BM τ₁ i j = descentPaintR_BM τ₂ i j) :
     (∀ i j, τ₁.P.paint i j = τ₂.P.paint i j) ∧
     (∀ i j, τ₁.Q.paint i j = τ₂.Q.paint i j) := by
+  /-
+  See lean/docs/MB_BM_recovery_detailed.md.
+  B→M: symmetric to C→D.
+  Step 1: Recover P (4-way split, B-type P has no s, like C-type P).
+  Step 2: Recover Q from P + Q' + dot_match.
+  -/
   sorry
 
 end PBP
