@@ -1,5 +1,26 @@
 # Descent Recovery Lemmas and Injectivity Theorems
 
+## Verification: Lean definitions match standalone.py
+
+All four descent paint functions have been verified against standalone.py:
+
+| Descent | Python function | Input | Lean function | Verified |
+|---------|----------------|-------|---------------|----------|
+| D→C | `_fill_ds_C((P[1:], Q))` | P shifted, Q original | `descentPaintL_DC`, `descentPaintR_DC` | ✓ |
+| C→D | `_fill_ds_D((P, Q[1:]))` | P original, Q shifted | `descentPaintL_CD`, `descentPaintR_CD` | ✓ |
+| B→M | `_fill_ds_M((P, Q[1:]))` | P original, Q shifted | `descentPaintL_BM`, `descentPaintR_BM` | ✓ |
+| M→B | `_fill_ds_B((P[1:], Q))` | P shifted, Q original | `descentPaintL_MB`, `descentPaintR_MB` | ✓ |
+
+Key correspondence:
+- `_count_ds(col)` = `dotScolLen(D, j)` — count of cells with layerOrd ≤ 1
+- `len(col)` = `D.shape.colLen(j)` — total column length
+- `col[cL:]` = `D.paint(i, j)` for `i ≥ cL` — non-(dot,s) symbols preserved
+
+For C type P (no s): `_count_ds(P col j)` = dot count = `dotScolLen(P, j)`.
+For D type Q (all dots): `len(Q col j)` = dot count = `Q.shape.colLen(j)`.
+For B type P ({•,c}): `_count_ds(P col j)` = dot count = `dotScolLen(P, j)`.
+For M type Q ({•,r,d}): `_count_ds(Q col j)` = dot count = `dotScolLen(Q, j)`.
+
 Reference: [BMSZb] Sections 10.4–10.6; [BMSZ] Section 3.3.
 
 ## Overview

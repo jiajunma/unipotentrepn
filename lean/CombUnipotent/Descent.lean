@@ -328,11 +328,30 @@ theorem dotS_eq_dot_of_C (τ : PBP) (hγ : τ.γ = .C) {i j : ℕ}
     Proof: interlacing (dotDiag.colLen ≥ Q.colLen) + C type dotSdiag = dotDiag. -/
 theorem Q_colLen_succ_le_dotScolLen_C (τ : PBP) (hγ : τ.γ = .C) (j : ℕ) :
     τ.Q.shape.colLen (j + 1) ≤ dotScolLen τ.P j := by
-  -- Q.colLen(j+1) ≤ dotDiag(Q).colLen(j) [interlacing, proved]
-  --              = dotDiag(P).colLen(j) [dotDiag_eq]
-  --              ≤ dotSdiag(P).colLen(j) [dot ⊆ dot+s]
-  --              = dotScolLen(P, j) [bridge]
-  sorry
+  rw [dotScolLen_eq_dotSdiag_colLen _ τ.mono_P]
+  -- dotDiag ≤ dotSdiag (dot ⊆ dot+s)
+  have hdot_le_dotS : dotDiag τ.P τ.mono_P ≤ dotSdiag τ.P τ.mono_P := by
+    intro ⟨a, b⟩ h
+    simp only [dotDiag, dotSdiag, YoungDiagram.mem_mk, Finset.mem_filter,
+      YoungDiagram.mem_cells] at h ⊢
+    exact ⟨h.1, by rw [h.2]; simp [DRCSymbol.layerOrd]⟩
+  -- Chain via colLen monotonicity
+  calc τ.Q.shape.colLen (j + 1)
+      ≤ (dotDiag τ.Q τ.mono_Q).colLen j :=
+        dotDiag_colLen_ge_Q_colLen_succ_of_C τ hγ j
+    _ = (dotDiag τ.P τ.mono_P).colLen j := by rw [dotDiag_eq τ]
+    _ ≤ (dotSdiag τ.P τ.mono_P).colLen j := by
+        -- (i, j) ∈ dotDiag → (i, j) ∈ dotSdiag → i < dotSdiag.colLen(j)
+        by_contra h; push_neg at h
+        set d := (dotDiag τ.P τ.mono_P).colLen j
+        set ds := (dotSdiag τ.P τ.mono_P).colLen j
+        -- ds < d. Cell (ds, j) ∈ dotDiag (since ds < d = dotDiag.colLen).
+        have hmem : (ds, j) ∈ dotDiag τ.P τ.mono_P :=
+          YoungDiagram.mem_iff_lt_colLen.mpr h
+        -- So (ds, j) ∈ dotSdiag.
+        have hmemS := hdot_le_dotS hmem
+        -- But ds = dotSdiag.colLen, so (ds, j) ∉ dotSdiag.
+        exact absurd hmemS (by rw [YoungDiagram.mem_iff_lt_colLen]; omega)
 
 /-! ## C → D Recovery: descent is injective
 
