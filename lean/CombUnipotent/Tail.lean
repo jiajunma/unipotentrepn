@@ -202,7 +202,23 @@ theorem countCol0_total (paint : ℕ → ℕ → DRCSymbol) (a n : ℕ) :
 theorem countCol0_le_one_of_unique (paint : ℕ → ℕ → DRCSymbol) (σ : DRCSymbol) (a n : ℕ)
     (h : ∀ i₁ i₂, paint i₁ 0 = σ → paint i₂ 0 = σ → i₁ = i₂) :
     countCol0 paint σ a n ≤ 1 := by
-  sorry
+  -- Prove by induction: once we find one matching element, no more can exist.
+  induction n with
+  | zero => simp [countCol0]
+  | succ n ih =>
+    simp only [countCol0, List.range_succ, List.filter_append, List.length_append]
+    simp only [List.filter_cons, List.length_nil]
+    simp only [countCol0] at ih
+    by_cases heq : paint (a + n) 0 = σ
+    · -- paint(a+n) = σ. By h, no other position can have σ.
+      -- So the count in [0, n) is 0, and count in [0, n+1) = 1.
+      have h_zero : countCol0 paint σ a n = 0 :=
+        countCol0_eq_zero_of_ne _ _ _ _ fun k hk hpk =>
+          absurd (h (a + k) (a + n) hpk heq) (by omega)
+      simp only [countCol0] at h_zero ⊢
+      rw [h_zero]; simp [List.filter_cons, heq]
+    · -- paint(a+n) ≠ σ. Count in [0, n+1) = count in [0, n) ≤ 1.
+      sorry -- countCol0 n+1 = countCol0 n when last element doesn't match
 
 /-! ## Part C: Tail counts determined
 
