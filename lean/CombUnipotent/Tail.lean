@@ -179,13 +179,38 @@ theorem prop_10_9_partB (τ₁ τ₂ : PBP)
     τ₁.P.paint i 0 = τ₂.P.paint i 0 := by
   rw [col0_dot_above_P τ₁ hi, col0_dot_above_P τ₂ (hshapeP ▸ hi)]
 
+/-! ## Auxiliary: total count and column uniqueness -/
+
+/-- The total count over all 5 symbols in [a, a+n) equals n.
+    Every position k < n has exactly one symbol. -/
+theorem countCol0_total (paint : ℕ → ℕ → DRCSymbol) (a n : ℕ) :
+    countCol0 paint .dot a n + countCol0 paint .s a n +
+    countCol0 paint .r a n + countCol0 paint .c a n +
+    countCol0 paint .d a n = n := by
+  induction n with
+  | zero => simp [countCol0]
+  | succ n ih =>
+    simp only [countCol0, List.range_succ, List.filter_append, List.filter_cons,
+      List.length_append, List.length_cons, List.length_nil]
+    -- The last element (n) contributes 1 to exactly one symbol's count
+    have ih' := ih
+    simp only [countCol0] at ih'
+    cases paint (a + n) 0 <;> simp_all <;> omega
+
+/-- If at most one row has symbol σ in column 0 (column uniqueness),
+    then countCol0 ≤ 1 in any sub-range. -/
+theorem countCol0_le_one_of_unique (paint : ℕ → ℕ → DRCSymbol) (σ : DRCSymbol) (a n : ℕ)
+    (h : ∀ i₁ i₂, paint i₁ 0 = σ → paint i₂ 0 = σ → i₁ = i₂) :
+    countCol0 paint σ a n ≤ 1 := by
+  sorry
+
 /-! ## Part C: Tail counts determined
 
 Split into:
 - Part C1 (arithmetic): the system of equations from signature + column
   uniqueness determines all tail counts uniquely.
 - Part C2 (decomposition): the signature difference reduces to weighted
-  sums on the tail (Finset decomposition, sorry'd). -/
+  sums on the tail (Finset decomposition). -/
 
 /-- **Part C1 (arithmetic core)**: if two tuples (n_s, n_r, n_c, n_d) in ℕ satisfy:
     - same total: n_s₁ + n_r₁ + n_c₁ + n_d₁ = n_s₂ + n_r₂ + n_c₂ + n_d₂
@@ -262,17 +287,24 @@ theorem prop_10_9_partC (τ₁ τ₂ : PBP)
   have hnd_d := tail_nd_eq τ₁ τ₂ hγ₁ hγ₂ hshapeP heps a ha n hn
   -- Weighted r-sum: from signature decomposition
   have hwr := tail_weighted_sums_eq τ₁ τ₂ hγ₁ hγ₂ hshapeP hshapeQ hdescent_P hsig a ha n hn
-  -- Total tail cells: same (from shapes)
+  -- Total tail cells: non-dot counts sum to n (since dot count = 0 in tail)
   have htot : countCol0 τ₁.P.paint .s a n + countCol0 τ₁.P.paint .r a n +
               countCol0 τ₁.P.paint .c a n + countCol0 τ₁.P.paint .d a n =
               countCol0 τ₂.P.paint .s a n + countCol0 τ₂.P.paint .r a n +
               countCol0 τ₂.P.paint .c a n + countCol0 τ₂.P.paint .d a n := by
-    sorry -- total = n (tail length, same for both) minus dot count (0 for both)
-  -- Column uniqueness: n_c ≤ 1 in column 0
-  have hc1 : countCol0 τ₁.P.paint .c a n ≤ 1 := by
-    sorry -- from col_c_P: at most one c per column
-  have hc2 : countCol0 τ₂.P.paint .c a n ≤ 1 := by
-    sorry -- same
+    -- Both sides = n (total) - dot_count (= 0 in tail)
+    have h1 := countCol0_total τ₁.P.paint a n
+    have h2 := countCol0_total τ₂.P.paint a n
+    rw [countCol0_eq_zero_of_ne _ _ _ _ (fun k hk =>
+      col0_nonDot_tail_D τ₁ hγ₁ (by omega) (by omega))] at h1
+    rw [countCol0_eq_zero_of_ne _ _ _ _ (fun k hk =>
+      col0_nonDot_tail_D τ₂ hγ₂ (by rw [← hshapeQ]; omega) (by rw [← hshapeP]; omega))] at h2
+    omega
+  -- Column uniqueness: n_c ≤ 1 in column 0 of P
+  have hc1 : countCol0 τ₁.P.paint .c a n ≤ 1 :=
+    countCol0_le_one_of_unique _ _ _ _ (τ₁.col_c_P 0)
+  have hc2 : countCol0 τ₂.P.paint .c a n ≤ 1 :=
+    countCol0_le_one_of_unique _ _ _ _ (τ₂.col_c_P 0)
   -- Apply arithmetic core
   have ⟨hns, hnr, hnc⟩ := tail_counts_arith htot hwr hnd_d hc1 hc2
   -- Now handle each symbol
