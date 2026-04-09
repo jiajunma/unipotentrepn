@@ -277,6 +277,55 @@ theorem descent_eq_implies_cols_ge1_D (τ₁ τ₂ : PBP)
       rw [τ₁.P.paint_outside i j hp,
           τ₂.P.paint_outside i j (hshapeP ▸ hp)]
 
+/-- dotSdiag ≤ shape. -/
+theorem dotSdiag_le_shape (D : PaintedYoungDiagram) (hm : D.layerMonotone) :
+    dotSdiag D hm ≤ D.shape := by
+  intro ⟨i, j⟩ hmem
+  simp only [dotSdiag, YoungDiagram.mem_mk, Finset.mem_filter, YoungDiagram.mem_cells] at hmem
+  exact hmem.1
+
+/-- layerOrd > 1 at (i, j) in shape → i ≥ dotSdiag.colLen(j).
+    Contrapositive of layerOrd_le_one_of_lt_dotSdiag_colLen. -/
+theorem ge_dotSdiag_colLen_of_layerOrd_gt_one (D : PaintedYoungDiagram)
+    (hm : D.layerMonotone) {i j : ℕ}
+    (hmem : (i, j) ∈ D.shape) (hgt : (D.paint i j).layerOrd > 1) :
+    (dotSdiag D hm).colLen j ≤ i := by
+  by_contra h; push_neg at h
+  exact absurd (layerOrd_le_one_of_lt_dotSdiag_colLen D hm h) (by omega)
+
+/-- Non-dot → i ≥ dotScolLen(j). -/
+theorem ge_dotScolLen_of_nonDot (D : PaintedYoungDiagram)
+    (hm : D.layerMonotone) {i j : ℕ}
+    (hmem : (i, j) ∈ D.shape) (hne : D.paint i j ≠ .dot)
+    (hlo_gt : (D.paint i j).layerOrd > 1) :
+    dotScolLen D j ≤ i := by
+  rw [dotScolLen_eq_dotSdiag_colLen D hm]
+  exact ge_dotSdiag_colLen_of_layerOrd_gt_one D hm hmem hlo_gt
+
+/-- For C type P, non-dot means layerOrd ≥ 2 (symbols are {•,r,c,d}). -/
+theorem layerOrd_gt_one_of_nonDot_C (τ : PBP) (hγ : τ.γ = .C) {i j : ℕ}
+    (hmem : (i, j) ∈ τ.P.shape) (hne : τ.P.paint i j ≠ .dot) :
+    (τ.P.paint i j).layerOrd > 1 := by
+  have hsym := τ.sym_P i j hmem; rw [hγ] at hsym
+  revert hne hsym; cases τ.P.paint i j <;> simp [DRCSymbol.layerOrd, DRCSymbol.allowed]
+
+/-- For C type P: layerOrd ≤ 1 implies dot (since C type P has {•, r, c, d}, no s). -/
+theorem paint_dot_of_layerOrd_le_one_C (τ : PBP) (hγ : τ.γ = .C) {i j : ℕ}
+    (hmem : (i, j) ∈ τ.P.shape) (hlo : (τ.P.paint i j).layerOrd ≤ 1) :
+    τ.P.paint i j = .dot := by
+  have hsym := τ.sym_P i j hmem; rw [hγ] at hsym
+  revert hlo hsym; cases τ.P.paint i j <;> simp [DRCSymbol.layerOrd, DRCSymbol.allowed]
+
+/-- For C type P: i < dotSdiag.colLen(j) → paint = dot. -/
+theorem dotS_eq_dot_of_C (τ : PBP) (hγ : τ.γ = .C) {i j : ℕ}
+    (h : i < (dotSdiag τ.P τ.mono_P).colLen j) : τ.P.paint i j = .dot := by
+  have hmem : (i, j) ∈ τ.P.shape :=
+    dotSdiag_le_shape τ.P τ.mono_P (YoungDiagram.mem_iff_lt_colLen.mpr h)
+  exact paint_dot_of_layerOrd_le_one_C τ hγ hmem
+    (layerOrd_le_one_of_lt_dotSdiag_colLen τ.P τ.mono_P h)
+
+-- (dotScolLen_eq_of_CD_descent removed: not needed for simplified proof)
+
 /-! ## C → D Recovery: descent is injective
 
 For C type: P has {•, r, c, d} (no s), Q has {•, s}.
@@ -291,45 +340,30 @@ theorem descent_inj_CD (τ₁ τ₂ : PBP)
     (∀ i j, τ₁.P.paint i j = τ₂.P.paint i j) ∧
     (∀ i j, τ₁.Q.paint i j = τ₂.Q.paint i j) := by
   -- Step 1: P agrees on all cells
+  -- Key insight for C type P (no s):
+  -- P(i,j) = dot ↔ i < dotScolLen(P, j) ↔ P'(i,j) ∈ {dot, s}
+  -- P(i,j) ∈ {r,c,d} ↔ i ≥ dotScolLen(P, j) ↔ P'(i,j) = P(i,j)
+  -- Since P'₁ = P'₂: dot classification same, and non-dot directly same.
   have hP : ∀ i j, τ₁.P.paint i j = τ₂.P.paint i j := by
     intro i j
-    have key := hdescL i j
-    simp only [descentPaintL_CD] at key
-    -- P'(i,j) = if i < cR then dot else if i < cL then s else P(i,j)
-    -- where cR = Q.colLen(j+1), cL = dotScolLen(P, j)
     by_cases hp : (i, j) ∈ τ₁.P.shape
-    · -- In P.shape
-      by_cases h_cR : i < τ₁.Q.shape.colLen (j + 1)
-      · -- i < cR: P' = dot for both. P(i,j) has layerOrd ≤ 1.
-        -- For C type P ({•, r, c, d}, no s), layerOrd ≤ 1 means dot.
-        -- Actually need: i < cR ≤ cL, and i < cL → layerOrd ≤ 1.
-        -- For C type P, dot+s count = dot count (no s).
-        -- Cells with layerOrd ≤ 1 are exactly dots.
-        -- So P(i,j) = dot for both (by layer monotonicity + C type).
-        rw [if_pos h_cR, if_pos (hshapeQ ▸ h_cR)] at key
-        -- Both P paint dot because: i < cR, which means (i, j+1) ∈ Q.shape.
-        -- Wait, cR = Q.colLen(j+1). (i, j+1) ∈ Q iff i < Q.colLen(j+1).
-        -- By dot_match: P.paint = dot ↔ Q.paint = dot (at positions in both shapes).
-        -- Hmm, dot_match at (i, j) not (i, j+1). Let me reconsider.
-        -- Actually for C type P, all cells in the dot+s region are just dots
-        -- (no s in C type P). By layer monotonicity, if i < dotScolLen(P,j),
-        -- then layerOrd ≤ 1, and for C type P that means dot.
-        -- But we need i < dotScolLen(P,j). Is i < cR sufficient?
-        -- We need cR ≤ cL (= dotScolLen). This is the interlacing condition.
-        sorry -- needs interlacing + C type P has no s
-      · by_cases h_cL : i < dotScolLen τ₁.P j
-        · -- cR ≤ i < cL: P' = s for both. P(i,j) is dot (C type, layerOrd ≤ 1, no s).
-          sorry -- same as above: C type dot+s = dot only
-        · -- i ≥ cL: P' = P(i,j) directly
-          have h_cL₂ : ¬(i < dotScolLen τ₂.P j) := by
-            -- Need dotScolLen₁ = dotScolLen₂. From hdescL + hshapeP/Q.
-            -- At the boundary: one gives s, other gives P(i,j) ∈ {r,c,d} or dot.
-            -- If they differ: s ≠ r/c/d and s ≠ dot. Contradiction.
-            sorry -- boundary argument
-          rw [if_neg h_cR, if_neg h_cL, if_neg (hshapeQ ▸ h_cR), if_neg h_cL₂] at key
-          exact key
-    · -- Not in P.shape: both paint dot (paint_outside)
-      rw [τ₁.P.paint_outside i j hp, τ₂.P.paint_outside i j (hshapeP ▸ hp)]
+    · have hp₂ : (i, j) ∈ τ₂.P.shape := hshapeP ▸ hp
+      -- C type: P.paint ∈ {dot, r, c, d}. No s.
+      -- If P₁.paint = dot and P₂.paint = dot: done.
+      -- If P₁.paint ≠ dot and P₂.paint ≠ dot: both ∈ {r,c,d}.
+      --   P'(i,j) = P(i,j) for both (i ≥ cL since non-dot means layerOrd > 1).
+      --   From hdescL: P₁ = P₂.
+      -- If P₁ = dot, P₂ ≠ dot (or vice versa):
+      --   P₁ = dot → P'₁ ∈ {dot, s}. P₂ ∈ {r,c,d} → P'₂ = P₂.
+      --   hdescL: P'₁ = P'₂. So {dot,s} = {r,c,d}: impossible.
+      -- Case split: P₁ dot/non-dot × P₂ dot/non-dot
+      -- For C type: P ∈ {dot, r, c, d}. Non-dot has layerOrd > 1.
+      -- Key: non-dot → i ≥ dotScolLen → P' = P directly.
+      --       dot → i < dotScolLen → P' ∈ {dot, s}.
+      -- If one is dot and other non-dot: P' gives dot/s vs r/c/d. Contradiction.
+      -- If both dot: trivial. If both non-dot: P' = P for both.
+      sorry -- 4-way case split using layerOrd_gt_one_of_nonDot_C + hdescL
+    · rw [τ₁.P.paint_outside i j hp, τ₂.P.paint_outside i j (hshapeP ▸ hp)]
   constructor
   · exact hP
   · -- Step 2: Q agrees on all cells (from P + dot_match + shapes)
