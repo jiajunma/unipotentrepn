@@ -277,4 +277,133 @@ theorem descent_eq_implies_cols_ge1_D (τ₁ τ₂ : PBP)
       rw [τ₁.P.paint_outside i j hp,
           τ₂.P.paint_outside i j (hshapeP ▸ hp)]
 
+/-! ## C → D Recovery: descent is injective
+
+For C type: P has {•, r, c, d} (no s), Q has {•, s}.
+C→D descent: P' = redistribution of P (dots, new s, preserved r/c/d), Q' = all dots.
+From same P' + same shapes → P₁ = P₂ on all cells. Then Q follows from dot_match. -/
+
+theorem descent_inj_CD (τ₁ τ₂ : PBP)
+    (hγ₁ : τ₁.γ = .C) (hγ₂ : τ₂.γ = .C)
+    (hshapeP : τ₁.P.shape = τ₂.P.shape)
+    (hshapeQ : τ₁.Q.shape = τ₂.Q.shape)
+    (hdescL : ∀ i j, descentPaintL_CD τ₁ i j = descentPaintL_CD τ₂ i j) :
+    (∀ i j, τ₁.P.paint i j = τ₂.P.paint i j) ∧
+    (∀ i j, τ₁.Q.paint i j = τ₂.Q.paint i j) := by
+  -- Step 1: P agrees on all cells
+  have hP : ∀ i j, τ₁.P.paint i j = τ₂.P.paint i j := by
+    intro i j
+    have key := hdescL i j
+    simp only [descentPaintL_CD] at key
+    -- P'(i,j) = if i < cR then dot else if i < cL then s else P(i,j)
+    -- where cR = Q.colLen(j+1), cL = dotScolLen(P, j)
+    by_cases hp : (i, j) ∈ τ₁.P.shape
+    · -- In P.shape
+      by_cases h_cR : i < τ₁.Q.shape.colLen (j + 1)
+      · -- i < cR: P' = dot for both. P(i,j) has layerOrd ≤ 1.
+        -- For C type P ({•, r, c, d}, no s), layerOrd ≤ 1 means dot.
+        -- Actually need: i < cR ≤ cL, and i < cL → layerOrd ≤ 1.
+        -- For C type P, dot+s count = dot count (no s).
+        -- Cells with layerOrd ≤ 1 are exactly dots.
+        -- So P(i,j) = dot for both (by layer monotonicity + C type).
+        rw [if_pos h_cR, if_pos (hshapeQ ▸ h_cR)] at key
+        -- Both P paint dot because: i < cR, which means (i, j+1) ∈ Q.shape.
+        -- Wait, cR = Q.colLen(j+1). (i, j+1) ∈ Q iff i < Q.colLen(j+1).
+        -- By dot_match: P.paint = dot ↔ Q.paint = dot (at positions in both shapes).
+        -- Hmm, dot_match at (i, j) not (i, j+1). Let me reconsider.
+        -- Actually for C type P, all cells in the dot+s region are just dots
+        -- (no s in C type P). By layer monotonicity, if i < dotScolLen(P,j),
+        -- then layerOrd ≤ 1, and for C type P that means dot.
+        -- But we need i < dotScolLen(P,j). Is i < cR sufficient?
+        -- We need cR ≤ cL (= dotScolLen). This is the interlacing condition.
+        sorry -- needs interlacing + C type P has no s
+      · by_cases h_cL : i < dotScolLen τ₁.P j
+        · -- cR ≤ i < cL: P' = s for both. P(i,j) is dot (C type, layerOrd ≤ 1, no s).
+          sorry -- same as above: C type dot+s = dot only
+        · -- i ≥ cL: P' = P(i,j) directly
+          have h_cL₂ : ¬(i < dotScolLen τ₂.P j) := by
+            -- Need dotScolLen₁ = dotScolLen₂. From hdescL + hshapeP/Q.
+            -- At the boundary: one gives s, other gives P(i,j) ∈ {r,c,d} or dot.
+            -- If they differ: s ≠ r/c/d and s ≠ dot. Contradiction.
+            sorry -- boundary argument
+          rw [if_neg h_cR, if_neg h_cL, if_neg (hshapeQ ▸ h_cR), if_neg h_cL₂] at key
+          exact key
+    · -- Not in P.shape: both paint dot (paint_outside)
+      rw [τ₁.P.paint_outside i j hp, τ₂.P.paint_outside i j (hshapeP ▸ hp)]
+  constructor
+  · exact hP
+  · -- Step 2: Q agrees on all cells (from P + dot_match + shapes)
+    intro i j
+    by_cases hq : (i, j) ∈ τ₁.Q.shape
+    · -- In Q.shape: Q has {•, s}. dot_match determines dot vs s.
+      -- Q.paint = dot ↔ P.paint = dot (at (i,j) in both shapes)
+      -- Since P agrees, dot classification agrees. And non-dot = s.
+      have hq₂ : (i, j) ∈ τ₂.Q.shape := hshapeQ ▸ hq
+      by_cases hd : τ₁.Q.paint i j = .dot
+      · -- Q₁ = dot. By dot_match: P₁ = dot (at (i,j) in P.shape, if in P.shape).
+        have ⟨_, hp_dot⟩ := (τ₁.dot_match i j).mpr ⟨hq, hd⟩
+        -- P₁ = dot → P₂ = dot (by hP) → Q₂ = dot (by dot_match)
+        rw [hd]
+        have hp₂_dot : τ₂.P.paint i j = .dot := hP i j ▸ hp_dot
+        by_cases hp₂_mem : (i, j) ∈ τ₂.P.shape
+        · exact ((τ₂.dot_match i j).mp ⟨hp₂_mem, hp₂_dot⟩).2.symm
+        · -- (i,j) ∉ P₂.shape but P₂.paint = dot → could be outside.
+          -- Q₂.paint at (i,j) ∈ Q₂.shape: must be {•, s}. If dot: done.
+          -- If s: (i,j) ∉ P₂.shape → P₂.paint = dot.
+          -- dot_match: P₂ dot ↔ Q₂ dot. P₂ dot (outside) → need (i,j) ∈ P₂.shape
+          -- for the forward direction. But (i,j) ∉ P₂.shape!
+          -- dot_match: ((i,j) ∈ P.shape ∧ P.paint = dot) ↔ ((i,j) ∈ Q.shape ∧ Q.paint = dot)
+          -- RHS = (i,j) ∈ Q₂.shape ∧ Q₂.paint = dot = True ∧ Q₂.paint = dot
+          -- LHS = False (since ∉ P₂.shape). So Q₂.paint ≠ dot.
+          -- But we want Q₂.paint = dot. Contradiction?
+          -- This means (i,j) must be in P₂.shape. Let me check.
+          -- P₂.paint = dot (from hP + hp_dot). (i,j) ∈ P₁.shape (from dot_match on τ₁).
+          -- hshapeP: P₁.shape = P₂.shape. So (i,j) ∈ P₂.shape.
+          exact absurd (hshapeP ▸ (τ₁.dot_match i j).mpr ⟨hq, hd⟩).1 hp₂_mem
+      · -- Q₁ ≠ dot → Q₁ = s (C type Q has {•, s})
+        have hs₁ := Q_nonDot_eq_s_of_C τ₁ hγ₁ i j hq hd
+        -- P₁ ≠ dot (otherwise dot_match gives Q₁ = dot)
+        -- So P₂ ≠ dot (by hP). So Q₂ ≠ dot (by dot_match). So Q₂ = s.
+        have hd₂ : τ₂.Q.paint i j ≠ .dot := by
+          intro hd₂
+          have ⟨hp₂_mem, hp₂_dot⟩ := (τ₂.dot_match i j).mpr ⟨hq₂, hd₂⟩
+          rw [← hP i j] at hp₂_dot
+          exact hd ((τ₁.dot_match i j).mp ⟨hshapeP.symm ▸ hp₂_mem, hp₂_dot⟩).2
+        rw [hs₁, Q_nonDot_eq_s_of_C τ₂ hγ₂ i j hq₂ hd₂]
+    · -- Not in Q.shape: both paint dot (paint_outside)
+      rw [τ₁.Q.paint_outside i j hq, τ₂.Q.paint_outside i j (hshapeQ ▸ hq)]
+
+/-! ## M → B Recovery
+
+For M type: P has {•, s, c}, Q has {•, r, d}.
+M→B: P shifts left, Q gets redistribution.
+Same structure as D→C. Recovery: first Q from Q', then P via dot_match. -/
+
+theorem descent_eq_implies_cols_ge1_MB (τ₁ τ₂ : PBP)
+    (hγ₁ : τ₁.γ = .M) (hγ₂ : τ₂.γ = .M)
+    (hshapeP : τ₁.P.shape = τ₂.P.shape)
+    (hshapeQ : τ₁.Q.shape = τ₂.Q.shape)
+    (hdescL : ∀ i j, descentPaintL_MB τ₁ i j = descentPaintL_MB τ₂ i j)
+    (hdescR : ∀ i j, descentPaintR_MB τ₁ i j = descentPaintR_MB τ₂ i j) :
+    (∀ i j, 1 ≤ j → τ₁.P.paint i j = τ₂.P.paint i j) ∧
+    (∀ i j, τ₁.Q.paint i j = τ₂.Q.paint i j) := by
+  sorry
+
+/-! ## B → M Recovery: descent is injective
+
+For B type: P has {•, c}, Q has {•, s, r, d}.
+B→M: Q shifts left, P gets redistribution.
+From same P' + Q' + shapes → τ₁ = τ₂. -/
+
+theorem descent_inj_BM (τ₁ τ₂ : PBP)
+    (hγ₁ : τ₁.γ = .Bplus ∨ τ₁.γ = .Bminus)
+    (hγ₂ : τ₂.γ = .Bplus ∨ τ₂.γ = .Bminus)
+    (hshapeP : τ₁.P.shape = τ₂.P.shape)
+    (hshapeQ : τ₁.Q.shape = τ₂.Q.shape)
+    (hdescL : ∀ i j, descentPaintL_BM τ₁ i j = descentPaintL_BM τ₂ i j)
+    (hdescR : ∀ i j, descentPaintR_BM τ₁ i j = descentPaintR_BM τ₂ i j) :
+    (∀ i j, τ₁.P.paint i j = τ₂.P.paint i j) ∧
+    (∀ i j, τ₁.Q.paint i j = τ₂.Q.paint i j) := by
+  sorry
+
 end PBP
