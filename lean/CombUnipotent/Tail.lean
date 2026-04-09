@@ -218,7 +218,7 @@ theorem countCol0_le_one_of_unique (paint : ℕ → ℕ → DRCSymbol) (σ : DRC
       simp only [countCol0] at h_zero ⊢
       rw [h_zero]; simp [List.filter_cons, heq]
     · -- paint(a+n) ≠ σ. Count in [0, n+1) = count in [0, n) ≤ 1.
-      sorry -- countCol0 n+1 = countCol0 n when last element doesn't match
+      simp [heq]; omega
 
 /-! ## Part C: Tail counts determined
 
@@ -256,13 +256,84 @@ theorem tail_counts_arith
   have hns : ns₁ = ns₂ := by omega
   exact ⟨hns, hnr, hnc⟩
 
-/-- **Part C2 (Finset decomposition)**: the signature difference for D type
-    reduces to weighted sums on the tail counts.
-    This requires decomposing PaintedYoungDiagram.countSym into
-    column 0 (dot part + tail) + columns ≥ 1.
+/-- Count of symbol σ in column 0 of a PaintedYoungDiagram,
+    computed via Finset (cells in column 0 with paint = σ). -/
+noncomputable def countSymCol0 (D : PaintedYoungDiagram) (σ : DRCSymbol) : ℕ :=
+  (D.shape.cells.filter (fun c => c.2 = 0 ∧ D.paint c.1 c.2 = σ)).card
 
-    The conclusion: the "weighted r-sum" 2·n_r_tail + n_c_tail + n_d_tail
-    is determined by (signature, shapes, columns ≥ 1). -/
+/-- Count of symbol σ in columns ≥ 1 of a PaintedYoungDiagram. -/
+noncomputable def countSymColGe1 (D : PaintedYoungDiagram) (σ : DRCSymbol) : ℕ :=
+  (D.shape.cells.filter (fun c => 1 ≤ c.2 ∧ D.paint c.1 c.2 = σ)).card
+
+/-- Decomposition: countSym = countSymCol0 + countSymColGe1. -/
+theorem countSym_split (D : PaintedYoungDiagram) (σ : DRCSymbol) :
+    D.countSym σ = countSymCol0 D σ + countSymColGe1 D σ := by
+  unfold PaintedYoungDiagram.countSym countSymCol0 countSymColGe1
+  set S := D.shape.cells.filter (fun c => D.paint c.1 c.2 = σ)
+  -- Split S into col=0 and col≥1 parts
+  have hcol0 : D.shape.cells.filter (fun c => c.2 = 0 ∧ D.paint c.1 c.2 = σ) =
+    S.filter (fun c => c.2 = 0) := by
+    ext ⟨i, j⟩
+    simp only [Finset.mem_filter, YoungDiagram.mem_cells, S]
+    tauto
+  have hcolge1 : D.shape.cells.filter (fun c => 1 ≤ c.2 ∧ D.paint c.1 c.2 = σ) =
+    S.filter (fun c => ¬(c.2 = 0)) := by
+    ext ⟨i, j⟩
+    simp only [Finset.mem_filter, YoungDiagram.mem_cells, S]
+    constructor
+    · rintro ⟨h1, h2, h3⟩; exact ⟨⟨h1, h3⟩, by omega⟩
+    · rintro ⟨⟨h1, h2⟩, h3⟩; exact ⟨h1, by omega, h2⟩
+  rw [hcol0, hcolge1]
+  exact (Finset.card_filter_add_card_filter_not (p := fun c => c.2 = 0) (s := S)).symm
+
+/-- Bridge: countSymCol0 = countCol0 over the full column. -/
+theorem countSymCol0_eq_countCol0 (D : PaintedYoungDiagram) (σ : DRCSymbol) :
+    countSymCol0 D σ = countCol0 D.paint σ 0 (D.shape.colLen 0) := by
+  sorry -- Finset.filter.card on cells col=0 ↔ List.range.filter.length
+
+/-- For D type, Q has no non-dot symbols. -/
+theorem Q_countSym_eq_zero_of_D (τ : PBP) (hγ : τ.γ = .D)
+    (σ : DRCSymbol) (hσ : σ ≠ .dot) :
+    τ.Q.countSym σ = 0 := by
+  simp only [PaintedYoungDiagram.countSym, Finset.card_eq_zero, Finset.filter_eq_empty_iff]
+  intro ⟨i, j⟩ hmem
+  simp only [YoungDiagram.mem_cells] at hmem
+  exact fun h => hσ ((τ.Q_all_dot_of_D hγ i j hmem) ▸ h.symm)
+
+/-- Columns ≥ 1 agree when paint agrees on columns ≥ 1. -/
+theorem countSymColGe1_eq (D₁ D₂ : PaintedYoungDiagram)
+    (hshape : D₁.shape = D₂.shape)
+    (hpaint : ∀ i j, 1 ≤ j → D₁.paint i j = D₂.paint i j) (σ : DRCSymbol) :
+    countSymColGe1 D₁ σ = countSymColGe1 D₂ σ := by
+  simp only [countSymColGe1]; congr 1; rw [hshape]
+  ext ⟨i, j⟩; simp only [Finset.mem_filter, YoungDiagram.mem_cells]
+  constructor
+  · rintro ⟨hm, hj, hp⟩; exact ⟨hm, hj, by rwa [← hpaint i j hj]⟩
+  · rintro ⟨hm, hj, hp⟩; exact ⟨hm, hj, by rwa [hpaint i j hj]⟩
+
+/-- Columns ≥ 1 count agrees when descent agrees. -/
+theorem countSym_cols_ge1_eq (τ₁ τ₂ : PBP)
+    (hshapeP : τ₁.P.shape = τ₂.P.shape)
+    (hdescent_P : ∀ i j, 1 ≤ j → τ₁.P.paint i j = τ₂.P.paint i j)
+    (σ : DRCSymbol) :
+    (τ₁.P.shape.cells.filter (fun c => 1 ≤ c.2 ∧ τ₁.P.paint c.1 c.2 = σ)).card =
+    (τ₂.P.shape.cells.filter (fun c => 1 ≤ c.2 ∧ τ₂.P.paint c.1 c.2 = σ)).card := by
+  congr 1
+  rw [hshapeP]
+  ext ⟨i, j⟩
+  simp only [Finset.mem_filter]
+  constructor
+  · rintro ⟨hm, hj, hp⟩; exact ⟨hm, hj, by rwa [← hdescent_P i j hj]⟩
+  · rintro ⟨hm, hj, hp⟩; exact ⟨hm, hj, by rwa [hdescent_P i j hj]⟩
+
+/-- For D type, Q.countSym σ = 0 for non-dot σ (Q is all dots). -/
+theorem Q_countSym_zero_of_D (τ : PBP) (hγ : τ.γ = .D) (σ : DRCSymbol) (hσ : σ ≠ .dot) :
+    τ.Q.countSym σ = 0 := by
+  simp only [PaintedYoungDiagram.countSym, Finset.card_eq_zero, Finset.filter_eq_empty_iff]
+  intro ⟨i, j⟩ hm
+  exact fun h => hσ ((Q_all_dot_of_D τ hγ i j hm) ▸ h.symm)
+
+/-- **Part C2**: the weighted r-sum in the tail is determined. -/
 theorem tail_weighted_sums_eq (τ₁ τ₂ : PBP)
     (hγ₁ : τ₁.γ = .D) (hγ₂ : τ₂.γ = .D)
     (hshapeP : τ₁.P.shape = τ₂.P.shape)
@@ -270,17 +341,72 @@ theorem tail_weighted_sums_eq (τ₁ τ₂ : PBP)
     (hdescent_P : ∀ i j, 1 ≤ j → τ₁.P.paint i j = τ₂.P.paint i j)
     (hsig : PBP.signature τ₁ = PBP.signature τ₂)
     (a : ℕ) (ha : a = τ₁.Q.shape.colLen 0) (n : ℕ) (hn : a + n = τ₁.P.shape.colLen 0) :
-    -- Weighted r-sum
     2 * countCol0 τ₁.P.paint .r a n + countCol0 τ₁.P.paint .c a n + countCol0 τ₁.P.paint .d a n =
     2 * countCol0 τ₂.P.paint .r a n + countCol0 τ₂.P.paint .c a n + countCol0 τ₂.P.paint .d a n := by
-  sorry -- Finset decomposition of signature
+  -- Key: for σ ≠ dot, P.countSym σ = countCol0 σ a n + countSymColGe1 P σ
+  -- This is because col0 contribution = countCol0 0 (a+n), and the [0,a) part is 0 (dots).
+  suffices h : ∀ σ : DRCSymbol, σ ≠ .dot →
+      ∀ (τ : PBP), τ.γ = .D → a = τ.Q.shape.colLen 0 → a + n = τ.P.shape.colLen 0 →
+      τ.P.countSym σ = countCol0 τ.P.paint σ a n + countSymColGe1 τ.P σ by
+    -- Signature for D: p = (P.countSym .dot + Q.card) + 2*P.countSym .r + P.countSym .c + P.countSym .d
+    -- The dot and Q parts are determined by shapes. The colGe1 parts agree.
+    -- So: 2*countCol0 .r + countCol0 .c + countCol0 .d must agree.
+    have hr₁ := h .r (by decide) τ₁ hγ₁ ha hn
+    have hc₁ := h .c (by decide) τ₁ hγ₁ ha hn
+    have hd₁ := h .d (by decide) τ₁ hγ₁ ha hn
+    have ha₂ : a = τ₂.Q.shape.colLen 0 := by rw [ha, hshapeQ]
+    have hn₂ : a + n = τ₂.P.shape.colLen 0 := by rw [hn, hshapeP]
+    have hr₂ := h .r (by decide) τ₂ hγ₂ ha₂ hn₂
+    have hc₂ := h .c (by decide) τ₂ hγ₂ ha₂ hn₂
+    have hd₂ := h .d (by decide) τ₂ hγ₂ ha₂ hn₂
+    have hge1_r := countSymColGe1_eq τ₁.P τ₂.P hshapeP hdescent_P .r
+    have hge1_c := countSymColGe1_eq τ₁.P τ₂.P hshapeP hdescent_P .c
+    have hge1_d := countSymColGe1_eq τ₁.P τ₂.P hshapeP hdescent_P .d
+    -- From hsig: signature τ₁ = signature τ₂
+    -- For D type: sig.1 = P.countSym .dot + Q.countSym .dot + 2*P.countSym .r + P.countSym .c + P.countSym .d
+    -- Rewrite P.countSym σ using decomposition h
+    -- Cancel common colGe1 parts
+    -- Result: 2*countCol0 .r + countCol0 .c + countCol0 .d agree
+    -- This requires unfolding PBP.signature which is noncomputable
+    sorry
+  -- Proof of the decomposition: countSym = tail + colGe1
+  intro σ hσ τ hγ ha' hn'
+  rw [countSym_split τ.P σ, countSymCol0_eq_countCol0]
+  rw [countCol0_split _ _ 0 a (τ.P.shape.colLen 0) (by subst ha'; exact Q_colLen0_le_P_colLen0_D τ hγ)]
+  simp only [Nat.zero_add, show τ.P.shape.colLen 0 - a = n from by omega]
+  -- countCol0 σ 0 a = 0 (dot region: cells [0, a) are all dots, so no σ ≠ dot)
+  rw [countCol0_eq_zero_of_ne _ _ 0 a (by
+    intro k hk hpaint
+    have := col0_dot_below_Q_D τ hγ (by subst ha'; omega)
+    simp only [Nat.zero_add] at hpaint
+    rw [this] at hpaint; exact hσ hpaint.symm)]
+  omega
 
 /-- Bridge: hasDInCol0(P) iff countCol0(.d, 0, colLen) > 0.
     Both count the same thing (cells in column 0 with paint = d)
     but use different data structures (Finset vs List). -/
 theorem hasDInCol0_iff_countCol0_pos (D : PaintedYoungDiagram) :
     D.hasDInCol0 = true ↔ 0 < countCol0 D.paint .d 0 (D.shape.colLen 0) := by
-  sorry -- Finset.Nonempty ↔ List.range.filter.length > 0
+  unfold PaintedYoungDiagram.hasDInCol0 countCol0
+  simp only [Nat.zero_add]
+  rw [decide_eq_true_eq]
+  constructor
+  · -- Forward: Finset.Nonempty → List.length > 0
+    rintro ⟨⟨i, j⟩, hmem⟩
+    rw [Finset.mem_filter] at hmem
+    rw [YoungDiagram.mem_cells] at hmem
+    obtain ⟨hmem_shape, hj, hpaint⟩ := hmem
+    subst hj
+    apply List.length_pos_of_mem
+    simp only [List.mem_filter, List.mem_range, decide_eq_true_eq]
+    exact ⟨YoungDiagram.mem_iff_lt_colLen.mp hmem_shape, hpaint⟩
+  · -- Backward: List.length > 0 → Finset.Nonempty
+    intro hpos
+    obtain ⟨k, hk⟩ := List.exists_mem_of_length_pos hpos
+    simp only [List.mem_filter, List.mem_range, decide_eq_true_eq] at hk
+    exact ⟨⟨k, 0⟩, by
+      rw [Finset.mem_filter, YoungDiagram.mem_cells]
+      exact ⟨YoungDiagram.mem_iff_lt_colLen.mpr hk.1, rfl, hk.2⟩⟩
 
 /-- D type epsilon determines n_d in tail.
     Proof: epsilon = 0 iff d in P's column 0 (for D, Q has no d).
@@ -302,7 +428,77 @@ theorem tail_nd_eq (τ₁ τ₂ : PBP)
   -- countCol0(.d, 0, P.colLen(0)) = countCol0(.d, 0, a) + countCol0(.d, a, n)
   -- countCol0(.d, 0, a) = 0 (dot region has no d)
   -- So: hasDInCol0(P) iff countCol0(.d, a, n) > 0 iff n_d = 1
-  sorry -- needs hasDInCol0_iff_countCol0_pos bridge + arithmetic
+  -- For D type, Q is all dots, so Q.hasDInCol0 = false
+  have hQ_no_d₁ : τ₁.Q.hasDInCol0 = false := by
+    simp only [PaintedYoungDiagram.hasDInCol0, Bool.not_eq_true, decide_eq_false_iff_not,
+      Finset.not_nonempty_iff_eq_empty, Finset.filter_eq_empty_iff]
+    intro ⟨i, j⟩ hmem
+    rw [YoungDiagram.mem_cells] at hmem
+    simp [τ₁.Q_all_dot_of_D hγ₁ i j hmem]
+  have hQ_no_d₂ : τ₂.Q.hasDInCol0 = false := by
+    simp only [PaintedYoungDiagram.hasDInCol0, Bool.not_eq_true, decide_eq_false_iff_not,
+      Finset.not_nonempty_iff_eq_empty, Finset.filter_eq_empty_iff]
+    intro ⟨i, j⟩ hmem
+    rw [YoungDiagram.mem_cells] at hmem
+    simp [τ₂.Q_all_dot_of_D hγ₂ i j hmem]
+  -- epsilon τ = 0 iff P.hasDInCol0 (since Q.hasDInCol0 = false)
+  have heps_iff₁ : (PBP.epsilon τ₁ = 0) ↔ τ₁.P.hasDInCol0 = true := by
+    simp [PBP.epsilon, hQ_no_d₁]
+  have heps_iff₂ : (PBP.epsilon τ₂ = 0) ↔ τ₂.P.hasDInCol0 = true := by
+    simp [PBP.epsilon, hQ_no_d₂]
+  -- hasDInCol0(P) ↔ countCol0(.d, 0, P.colLen(0)) > 0
+  have hbridge₁ := hasDInCol0_iff_countCol0_pos τ₁.P
+  have hbridge₂ := hasDInCol0_iff_countCol0_pos τ₂.P
+  -- countCol0(.d, 0, P.colLen(0)) = countCol0(.d, 0, a) + countCol0(.d, a, n)
+  have hsplit₁ := countCol0_split τ₁.P.paint .d 0 a (τ₁.P.shape.colLen 0) (by omega)
+  have hsplit₂ := countCol0_split τ₂.P.paint .d 0 a (τ₂.P.shape.colLen 0)
+    (by rw [← hshapeP]; omega)
+  -- Dot region [0, a) has no d (paint = dot there)
+  have hdot₁ : countCol0 τ₁.P.paint .d 0 a = 0 :=
+    countCol0_eq_zero_of_ne _ _ _ _ fun k hk => by
+      simp only [Nat.zero_add]
+      have : k < τ₁.Q.shape.colLen 0 := ha ▸ hk
+      rw [col0_dot_below_Q_D τ₁ hγ₁ this]
+      exact DRCSymbol.noConfusion
+  have hdot₂ : countCol0 τ₂.P.paint .d 0 a = 0 :=
+    countCol0_eq_zero_of_ne _ _ _ _ fun k hk => by
+      simp only [Nat.zero_add]
+      have : k < τ₂.Q.shape.colLen 0 := by rw [← hshapeQ]; exact ha ▸ hk
+      rw [col0_dot_below_Q_D τ₂ hγ₂ this]
+      exact DRCSymbol.noConfusion
+  -- So: countCol0(.d, 0, colLen) = countCol0(.d, a, n)
+  have hn_sub₁ : τ₁.P.shape.colLen 0 - a = n := by omega
+  have hn_sub₂ : τ₂.P.shape.colLen 0 - a = n := by rw [← hshapeP]; omega
+  simp only [hdot₁, Nat.zero_add, hn_sub₁] at hsplit₁
+  simp only [hdot₂, Nat.zero_add, hn_sub₂] at hsplit₂
+  -- Now: hasDInCol0(P₁) ↔ countCol0(.d, a, n) for τ₁ > 0, similarly for τ₂
+  rw [hsplit₁] at hbridge₁
+  rw [hsplit₂] at hbridge₂
+  -- epsilon equal means hasDInCol0 agree
+  -- epsilon = if P.hasDInCol0 || Q.hasDInCol0 then 0 else 1
+  -- For D type, Q.hasDInCol0 = false, so epsilon = if P.hasDInCol0 then 0 else 1
+  have hd_agree : τ₁.P.hasDInCol0 = τ₂.P.hasDInCol0 := by
+    simp only [PBP.epsilon, hQ_no_d₁, hQ_no_d₂, Bool.or_false] at heps
+    -- heps : (if τ₁.P.hasDInCol0 then 0 else 1) = (if τ₂.P.hasDInCol0 then 0 else 1) : Fin 2
+    revert heps
+    cases τ₁.P.hasDInCol0 <;> cases τ₂.P.hasDInCol0 <;> simp
+  -- Both n_d ∈ {0, 1} and agree on positivity
+  -- Positivity equivalence: countCol0 > 0 ↔ hasDInCol0 = true
+  have hpos₁ : 0 < countCol0 τ₁.P.paint .d a n ↔ τ₁.P.hasDInCol0 = true := hbridge₁.symm
+  have hpos₂ : 0 < countCol0 τ₂.P.paint .d a n ↔ τ₂.P.hasDInCol0 = true := hbridge₂.symm
+  rw [hd_agree] at hpos₁
+  -- Both counts ∈ {0, 1} and are positive iff the same condition holds
+  -- Since both ∈ {0,1} and positive iff same condition, they're equal
+  rcases Nat.eq_zero_or_pos (countCol0 τ₁.P.paint .d a n) with h1 | h1
+  · -- n_d₁ = 0, show n_d₂ = 0
+    have : ¬(0 < countCol0 τ₂.P.paint .d a n) := by
+      intro h2
+      have := hpos₁.mpr (hpos₂.mp h2)
+      omega
+    omega
+  · -- n_d₁ > 0, so n_d₂ > 0, and both ≤ 1
+    have h2 : 0 < countCol0 τ₂.P.paint .d a n := hpos₂.mpr (hpos₁.mp h1)
+    omega
 
 theorem prop_10_9_partC (τ₁ τ₂ : PBP)
     (hγ₁ : τ₁.γ = .D) (hγ₂ : τ₂.γ = .D)
