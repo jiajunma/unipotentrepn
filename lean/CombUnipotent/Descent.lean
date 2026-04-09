@@ -324,7 +324,15 @@ theorem dotS_eq_dot_of_C (τ : PBP) (hγ : τ.γ = .C) {i j : ℕ}
   exact paint_dot_of_layerOrd_le_one_C τ hγ hmem
     (layerOrd_le_one_of_lt_dotSdiag_colLen τ.P τ.mono_P h)
 
--- (dotScolLen_eq_of_CD_descent removed: not needed for simplified proof)
+/-- For C type: Q.colLen(j+1) ≤ dotScolLen(P, j).
+    Proof: interlacing (dotDiag.colLen ≥ Q.colLen) + C type dotSdiag = dotDiag. -/
+theorem Q_colLen_succ_le_dotScolLen_C (τ : PBP) (hγ : τ.γ = .C) (j : ℕ) :
+    τ.Q.shape.colLen (j + 1) ≤ dotScolLen τ.P j := by
+  -- Q.colLen(j+1) ≤ dotDiag(Q).colLen(j) [interlacing, proved]
+  --              = dotDiag(P).colLen(j) [dotDiag_eq]
+  --              ≤ dotSdiag(P).colLen(j) [dot ⊆ dot+s]
+  --              = dotScolLen(P, j) [bridge]
+  sorry
 
 /-! ## C → D Recovery: descent is injective
 
@@ -356,13 +364,53 @@ theorem descent_inj_CD (τ₁ τ₂ : PBP)
       -- If P₁ = dot, P₂ ≠ dot (or vice versa):
       --   P₁ = dot → P'₁ ∈ {dot, s}. P₂ ∈ {r,c,d} → P'₂ = P₂.
       --   hdescL: P'₁ = P'₂. So {dot,s} = {r,c,d}: impossible.
-      -- Case split: P₁ dot/non-dot × P₂ dot/non-dot
-      -- For C type: P ∈ {dot, r, c, d}. Non-dot has layerOrd > 1.
-      -- Key: non-dot → i ≥ dotScolLen → P' = P directly.
-      --       dot → i < dotScolLen → P' ∈ {dot, s}.
-      -- If one is dot and other non-dot: P' gives dot/s vs r/c/d. Contradiction.
-      -- If both dot: trivial. If both non-dot: P' = P for both.
-      sorry -- 4-way case split using layerOrd_gt_one_of_nonDot_C + hdescL
+      -- Helper: for C type, P'(i,j) = P(i,j) when P(i,j) is non-dot.
+      -- This is because non-dot → layerOrd > 1 → i ≥ cL ≥ cR → P' = P.
+      have descent_preserves_nonDot : ∀ (τ : PBP), τ.γ = .C →
+          (i, j) ∈ τ.P.shape → τ.P.paint i j ≠ .dot →
+          descentPaintL_CD τ i j = τ.P.paint i j := by
+        intro τ hγ hmem hne
+        simp only [descentPaintL_CD]
+        have hge := ge_dotScolLen_of_nonDot τ.P τ.mono_P hmem hne
+          (layerOrd_gt_one_of_nonDot_C τ hγ hmem hne)
+        have hcR := Q_colLen_succ_le_dotScolLen_C τ hγ j
+        rw [if_neg (by omega), if_neg (by omega)]
+      -- Helper: for C type, P(i,j) = dot → P'(i,j) ∈ {dot, s}.
+      have descent_maps_dot : ∀ (τ : PBP), τ.γ = .C →
+          (i, j) ∈ τ.P.shape → τ.P.paint i j = .dot →
+          descentPaintL_CD τ i j = .dot ∨ descentPaintL_CD τ i j = .s := by
+        intro τ hγ hmem hd
+        simp only [descentPaintL_CD]
+        by_cases hcr : i < τ.Q.shape.colLen (j + 1)
+        · left; rw [if_pos hcr]
+        · have hcl : i < dotScolLen τ.P j := by
+            rw [dotScolLen_eq_dotSdiag_colLen _ τ.mono_P]
+            rw [YoungDiagram.mem_iff_lt_colLen.symm]
+            simp [dotSdiag, Finset.mem_filter, YoungDiagram.mem_cells, hmem, hd, DRCSymbol.layerOrd]
+          right; rw [if_neg hcr, if_pos hcl]
+      -- Main proof: 4-way case split on dot vs non-dot
+      have key := hdescL i j
+      by_cases hd₁ : τ₁.P.paint i j = .dot <;> by_cases hd₂ : τ₂.P.paint i j = .dot
+      · -- Both dot
+        rw [hd₁, hd₂]
+      · -- P₁ = dot, P₂ ≠ dot → contradiction
+        exfalso
+        rw [descent_preserves_nonDot τ₂ hγ₂ hp₂ hd₂] at key
+        rcases descent_maps_dot τ₁ hγ₁ hp hd₁ with h | h <;> rw [h] at key
+        · exact hd₂ key.symm
+        · have := layerOrd_gt_one_of_nonDot_C τ₂ hγ₂ hp₂ hd₂
+          revert key this; cases τ₂.P.paint i j <;> simp [DRCSymbol.layerOrd]
+      · -- P₁ ≠ dot, P₂ = dot → symmetric contradiction
+        exfalso
+        rw [descent_preserves_nonDot τ₁ hγ₁ hp hd₁] at key
+        rcases descent_maps_dot τ₂ hγ₂ hp₂ hd₂ with h | h <;> rw [h] at key
+        · exact hd₁ key
+        · have := layerOrd_gt_one_of_nonDot_C τ₁ hγ₁ hp hd₁
+          revert key this; cases τ₁.P.paint i j <;> simp [DRCSymbol.layerOrd]
+      · -- Both non-dot: P' = P directly
+        rw [descent_preserves_nonDot τ₁ hγ₁ hp hd₁,
+            descent_preserves_nonDot τ₂ hγ₂ hp₂ hd₂] at key
+        exact key
     · rw [τ₁.P.paint_outside i j hp, τ₂.P.paint_outside i j (hshapeP ▸ hp)]
   constructor
   · exact hP
