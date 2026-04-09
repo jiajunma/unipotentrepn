@@ -66,22 +66,42 @@ theorem countCol0_zero (paint : ℕ → ℕ → DRCSymbol) (σ : DRCSymbol) (a :
 @[simp] theorem countCol0_split (paint : ℕ → ℕ → DRCSymbol) (σ : DRCSymbol)
     (a m n : ℕ) (hmn : m ≤ n) :
     countCol0 paint σ a n = countCol0 paint σ a m + countCol0 paint σ (a + m) (n - m) := by
-  sorry
+  simp only [countCol0]
+  have hn : n = m + (n - m) := by omega
+  conv_lhs => rw [hn, List.range_add, List.filter_append, List.length_append]
+  congr 1
+  rw [List.filter_map, List.length_map]
+  congr 1
+  apply List.filter_congr
+  intro k _
+  simp only [Function.comp, Nat.add_assoc]
 
 theorem countCol0_congr (f g : ℕ → ℕ → DRCSymbol) (σ : DRCSymbol) (a n : ℕ)
     (h : ∀ k, k < n → f (a + k) 0 = g (a + k) 0) :
     countCol0 f σ a n = countCol0 g σ a n := by
-  sorry
+  simp only [countCol0]
+  congr 1
+  apply List.filter_congr
+  intro k hk
+  rw [List.mem_range] at hk
+  rw [h k hk]
 
 theorem countCol0_eq_zero_of_ne (paint : ℕ → ℕ → DRCSymbol) (σ : DRCSymbol) (a n : ℕ)
     (h : ∀ k, k < n → paint (a + k) 0 ≠ σ) :
     countCol0 paint σ a n = 0 := by
-  sorry
+  simp only [countCol0, List.length_eq_zero_iff]
+  rw [List.filter_eq_nil_iff]
+  intro k hk
+  rw [List.mem_range] at hk
+  simp [h k hk]
 
 theorem countCol0_pos (paint : ℕ → ℕ → DRCSymbol) (σ : DRCSymbol) (a n : ℕ)
     (hn : 0 < n) (h : paint a 0 = σ) :
     1 ≤ countCol0 paint σ a n := by
-  sorry
+  unfold countCol0
+  apply List.length_pos_of_mem
+  rw [List.mem_filter, List.mem_range]
+  exact ⟨hn, by simp [h]⟩
 
 /-- layerOrd injective: same layerOrd ⟹ same symbol. -/
 theorem DRCSymbol.eq_of_layerOrd_eq {σ₁ σ₂ : DRCSymbol}
