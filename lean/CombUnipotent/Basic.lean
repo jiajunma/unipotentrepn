@@ -39,6 +39,10 @@ inductive DRCSymbol where
   | d
   deriving DecidableEq, Repr, BEq
 
+instance : Fintype DRCSymbol where
+  elems := {.dot, .s, .r, .c, .d}
+  complete := fun x => by cases x <;> simp
+
 namespace DRCSymbol
 
 /-- Layer ordering on symbols: • < s < r < c < d.

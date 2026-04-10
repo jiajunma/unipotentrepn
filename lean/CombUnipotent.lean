@@ -4,3 +4,4 @@ import CombUnipotent.Signature
 import CombUnipotent.Descent
 import CombUnipotent.Tail
 import CombUnipotent.Counting
+import CombUnipotent.Finiteness
