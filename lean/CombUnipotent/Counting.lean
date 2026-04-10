@@ -140,6 +140,45 @@ def countPBP (dp : DualPart) (γ : RootType) : ℕ :=
   | .D => let (dd, rc, ss) := countPBP_D dp; dd + rc + ss
   | .Bplus | .Bminus => let (dd, rc, ss) := countPBP_B dp; (dd + rc + ss) / 2
 
+/-! ## Structural properties of the counting formulas -/
+
+/-- Prop 10.11: D-type with primitive (2,3) factors through total. -/
+theorem countPBP_D_primitive {r₁ r₂ : ℕ} {rest : DualPart}
+    (h : r₂ > rest.head?.getD 0) :
+    countPBP_D (r₁ :: r₂ :: rest) =
+      let k := (r₁ - r₂) / 2 + 1
+      let ((tDD, tRC, tSS), _) := tailCoeffs k
+      let (dd', rc', ss') := countPBP_D rest
+      let total := dd' + rc' + ss'
+      (total * tDD, total * tRC, total * tSS) := by
+  simp only [countPBP_D, h, ite_true]
+
+/-- Prop 10.11: D-type with balanced (2,3) uses matrix multiply. -/
+theorem countPBP_D_balanced {r₁ r₂ : ℕ} {rest : DualPart}
+    (h : ¬(r₂ > rest.head?.getD 0)) :
+    countPBP_D (r₁ :: r₂ :: rest) =
+      let k := (r₁ - r₂) / 2 + 1
+      let ((tDD, tRC, tSS), (scDD, scRC, scSS)) := tailCoeffs k
+      let (dd', rc', ss') := countPBP_D rest
+      (dd' * tDD + rc' * scDD,
+       dd' * tRC + rc' * scRC,
+       dd' * tSS + rc' * scSS) := by
+  simp only [countPBP_D, h, ite_false]
+
+/-- Prop 10.12: C-type with primitive (1,2) gives full D count. -/
+theorem countPBP_C_primitive {r₁ r₂ : ℕ} {rest : DualPart} (h : r₁ > r₂) :
+    countPBP_C (r₁ :: r₂ :: rest) =
+      let (dd, rc, ss) := countPBP_D (r₂ :: rest)
+      dd + rc + ss := by
+  simp only [countPBP_C, h, ite_true]
+
+/-- Prop 10.12: C-type with balanced (1,2) excludes SS. -/
+theorem countPBP_C_balanced {r₁ r₂ : ℕ} {rest : DualPart} (h : ¬(r₁ > r₂)) :
+    countPBP_C (r₁ :: r₂ :: rest) =
+      let (dd, rc, _) := countPBP_D (r₂ :: rest)
+      dd + rc := by
+  simp only [countPBP_C, h, ite_false]
+
 /-! ## Verification -/
 
 -- D empty: (1, 0, 0), total = 1
