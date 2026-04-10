@@ -725,4 +725,92 @@ theorem prop_10_9_D' (τ₁ τ₂ : PBP)
     · have hm₂ : (i, j) ∉ τ₂.Q.shape := hshapeQ ▸ hm
       rw [τ₁.Q.paint_outside i j hm, τ₂.Q.paint_outside i j hm₂]
 
+/-! ## Prop 10.9 for B type
+
+For B type: the tail is in Q col 0 (Q.colLen(0) ≥ P.colLen(0)).
+The proof is symmetric to D type with P↔Q swapped:
+- Q col 0 has dots (matching P via dot_match) then non-dot symbols
+- The non-dot part (tail) is determined by (signature, epsilon)
+- The determination uses the same monotone_col_unique + tail_counts_arith
+
+For the full statement: same B→M descent + same (p,q,ε) → same PBP.
+B→M descent gives: P fully + Q cols ≥ 1 (from descent_recovery_BM).
+Remaining: Q col 0 from (p, q, ε). -/
+
+/-- B-type Q col 0: dot region (i < P.colLen(0)) determined by P + dot_match. -/
+theorem col0_Q_dot_below_P_B (τ : PBP) (hγ : τ.γ = .Bplus ∨ τ.γ = .Bminus)
+    {i : ℕ} (hi : i < τ.P.shape.colLen 0) (hp : (i, 0) ∈ τ.P.shape)
+    (hp_dot : τ.P.paint i 0 = .dot) : τ.Q.paint i 0 = .dot := by
+  by_cases hq : (i, 0) ∈ τ.Q.shape
+  · exact ((τ.dot_match i 0).mp ⟨hp, hp_dot⟩).2
+  · exact τ.Q.paint_outside i 0 hq
+
+/-- B-type: P has {•, c}. Cells in P are dot or c. If (i, 0) ∈ P.shape
+    and P.paint = dot, then Q.paint = dot (by dot_match). -/
+theorem Q_dot_of_P_dot_B (τ : PBP) {i : ℕ}
+    (hp : (i, 0) ∈ τ.P.shape) (hp_dot : τ.P.paint i 0 = .dot) :
+    (i, 0) ∈ τ.Q.shape → τ.Q.paint i 0 = .dot :=
+  fun hq => ((τ.dot_match i 0).mp ⟨hp, hp_dot⟩).2
+
+/-- **Prop 10.9 for B type** (with naive B→M descent):
+    Same descent + same shapes + same (p,q,ε) → same Q col 0.
+
+    This is symmetric to prop_10_9_D but for Q instead of P.
+    The tail is in Q col 0, and the counting argument uses Q's
+    symbol counts and column uniqueness. -/
+theorem prop_10_9_B_col0 (τ₁ τ₂ : PBP)
+    (hγ₁ : τ₁.γ = .Bplus ∨ τ₁.γ = .Bminus)
+    (hγ₂ : τ₂.γ = .Bplus ∨ τ₂.γ = .Bminus)
+    (hshapeP : τ₁.P.shape = τ₂.P.shape)
+    (hshapeQ : τ₁.Q.shape = τ₂.Q.shape)
+    -- P agrees (from descent recovery)
+    (hP : ∀ i j, τ₁.P.paint i j = τ₂.P.paint i j)
+    -- Q cols ≥ 1 agree (from descent recovery)
+    (hQ_ge1 : ∀ i j, 1 ≤ j → τ₁.Q.paint i j = τ₂.Q.paint i j)
+    -- Same signature and epsilon
+    (hsig : PBP.signature τ₁ = PBP.signature τ₂)
+    (heps : PBP.epsilon τ₁ = PBP.epsilon τ₂) :
+    ∀ i, τ₁.Q.paint i 0 = τ₂.Q.paint i 0 := by
+  intro i
+  -- For B type, Q col 0 has three zones:
+  -- Zone A: dot cells (where both P and Q paint dot, by dot_match)
+  -- Zone B: non-dot cells within Q.shape (the "tail")
+  -- Zone C: outside Q.shape
+  --
+  -- The dot cells are determined by P (which is known via hP):
+  -- Q.paint(i,0) = dot ↔ P.paint(i,0) = dot (by dot_match, within shapes)
+  -- Since P agrees (hP), the dot/non-dot classification of Q col 0 agrees.
+  --
+  -- For non-dot cells: B-type Q has {•, s, r, d}. The non-dot tail has
+  -- symbols from {s, r, d} in non-decreasing layerOrd order.
+  -- These are determined by (sig, ε) via the same counting argument as D type.
+  by_cases hq : (i, 0) ∈ τ₁.Q.shape
+  · have hq₂ : (i, 0) ∈ τ₂.Q.shape := hshapeQ ▸ hq
+    -- Determine dot vs non-dot using P + dot_match
+    by_cases hd : τ₁.Q.paint i 0 = .dot
+    · -- Q₁ dot. P₁ dot (dot_match). P₂ dot (hP). Q₂ dot (dot_match).
+      rw [hd]
+      have ⟨hp_mem, hp_dot⟩ := (τ₁.dot_match i 0).mpr ⟨hq, hd⟩
+      have hp₂_dot := hP i 0 ▸ hp_dot
+      exact ((τ₂.dot_match i 0).mp ⟨hshapeP ▸ hp_mem, hp₂_dot⟩).2.symm
+    · -- Q₁ non-dot. Need Q₂ also non-dot with same symbol.
+      have hd₂ : τ₂.Q.paint i 0 ≠ .dot := by
+        intro h₂
+        have ⟨hp_mem₂, hp_dot₂⟩ := (τ₂.dot_match i 0).mpr ⟨hq₂, h₂⟩
+        have hp_dot₁ := (hP i 0).symm ▸ hp_dot₂
+        exact hd ((τ₁.dot_match i 0).mp ⟨hshapeP.symm ▸ hp_mem₂, hp_dot₁⟩).2
+      -- Both Q non-dot. Determine specific symbol using (sig, ε):
+      -- Same argument as prop_10_9_D for P col 0, but for Q col 0.
+      -- B-type Q has {•, s, r, d}. Tail = non-dot cells in Q col 0.
+      -- By monotone_col_unique: non-decreasing layerOrd sequence
+      -- with fixed counts → pointwise equal.
+      -- Counts determined by:
+      -- (1) Total = tailLen (from shapes)
+      -- (2) Weighted sum from signature (same decomposition as D type)
+      -- (3) n_d ∈ {0,1} from column uniqueness, determined by epsilon
+      -- (4) tail_counts_arith: 2δ_r + δ_c = 0, |δ_c| ≤ 1 → all δ = 0
+      --     (here n_c = 0 for B-type Q, so even simpler)
+      sorry -- Same infrastructure as prop_10_9_partC/D, for Q instead of P
+  · rw [τ₁.Q.paint_outside i 0 hq, τ₂.Q.paint_outside i 0 (hshapeQ ▸ hq)]
+
 end PBP
