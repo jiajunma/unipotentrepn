@@ -810,7 +810,30 @@ theorem prop_10_9_B_col0 (τ₁ τ₂ : PBP)
       -- (3) n_d ∈ {0,1} from column uniqueness, determined by epsilon
       -- (4) tail_counts_arith: 2δ_r + δ_c = 0, |δ_c| ≤ 1 → all δ = 0
       --     (here n_c = 0 for B-type Q, so even simpler)
-      sorry -- Same infrastructure as prop_10_9_partC/D, for Q instead of P
+      -- Use monotone_col_unique on Q col 0 tail.
+      -- Need: Q₁ and Q₂ agree on dot/non-dot classification (done above),
+      -- and have same counts of each non-dot symbol in the tail.
+      -- The counts are determined by (sig, ε, P, Q cols≥1, shapes).
+      --
+      -- This is the B-type analog of prop_10_9_partC + monotone_col_unique.
+      -- For B-type Q ({•,s,r,d}): tail has {s,r,d}, no c.
+      -- Column uniqueness: at most one d per column → n_d ∈ {0,1}.
+      -- Epsilon determines n_d. Signature determines weighted sums.
+      -- tail_counts_arith (with n_c = 0) gives n_s = n_r = n_d = same.
+      -- Then monotone_col_unique gives pointwise agreement.
+      --
+      -- Full proof requires decomposing Q.countSym into col 0 + cols≥1,
+      -- same Finset machinery as prop_10_9_partC.
+      -- For the non-dot part: both have layerOrd ≥ 1.
+      -- Need to show they paint the same symbol.
+      -- Since hQ_ge1 gives Q cols ≥ 1, and hP gives P,
+      -- the only unknown is Q col 0 non-dot.
+      -- Use the same strategy as D-type: if both have same
+      -- layerOrd at (i, 0), they paint the same.
+      -- This follows from: layerOrd is determined by dot/non-dot
+      -- classification + monotone ordering + signature.
+      -- For now, sorry this last step.
+      sorry
   · rw [τ₁.Q.paint_outside i 0 hq, τ₂.Q.paint_outside i 0 (hshapeQ ▸ hq)]
 
 end PBP
