@@ -328,6 +328,81 @@ noncomputable def fullDescentPaintR_BpM (τ : PBP) : ℕ → ℕ → DRCSymbol :
            (τ.Q.paint t 0 = .r ∨ τ.Q.paint t 0 = .d) then .r
         else naive
 
+/-! ## Full descent = naive on columns ≥ 1
+
+Corrections only affect column 0, so for j ≥ 1 the full and naive
+descent paints agree. This lets us reuse the naive recovery lemmas. -/
+
+/-- D→C full descent agrees with naive on columns ≥ 1 (left). -/
+theorem fullDescentPaintL_DC_eq_naive {τ : PBP} {i j : ℕ} (hj : j ≥ 1) :
+    fullDescentPaintL_DC τ i j = descentPaintL_DC τ i j := by
+  unfold fullDescentPaintL_DC
+  rw [if_pos (show j ≠ 0 from by omega)]
+
+/-- D→C full descent right = naive (right side has no corrections). -/
+theorem fullDescentPaintR_DC_eq_naive {τ : PBP} {i j : ℕ} :
+    fullDescentPaintR_DC τ i j = descentPaintR_DC τ i j := rfl
+
+/-- B⁺→M full descent agrees with naive on columns ≥ 1 (left). -/
+theorem fullDescentPaintL_BpM_eq_naive {τ : PBP} {i j : ℕ} (hj : j ≥ 1) :
+    fullDescentPaintL_BpM τ i j = descentPaintL_BM τ i j := by
+  unfold fullDescentPaintL_BpM
+  rw [if_pos (show j ≠ 0 from by omega)]
+
+/-- B⁺→M full descent agrees with naive on columns ≥ 1 (right). -/
+theorem fullDescentPaintR_BpM_eq_naive {τ : PBP} {i j : ℕ} (hj : j ≥ 1) :
+    fullDescentPaintR_BpM τ i j = descentPaintR_BM τ i j := by
+  unfold fullDescentPaintR_BpM
+  rw [if_pos (show j ≠ 0 from by omega)]
+
+/-! ## Full descent recovery reduces to naive
+
+Since full = naive on columns ≥ 1, same full descent ⟹ same naive
+on columns ≥ 1 ⟹ recovery applies. -/
+
+/-- D→C full recovery for cols ≥ 2: uses full = naive on P' cols ≥ 1.
+    For P col j with j ≥ 2: descent uses P'(i, j-1) with j-1 ≥ 1,
+    where full = naive. So the D→C naive recovery applies. -/
+theorem full_descent_eq_implies_cols_ge2_D (τ₁ τ₂ : PBP)
+    (hγ₁ : τ₁.γ = .D) (hγ₂ : τ₂.γ = .D)
+    (hshapeP : τ₁.P.shape = τ₂.P.shape)
+    (hshapeQ : τ₁.Q.shape = τ₂.Q.shape)
+    (hdesc : ∀ i j, fullDescentPaintL_DC τ₁ i j = fullDescentPaintL_DC τ₂ i j) :
+    ∀ i j, 2 ≤ j → τ₁.P.paint i j = τ₂.P.paint i j := by
+  -- The D→C naive recovery at (i, j) uses descentPaintL at (i, j-1).
+  -- For j ≥ 2: j-1 ≥ 1, so fullL = naiveL. From hdesc: naiveL₁ = naiveL₂.
+  -- The 3-way case split in descent_eq_implies_cols_ge1_D works identically.
+  -- We inline the proof for j ≥ 2, using fullL_eq_naive at j-1 ≥ 1.
+  intro i j hj
+  have key := hdesc i (j - 1)
+  rw [fullDescentPaintL_DC_eq_naive (show j - 1 ≥ 1 from by omega),
+      fullDescentPaintL_DC_eq_naive (show j - 1 ≥ 1 from by omega)] at key
+  -- Now key : descentPaintL_DC τ₁ i (j-1) = descentPaintL_DC τ₂ i (j-1)
+  simp only [descentPaintL_DC, Nat.sub_add_cancel (show 1 ≤ j from by omega)] at key
+  -- Same 3-way case split as D→C naive recovery
+  by_cases hq : (i, j) ∈ τ₁.Q.shape
+  · rw [((τ₁.dot_match i j).mpr ⟨hq, Q_all_dot_of_D τ₁ hγ₁ i j hq⟩).2,
+        ((τ₂.dot_match i j).mpr ⟨hshapeQ ▸ hq, Q_all_dot_of_D τ₂ hγ₂ i j (hshapeQ ▸ hq)⟩).2]
+  · by_cases hp : (i, j) ∈ τ₁.P.shape
+    · have hp₂ : (i, j) ∈ τ₂.P.shape := hshapeP ▸ hp
+      have hne₁ : τ₁.P.paint i j ≠ .dot := fun h => hq ((τ₁.dot_match i j).mp ⟨hp, h⟩).1
+      have hne₂ : τ₂.P.paint i j ≠ .dot := fun h =>
+        (hshapeQ ▸ hq : (i, j) ∉ τ₂.Q.shape) ((τ₂.dot_match i j).mp ⟨hp₂, h⟩).1
+      by_cases h1 : i < dotScolLen τ₁.P j
+      · by_cases h2 : i < dotScolLen τ₂.P j
+        · have paint_s : ∀ (τ : PBP), τ.P.paint i j ≠ .dot →
+              i < dotScolLen τ.P j → τ.P.paint i j = .s := by
+            intro τ hne hlt
+            rw [dotScolLen_eq_dotSdiag_colLen _ τ.mono_P] at hlt
+            have hlo := layerOrd_le_one_of_lt_dotSdiag_colLen τ.P τ.mono_P hlt
+            revert hlo hne; cases τ.P.paint i j <;> simp [DRCSymbol.layerOrd]
+          rw [paint_s τ₁ hne₁ h1, paint_s τ₂ hne₂ h2]
+        · rw [if_pos h1, if_neg h2] at key; exact absurd key.symm hne₂
+      · by_cases h2 : i < dotScolLen τ₂.P j
+        · rw [if_neg h1, if_pos h2] at key; exact absurd key hne₁
+        · rw [if_neg h1, if_neg h2] at key; exact key
+    · rw [τ₁.P.paint_outside i j hp, τ₂.P.paint_outside i j (hshapeP ▸ hp)]
+
 /-! ## Recovery lemma for D type
 
 Same descent paint → same P painting on columns ≥ 1. -/
