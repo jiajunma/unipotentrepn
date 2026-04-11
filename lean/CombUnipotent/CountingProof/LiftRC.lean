@@ -1615,3 +1615,141 @@ lemma card_PBPSet_D_when_μP_eq_μQ (μ : YoungDiagram) :
       by_cases hmem : (i, j) ∈ τ.Q.shape
       · exact PBP.Q_all_dot_of_D τ hγ i j hmem
       · exact τ.Q.paint_outside i j hmem
+
+/-! ## k = 0 case: equal colLen 0 between μP and μQ
+
+When `μP.colLen 0 = μQ.colLen 0` and `μQ ≤ μP`, there is no "tail region".
+Every valid PBP in `PBPSet .D μP μQ` has col 0 fully-dot (forced by dot_match
+since every col-0 cell is in both shapes). Applying ∇² gives a bijection
+with `PBPSet .D (shiftLeft μP) (shiftLeft μQ)`.
+
+Rather than proving the full bijection, we state the lift directly:
+for any σ in the sub PBPSet, we can build τ with all-dot col 0 that maps to σ. -/
+
+/-- The all-dot col0 painting as a ValidCol0 when `μP.colLen 0 = μQ.colLen 0`. -/
+noncomputable def allDotValidCol0 {μP μQ : YoungDiagram}
+    (h_eq : μP.colLen 0 = μQ.colLen 0) : ValidCol0 μP μQ where
+  paint _ := .dot
+  dot_below _ _ := rfl
+  nondot_tail i hi hi' := by omega
+  dot_above _ _ := rfl
+  mono _ _ _ _ := by simp [DRCSymbol.layerOrd]
+  col_c_unique _ _ h _ := by exact absurd h (by decide)
+  col_d_unique _ _ h _ := by exact absurd h (by decide)
+
+/-! ## k = 0 case -/
+
+/-- When `μP.colLen 0 = μQ.colLen 0`, `ValidCol0 μP μQ` has exactly one element. -/
+lemma validCol0_card_when_k_zero {μP μQ : YoungDiagram}
+    (h_eq : μP.colLen 0 = μQ.colLen 0) :
+    Fintype.card (ValidCol0 μP μQ) = 1 := by
+  rw [Fintype.card_eq_one_iff]
+  have h_eq' : μP.colLen 0 ≤ μQ.colLen 0 := by omega
+  refine ⟨{
+    paint := fun _ => .dot
+    dot_below := fun _ _ => rfl
+    nondot_tail := fun i h1 h2 => by omega
+    dot_above := fun _ _ => rfl
+    mono := fun _ _ _ _ => by simp [DRCSymbol.layerOrd]
+    col_c_unique := fun _ _ h _ => absurd h (by decide)
+    col_d_unique := fun _ _ h _ => absurd h (by decide)
+  }, ?_⟩
+  intro v
+  apply ValidCol0.ext
+  funext i
+  show v.paint i = DRCSymbol.dot
+  by_cases hi : i < μQ.colLen 0
+  · exact v.dot_below i hi
+  · have : μP.colLen 0 ≤ i := by omega
+    exact v.dot_above i this
+
+/-- When `μP.colLen 0 = μQ.colLen 0`, every fiber has cardinality 1. -/
+theorem fiber_card_when_k_zero {μP μQ : YoungDiagram}
+    (σ : PBPSet .D (YoungDiagram.shiftLeft μP) (YoungDiagram.shiftLeft μQ))
+    (h_eq : μP.colLen 0 = μQ.colLen 0) :
+    Fintype.card (doubleDescent_D_fiber σ) = 1 := by
+  rw [← validCol0_card_when_k_zero h_eq]
+  have h_prim : μQ.colLen 0 ≥ (YoungDiagram.shiftLeft μP).colLen 0 := by
+    rw [YoungDiagram.colLen_shiftLeft]
+    have h_mono : μP.colLen 1 ≤ μP.colLen 0 := μP.colLen_anti 0 1 (Nat.zero_le _)
+    rw [h_eq] at h_mono; exact h_mono
+  have hQP : μQ.colLen 0 ≤ μP.colLen 0 := by omega
+  -- Upper: fiber → ValidCol0 via extractCol0_D
+  have h_le : Fintype.card (doubleDescent_D_fiber σ) ≤ Fintype.card (ValidCol0 μP μQ) := by
+    apply Fintype.card_le_of_injective
+      (fun τ => PBP.extractCol0_D τ.val)
+    intro τ₁ τ₂ h
+    apply extractCol0_D_injective_on_fiber σ
+    exact congr_arg ValidCol0.paint h
+  -- Lower: ValidCol0 → fiber via liftPBP_primitive_D
+  have h_ge : Fintype.card (ValidCol0 μP μQ) ≤ Fintype.card (doubleDescent_D_fiber σ) := by
+    exact Fintype.card_le_of_injective
+      (fun col0 => liftPBP_to_fiber σ col0 h_prim hQP)
+      (liftPBP_to_fiber_injective σ h_prim hQP)
+  omega
+
+/-! ## k = 0 step theorem -/
+
+/-- **k=0 step**: when `μP.colLen 0 = μQ.colLen 0` and `μQ ≤ μP`,
+    `|PBPSet .D μP μQ| = |PBPSet .D (shiftLeft μP) (shiftLeft μQ)|`. -/
+theorem card_PBPSet_D_k_zero_step {μP μQ : YoungDiagram}
+    (h_eq : μP.colLen 0 = μQ.colLen 0) (hPQ : μQ ≤ μP) :
+    Fintype.card (PBPSet .D μP μQ) =
+    Fintype.card (PBPSet .D (YoungDiagram.shiftLeft μP) (YoungDiagram.shiftLeft μQ)) := by
+  rw [card_PBPSet_eq_sum_fiber]
+  have h_each : ∀ σ : PBPSet .D (YoungDiagram.shiftLeft μP) (YoungDiagram.shiftLeft μQ),
+      Fintype.card (doubleDescent_D_fiber σ) = 1 := fun σ => fiber_card_when_k_zero σ h_eq
+  rw [Finset.sum_congr rfl (fun σ _ => h_each σ)]
+  rw [Finset.sum_const, Finset.card_univ]
+  simp
+
+/-! ## Top-level D theorem -/
+
+/-- **Top-level D theorem (unified recursive form)**: for any `μP, μQ : YoungDiagram`
+    with `μQ ≤ μP`, `Fintype.card (PBPSet .D μP μQ)` satisfies the unified recurrence:
+    - Base: `μP = ⊥` ⇒ card = 1.
+    - k = 0 step: `μP.colLen 0 = μQ.colLen 0` ⇒ recurse via shiftLeft.
+    - Primitive step: k ≥ 1 and `(shiftLeft μP).colLen 0 ≤ μQ.colLen 0`.
+    - Balanced step: k ≥ 1 and `(shiftLeft μP).colLen 0 = μQ.colLen 0 + 1`.
+
+    This theorem packages the reduction that, combined with induction on `μP.rowLen 0`,
+    computes the card closed-form. -/
+theorem card_PBPSet_D_recursive_step (μP μQ : YoungDiagram) (hPQ : μQ ≤ μP)
+    (h_pos : 0 < μP.colLen 0) :
+    -- Case 1: k = 0 (equal colLen 0)
+    (μP.colLen 0 = μQ.colLen 0 →
+      Fintype.card (PBPSet .D μP μQ) =
+        Fintype.card (PBPSet .D (YoungDiagram.shiftLeft μP) (YoungDiagram.shiftLeft μQ))) ∧
+    -- Case 2: k ≥ 1 primitive
+    (∀ (k : ℕ), k = μP.colLen 0 - μQ.colLen 0 → 1 ≤ k →
+      μQ.colLen 0 ≥ (YoungDiagram.shiftLeft μP).colLen 0 →
+      Fintype.card (PBPSet .D μP μQ) =
+        Fintype.card (PBPSet .D (YoungDiagram.shiftLeft μP) (YoungDiagram.shiftLeft μQ)) *
+        ((tailCoeffs k).1.1 + (tailCoeffs k).1.2.1 + (tailCoeffs k).1.2.2)) ∧
+    -- Case 3: k ≥ 1 balanced
+    (∀ (k : ℕ), k = μP.colLen 0 - μQ.colLen 0 → 1 ≤ k →
+      (YoungDiagram.shiftLeft μP).colLen 0 = μQ.colLen 0 + 1 →
+      Fintype.card (PBPSet .D μP μQ) =
+        (Finset.univ.filter (fun σ : PBPSet .D (YoungDiagram.shiftLeft μP)
+                                                (YoungDiagram.shiftLeft μQ) =>
+          tailClass_D σ.val = .DD)).card *
+            ((tailCoeffs k).1.1 + (tailCoeffs k).1.2.1 + (tailCoeffs k).1.2.2) +
+        (Finset.univ.filter (fun σ : PBPSet .D (YoungDiagram.shiftLeft μP)
+                                                (YoungDiagram.shiftLeft μQ) =>
+          tailClass_D σ.val = .RC)).card *
+            ((tailCoeffs k).2.1 + (tailCoeffs k).2.2.1 + (tailCoeffs k).2.2.2)) := by
+  have hQP : μQ.colLen 0 ≤ μP.colLen 0 := by
+    by_contra h
+    push_neg at h
+    have : (μP.colLen 0, 0) ∈ μQ := YoungDiagram.mem_iff_lt_colLen.mpr h
+    have : (μP.colLen 0, 0) ∈ μP := hPQ this
+    have := YoungDiagram.mem_iff_lt_colLen.mp this
+    omega
+  refine ⟨?_, ?_, ?_⟩
+  · intro h_eq; exact card_PBPSet_D_k_zero_step h_eq hPQ
+  · intro k hk hk_pos h_prim
+    exact card_PBPSet_D_primitive_step k h_prim hk hQP hk_pos
+  · intro k hk hk_pos h_bal
+    exact card_PBPSet_D_balanced_step k h_bal hk hQP hk_pos
+
+
