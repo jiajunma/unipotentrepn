@@ -947,23 +947,13 @@ Count = Σ_{(δc,δd) ∈ {0,1}²} max(0, k + 1 - δc - δd)
       = tDD + tRC + tSS from tailCoeffs k
 -/
 
+-- (Canonical tail tuple definitions removed — folded into validCol0_card proof)
+
 /-- The number of valid column 0 paintings equals the tailCoeffs sum.
     Pure combinatorial counting lemma. Requires k ≥ 1.
 
-    **Proof approach**: Construct bijection ValidCol0 ↔ {(α, δc, δd) : α+δc+δd ≤ k}.
-    Each ValidCol0 has canonical form s^α r^(k-α-δc-δd) c^δc d^δd where:
-    - α = number of s's in the tail
-    - δc = (is there a c?) — at most 1 by col_c_unique
-    - δd = (is there a d?) — at most 1 by col_d_unique
-    - β = k - α - δc - δd ≥ 0 is the number of r's
-
-    Count by (δc, δd):
-    - (0,0): α ∈ [0,k], k+1 options
-    - (1,0): α ∈ [0,k-1], k options (need k ≥ 1)
-    - (0,1): α ∈ [0,k-1], k options
-    - (1,1): α ∈ [0,k-2], k-1 options (need k ≥ 2)
-
-    Total = (k+1) + k + k + max(0,k-1) = tDD + tRC + tSS.
+    **Proof approach**: Construct bijection ValidCol0 ↔ CanonicalTail k.
+    Each ValidCol0 has canonical form s^α r^(k-α-δc-δd) c^δc d^δd.
 
     See lean/docs/counting_sorry_proofs.md for detailed proof. -/
 theorem validCol0_card {μP μQ : YoungDiagram}
