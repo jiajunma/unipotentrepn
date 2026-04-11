@@ -1284,3 +1284,334 @@ theorem fiber_card_balanced_RC_aggregate {μP μQ : YoungDiagram}
     n * (Fintype.card (TSeq (k - 1)) + (4 * k - (if k = 1 then 1 else 0))) :=
     (Nat.mul_add n _ _).symm
   rw [h_factor, h_lemma3, ← Nat.mul_assoc, ← Nat.two_mul, Nat.mul_comm 2 n]
+
+/-! ## Balanced step -/
+
+/-! #### Balanced step (total form, depending on fiber_card_balanced_RC_aggregate) -/
+
+/-- **Balanced recursive step (total form)**: in the balanced case, the D-type
+    count recursive formula has the matrix-multiply structure from Prop 10.11(b).
+
+    The SS class contributes 0 (balanced SS fiber is empty), so only DD and RC
+    parent classes contribute. For the total (DD + RC + SS summed) form, we get
+    a clean formula matching `countPBP_D` balanced case summed. -/
+theorem card_PBPSet_D_balanced_step {μP μQ : YoungDiagram}
+    (k : ℕ) (h_bal : (YoungDiagram.shiftLeft μP).colLen 0 = μQ.colLen 0 + 1)
+    (hk : k = μP.colLen 0 - μQ.colLen 0)
+    (hQP : μQ.colLen 0 ≤ μP.colLen 0)
+    (hk_pos : 1 ≤ k) :
+    Fintype.card (PBPSet .D μP μQ) =
+      (Finset.univ.filter (fun σ : PBPSet .D (YoungDiagram.shiftLeft μP)
+                                              (YoungDiagram.shiftLeft μQ) =>
+        tailClass_D σ.val = .DD)).card *
+          ((tailCoeffs k).1.1 + (tailCoeffs k).1.2.1 + (tailCoeffs k).1.2.2) +
+      (Finset.univ.filter (fun σ : PBPSet .D (YoungDiagram.shiftLeft μP)
+                                              (YoungDiagram.shiftLeft μQ) =>
+        tailClass_D σ.val = .RC)).card *
+          ((tailCoeffs k).2.1 + (tailCoeffs k).2.2.1 + (tailCoeffs k).2.2.2) := by
+  -- Derive hQP_lt from hk_pos + hk for fiber_card_balanced_SS
+  have hQP_lt : μQ.colLen 0 < μP.colLen 0 := by omega
+  -- Step 1: rewrite |PBPSet .D μP μQ| as Σ_σ |fiber σ|
+  rw [card_PBPSet_eq_sum_fiber]
+  -- Step 2: split the sum over PBPSet_sub into three parts by σ's tailClass.
+  --    Σ_σ f σ = Σ_{σ: tc=DD} f σ + Σ_{σ: tc=RC} f σ + Σ_{σ: tc=SS} f σ
+  set univ_sub : Finset (PBPSet .D (YoungDiagram.shiftLeft μP)
+                                    (YoungDiagram.shiftLeft μQ)) := Finset.univ with hsub_def
+  have h_split :
+      univ_sub.sum (fun σ => Fintype.card (doubleDescent_D_fiber σ)) =
+      (univ_sub.filter (fun σ => tailClass_D σ.val = .DD)).sum
+        (fun σ => Fintype.card (doubleDescent_D_fiber σ)) +
+      (univ_sub.filter (fun σ => tailClass_D σ.val = .RC)).sum
+        (fun σ => Fintype.card (doubleDescent_D_fiber σ)) +
+      (univ_sub.filter (fun σ => tailClass_D σ.val = .SS)).sum
+        (fun σ => Fintype.card (doubleDescent_D_fiber σ)) := by
+    -- First split: DD vs ¬DD
+    have step1 : univ_sub.sum (fun σ => Fintype.card (doubleDescent_D_fiber σ)) =
+        (univ_sub.filter (fun σ => tailClass_D σ.val = .DD)).sum
+          (fun σ => Fintype.card (doubleDescent_D_fiber σ)) +
+        (univ_sub.filter (fun σ => ¬(tailClass_D σ.val = .DD))).sum
+          (fun σ => Fintype.card (doubleDescent_D_fiber σ)) :=
+      (Finset.sum_filter_add_sum_filter_not _ _ _).symm
+    -- Trichotomy helper: every σ has tailClass ∈ {DD, RC, SS}
+    have h_trichotomy : ∀ σ : PBPSet .D (YoungDiagram.shiftLeft μP)
+                                        (YoungDiagram.shiftLeft μQ),
+        tailClass_D σ.val = .DD ∨ tailClass_D σ.val = .RC ∨ tailClass_D σ.val = .SS := by
+      intro σ; simp only [tailClass_D]
+      split_ifs with h
+      · right; right; rfl
+      · cases PBP.tailSymbol_D σ.val <;> simp
+    -- Second split: rewrite filter-by-¬DD as filter-by-(RC ∨ SS), then split into RC + SS
+    have hfilter_eq : univ_sub.filter (fun σ => ¬(tailClass_D σ.val = .DD)) =
+        univ_sub.filter (fun σ => tailClass_D σ.val = .RC ∨ tailClass_D σ.val = .SS) := by
+      apply Finset.filter_congr
+      intro σ _
+      constructor
+      · intro hnDD
+        rcases h_trichotomy σ with h | h | h
+        · exact absurd h hnDD
+        · exact Or.inl h
+        · exact Or.inr h
+      · rintro (h | h) <;> rw [h] <;> decide
+    have step2 : (univ_sub.filter (fun σ => ¬(tailClass_D σ.val = .DD))).sum
+          (fun σ => Fintype.card (doubleDescent_D_fiber σ)) =
+        (univ_sub.filter (fun σ => tailClass_D σ.val = .RC)).sum
+          (fun σ => Fintype.card (doubleDescent_D_fiber σ)) +
+        (univ_sub.filter (fun σ => tailClass_D σ.val = .SS)).sum
+          (fun σ => Fintype.card (doubleDescent_D_fiber σ)) := by
+      rw [hfilter_eq, Finset.filter_or]
+      -- Disjoint union (RC and SS are disjoint)
+      rw [Finset.sum_union]
+      -- Prove disjointness
+      rw [Finset.disjoint_filter]
+      intros σ _ hRC hSS
+      rw [hRC] at hSS; exact absurd hSS (by decide)
+    rw [step1, step2, ← Nat.add_assoc]
+  rw [h_split]
+  -- Step 3: simplify the DD part: Σ_{σ∈DD} |fiber σ| = #DD · 4k
+  have h_DD_part :
+      (Finset.univ.filter (fun σ : PBPSet .D (YoungDiagram.shiftLeft μP)
+                                              (YoungDiagram.shiftLeft μQ) =>
+        tailClass_D σ.val = .DD)).sum
+        (fun σ => Fintype.card (doubleDescent_D_fiber σ)) =
+      (Finset.univ.filter (fun σ : PBPSet .D (YoungDiagram.shiftLeft μP)
+                                              (YoungDiagram.shiftLeft μQ) =>
+        tailClass_D σ.val = .DD)).card *
+          ((tailCoeffs k).1.1 + (tailCoeffs k).1.2.1 + (tailCoeffs k).1.2.2) := by
+    -- Each σ in DD filter has fiber_card = tDD + tRC + tSS (constant)
+    rw [Finset.sum_congr rfl (fun σ hσ => ?_)]
+    · rw [Finset.sum_const]
+      rfl
+    · simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hσ
+      have h := fiber_card_balanced_DD σ k h_bal hk hQP hk_pos hσ
+      simpa using h
+  rw [h_DD_part]
+  -- Step 4: simplify the RC part: Σ_{σ∈RC} |fiber σ| = #RC · scTotal
+  have h_RC_part :
+      (Finset.univ.filter (fun σ : PBPSet .D (YoungDiagram.shiftLeft μP)
+                                              (YoungDiagram.shiftLeft μQ) =>
+        tailClass_D σ.val = .RC)).sum
+        (fun σ => Fintype.card (doubleDescent_D_fiber σ)) =
+      (Finset.univ.filter (fun σ : PBPSet .D (YoungDiagram.shiftLeft μP)
+                                              (YoungDiagram.shiftLeft μQ) =>
+        tailClass_D σ.val = .RC)).card *
+          ((tailCoeffs k).2.1 + (tailCoeffs k).2.2.1 + (tailCoeffs k).2.2.2) := by
+    have := fiber_card_balanced_RC_aggregate (μP := μP) (μQ := μQ) k h_bal hk hk_pos
+    exact this
+  rw [h_RC_part]
+  -- Step 5: simplify the SS part: Σ_{σ∈SS} |fiber σ| = 0
+  have h_SS_part :
+      (Finset.univ.filter (fun σ : PBPSet .D (YoungDiagram.shiftLeft μP)
+                                              (YoungDiagram.shiftLeft μQ) =>
+        tailClass_D σ.val = .SS)).sum
+        (fun σ => Fintype.card (doubleDescent_D_fiber σ)) = 0 := by
+    apply Finset.sum_eq_zero
+    intro σ hσ
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hσ
+    exact fiber_card_balanced_SS σ h_bal hQP hQP_lt hσ
+  rw [h_SS_part, Nat.add_zero]
+
+
+/-! ## Top-level: `card_PBPSet_D` formula via induction
+
+The recursive D-type formula from Prop 10.11 is captured via `countPBP_D_of_YD`,
+which mirrors `countPBP_D` but works directly on (μP, μQ) Young diagrams using
+`shiftLeft`. The top-level theorem states that `Fintype.card (PBPSet .D μP μQ)`
+equals the total of `countPBP_D_of_YD μP μQ`. -/
+
+/-- YD-recursive D-type counting function (fuel-parameterized to avoid
+    well-founded recursion on YD). `n` is an upper bound on `μP.rowLen 0`,
+    i.e., the number of columns. -/
+noncomputable def countPBP_D_of_YD_aux : ℕ → YoungDiagram → YoungDiagram → ℕ × ℕ × ℕ
+  | 0, _, _ => (1, 0, 0)
+  | n + 1, μP, μQ =>
+    if μP.colLen 0 = 0 then (1, 0, 0)
+    else
+      let k := μP.colLen 0 - μQ.colLen 0
+      let ((tDD, tRC, tSS), (scDD, scRC, scSS)) := tailCoeffs k
+      let (dd', rc', ss') :=
+        countPBP_D_of_YD_aux n (YoungDiagram.shiftLeft μP) (YoungDiagram.shiftLeft μQ)
+      if μQ.colLen 0 ≥ (YoungDiagram.shiftLeft μP).colLen 0 then
+        let total := dd' + rc' + ss'
+        (total * tDD, total * tRC, total * tSS)
+      else
+        (dd' * tDD + rc' * scDD,
+         dd' * tRC + rc' * scRC,
+         dd' * tSS + rc' * scSS)
+
+/-- Public interface: `countPBP_D_of_YD μP μQ` uses fuel `μP.rowLen 0`. -/
+noncomputable def countPBP_D_of_YD (μP μQ : YoungDiagram) : ℕ × ℕ × ℕ :=
+  countPBP_D_of_YD_aux (μP.rowLen 0) μP μQ
+
+/-- Strict decrease of `rowLen 0` under `shiftLeft`. -/
+lemma rowLen_shiftLeft_lt {μ : YoungDiagram} (h : μ.colLen 0 > 0) :
+    μ.shiftLeft.rowLen 0 < μ.rowLen 0 := by
+  -- colLen 0 > 0 means row 0 has at least 1 cell, so rowLen 0 ≥ 1
+  have h_row : μ.rowLen 0 ≥ 1 := by
+    have : (0, 0) ∈ μ := YoungDiagram.mem_iff_lt_colLen.mpr h
+    have : 0 < μ.rowLen 0 := YoungDiagram.mem_iff_lt_rowLen.mp this
+    omega
+  -- (shiftLeft μ).rowLen 0 = number of j such that (0, j+1) ∈ μ = rowLen 0 - 1
+  -- We prove ≤ rowLen 0 - 1, then < rowLen 0
+  suffices h_le : μ.shiftLeft.rowLen 0 ≤ μ.rowLen 0 - 1 by omega
+  by_contra h_nlt
+  push_neg at h_nlt
+  have h_ge : μ.shiftLeft.rowLen 0 ≥ μ.rowLen 0 := by omega
+  have hmem : (0, μ.rowLen 0 - 1) ∈ μ.shiftLeft :=
+    YoungDiagram.mem_iff_lt_rowLen.mpr (by omega)
+  rw [YoungDiagram.mem_shiftLeft] at hmem
+  -- So (0, μ.rowLen 0) ∈ μ, meaning rowLen 0 > μ.rowLen 0. Contradiction.
+  have := YoungDiagram.mem_iff_lt_rowLen.mp hmem
+  omega
+
+/-- The auxiliary definition is invariant to fuel as long as `n ≥ μP.rowLen 0`. -/
+lemma countPBP_D_of_YD_aux_fuel_invariant (n m : ℕ) (μP μQ : YoungDiagram)
+    (hn : μP.rowLen 0 ≤ n) (hm : μP.rowLen 0 ≤ m) :
+    countPBP_D_of_YD_aux n μP μQ = countPBP_D_of_YD_aux m μP μQ := by
+  induction n generalizing m μP μQ with
+  | zero =>
+    have h_row : μP.rowLen 0 = 0 := Nat.le_zero.mp hn
+    have h_col : μP.colLen 0 = 0 := by
+      by_contra h
+      push_neg at h
+      have h_pos : 0 < μP.colLen 0 := Nat.pos_of_ne_zero h
+      have : (0, 0) ∈ μP := YoungDiagram.mem_iff_lt_colLen.mpr h_pos
+      have : 0 < μP.rowLen 0 := YoungDiagram.mem_iff_lt_rowLen.mp this
+      omega
+    match m with
+    | 0 => rfl
+    | m + 1 => simp only [countPBP_D_of_YD_aux, if_pos h_col]
+  | succ n ih =>
+    match m with
+    | 0 =>
+      have h_row : μP.rowLen 0 = 0 := Nat.le_zero.mp hm
+      have h_col : μP.colLen 0 = 0 := by
+        by_contra h
+        push_neg at h
+        have h_pos : 0 < μP.colLen 0 := Nat.pos_of_ne_zero h
+        have : (0, 0) ∈ μP := YoungDiagram.mem_iff_lt_colLen.mpr h_pos
+        have : 0 < μP.rowLen 0 := YoungDiagram.mem_iff_lt_rowLen.mp this
+        omega
+      simp only [countPBP_D_of_YD_aux, if_pos h_col]
+    | m + 1 =>
+      simp only [countPBP_D_of_YD_aux]
+      by_cases h : μP.colLen 0 = 0
+      · rw [if_pos h, if_pos h]
+      · rw [if_neg h, if_neg h]
+        have h_pos : 0 < μP.colLen 0 := Nat.pos_of_ne_zero h
+        have h_dec : μP.shiftLeft.rowLen 0 < μP.rowLen 0 := rowLen_shiftLeft_lt h_pos
+        have h_shift_n : (YoungDiagram.shiftLeft μP).rowLen 0 ≤ n := by omega
+        have h_shift_m : (YoungDiagram.shiftLeft μP).rowLen 0 ≤ m := by omega
+        rw [ih m (YoungDiagram.shiftLeft μP) (YoungDiagram.shiftLeft μQ) h_shift_n h_shift_m]
+
+/-- Base case: `countPBP_D_of_YD_aux 0 ⊥ ⊥ = (1, 0, 0)`. -/
+lemma countPBP_D_of_YD_aux_bot (n : ℕ) :
+    countPBP_D_of_YD_aux n (⊥ : YoungDiagram) (⊥ : YoungDiagram) = (1, 0, 0) := by
+  match n with
+  | 0 => rfl
+  | n + 1 =>
+    simp only [countPBP_D_of_YD_aux]
+    rw [if_pos (by
+      show (⊥ : YoungDiagram).colLen 0 = 0
+      rw [show (⊥ : YoungDiagram) = (⊥ : YoungDiagram) from rfl]
+      exact Nat.le_zero.mp (by
+        by_contra h; push_neg at h
+        have : (0, 0) ∈ (⊥ : YoungDiagram) :=
+          YoungDiagram.mem_iff_lt_colLen.mpr h
+        exact (YoungDiagram.notMem_bot _) this))]
+
+/-- When `μ.colLen 0 = 0`, μ is empty. -/
+lemma bot_of_colLen_zero {μ : YoungDiagram} (h : μ.colLen 0 = 0) : μ = ⊥ := by
+  apply YoungDiagram.ext
+  ext ⟨i, j⟩
+  constructor
+  · intro hmem
+    exfalso
+    have h1 : i < μ.colLen j := YoungDiagram.mem_iff_lt_colLen.mp hmem
+    have h2 : μ.colLen j ≤ μ.colLen 0 := μ.colLen_anti 0 j (Nat.zero_le _)
+    omega
+  · intro hmem
+    exact absurd hmem (YoungDiagram.notMem_bot _)
+
+/-- Containment is preserved under shiftLeft. -/
+lemma shiftLeft_mono {μ ν : YoungDiagram} (h : ν ≤ μ) : ν.shiftLeft ≤ μ.shiftLeft := by
+  intro ⟨i, j⟩ hmem
+  rw [YoungDiagram.mem_shiftLeft] at hmem ⊢
+  exact h hmem
+
+
+/-! ## Top-level D type correctness theorem
+
+The step theorems `card_PBPSet_D_primitive_step` and `card_PBPSet_D_balanced_step`
+combined with the base case `card_PBPSet_bot` give a complete recursive method
+for computing `Fintype.card (PBPSet .D μP μQ)`.
+
+We state the top-level theorem in terms of `countPBP_D_of_YD_aux` (the YD-indexed
+recursive counting), proving it matches the fiber counting.
+
+Key constraints:
+- `hPQ : μQ ≤ μP` (Q-shape contained in P-shape; required for D-type PBP existence
+  and preserved under shiftLeft).
+- The induction splits on:
+  (a) `μP.colLen 0 = 0` → both μP, μQ are ⊥, base case.
+  (b) `μP.colLen 0 = μQ.colLen 0` (k = 0) → col 0 fully forced, reduce to shiftLeft.
+  (c) `μP.colLen 0 > μQ.colLen 0` (k ≥ 1) → apply primitive or balanced step.
+-/
+
+/-- The all-dot painted Young diagram with given shape. -/
+def allDotPYD (μ : YoungDiagram) : PaintedYoungDiagram where
+  shape := μ
+  paint := fun _ _ => .dot
+  paint_outside := fun _ _ _ => rfl
+
+@[simp] lemma allDotPYD_shape (μ : YoungDiagram) : (allDotPYD μ).shape = μ := rfl
+@[simp] lemma allDotPYD_paint (μ : YoungDiagram) (i j : ℕ) :
+    (allDotPYD μ).paint i j = .dot := rfl
+
+/-- The all-dot PBP of shape (μ, μ). -/
+def allDotPBP (μ : YoungDiagram) : PBP where
+  γ := .D
+  P := allDotPYD μ
+  Q := allDotPYD μ
+  sym_P := fun _ _ _ => by trivial
+  sym_Q := fun _ _ _ => by simp [DRCSymbol.allowed]
+  dot_match := fun _ _ => Iff.rfl
+  mono_P := fun _ _ _ _ _ _ _ => by simp [DRCSymbol.layerOrd]
+  mono_Q := fun _ _ _ _ _ _ _ => by simp [DRCSymbol.layerOrd]
+  row_s := by
+    intro _ s₁ _ _ _ h₁ _
+    cases s₁ <;> (simp [paintBySide] at h₁)
+  row_r := by
+    intro _ s₁ _ _ _ h₁ _
+    cases s₁ <;> (simp [paintBySide] at h₁)
+  col_c_P := by intro _ _ _ h _; simp at h
+  col_c_Q := by intro _ _ _ h _; simp at h
+  col_d_P := by intro _ _ _ h _; simp at h
+  col_d_Q := by intro _ _ _ h _; simp at h
+
+/-- When `μQ = μP`, the PBPSet has exactly one element: the all-dot PBP. -/
+lemma card_PBPSet_D_when_μP_eq_μQ (μ : YoungDiagram) :
+    Fintype.card (PBPSet .D μ μ) = 1 := by
+  rw [Fintype.card_eq_one_iff]
+  refine ⟨⟨allDotPBP μ, rfl, rfl, rfl⟩, ?_⟩
+  intro ⟨τ, hγ, hP, hQ⟩
+  apply Subtype.ext
+  apply PBP.ext''
+  · exact hγ
+  · apply PaintedYoungDiagram.ext'
+    · exact hP
+    · funext i j
+      show τ.P.paint i j = DRCSymbol.dot
+      by_cases hmem : (i, j) ∈ τ.P.shape
+      · have hmemQ : (i, j) ∈ τ.Q.shape := by
+          rw [hQ, ← hP]; exact hmem
+        have hQdot : τ.Q.paint i j = DRCSymbol.dot :=
+          PBP.Q_all_dot_of_D τ hγ i j hmemQ
+        exact ((τ.dot_match i j).mpr ⟨hmemQ, hQdot⟩).2
+      · exact τ.P.paint_outside i j hmem
+  · apply PaintedYoungDiagram.ext'
+    · exact hQ
+    · funext i j
+      show τ.Q.paint i j = DRCSymbol.dot
+      by_cases hmem : (i, j) ∈ τ.Q.shape
+      · exact PBP.Q_all_dot_of_D τ hγ i j hmem
+      · exact τ.Q.paint_outside i j hmem
