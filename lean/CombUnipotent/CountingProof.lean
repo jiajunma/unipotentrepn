@@ -828,10 +828,34 @@ noncomputable def liftPBP_primitive_D {μP μQ : YoungDiagram}
           ⟨hq, PBP.Q_all_dot_of_D σ.val σ.prop.1 i j hq⟩
         exact ⟨by rw [σ.prop.2.1, YoungDiagram.mem_shiftLeft] at hp; exact hp,
                by simp only [liftPaint_D]; exact hpaint⟩
-  case mono_P => exact sorry -- col0.mono for j=0; primitive vacuous for 0→≥1; σ.mono_P for ≥1
+  case mono_P =>
+    intro i₁ j₁ i₂ j₂ hi hj hmem
+    dsimp only at hmem ⊢
+    cases j₁ with
+    | zero =>
+      cases j₂ with
+      | zero => exact col0.mono i₁ i₂ hi (YoungDiagram.mem_iff_lt_colLen.mp hmem)
+      | succ j₂ =>
+        by_cases h : i₁ < μQ.colLen 0
+        · simp only [liftPaint_D]; rw [col0.dot_below i₁ h]; simp [DRCSymbol.layerOrd]
+        · push_neg at h
+          exfalso
+          have hmem' : i₂ < μP.colLen (j₂ + 1) := YoungDiagram.mem_iff_lt_colLen.mp hmem
+          have hcol : μP.colLen (j₂ + 1) ≤ μP.colLen 1 :=
+            YoungDiagram.colLen_anti μP 1 (j₂ + 1) (by omega)
+          have h_prim' : μP.colLen 1 ≤ μQ.colLen 0 := by
+            rw [YoungDiagram.colLen_shiftLeft] at h_prim; exact h_prim
+          omega
+    | succ j₁ =>
+      cases j₂ with
+      | zero => exact absurd hj (by omega)
+      | succ j₂ =>
+        simp only [liftPaint_D]
+        exact σ.val.mono_P i₁ j₁ i₂ j₂ hi (by omega) (by
+          rw [σ.prop.2.1]; exact YoungDiagram.mem_shiftLeft.mpr hmem)
   case mono_Q => intro _ _ _ _ _ _ _; simp [DRCSymbol.layerOrd]
-  case row_s => exact sorry -- s row uniqueness: primitive_tail_rows_outside gives col≥1 = dot at tail rows
-  case row_r => exact sorry -- same as row_s
+  case row_s => exact sorry -- primitive_tail_rows_outside: tail rows have dot at cols ≥ 1
+  case row_r => exact sorry -- same argument as row_s
   case col_c_P =>
     intro j i₁ i₂ h₁ h₂
     simp only [liftPaint_D] at h₁ h₂
