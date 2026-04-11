@@ -685,15 +685,90 @@ theorem tailCoeffs_fst_RC (k : ℕ) :
 theorem tailCoeffs_fst_SS (k : ℕ) :
     (tailCoeffs k).1.2.2 = 1 := rfl
 
+/-- Primitive condition: tail rows are outside P.shape at columns ≥ 1.
+    When μQ.colLen 0 ≥ (shiftLeft μP).colLen 0 = μP.colLen 1,
+    any tail painting at column 0 has no s/r row conflicts. -/
+theorem primitive_tail_rows_outside {μP μQ : YoungDiagram}
+    (h_prim : μQ.colLen 0 ≥ (YoungDiagram.shiftLeft μP).colLen 0)
+    {i : ℕ} (hi : μQ.colLen 0 ≤ i) {j : ℕ} (hj : 1 ≤ j)
+    (τ : PBPSet .D μP μQ) :
+    τ.val.P.paint i j = .dot := by
+  apply τ.val.P.paint_outside
+  rw [τ.prop.2.1, YoungDiagram.mem_iff_lt_colLen]
+  rw [YoungDiagram.colLen_shiftLeft] at h_prim
+  have hcol := YoungDiagram.colLen_anti μP 1 j (by omega)
+  push_neg
+  calc μP.colLen j ≤ μP.colLen 1 := hcol
+    _ ≤ μQ.colLen 0 := h_prim
+    _ ≤ i := hi
+
+/-- Lift painting: column 0 from col0, columns ≥ 1 from σ.P shifted right.
+
+    This is the REVERSE of doubleDescent: given sub-PBP σ and column 0
+    painting col0, produce a painting for the "lifted" PBP.
+    τ.P.paint(i, 0) = col0(i), τ.P.paint(i, j+1) = σ.P.paint(i, j). -/
+def liftPaint_D (σ : PBP) (col0 : ℕ → DRCSymbol) : ℕ → ℕ → DRCSymbol :=
+  fun i j => match j with
+    | 0 => col0 i
+    | j + 1 => σ.P.paint i j
+
 /-- Key counting lemma (primitive case):
-    When r₂ > r₃, every sub-PBP has the same fiber size. -/
+    When μQ.colLen(0) ≥ μP.colLen(1), every sub-PBP has the same fiber size.
+
+    Proof outline:
+    1. Each fiber element has a unique column 0 tail (by ddescent_inj)
+    2. Reverse construction: liftPaint_D σ col0 gives a valid PBP
+       (primitive_tail_rows_outside eliminates all cross-column constraints)
+    3. Valid tails = monotone {s,r,c,d}^k with c/d unique
+    4. Count = tDD + tRC + tSS -/
 theorem fiber_card_primitive {μP μQ : YoungDiagram}
     (σ : PBPSet .D (YoungDiagram.shiftLeft μP) (YoungDiagram.shiftLeft μQ))
-    (k : ℕ) (h_prim : True) -- TODO: formalize primitive condition
-    : Fintype.card (doubleDescent_D_fiber σ) =
+    (k : ℕ) (h_prim : μQ.colLen 0 ≥ (YoungDiagram.shiftLeft μP).colLen 0)
+    (hk : k = μP.colLen 0 - μQ.colLen 0) :
+    Fintype.card (doubleDescent_D_fiber σ) =
         let ((tDD, tRC, tSS), _) := tailCoeffs k
         tDD + tRC + tSS := by
   sorry
+
+/-! ### Reverse construction for primitive case
+
+Given σ ∈ PBPSet(rest) and a column 0 painting, construct τ ∈ PBPSet(dp).
+The construction uses liftPaint_D: P(i,0) = col0(i), P(i,j+1) = σ.P(i,j).
+
+In the primitive case, all PBP constraints are automatically satisfied
+because tail rows (i ≥ μQ.colLen 0) have P.paint(i, j) = .dot for j ≥ 1
+(by primitive_tail_rows_outside). So no s/r row conflicts. -/
+
+/-- A valid tail painting for column 0 of a D-type PBP.
+    The painting is: dot for rows < b, then tail symbols, dot above c.
+    - b = μQ.colLen 0 (dot boundary)
+    - c = μP.colLen 0 (shape boundary)
+    - Symbols in [b, c) are non-dot, monotone layerOrd, at most 1 c/d. -/
+structure ValidCol0 (μP μQ : YoungDiagram) where
+  paint : ℕ → DRCSymbol
+  dot_below : ∀ i, i < μQ.colLen 0 → paint i = .dot
+  nondot_tail : ∀ i, μQ.colLen 0 ≤ i → i < μP.colLen 0 → paint i ≠ .dot
+  dot_above : ∀ i, μP.colLen 0 ≤ i → paint i = .dot
+  mono : ∀ i₁ i₂, i₁ ≤ i₂ → i₂ < μP.colLen 0 →
+    (paint i₁).layerOrd ≤ (paint i₂).layerOrd
+  col_c_unique : ∀ i₁ i₂, paint i₁ = .c → paint i₂ = .c → i₁ = i₂
+  col_d_unique : ∀ i₁ i₂, paint i₁ = .d → paint i₂ = .d → i₁ = i₂
+
+/-- ValidCol0 is finite: inject into the finite type (Fin c → DRCSymbol)
+    where c = μP.colLen 0 (paint outside [0, c) is determined). -/
+instance {μP μQ : YoungDiagram} : Finite (ValidCol0 μP μQ) := by
+  apply Finite.of_injective (fun (v : ValidCol0 μP μQ) =>
+    fun (i : Fin (μP.colLen 0 + 1)) => v.paint i.val)
+  intro v₁ v₂ h
+  have : v₁.paint = v₂.paint := by
+    ext i
+    by_cases hi : i < μP.colLen 0 + 1
+    · exact congr_fun h ⟨i, hi⟩
+    · rw [v₁.dot_above i (by omega), v₂.dot_above i (by omega)]
+  cases v₁; cases v₂; simp_all
+
+noncomputable instance {μP μQ : YoungDiagram} : Fintype (ValidCol0 μP μQ) :=
+  Fintype.ofFinite _
 
 /-- Key counting lemma (balanced case, DD class):
     When r₂ = r₃ and tc(σ) = DD, fiber has size tDD+tRC+tSS. -/
