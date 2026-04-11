@@ -513,18 +513,43 @@ theorem swap_b0_cell_paint {μP μQ : YoungDiagram}
     (h_symbols : (oldS = .r ∧ newS = .c) ∨ (oldS = .c ∧ newS = .r))
     (h_old : σ.val.P.paint (μQ.colLen 0) 0 = oldS) :
     (swap_b0_cell h_bal σ oldS newS h_symbols h_old).val.P.paint (μQ.colLen 0) 0 = newS := by
-  sorry  -- Phase 1, step 7
+  show (swappedP_PYD h_bal σ newS).paint (μQ.colLen 0) 0 = newS
+  exact swappedPaint_at_b0 _ _ _
 
-/-- The swap is an involution: swapping twice returns the original. -/
+/-- The swap is an involution: swapping twice returns the original.
+    General form — works for both (r,c) and (c,r) initial directions. -/
 theorem swap_b0_cell_involutive {μP μQ : YoungDiagram}
     (h_bal : (YoungDiagram.shiftLeft μP).colLen 0 = μQ.colLen 0 + 1)
     (σ : PBPSet .D (YoungDiagram.shiftLeft μP) (YoungDiagram.shiftLeft μQ))
-    (h_r : σ.val.P.paint (μQ.colLen 0) 0 = .r) :
+    (oldS newS : DRCSymbol)
+    (h_symbols : (oldS = .r ∧ newS = .c) ∨ (oldS = .c ∧ newS = .r))
+    (h_old : σ.val.P.paint (μQ.colLen 0) 0 = oldS) :
     swap_b0_cell h_bal
-      (swap_b0_cell h_bal σ .r .c (Or.inl ⟨rfl, rfl⟩) h_r)
-      .c .r (Or.inr ⟨rfl, rfl⟩)
-      (swap_b0_cell_paint h_bal σ .r .c (Or.inl ⟨rfl, rfl⟩) h_r) = σ := by
-  sorry  -- Phase 1, step 8
+      (swap_b0_cell h_bal σ oldS newS h_symbols h_old)
+      newS oldS (by
+        rcases h_symbols with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+        · exact Or.inr ⟨rfl, rfl⟩
+        · exact Or.inl ⟨rfl, rfl⟩)
+      (swap_b0_cell_paint h_bal σ oldS newS h_symbols h_old) = σ := by
+  set b := μQ.colLen 0 with hb_def
+  apply Subtype.ext
+  apply PBP.ext''
+  · exact σ.prop.1.symm
+  · apply PaintedYoungDiagram.ext'
+    · rfl
+    · funext i j
+      show swappedPaint b oldS (swappedPaint b newS σ.val.P.paint) i j = σ.val.P.paint i j
+      by_cases hj : j = 0
+      · subst hj
+        by_cases hi : i = b
+        · subst hi
+          rw [swappedPaint_at_b0]
+          exact h_old.symm
+        · rw [swappedPaint_col0_ne_b _ _ _ _ hi,
+              swappedPaint_col0_ne_b _ _ _ _ hi]
+      · rw [swappedPaint_off_col0 _ _ _ _ _ hj,
+            swappedPaint_off_col0 _ _ _ _ _ hj]
+  · rfl
 
 /-- |R_sub| = |C_sub| via the bijection Ψ = swap_b0_cell (r → c). -/
 theorem r_sub_card_eq_c_sub_card {μP μQ : YoungDiagram}
@@ -535,5 +560,29 @@ theorem r_sub_card_eq_c_sub_card {μP μQ : YoungDiagram}
     (Finset.univ.filter (fun σ : PBPSet .D (YoungDiagram.shiftLeft μP)
                                             (YoungDiagram.shiftLeft μQ) =>
       σ.val.P.paint (μQ.colLen 0) 0 = .c)).card := by
-  sorry  -- Phase 1, step 9: assemble via swap_b0_cell + Finset.card_bij
+  set b := μQ.colLen 0 with hb_def
+  refine Finset.card_bij'
+    (fun σ hσ => swap_b0_cell h_bal σ .r .c (Or.inl ⟨rfl, rfl⟩)
+      ((Finset.mem_filter.mp hσ).2))
+    (fun τ hτ => swap_b0_cell h_bal τ .c .r (Or.inr ⟨rfl, rfl⟩)
+      ((Finset.mem_filter.mp hτ).2))
+    ?hi ?hj ?left_inv ?right_inv
+  case hi =>
+    intro σ hσ
+    refine Finset.mem_filter.mpr ⟨Finset.mem_univ _, ?_⟩
+    exact swap_b0_cell_paint h_bal σ .r .c (Or.inl ⟨rfl, rfl⟩)
+      ((Finset.mem_filter.mp hσ).2)
+  case hj =>
+    intro τ hτ
+    refine Finset.mem_filter.mpr ⟨Finset.mem_univ _, ?_⟩
+    exact swap_b0_cell_paint h_bal τ .c .r (Or.inr ⟨rfl, rfl⟩)
+      ((Finset.mem_filter.mp hτ).2)
+  case left_inv =>
+    intro σ hσ
+    exact swap_b0_cell_involutive h_bal σ .r .c (Or.inl ⟨rfl, rfl⟩)
+      ((Finset.mem_filter.mp hσ).2)
+  case right_inv =>
+    intro τ hτ
+    exact swap_b0_cell_involutive h_bal τ .c .r (Or.inr ⟨rfl, rfl⟩)
+      ((Finset.mem_filter.mp hτ).2)
 
