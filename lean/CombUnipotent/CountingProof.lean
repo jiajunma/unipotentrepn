@@ -12,6 +12,8 @@ Reference: [BMSZb] Propositions 10.11–10.12.
 import CombUnipotent.Counting
 import CombUnipotent.Finiteness
 import CombUnipotent.Tail
+import Mathlib.Data.Fintype.Sum
+import Mathlib.Data.Fintype.BigOperators
 
 open Classical
 
@@ -655,6 +657,34 @@ where fiberDD = tDD+tRC+tSS, fiberRC = scDD+scRC+scSS.
 For the primitive case, all classes have the same fiber size.
 -/
 
+/-! ### Tail sequence counting
+
+A valid tail of length k is a sequence s^a r^b c^{δc} d^{δd}
+with a + b + δc + δd = k, δc ∈ {0,1}, δd ∈ {0,1}.
+
+Count by (δc, δd):
+  (0,0): a+b=k → k+1 = nu(k)
+  (1,0): a+b=k-1 → k = nu(k-1) (k≥1)
+  (0,1): a+b=k-1 → k = nu(k-1) (k≥1)
+  (1,1): a+b=k-2 → k-1 = nu(k-2) (k≥2)
+
+By tail class:
+  DD (δd=1): nu(k-1) + nu(k-2)
+  RC (δd=0, has r or c): nu(k-1) + nu(k-1) = 2·nu(k-1)
+  SS (all-s): 1
+-/
+
+/-- The tail count (DD, RC, SS) for unconstrained tails equals tailCoeffs.1.
+    k ≥ 1 in all uses (k = (r₁-r₂)/2 + 1). -/
+theorem tailCoeffs_fst_DD (k : ℕ) :
+    (tailCoeffs k).1.1 = nu (k - 1) + (if k ≥ 2 then nu (k - 2) else 0) := rfl
+
+theorem tailCoeffs_fst_RC (k : ℕ) :
+    (tailCoeffs k).1.2.1 = 2 * nu (k - 1) := rfl
+
+theorem tailCoeffs_fst_SS (k : ℕ) :
+    (tailCoeffs k).1.2.2 = 1 := rfl
+
 /-- Key counting lemma (primitive case):
     When r₂ > r₃, every sub-PBP has the same fiber size. -/
 theorem fiber_card_primitive {μP μQ : YoungDiagram}
@@ -692,6 +722,17 @@ theorem fiber_card_balanced_SS {μP μQ : YoungDiagram}
     Fintype.card (doubleDescent_D_fiber σ) = 0 := by
   sorry
 
+/-! ### Fiber sum = total count (no surjectivity needed) -/
+
+/-- |PBPSet(dp)| = Σ_σ |fiber(σ)|. This is just Equiv.sigmaFiberEquiv. -/
+theorem card_PBPSet_eq_sum_fiber {μP μQ : YoungDiagram} :
+    Fintype.card (PBPSet .D μP μQ) =
+      Finset.sum Finset.univ (fun σ : PBPSet .D (YoungDiagram.shiftLeft μP)
+        (YoungDiagram.shiftLeft μQ) =>
+        Fintype.card (doubleDescent_D_fiber σ)) := by
+  rw [← Fintype.card_sigma]
+  exact Fintype.card_congr (Equiv.sigmaFiberEquiv doubleDescent_D_map).symm
+
 /-! ### Decomposition of PBPSet by tail class -/
 
 /-- PBPSet restricted to a tail class. -/
@@ -718,4 +759,25 @@ theorem card_PBPSet_eq_sum_tc (μP μQ : YoungDiagram) :
     · right; right; rfl
     · cases PBP.tailSymbol_D τ.val <;> simp [TailClass.noConfusion]
       <;> first | left; rfl | right; left; rfl | right; right; rfl
-  sorry
+  -- Use Equiv with Sum type, then Fintype.card_sum
+  have h_ss : ∀ τ : PBPSet .D μP μQ,
+      tailClass_D τ.val ≠ .DD → tailClass_D τ.val ≠ .RC → tailClass_D τ.val = .SS :=
+    fun τ h₁ h₂ => (h_disj τ).elim (absurd · h₁) (·.elim (absurd · h₂) id)
+  let e : PBPSet .D μP μQ ≃
+      PBPSet_tc .D μP μQ .DD ⊕ (PBPSet_tc .D μP μQ .RC ⊕ PBPSet_tc .D μP μQ .SS) :=
+    { toFun := fun τ =>
+        if h : tailClass_D τ.val = .DD then Sum.inl ⟨τ, h⟩
+        else if h' : tailClass_D τ.val = .RC then Sum.inr (Sum.inl ⟨τ, h'⟩)
+        else Sum.inr (Sum.inr ⟨τ, h_ss τ h h'⟩)
+      invFun := fun
+        | Sum.inl ⟨τ, _⟩ => τ
+        | Sum.inr (Sum.inl ⟨τ, _⟩) => τ
+        | Sum.inr (Sum.inr ⟨τ, _⟩) => τ
+      left_inv := fun τ => by simp only; split_ifs <;> rfl
+      right_inv := fun
+        | Sum.inl ⟨τ, h⟩ => by simp [dif_pos h]
+        | Sum.inr (Sum.inl ⟨τ, h⟩) => by
+            simp only; rw [dif_neg (by rw [h]; decide), dif_pos h]
+        | Sum.inr (Sum.inr ⟨τ, h⟩) => by
+            simp only; rw [dif_neg (by rw [h]; decide), dif_neg (by rw [h]; decide)] }
+  rw [Fintype.card_congr e, Fintype.card_sum, Fintype.card_sum, Nat.add_assoc]
