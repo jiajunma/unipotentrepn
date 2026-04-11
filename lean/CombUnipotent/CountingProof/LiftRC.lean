@@ -1136,3 +1136,151 @@ theorem fiber_card_balanced_C {μP μQ : YoungDiagram}
       exact (liftPBP_RC_D_injective h_bal hQP h_val).2
     exact Fintype.card_le_of_injective f hinj
   omega
+
+/-! ## Lemma 3: X_r + X_c = 2 · scTotal -/
+
+/-- `|TSeq (k-1)| + (4k - [k=1]) = 2 · ((scDD + scRC + scSS) of tailCoeffs k)`. -/
+theorem X_r_plus_X_c_eq_two_scTotal (k : ℕ) (hk_pos : 1 ≤ k) :
+    Fintype.card (TSeq (k - 1)) + (4 * k - (if k = 1 then 1 else 0)) =
+      2 * ((tailCoeffs k).2.1 + (tailCoeffs k).2.2.1 + (tailCoeffs k).2.2.2) := by
+  rcases Nat.lt_or_ge k 2 with hk1 | hk2
+  · -- k = 1
+    have : k = 1 := by omega
+    subst this
+    -- |TSeq 0| = 1
+    have h0 : Fintype.card (TSeq 0) = 1 := by
+      rw [Fintype.card_eq_one_iff]
+      refine ⟨⟨fun i => i.elim0, ?_, ?_, ?_, ?_⟩, ?_⟩
+      · intro i; exact i.elim0
+      · intro i; exact i.elim0
+      · intro i; exact i.elim0
+      · intro i; exact i.elim0
+      · intro v; apply Subtype.ext; funext i; exact i.elim0
+    rw [h0]
+    simp [tailCoeffs, nu]
+  · -- k ≥ 2
+    have h0 : Fintype.card (TSeq (k - 1)) = 4 * (k - 1) := by
+      rw [TSeq_card]; omega
+    have hk1 : k ≠ 1 := by omega
+    rw [h0, if_neg hk1]
+    simp [tailCoeffs, nu]
+    split_ifs with h
+    · omega
+    · omega
+
+/-! ## Combining: fiber_card_balanced_RC_aggregate -/
+
+/-- Helper: tailClass_D σ.val = .RC ↔ σ.val.P.paint b 0 ∈ {.r, .c}. -/
+lemma tailClass_RC_iff_paint_rc {μP μQ : YoungDiagram}
+    (σ : PBPSet .D (YoungDiagram.shiftLeft μP) (YoungDiagram.shiftLeft μQ))
+    (h_bal : (YoungDiagram.shiftLeft μP).colLen 0 = μQ.colLen 0 + 1) :
+    tailClass_D σ.val = .RC ↔
+    (σ.val.P.paint (μQ.colLen 0) 0 = DRCSymbol.r ∨
+     σ.val.P.paint (μQ.colLen 0) 0 = DRCSymbol.c) := by
+  have hσP_colLen : σ.val.P.shape.colLen 0 = μQ.colLen 0 + 1 := by
+    rw [σ.prop.2.1, YoungDiagram.colLen_shiftLeft]
+    have := h_bal; rw [YoungDiagram.colLen_shiftLeft] at this; exact this
+  have hσQ_le : σ.val.Q.shape.colLen 0 ≤ μQ.colLen 0 := by
+    rw [σ.prop.2.2, YoungDiagram.colLen_shiftLeft]
+    exact μQ.colLen_anti 0 1 (by omega)
+  have htailLen_pos : PBP.tailLen_D σ.val > 0 := by
+    simp only [PBP.tailLen_D, hσP_colLen]; omega
+  have htailSym_eq : PBP.tailSymbol_D σ.val = σ.val.P.paint (μQ.colLen 0) 0 := by
+    simp only [PBP.tailSymbol_D, hσP_colLen, Nat.add_sub_cancel]
+  simp only [tailClass_D]
+  rw [if_neg (by omega : ¬ PBP.tailLen_D σ.val = 0)]
+  rw [htailSym_eq]
+  cases σ.val.P.paint (μQ.colLen 0) 0 <;> simp
+
+/-- **Balanced RC aggregate**: `Σ_{σ ∈ RC_sub} |fiber σ| = |RC_sub| · scTotal`. -/
+theorem fiber_card_balanced_RC_aggregate {μP μQ : YoungDiagram}
+    (k : ℕ) (h_bal : (YoungDiagram.shiftLeft μP).colLen 0 = μQ.colLen 0 + 1)
+    (hk : k = μP.colLen 0 - μQ.colLen 0)
+    (hk_pos : 1 ≤ k) :
+    (Finset.univ.filter (fun σ : PBPSet .D (YoungDiagram.shiftLeft μP)
+                                            (YoungDiagram.shiftLeft μQ) =>
+      tailClass_D σ.val = .RC)).sum (fun σ =>
+        Fintype.card (doubleDescent_D_fiber σ)) =
+      let (_, (scDD, scRC, scSS)) := tailCoeffs k
+      (Finset.univ.filter (fun σ : PBPSet .D (YoungDiagram.shiftLeft μP)
+                                              (YoungDiagram.shiftLeft μQ) =>
+        tailClass_D σ.val = .RC)).card * (scDD + scRC + scSS) := by
+  show (Finset.univ.filter _).sum _ = (Finset.univ.filter _).card *
+    ((tailCoeffs k).2.1 + (tailCoeffs k).2.2.1 + (tailCoeffs k).2.2.2)
+  have hQP : μQ.colLen 0 ≤ μP.colLen 0 := by omega
+  -- Step 1: Rewrite the tailClass_D filter as a paint filter
+  have hfilter_eq : Finset.univ.filter
+      (fun σ : PBPSet .D (YoungDiagram.shiftLeft μP) (YoungDiagram.shiftLeft μQ) =>
+        tailClass_D σ.val = .RC) =
+      Finset.univ.filter (fun σ =>
+        σ.val.P.paint (μQ.colLen 0) 0 = DRCSymbol.r ∨
+        σ.val.P.paint (μQ.colLen 0) 0 = DRCSymbol.c) := by
+    apply Finset.filter_congr
+    intros σ _
+    exact tailClass_RC_iff_paint_rc σ h_bal
+  -- Step 2: Split the filter into R ⊔ C using Finset.filter_or on both sides of hfilter_eq
+  have hfilter_or :
+      (Finset.univ.filter (fun σ : PBPSet .D (YoungDiagram.shiftLeft μP)
+                                              (YoungDiagram.shiftLeft μQ) =>
+        σ.val.P.paint (μQ.colLen 0) 0 = DRCSymbol.r ∨
+        σ.val.P.paint (μQ.colLen 0) 0 = DRCSymbol.c)) =
+      (Finset.univ.filter (fun σ : PBPSet .D (YoungDiagram.shiftLeft μP)
+                                              (YoungDiagram.shiftLeft μQ) =>
+        σ.val.P.paint (μQ.colLen 0) 0 = DRCSymbol.r)) ∪
+      (Finset.univ.filter (fun σ : PBPSet .D (YoungDiagram.shiftLeft μP)
+                                              (YoungDiagram.shiftLeft μQ) =>
+        σ.val.P.paint (μQ.colLen 0) 0 = DRCSymbol.c)) := Finset.filter_or _ _ _
+  rw [hfilter_eq, hfilter_or]
+  -- Disjointness of R and C filters
+  have hdisj : Disjoint
+      (Finset.univ.filter (fun σ : PBPSet .D (YoungDiagram.shiftLeft μP)
+                                              (YoungDiagram.shiftLeft μQ) =>
+        σ.val.P.paint (μQ.colLen 0) 0 = DRCSymbol.r))
+      (Finset.univ.filter (fun σ : PBPSet .D (YoungDiagram.shiftLeft μP)
+                                              (YoungDiagram.shiftLeft μQ) =>
+        σ.val.P.paint (μQ.colLen 0) 0 = DRCSymbol.c)) := by
+    rw [Finset.disjoint_filter]
+    intros σ _ hr hc
+    rw [hr] at hc
+    exact absurd hc (by decide)
+  rw [Finset.sum_union hdisj, Finset.card_union_of_disjoint hdisj]
+  -- Step 3: Evaluate each sum as |R_sub| * X_r and |C_sub| * X_c
+  have h_R_sum : (Finset.univ.filter (fun σ : PBPSet .D (YoungDiagram.shiftLeft μP)
+                                                        (YoungDiagram.shiftLeft μQ) =>
+      σ.val.P.paint (μQ.colLen 0) 0 = DRCSymbol.r)).sum
+      (fun σ => Fintype.card (doubleDescent_D_fiber σ)) =
+      (Finset.univ.filter (fun σ : PBPSet .D (YoungDiagram.shiftLeft μP)
+                                              (YoungDiagram.shiftLeft μQ) =>
+        σ.val.P.paint (μQ.colLen 0) 0 = DRCSymbol.r)).card * Fintype.card (TSeq (k - 1)) := by
+    rw [Finset.sum_congr rfl (fun σ hσ => ?_)]
+    · rw [Finset.sum_const]; rfl
+    · simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hσ
+      exact fiber_card_balanced_R σ k h_bal hk hQP hk_pos hσ
+  have h_C_sum : (Finset.univ.filter (fun σ : PBPSet .D (YoungDiagram.shiftLeft μP)
+                                                        (YoungDiagram.shiftLeft μQ) =>
+      σ.val.P.paint (μQ.colLen 0) 0 = DRCSymbol.c)).sum
+      (fun σ => Fintype.card (doubleDescent_D_fiber σ)) =
+      (Finset.univ.filter (fun σ : PBPSet .D (YoungDiagram.shiftLeft μP)
+                                              (YoungDiagram.shiftLeft μQ) =>
+        σ.val.P.paint (μQ.colLen 0) 0 = DRCSymbol.c)).card *
+      (4 * k - (if k = 1 then 1 else 0)) := by
+    rw [Finset.sum_congr rfl (fun σ hσ => ?_)]
+    · rw [Finset.sum_const]; rfl
+    · simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hσ
+      exact fiber_card_balanced_C σ k h_bal hk hQP hk_pos hσ
+  rw [h_R_sum, h_C_sum]
+  -- Step 4: Use |R_sub| = |C_sub|
+  set n := (Finset.univ.filter (fun σ : PBPSet .D (YoungDiagram.shiftLeft μP)
+                                                  (YoungDiagram.shiftLeft μQ) =>
+    σ.val.P.paint (μQ.colLen 0) 0 = DRCSymbol.r)).card with hn_def
+  have h_eq_n : (Finset.univ.filter (fun σ : PBPSet .D (YoungDiagram.shiftLeft μP)
+                                                  (YoungDiagram.shiftLeft μQ) =>
+      σ.val.P.paint (μQ.colLen 0) 0 = DRCSymbol.c)).card = n :=
+    (r_sub_card_eq_c_sub_card h_bal).symm
+  rw [h_eq_n]
+  -- Step 5: Apply Lemma 3
+  have h_lemma3 := X_r_plus_X_c_eq_two_scTotal k hk_pos
+  have h_factor : n * Fintype.card (TSeq (k - 1)) + n * (4 * k - (if k = 1 then 1 else 0)) =
+    n * (Fintype.card (TSeq (k - 1)) + (4 * k - (if k = 1 then 1 else 0))) :=
+    (Nat.mul_add n _ _).symm
+  rw [h_factor, h_lemma3, ← Nat.mul_assoc, ← Nat.two_mul, Nat.mul_comm 2 n]
