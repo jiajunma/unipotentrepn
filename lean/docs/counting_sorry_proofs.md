@@ -169,71 +169,121 @@ The formal proof uses the same sandwich argument as the primitive case, with the
 
 ---
 
-## Sorry 5: fiber_card_balanced_RC
+## Sorry 5: fiber_card_balanced_RC (REVISED)
 
-**Statement**: Balanced + tailClass(σ) = RC → |fiber(σ)| = scDD + scRC + scSS.
+**CRITICAL FINDING**: The per-σ fiber size is NOT constant for RC class!
 
-**Proof sketch**:
-Balanced: μP.colLen(1) = b + 1. RC class means σ.P.paint(b, 0) ∈ {r, c} (tailSymbol ∈ {r, c}).
+Verified for dp = [3,3,3] (k=1):
+- r-bottom RC σ: fiber = 1 (only s at first tail cell)
+- c-bottom RC σ: fiber = 3 (s, r, or c at first tail cell)
+- **Aggregate matches**: 2×1 + 2×3 = 8 = RC' × scTotal = 4×2 ✓
 
-At row b: P.paint(b, 1) = σ.P.paint(b, 0) ∈ {r, c}.
+### Why fiber varies within RC class
 
-**Case σ.P.paint(b, 0) = r (layerOrd 2)**:
-- mono_P: P.paint(b, 0).layerOrd ≤ 2. So P.paint(b, 0) ∈ {dot, s, r}.
-- nondot_tail: P.paint(b, 0) ≠ dot.
-- row_r: P.paint(b, 0) ≠ r (r already at (b, 1)).
-- So P.paint(b, 0) = s.
+Balanced: μP.colLen(1) = b + 1. At row b: P.paint(b, 1) = σ.P.paint(b, 0) = tailSymbol(σ).
 
-**Case σ.P.paint(b, 0) = c (layerOrd 3)**:
-- mono_P: P.paint(b, 0).layerOrd ≤ 3. So P.paint(b, 0) ∈ {dot, s, r, c}.
-- nondot_tail: ≠ dot.
-- No row constraint from c (c has column uniqueness, not row).
-- So P.paint(b, 0) ∈ {s, r, c}.
+**Sub-case r-bottom** (σ tailSymbol = r, layerOrd 2):
+- mono_P: col0(b).layerOrd ≤ 2 → {dot, s, r}
+- nondot_tail: ≠ dot → {s, r}
+- row_r: ≠ r (r at column 1) → {s}
+- col0(b) = s **forced**. 1 choice.
 
-Wait, this gives different possibilities depending on whether σ's tailSymbol is r or c. The count might differ. Let me re-examine...
+**Sub-case c-bottom** (σ tailSymbol = c, layerOrd 3):
+- mono_P: col0(b).layerOrd ≤ 3 → {dot, s, r, c}
+- nondot_tail: ≠ dot → {s, r, c}
+- No row_r conflict (column 1 has c, not r)
+- col_c is per-column (c at col 0 ≠ conflict with c at col 1)
+- col0(b) ∈ {s, r, c}. **3 choices**.
 
-Actually, in both sub-cases, the first tail cell is constrained. The remaining cells (rows > b) are unconstrained (outside column 1). So the tail is:
+Remaining tail cells (rows > b): outside column 1 shape → unconstrained.
 
-For σ tailSymbol = r: first cell must be s. Tail = s followed by monotone {s,r,c,d}^{k-1} with c/d unique.
-Count of such tails: same as monotone {s,r,c,d}^{k-1} with c/d unique (k-1 length, all choices for continuation).
-= validTailCount(k-1) total.
+### Correct formulation
 
-Wait, that doesn't match scDD+scRC+scSS either. Let me recalculate.
+The per-σ statement `|fiber(σ)| = scDD + scRC + scSS` is **FALSE**.
 
-For σ tailSymbol = r: first cell = s (forced). Remaining k-1 cells form a monotone sequence from {s,r,c,d} with ≥ s (continuation), c/d unique (but accounting for column 0 uniqueness across ALL k cells).
-
-Actually, the c/d uniqueness is across the ENTIRE column 0, not just the continuation. If the first cell is s, then among the remaining k-1 cells, we can still have up to 1 c and 1 d.
-
-Continuation: s^{α'} r^{β'} c^{δc} d^{δd} with α' + β' + δc + δd = k-1.
-But the full tail is s^{1+α'} r^{β'} c^{δc} d^{δd} with 1+α'+β'+δc+δd = k, i.e., α'+β'+δc+δd = k-1.
-
-Count of such tails: same as validTailCount(k-1).
-
-For σ tailSymbol = c: first cell ∈ {s, r, c}. But c uniqueness: if first cell = c, no more c allowed. And the full tail is non-decreasing with the first cell fixed.
-
-Hmm, this is getting complicated. Let me re-derive the scDD/scRC/scSS coefficients from the counting.
-
-scDD = 2 * nu(k-2) (for k ≥ 2)
-scRC = nu(k-1) + nu(k-2) (for k ≥ 2)
-scSS = 1
-
-Hmm, these don't match a simple "first cell forced" argument. There might be a subtler interaction.
-
-Actually, I think the issue is that for the RC class, the constraint depends on WHETHER the tailSymbol is r or c, and these create different fiber sizes. The scDD/scRC/scSS are the WEIGHTED AVERAGE across r and c sub-cases.
-
-This is getting too complex for me to verify right now. Let me just write what I know and mark the RC case as needing more work.
-
-Actually, wait. Let me re-read the paper's notation. The "scattered" coefficients might correspond to a different combinatorial object.
-
-From counting_formulas.md:
+Correct statement: **aggregate formula**
 ```
-scDD(k) = ν(k-2) + ν(k-2) = 2(k-1)
-scRC(k) = ν(k-1) + ν(k-2) = k + (k-1) = 2k-1
-scSS(k) = 1
+Σ_{σ : RC'} |fiber(σ)| = RC' × (scDD + scRC + scSS)
 ```
 
-And from the paper: "When x_{τ'} ∈ {c, r} (RC' class): 'scattered' tail coefficients apply (the tail interacts with τ' through the correction)."
+This works because among RC' sub-PBPs, exactly half are r-bottom and half are c-bottom (from the symmetric structure of the TRC polynomial: TRC = ν_{k-1}·c + r·ν_{k-1}, both terms evaluate to nu(k-1) = k at p=q=1).
 
-I think "correction" refers to the descent correction (from Descent.lean), not just the s-insertion. The balanced case might involve the full descent with correction, which changes the analysis.
+So: Σ_{RC'} |fiber| = (RC'/2) × fiber_r + (RC'/2) × fiber_c
+And scTotal = (fiber_r + fiber_c) / 2.
 
-This is deep enough that I need to study the paper more. Let me write what I've verified and note the gap.
+### For the counting proof: use aggregate, not per-σ
+
+The main theorem |PBPSet(dp)| = countPBP_D(dp) needs:
+```
+|PBPSet| = Σ|fiber| = DD'×tTotal + Σ_{RC'}|fiber| + 0
+         = DD'×tTotal + RC'×scTotal
+         = countPBP_D(dp)
+```
+
+The DD' and SS' parts are per-σ (constant fiber). Only the RC' part needs the aggregate.
+
+### Proof of RC aggregate (sketch)
+
+Need: Σ_{σ:RC'} |fiber(σ)| = RC' × scTotal.
+
+Approach: decompose RC' into r-bottom (count = RC'/2 = nu(k-1) from sub-problem) and c-bottom (count = RC'/2 = nu(k-1)).
+
+For r-bottom σ (fiber per σ): first cell forced to s, remaining k-1 free.
+fiber_r = validTailCount(k-1) = tTotal(k-1) (for k≥2) or 1 (for k=1).
+
+For c-bottom σ (fiber per σ): first cell ∈ {s, r, c}, remaining k-1 depends on first.
+fiber_c = validTailCount(k-1) + count(first=r, continuation) + count(first=c, continuation)
+
+The sum: (RC'/2)(fiber_r + fiber_c) = RC' × scTotal.
+
+**Verification for k=1**: fiber_r=1, fiber_c=3. scTotal=2. (1+3)/2=2. ✓
+**Verification for k=2**: fiber_r=4, fiber_c=8. scTotal=6. (4+8)/2=6. ✓
+
+### Complete derivation for general k ≥ 1
+
+**fiber_r(k)** = validTailCount(k-1): first cell forced to s, remaining k-1 free.
+- k=1: 1. k≥2: 4(k-1).
+
+**fiber_c(k)** = validTailCount(k-1) + rStartCount(k-1) + cStartCount(k-1):
+- validTailCount(k-1): first cell = s case
+- rStartCount(n) = #{r^β c^δc d^δd : β+δc+δd = n} = 1 + (n≥1?1:0) + (n≥1?1:0) + (n≥2?1:0)
+  = 1 (n=0), 3 (n=1), 4 (n≥2)
+- cStartCount(n) = #{d^δd : δd ≤ 1, n = δd} = 1 (n≤1), 0 (n≥2)
+
+Computed:
+- k=1: fiber_r=1, fiber_c=1+1+1=3
+- k=2: fiber_r=4, fiber_c=4+3+1=8
+- k≥3: fiber_r=4(k-1), fiber_c=4(k-1)+4+0=4k
+
+**Average = (fiber_r + fiber_c) / 2**:
+- k=1: (1+3)/2 = 2 = scTotal(1) ✓
+- k=2: (4+8)/2 = 6 = scTotal(2) ✓
+- k≥3: (4(k-1)+4k)/2 = (8k-4)/2 = 4k-2 = scTotal(k) ✓
+
+Verification: scTotal(k) = scDD+scRC+scSS = 2(k-1) + (2k-1) + 1 = 4k-2 for k≥2. ✓
+
+**Why the average is exact**: Among RC' sub-PBPs, the TRC polynomial TRC = ν_{k-1}·c + r·ν_{k-1} has exactly ν(k-1) = k terms with r-bottom and k terms with c-bottom (at p=q=1). So #r-bottom = #c-bottom = RC'/2. The weighted sum (RC'/2)(fiber_r + fiber_c) = RC' × scTotal. ✓
+
+### Proof of #r-bottom = #c-bottom
+
+From the sub-problem's counting: RC'(rest) counts PBPs with tailSymbol ∈ {r, c}.
+The tailSymbol depends on the BOTTOM cell of the tail: P.paint(P.colLen(0)-1, 0).
+
+From the canonical form s^α r^β c^δc d^δd:
+- tailSymbol = r iff δc = δd = 0 and β ≥ 1 (bottom is r): count = nu(k'-1) (where k' is sub tail length)
+- tailSymbol = c iff δd = 0 and δc = 1 (bottom is c): count = nu(k'-1)
+
+Equal counts! This uses the sub-problem's tail length k' and the tail polynomial structure. ∎
+
+### Formalization strategy for RC case
+
+Since per-σ is not constant, the theorem statement should be AGGREGATE:
+
+```lean
+theorem fiber_aggregate_balanced_RC :
+    (Finset.univ.filter (fun σ => tailClass_D σ.val = .RC)).sum
+      (fun σ => Fintype.card (doubleDescent_D_fiber σ)) =
+    Fintype.card (PBPSet_tc .D μP' μQ' .RC) * (scDD + scRC + scSS)
+```
+
+This avoids the per-σ statement entirely.
