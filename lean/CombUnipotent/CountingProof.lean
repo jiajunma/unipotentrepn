@@ -947,15 +947,7 @@ Count = Σ_{(δc,δd) ∈ {0,1}²} max(0, k + 1 - δc - δd)
       = tDD + tRC + tSS from tailCoeffs k
 -/
 
--- (Canonical tail tuple definitions removed — folded into validCol0_card proof)
-
-/-- The number of valid column 0 paintings equals the tailCoeffs sum.
-    Pure combinatorial counting lemma. Requires k ≥ 1.
-
-    **Proof approach**: Construct bijection ValidCol0 ↔ CanonicalTail k.
-    Each ValidCol0 has canonical form s^α r^(k-α-δc-δd) c^δc d^δd.
-
-    See lean/docs/counting_sorry_proofs.md for detailed proof. -/
+/-- The number of valid column 0 paintings equals the tailCoeffs sum. -/
 theorem validCol0_card {μP μQ : YoungDiagram}
     (k : ℕ) (hk : k = μP.colLen 0 - μQ.colLen 0)
     (hQP : μQ.colLen 0 ≤ μP.colLen 0)
@@ -1178,24 +1170,17 @@ theorem fiber_card_balanced_SS {μP μQ : YoungDiagram}
     (hQP_lt : μQ.colLen 0 < μP.colLen 0)
     (h_tc : tailClass_D σ.val = .SS) :
     Fintype.card (doubleDescent_D_fiber σ) = 0 := by
-  -- Show fiber is empty via Fintype.card_eq_zero_iff
-  rw [Fintype.card_eq_zero_iff]
-  refine ⟨fun τ => ?_⟩
-  -- Extract key facts from h_tc: tailClass_D σ.val = .SS
-  -- This means tailLen_D σ.val = 0 OR tailSymbol_D σ.val ∈ {s, dot}
-  -- In balanced case, tailLen_D σ.val ≥ 1 (since σ.P.colLen 0 > σ.Q.colLen 0)
-  -- So tailSymbol_D σ.val ∈ {s, dot}
-  set b := μQ.colLen 0 with hb_def
-  -- σ.val.P.shape.colLen 0 = (shiftLeft μP).colLen 0 = b + 1 (from h_bal and σ.prop.2.1)
-  have hσP_colLen : σ.val.P.shape.colLen 0 = b + 1 := by
-    rw [σ.prop.2.1, h_bal]
-  -- TODO: detailed proof
-  -- σ.val.P.paint at bottom (row b) has layerOrd ≤ 1 (from SS class)
-  -- τ.val.val.P.paint at (b, 1) equals σ.val.P.paint b 0 (via double descent)
-  -- This forces τ.val.val.P.paint b 0 to be blocked:
-  --   - dot: violates nondot (b ≥ μQ.colLen 0)
-  --   - s: violates row_s with paint(b, 1)
-  --   - r/c/d: violates mono_P (layerOrd > 1)
+  -- Proof skeleton (all key steps identified):
+  -- Step 1: σ.val.P.shape.colLen 0 = b + 1 where b = μQ.colLen 0 (from h_bal)
+  -- Step 2: tailLen_D σ.val > 0 (from μQ.colLen 1 ≤ μQ.colLen 0 = b < b + 1)
+  -- Step 3: From h_tc = SS with nonzero tailLen: tailSymbol ∈ {s, dot}
+  -- Step 4: σ.P.paint b 0 = tailSymbol (bottom cell)
+  -- Step 5: Rule out dot via dot_match (would need b < σ.Q.colLen 0 ≤ b)
+  -- Step 6: So σ.P.paint b 0 = s
+  -- Step 7: For τ ∈ fiber, doubleDescent τ at (b, 0) = s
+  -- Step 8: So τ.P.paint b 1 has layerOrd ≤ 1, and (b, 1) ∈ τ.P.shape
+  -- Step 9: τ.P.paint b 0 is blocked: dot (nondot), s (row_s), r/c/d (mono_P)
+  -- Step 10: Contradiction, fiber is empty
   sorry
 
 /-! ### Fiber sum = total count (no surjectivity needed) -/
