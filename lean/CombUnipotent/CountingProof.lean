@@ -1101,6 +1101,44 @@ theorem liftPBP_primitive_D_injective {μP μQ : YoungDiagram}
 Using the sandwich argument with validCol0_card, extractCol0_D_injective_on_fiber,
 and liftPBP_primitive_D_injective. -/
 
+/-- Round-trip property: ∇²(liftPBP σ col0) = σ.
+    This is the key lemma that ties the lift construction to the fiber.
+    Proof requires showing doubleDescent_D_paintL of the lifted PBP agrees
+    with σ.P.paint via case analysis on the double descent formula. -/
+theorem liftPBP_primitive_D_round_trip {μP μQ : YoungDiagram}
+    (σ : PBPSet .D (YoungDiagram.shiftLeft μP) (YoungDiagram.shiftLeft μQ))
+    (col0 : ValidCol0 μP μQ)
+    (h_prim : μQ.colLen 0 ≥ (YoungDiagram.shiftLeft μP).colLen 0)
+    (hQP : μQ.colLen 0 ≤ μP.colLen 0) :
+    doubleDescent_D_map (liftPBP_primitive_D σ col0 h_prim hQP) = σ := by
+  sorry -- Key round-trip: requires detailed analysis of doubleDescent_D_paintL
+
+/-- liftPBP_primitive_D produces an element of the fiber over σ. -/
+noncomputable def liftPBP_to_fiber {μP μQ : YoungDiagram}
+    (σ : PBPSet .D (YoungDiagram.shiftLeft μP) (YoungDiagram.shiftLeft μQ))
+    (col0 : ValidCol0 μP μQ)
+    (h_prim : μQ.colLen 0 ≥ (YoungDiagram.shiftLeft μP).colLen 0)
+    (hQP : μQ.colLen 0 ≤ μP.colLen 0) :
+    doubleDescent_D_fiber σ :=
+  ⟨liftPBP_primitive_D σ col0 h_prim hQP,
+   liftPBP_primitive_D_round_trip σ col0 h_prim hQP⟩
+
+/-- liftPBP_to_fiber is injective as a function ValidCol0 → fiber(σ). -/
+theorem liftPBP_to_fiber_injective {μP μQ : YoungDiagram}
+    (σ : PBPSet .D (YoungDiagram.shiftLeft μP) (YoungDiagram.shiftLeft μQ))
+    (h_prim : μQ.colLen 0 ≥ (YoungDiagram.shiftLeft μP).colLen 0)
+    (hQP : μQ.colLen 0 ≤ μP.colLen 0) :
+    Function.Injective (fun col0 : ValidCol0 μP μQ => liftPBP_to_fiber σ col0 h_prim hQP) := by
+  intro col0₁ col0₂ h
+  -- h : liftPBP_to_fiber col0₁ = liftPBP_to_fiber col0₂
+  -- Extract .val equality
+  have h_val : (liftPBP_to_fiber σ col0₁ h_prim hQP).val =
+               (liftPBP_to_fiber σ col0₂ h_prim hQP).val :=
+    congrArg Subtype.val h
+  simp only [liftPBP_to_fiber] at h_val
+  -- h_val : liftPBP_primitive_D σ col0₁ = liftPBP_primitive_D σ col0₂
+  exact (liftPBP_primitive_D_injective h_prim hQP h_val).2
+
 /-- Key counting lemma (primitive case):
     When μQ.colLen(0) ≥ μP.colLen(1), every sub-PBP has the same fiber size. -/
 theorem fiber_card_primitive {μP μQ : YoungDiagram}
@@ -1122,13 +1160,12 @@ theorem fiber_card_primitive {μP μQ : YoungDiagram}
     intro τ₁ τ₂ h
     apply extractCol0_D_injective_on_fiber σ
     exact congr_arg ValidCol0.paint h
-  -- Lower bound: ValidCol0 → fiber via liftPBP_primitive_D is injective (and in fiber).
-  -- This requires the round-trip property: ∇²(liftPBP σ col0) = σ
-  -- Combined with liftPBP_primitive_D_injective, this gives the lower bound.
-  -- The proof is deferred; see counting_sorry_proofs.md for the round-trip argument.
+  -- Lower bound: ValidCol0 ↪ fiber via liftPBP_to_fiber (uses round-trip)
   have h_ge : Fintype.card (ValidCol0 μP μQ) ≤
       Fintype.card (doubleDescent_D_fiber σ) := by
-    sorry -- TODO: round-trip property + liftPBP injection
+    apply Fintype.card_le_of_injective
+      (fun col0 => liftPBP_to_fiber σ col0 h_prim hQP)
+    exact liftPBP_to_fiber_injective σ h_prim hQP
   omega
 
 /-! ### Balanced case fiber counting
@@ -1170,10 +1207,16 @@ theorem fiber_card_balanced_DD {μP μQ : YoungDiagram}
     exact congr_arg ValidCol0.paint h
   -- Lower bound: in balanced DD case, the constraint at row b is vacuous
   -- (layerOrd d = 4 ≥ all symbols, so mono_P trivially satisfied).
-  -- Hence the fiber has the same structure as primitive case.
+  -- This means every ValidCol0 gives a valid PBP in the fiber (same construction
+  -- as primitive case works). We need a separate liftPBP/round-trip for balanced DD,
+  -- but the injectivity follows the same pattern.
   have h_ge : Fintype.card (ValidCol0 μP μQ) ≤
       Fintype.card (doubleDescent_D_fiber σ) := by
-    sorry -- TODO: same as fiber_card_primitive h_ge, using DD class for row b vacuous
+    -- Uses same liftPBP_to_fiber_injective, but needs a balanced DD version
+    -- of h_prim (which is stronger than the strict balanced condition).
+    -- For now, we observe that in balanced DD, the h_prim condition also holds
+    -- at the relevant row (layerOrd d = 4 ≥ all), so the same proof works.
+    sorry -- TODO: balanced DD lift round-trip
   omega
 
 /-- NOTE: This per-σ statement is INCORRECT for balanced RC case.
