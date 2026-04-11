@@ -167,6 +167,49 @@ Basic.lean → PBP.lean → Signature.lean
 | `Finite (PBPSet γ μP μQ)` | instance | Finite.of_injective |
 | `Fintype (PBPSet γ μP μQ)` | instance | Fintype.ofFinite |
 
+## CountingProof.lean
+
+### YoungDiagram.colLens (列长 ↔ 形状)
+| 名称 | 类型 | 说明 |
+|------|------|------|
+| `YoungDiagram.colLens μ` | def | 列长列表 = μ.transpose.rowLens |
+| `YoungDiagram.ofColLens w hw` | def | 从列长构造 YoungDiagram |
+| `length_colLens` | simp | colLens.length = rowLen 0 |
+| `getElem_colLens` | simp | colLens[j] = colLen j |
+| `colLens_sorted` | theorem | 列长非增 |
+| `pos_of_mem_colLens` | theorem | 列长正 |
+| `ofColLens_colLens` | theorem | **往返: ofColLens(colLens μ) = μ** |
+| `colLens_ofColLens` | theorem | **往返: colLens(ofColLens w) = w** |
+| `colLen_ofColLens` | theorem | ofColLens 的 colLen j = w[j] |
+
+### Orbit → PBP 形状 (D type)
+| 名称 | 类型 | 说明 |
+|------|------|------|
+| `dpartColLensP_D` | def | orbit → P 列长: r₁, r₃, ... 取 (r+1)/2 |
+| `dpartColLensQ_D` | def | orbit → Q 列长: r₂, r₄, ... 取 (r-1)/2 |
+| `dpartColLensP_D_cons₂` | theorem | **去掉2个orbit行 = 去掉P列头 (by rfl)** |
+| `dpartColLensQ_D_cons₂` | theorem | Q 列长类似递推 |
+
+### Tail 分类
+| 名称 | 类型 | 说明 |
+|------|------|------|
+| `TailClass` | inductive | DD / RC / SS |
+| `tailClass_D` | def | 用 tailLen_D + tailSymbol_D 分类 |
+
+### Double descent 结构
+| 名称 | 依赖 | 说明 |
+|------|------|------|
+| `doubleDescent_D_paintL_dot_iff` | Q_colLen_le_dotScolLen_of_D, dotScolLen_le_colLen | **∇² 在 P.colLen(j+1) 以外为 dot** |
+
+### 基础情况
+| 名称 | 依赖 | 说明 |
+|------|------|------|
+| `emptyPYD` | def | 空 PYD: shape = ⊥, paint = dot |
+| `emptyPBP γ` | def | 空 PBP: 两边都空 |
+| `PYD_eq_emptyPYD_of_shape_bot` | paint_outside | shape = ⊥ → PYD 唯一 |
+| `PBPSet_bot_unique` | PYD_eq_emptyPYD, PBP.ext'' | PBPSet γ ⊥ ⊥ 中元素唯一 |
+| `card_PBPSet_bot` | PBPSet_bot_unique | **Fintype.card (PBPSet γ ⊥ ⊥) = 1** |
+
 ---
 
 ## 依赖图 (主要定理)
@@ -213,5 +256,20 @@ PBP constraints
   │  Finite (PBPSet) ── Fintype (PBPSet)
   │
   ▼
-  countPBP_D/B/C/M (递推公式，待证 = Fintype.card)
+  countPBP_D/B/C/M (递推公式)
+  │
+  ├─ YoungDiagram.colLens / ofColLens (双向转换)
+  │
+  ├─ dpartColLensP_D / dpartColLensQ_D (orbit → 形状)
+  │     │
+  │     └─ dpartColLensP_D_cons₂ (去2行 = 去列头)
+  │
+  ├─ TailClass + tailClass_D (DD/RC/SS 分类)
+  │
+  ├─ doubleDescent_D_paintL_dot_iff (∇² 列长关系)
+  │
+  ├─ emptyPBP + card_PBPSet_bot = 1 (基础情况 ✓)
+  │
+  ▼
+  card_PBPSet = countPBP (待证: 纤维计数 + descent 像)
 ```
