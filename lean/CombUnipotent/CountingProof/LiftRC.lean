@@ -584,3 +584,213 @@ noncomputable def TSeq_peel_first_s (k : ℕ) :
     have : (⟨i.val + 1 - 1, by omega⟩ : Fin k) = i := Fin.ext (by simp)
     rw [this]
 
+
+/-! ## Counting R and C subsets of ValidCol0 -/
+
+/-- Direct forward map: from v with v.paint b = .s to a TSeq (k-1) representing the
+    tail (rows [b+1, c)). -/
+noncomputable def R_col0_toTSeqPred {μP μQ : YoungDiagram}
+    (hQP : μQ.colLen 0 ≤ μP.colLen 0)
+    (hk_pos : 1 ≤ μP.colLen 0 - μQ.colLen 0)
+    (v : {v : ValidCol0 μP μQ // v.paint (μQ.colLen 0) = DRCSymbol.s}) :
+    TSeq (μP.colLen 0 - μQ.colLen 0 - 1) := by
+  refine ⟨fun i => v.val.paint (μQ.colLen 0 + 1 + i.val), ?_, ?_, ?_, ?_⟩
+  · intro i
+    show v.val.paint _ = .s ∨ v.val.paint _ = .r ∨ v.val.paint _ = .c ∨ v.val.paint _ = .d
+    have h1 : μQ.colLen 0 ≤ μQ.colLen 0 + 1 + i.val := by omega
+    have h2 : μQ.colLen 0 + 1 + i.val < μP.colLen 0 := by have := i.isLt; omega
+    have hne := v.val.nondot_tail _ h1 h2
+    generalize hsym : v.val.paint (μQ.colLen 0 + 1 + i.val) = sym at hne ⊢
+    cases sym
+    · exact absurd rfl hne
+    · exact Or.inl rfl
+    · exact Or.inr (Or.inl rfl)
+    · exact Or.inr (Or.inr (Or.inl rfl))
+    · exact Or.inr (Or.inr (Or.inr rfl))
+  · intro i j hij
+    have h2 : μQ.colLen 0 + 1 + j.val < μP.colLen 0 := by have := j.isLt; omega
+    exact v.val.mono _ _ (by omega) h2
+  · intro i j hi hj
+    have := v.val.col_c_unique _ _ hi hj
+    exact Fin.ext (by omega)
+  · intro i j hi hj
+    have := v.val.col_d_unique _ _ hi hj
+    exact Fin.ext (by omega)
+
+/-- Direct inverse: from a TSeq (k-1) build a ValidCol0 with v.paint b = .s. -/
+noncomputable def R_col0_ofTSeqPred {μP μQ : YoungDiagram}
+    (hQP : μQ.colLen 0 ≤ μP.colLen 0)
+    (hk_pos : 1 ≤ μP.colLen 0 - μQ.colLen 0)
+    (w : TSeq (μP.colLen 0 - μQ.colLen 0 - 1)) :
+    {v : ValidCol0 μP μQ // v.paint (μQ.colLen 0) = DRCSymbol.s} := by
+  -- Use a helper to define the paint function
+  let paint : ℕ → DRCSymbol := fun i =>
+    if h1 : i < μQ.colLen 0 then DRCSymbol.dot
+    else if h2 : i = μQ.colLen 0 then DRCSymbol.s
+    else if h3 : i < μP.colLen 0 then
+      w.val ⟨i - μQ.colLen 0 - 1, by
+        push_neg at h1
+        have : i ≠ μQ.colLen 0 := h2
+        omega⟩
+    else DRCSymbol.dot
+  refine ⟨⟨paint, ?dot_below, ?nondot_tail, ?dot_above, ?mono, ?col_c_unique,
+    ?col_d_unique⟩, ?b_eq_s⟩
+  case dot_below =>
+    intro i hi
+    show paint i = DRCSymbol.dot
+    simp only [paint, dif_pos hi]
+  case nondot_tail =>
+    intro i h1 h2
+    show paint i ≠ DRCSymbol.dot
+    have hn1 : ¬ i < μQ.colLen 0 := by omega
+    by_cases hi : i = μQ.colLen 0
+    · simp only [paint, dif_neg hn1, dif_pos hi]; decide
+    · simp only [paint, dif_neg hn1, dif_neg hi, dif_pos h2]
+      have hmem := w.property.1 ⟨i - μQ.colLen 0 - 1, by omega⟩
+      rcases hmem with h | h | h | h <;> rw [h] <;> decide
+  case dot_above =>
+    intro i hi
+    show paint i = DRCSymbol.dot
+    have h1 : ¬ i < μQ.colLen 0 := by omega
+    have h2 : i ≠ μQ.colLen 0 := by omega
+    have h3 : ¬ i < μP.colLen 0 := by omega
+    simp only [paint, dif_neg h1, dif_neg h2, dif_neg h3]
+  case mono =>
+    intro i₁ i₂ h12 h2
+    show (paint i₁).layerOrd ≤ (paint i₂).layerOrd
+    by_cases hi1 : i₁ < μQ.colLen 0
+    · simp only [paint, dif_pos hi1]; simp [DRCSymbol.layerOrd]
+    · by_cases hi1' : i₁ = μQ.colLen 0
+      · simp only [paint, dif_neg hi1, dif_pos hi1']
+        by_cases hi2 : i₂ < μQ.colLen 0
+        · exfalso; omega
+        · by_cases hi2' : i₂ = μQ.colLen 0
+          · simp only [paint, dif_neg hi2, dif_pos hi2']; exact le_refl _
+          · have hi2_lt : i₂ < μP.colLen 0 := h2
+            simp only [paint, dif_neg hi2, dif_neg hi2', dif_pos hi2_lt]
+            have hmem := w.property.1 ⟨i₂ - μQ.colLen 0 - 1, by omega⟩
+            rcases hmem with h | h | h | h <;> rw [h] <;> decide
+      · have hi1_lt : i₁ < μP.colLen 0 := by omega
+        have hi2_ne : i₂ ≠ μQ.colLen 0 := by omega
+        have hi2_not_lt : ¬ i₂ < μQ.colLen 0 := by omega
+        simp only [paint, dif_neg hi1, dif_neg hi1', dif_pos hi1_lt]
+        simp only [paint, dif_neg hi2_not_lt, dif_neg hi2_ne, dif_pos h2]
+        have hb1 : i₁ - μQ.colLen 0 - 1 < μP.colLen 0 - μQ.colLen 0 - 1 := by omega
+        have hb2 : i₂ - μQ.colLen 0 - 1 < μP.colLen 0 - μQ.colLen 0 - 1 := by omega
+        have hle : i₁ - μQ.colLen 0 - 1 ≤ i₂ - μQ.colLen 0 - 1 := by omega
+        exact w.property.2.1 ⟨i₁ - μQ.colLen 0 - 1, hb1⟩
+          ⟨i₂ - μQ.colLen 0 - 1, hb2⟩ hle
+  case col_c_unique =>
+    intro i₁ i₂ hc1 hc2
+    show i₁ = i₂
+    -- Both must be strictly above b
+    have h_not_below : ∀ i, paint i = DRCSymbol.c →
+        μQ.colLen 0 < i ∧ i < μP.colLen 0 := by
+      intro i hc
+      by_cases hi : i < μQ.colLen 0
+      · simp only [paint, dif_pos hi] at hc; exact absurd hc (by decide)
+      · by_cases hi' : i = μQ.colLen 0
+        · simp only [paint, dif_neg hi, dif_pos hi'] at hc; exact absurd hc (by decide)
+        · by_cases hi'' : i < μP.colLen 0
+          · exact ⟨by omega, hi''⟩
+          · simp only [paint, dif_neg hi, dif_neg hi', dif_neg hi''] at hc
+            exact absurd hc (by decide)
+    obtain ⟨h1a, h1b⟩ := h_not_below i₁ hc1
+    obtain ⟨h2a, h2b⟩ := h_not_below i₂ hc2
+    have hi1_n1 : ¬ i₁ < μQ.colLen 0 := by omega
+    have hi1_ne : i₁ ≠ μQ.colLen 0 := by omega
+    have hi2_n1 : ¬ i₂ < μQ.colLen 0 := by omega
+    have hi2_ne : i₂ ≠ μQ.colLen 0 := by omega
+    simp only [paint, dif_neg hi1_n1, dif_neg hi1_ne, dif_pos h1b] at hc1
+    simp only [paint, dif_neg hi2_n1, dif_neg hi2_ne, dif_pos h2b] at hc2
+    have hw := w.property.2.2.1 ⟨i₁ - μQ.colLen 0 - 1, by omega⟩
+      ⟨i₂ - μQ.colLen 0 - 1, by omega⟩ hc1 hc2
+    have hfin : i₁ - μQ.colLen 0 - 1 = i₂ - μQ.colLen 0 - 1 := Fin.mk.inj_iff.mp hw
+    omega
+  case col_d_unique =>
+    intro i₁ i₂ hd1 hd2
+    show i₁ = i₂
+    have h_not_below : ∀ i, paint i = DRCSymbol.d →
+        μQ.colLen 0 < i ∧ i < μP.colLen 0 := by
+      intro i hd
+      by_cases hi : i < μQ.colLen 0
+      · simp only [paint, dif_pos hi] at hd; exact absurd hd (by decide)
+      · by_cases hi' : i = μQ.colLen 0
+        · simp only [paint, dif_neg hi, dif_pos hi'] at hd; exact absurd hd (by decide)
+        · by_cases hi'' : i < μP.colLen 0
+          · exact ⟨by omega, hi''⟩
+          · simp only [paint, dif_neg hi, dif_neg hi', dif_neg hi''] at hd
+            exact absurd hd (by decide)
+    obtain ⟨h1a, h1b⟩ := h_not_below i₁ hd1
+    obtain ⟨h2a, h2b⟩ := h_not_below i₂ hd2
+    have hi1_n1 : ¬ i₁ < μQ.colLen 0 := by omega
+    have hi1_ne : i₁ ≠ μQ.colLen 0 := by omega
+    have hi2_n1 : ¬ i₂ < μQ.colLen 0 := by omega
+    have hi2_ne : i₂ ≠ μQ.colLen 0 := by omega
+    simp only [paint, dif_neg hi1_n1, dif_neg hi1_ne, dif_pos h1b] at hd1
+    simp only [paint, dif_neg hi2_n1, dif_neg hi2_ne, dif_pos h2b] at hd2
+    have hw := w.property.2.2.2 ⟨i₁ - μQ.colLen 0 - 1, by omega⟩
+      ⟨i₂ - μQ.colLen 0 - 1, by omega⟩ hd1 hd2
+    have hfin : i₁ - μQ.colLen 0 - 1 = i₂ - μQ.colLen 0 - 1 := Fin.mk.inj_iff.mp hw
+    omega
+  case b_eq_s =>
+    show paint (μQ.colLen 0) = DRCSymbol.s
+    have h1 : ¬ μQ.colLen 0 < μQ.colLen 0 := Nat.lt_irrefl _
+    simp only [paint, dif_neg h1, dif_pos rfl]
+    rfl
+
+/-- Direct Equiv: `R_ValidCol0 ≃ TSeq (k - 1)`. -/
+noncomputable def R_col0_equiv_TSeqPred {μP μQ : YoungDiagram}
+    (hQP : μQ.colLen 0 ≤ μP.colLen 0)
+    (hk_pos : 1 ≤ μP.colLen 0 - μQ.colLen 0) :
+    {v : ValidCol0 μP μQ // v.paint (μQ.colLen 0) = DRCSymbol.s} ≃
+    TSeq (μP.colLen 0 - μQ.colLen 0 - 1) where
+  toFun := R_col0_toTSeqPred hQP hk_pos
+  invFun := R_col0_ofTSeqPred hQP hk_pos
+  left_inv := fun ⟨v, hv⟩ => by
+    apply Subtype.ext
+    apply ValidCol0.ext
+    funext i
+    show (R_col0_ofTSeqPred hQP hk_pos _).val.paint i = v.paint i
+    show (if h1 : i < μQ.colLen 0 then _ else
+          if h2 : i = μQ.colLen 0 then _ else
+          if h3 : i < μP.colLen 0 then _ else _) = _
+    by_cases h1 : i < μQ.colLen 0
+    · rw [dif_pos h1]; exact (v.dot_below i h1).symm
+    · by_cases h2 : i = μQ.colLen 0
+      · rw [dif_neg h1, dif_pos h2, h2]; exact hv.symm
+      · by_cases h3 : i < μP.colLen 0
+        · rw [dif_neg h1, dif_neg h2, dif_pos h3]
+          show v.paint (μQ.colLen 0 + 1 + (i - μQ.colLen 0 - 1)) = v.paint i
+          congr 1; omega
+        · rw [dif_neg h1, dif_neg h2, dif_neg h3]
+          exact (v.dot_above i (by omega)).symm
+  right_inv := fun w => by
+    apply Subtype.ext
+    funext i
+    show (R_col0_toTSeqPred hQP hk_pos _).val i = w.val i
+    show (R_col0_ofTSeqPred hQP hk_pos w).val.paint (μQ.colLen 0 + 1 + i.val) = w.val i
+    show (if h1 : _ then _ else if h2 : _ then _ else if h3 : _ then _ else _) = _
+    have h1 : ¬ μQ.colLen 0 + 1 + i.val < μQ.colLen 0 := by omega
+    have h2 : μQ.colLen 0 + 1 + i.val ≠ μQ.colLen 0 := by omega
+    have h3 : μQ.colLen 0 + 1 + i.val < μP.colLen 0 := by have := i.isLt; omega
+    rw [dif_neg h1, dif_neg h2, dif_pos h3]
+    have hib : μQ.colLen 0 + 1 + i.val - μQ.colLen 0 - 1 <
+               μP.colLen 0 - μQ.colLen 0 - 1 := by
+      have := i.isLt; omega
+    have hfin : (⟨μQ.colLen 0 + 1 + i.val - μQ.colLen 0 - 1, hib⟩ :
+           Fin (μP.colLen 0 - μQ.colLen 0 - 1)) = i := Fin.ext (by
+      show μQ.colLen 0 + 1 + i.val - μQ.colLen 0 - 1 = i.val
+      omega)
+    rw [hfin]
+
+/-- Number of valid col0 with `v.paint b = .s`. Equals `|TSeq (k-1)|`. -/
+theorem R_ValidCol0_card {μP μQ : YoungDiagram}
+    (k : ℕ) (hk : k = μP.colLen 0 - μQ.colLen 0)
+    (hQP : μQ.colLen 0 ≤ μP.colLen 0) (hk_pos : 1 ≤ k) :
+    Fintype.card {v : ValidCol0 μP μQ // v.paint (μQ.colLen 0) = DRCSymbol.s} =
+      Fintype.card (TSeq (k - 1)) := by
+  have hm_pos : 1 ≤ μP.colLen 0 - μQ.colLen 0 := by omega
+  rw [Fintype.card_congr (R_col0_equiv_TSeqPred hQP hm_pos)]
+  have hsub : μP.colLen 0 - μQ.colLen 0 - 1 = k - 1 := by omega
+  rw [hsub]
