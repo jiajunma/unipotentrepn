@@ -728,13 +728,7 @@ theorem fiber_card_primitive {μP μQ : YoungDiagram}
     Fintype.card (doubleDescent_D_fiber σ) =
         let ((tDD, tRC, tSS), _) := tailCoeffs k
         tDD + tRC + tSS := by
-  -- Sandwich argument: avoid round-trip proof
-  -- Step 1: |fiber(σ)| ≤ |ValidCol0| (extract column 0 is injective)
-  -- Step 2: Σ_σ |ValidCol0| ≤ |PBPSet| (liftPBP is injective across all σ)
-  -- Step 3: |PBPSet| = Σ |fiber| (card_PBPSet_eq_sum_fiber)
-  -- Sandwich: Σ|ValidCol0| ≤ Σ|fiber| ≤ Σ|ValidCol0| → |fiber| = |ValidCol0| ∀σ
-  -- Step 4: |ValidCol0| = tDD + tRC + tSS (pure counting)
-  sorry
+  sorry -- needs: validCol0_card + sandwich (see liftPBP_primitive_D_injective)
 
 /-! ### Reverse construction for primitive case
 
@@ -959,6 +953,27 @@ noncomputable def liftPBP_primitive_D {μP μQ : YoungDiagram}
     | zero => exact col0.col_d_unique i₁ i₂ h₁ h₂
     | succ j => exact σ.val.col_d_P j i₁ i₂ h₁ h₂
   case col_d_Q => intro _ _ _ h; exact DRCSymbol.noConfusion h
+
+/-! ### ValidCol0 counting
+
+A ValidCol0 with tail length k = μP.colLen(0) - μQ.colLen(0)
+is determined by a tuple (a, b, δc, δd) with a + b + δc + δd = k,
+where δc, δd ∈ {0, 1}. The painting is s^a r^b c^δc d^δd.
+
+Count = Σ_{(δc,δd) ∈ {0,1}²} max(0, k + 1 - δc - δd)
+      = (k+1) + k + k + max(0, k-1)
+      = tDD + tRC + tSS from tailCoeffs k
+-/
+
+/-- The number of valid column 0 paintings equals the tailCoeffs sum.
+    This is the pure combinatorial counting lemma. -/
+theorem validCol0_card {μP μQ : YoungDiagram}
+    (k : ℕ) (hk : k = μP.colLen 0 - μQ.colLen 0)
+    (hQP : μQ.colLen 0 ≤ μP.colLen 0) :
+    Fintype.card (ValidCol0 μP μQ) =
+      let ((tDD, tRC, tSS), _) := tailCoeffs k
+      tDD + tRC + tSS := by
+  sorry -- pure combinatorics: count monotone {s,r,c,d}^k sequences with c/d unique
 
 /-! ### Injection lemmas for sandwich argument -/
 
