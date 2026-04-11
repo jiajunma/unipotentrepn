@@ -1,0 +1,105 @@
+digraph "Extended PBP Tree" {
+	graph [dpi=150 newrank=true nodesep=0.3 rankdir=TB ranksep=0.8]
+	node [fontname="Courier New" fontsize=8 shape=box]
+	e0 [label="(4,3) B+ ε=0\lc|dd\l" fillcolor="#ffe6e6" labeljust=l style=filled]
+	e1 [label="(2,2) ε=0\ls|d\l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e2 [label="(2,1) B+ ε=0\l|d\l" fillcolor="#ffe6e6" labeljust=l style=filled]
+	e3 [label="(0,0) ε=0\l\l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e4 [label="(3,4) B- ε=0\lc|dd\l" fillcolor="#ffe6f3" labeljust=l style=filled]
+	e5 [label="(2,2) ε=0\lc|d\l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e6 [label="(1,2) B- ε=0\l|d\l" fillcolor="#ffe6f3" labeljust=l style=filled]
+	e7 [label="(5,2) B+ ε=1\lc|rd\l" fillcolor="#ffe6e6" labeljust=l style=filled]
+	e8 [label="(4,3) B- ε=1\lc|rd\l" fillcolor="#ffe6f3" labeljust=l style=filled]
+	e9 [label="(3,4) B+ ε=1\lc|sd\l" fillcolor="#ffe6e6" labeljust=l style=filled]
+	e10 [label="(2,5) B- ε=1\lc|sd\l" fillcolor="#ffe6f3" labeljust=l style=filled]
+	e11 [label="(4,3) B+ ε=1\l.|.d\l" fillcolor="#ffe6e6" labeljust=l style=filled]
+	e12 [label="(3,4) B- ε=1\l.|.d\l" fillcolor="#ffe6f3" labeljust=l style=filled]
+	e13 [label="(4,3) B+ ε=1\lc|sr\l" fillcolor="#ffe6e6" labeljust=l style=filled]
+	e14 [label="(2,2) ε=0\lc|r\l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e15 [label="(2,1) B- ε=1\l|r\l" fillcolor="#ffe6f3" labeljust=l style=filled]
+	e16 [label="(3,4) B- ε=1\lc|sr\l" fillcolor="#ffe6f3" labeljust=l style=filled]
+	e17 [label="(5,2) B+ ε=1\l.|.r\l" fillcolor="#ffe6e6" labeljust=l style=filled]
+	e18 [label="(2,2) ε=0\ls|r\l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e19 [label="(3,0) B+ ε=1\l|r\l" fillcolor="#ffe6e6" labeljust=l style=filled]
+	e20 [label="(4,3) B- ε=1\l.|.r\l" fillcolor="#ffe6f3" labeljust=l style=filled]
+	e21 [label="(3,4) B+ ε=1\l.|.s\l" fillcolor="#ffe6e6" labeljust=l style=filled]
+	e22 [label="(2,2) ε=0\l.|.\l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e23 [label="(1,2) B+ ε=1\l|s\l" fillcolor="#ffe6e6" labeljust=l style=filled]
+	e24 [label="(2,5) B- ε=1\l.|.s\l" fillcolor="#ffe6f3" labeljust=l style=filled]
+	e1 -> e0 [color=blue]
+	e2 -> e1 [color=blue]
+	e3 -> e2 [color=blue]
+	e5 -> e4 [color=blue]
+	e6 -> e5 [color=blue]
+	e3 -> e6 [color=blue]
+	e1 -> e7 [color=blue]
+	e5 -> e8 [color=blue]
+	e5 -> e9 [color=blue]
+	e5 -> e10 [color=blue]
+	e1 -> e11 [color=blue]
+	e1 -> e12 [color=blue]
+	e14 -> e13 [color=blue]
+	e15 -> e14 [color=blue]
+	e3 -> e15 [color=blue]
+	e14 -> e16 [color=blue]
+	e18 -> e17 [color=blue]
+	e19 -> e18 [color=blue]
+	e3 -> e19 [color=blue]
+	e18 -> e20 [color=blue]
+	e22 -> e21 [color=blue]
+	e23 -> e22 [color=blue]
+	e3 -> e23 [color=blue]
+	e22 -> e24 [color=blue]
+	gp_M_0 [label="Mp(0)" fontcolor="#333333" fontname=Helvetica fontsize=11 group=gp_labels shape=plaintext]
+	{
+		rank=same
+		gp_M_0
+		e3
+	}
+	gp_M_0 -> e3 [style=invis]
+	gp_B_1 [label="O(3)" fontcolor="#333333" fontname=Helvetica fontsize=11 group=gp_labels shape=plaintext]
+	{
+		rank=same
+		gp_B_1
+		e2
+		e6
+		e15
+		e19
+		e23
+	}
+	gp_B_1 -> e2 [style=invis]
+	gp_M_2 [label="Mp(4)" fontcolor="#333333" fontname=Helvetica fontsize=11 group=gp_labels shape=plaintext]
+	{
+		rank=same
+		gp_M_2
+		e1
+		e5
+		e14
+		e18
+		e22
+	}
+	gp_M_2 -> e1 [style=invis]
+	gp_B_3 [label="O(7)" fontcolor="#333333" fontname=Helvetica fontsize=11 group=gp_labels shape=plaintext]
+	{
+		rank=same
+		gp_B_3
+		e0
+		e4
+		e7
+		e8
+		e9
+		e10
+		e11
+		e12
+		e13
+		e16
+		e17
+		e20
+		e21
+		e24
+	}
+	gp_B_3 -> e0 [style=invis]
+	gp_M_0 -> gp_B_1 [style=invis]
+	gp_B_1 -> gp_M_2 [style=invis]
+	gp_M_2 -> gp_B_3 [style=invis]
+}

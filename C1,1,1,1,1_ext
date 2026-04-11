@@ -1,0 +1,88 @@
+digraph "Extended PBP Tree" {
+	graph [dpi=150 newrank=true nodesep=0.3 rankdir=TB ranksep=0.8]
+	node [fontname="Courier New" fontsize=8 shape=box]
+	e0 [label="(2,2) ε=0\ldd|\l" fillcolor="#e6f3ff" labeljust=l style=filled]
+	e1 [label="(2,2) ε=0\ldd|\l" fillcolor="#fff3e6" labeljust=l style=filled]
+	e2 [label="(1,1) ε=0\ld|\l" fillcolor="#e6f3ff" labeljust=l style=filled]
+	e3 [label="(1,1) ε=0\ld|\l" fillcolor="#fff3e6" labeljust=l style=filled]
+	e4 [label="(0,0) ε=0\l\l" fillcolor="#e6f3ff" labeljust=l style=filled]
+	e5 [label="(2,2) ε=0\lcd|\l" fillcolor="#e6f3ff" labeljust=l style=filled]
+	e6 [label="(2,2) ε=1\lcd|\l" fillcolor="#fff3e6" labeljust=l style=filled]
+	e7 [label="(2,2) ε=0\lrd|\l" fillcolor="#e6f3ff" labeljust=l style=filled]
+	e8 [label="(3,1) ε=1\lrd|\l" fillcolor="#fff3e6" labeljust=l style=filled]
+	e9 [label="(2,2) ε=0\lcc|\l" fillcolor="#e6f3ff" labeljust=l style=filled]
+	e10 [label="(2,2) ε=1\lcc|\l" fillcolor="#fff3e6" labeljust=l style=filled]
+	e11 [label="(1,1) ε=0\lc|\l" fillcolor="#e6f3ff" labeljust=l style=filled]
+	e12 [label="(1,1) ε=1\lc|\l" fillcolor="#fff3e6" labeljust=l style=filled]
+	e13 [label="(2,2) ε=0\lrc|\l" fillcolor="#e6f3ff" labeljust=l style=filled]
+	e14 [label="(3,1) ε=1\lrc|\l" fillcolor="#fff3e6" labeljust=l style=filled]
+	e15 [label="(1,1) ε=0\lr|\l" fillcolor="#e6f3ff" labeljust=l style=filled]
+	e16 [label="(2,0) ε=1\lr|\l" fillcolor="#fff3e6" labeljust=l style=filled]
+	e1 -> e0 [color=blue]
+	e2 -> e1 [color=blue]
+	e3 -> e2 [color=blue]
+	e4 -> e3 [color=blue]
+	e6 -> e5 [color=blue]
+	e2 -> e6 [color=blue]
+	e8 -> e7 [color=blue]
+	e2 -> e8 [color=blue]
+	e10 -> e9 [color=blue]
+	e11 -> e10 [color=blue]
+	e12 -> e11 [color=blue]
+	e4 -> e12 [color=blue]
+	e14 -> e13 [color=blue]
+	e15 -> e14 [color=blue]
+	e16 -> e15 [color=blue]
+	e4 -> e16 [color=blue]
+	gp_C_0 [label="Sp(0)" fontcolor="#333333" fontname=Helvetica fontsize=11 group=gp_labels shape=plaintext]
+	{
+		rank=same
+		gp_C_0
+		e4
+	}
+	gp_C_0 -> e4 [style=invis]
+	gp_C_1 [label="Sp(2)" fontcolor="#333333" fontname=Helvetica fontsize=11 group=gp_labels shape=plaintext]
+	{
+		rank=same
+		gp_C_1
+		e2
+		e11
+		e15
+	}
+	gp_C_1 -> e2 [style=invis]
+	gp_D_1 [label="SO(2)" fontcolor="#333333" fontname=Helvetica fontsize=11 group=gp_labels shape=plaintext]
+	{
+		rank=same
+		gp_D_1
+		e3
+		e12
+		e16
+	}
+	gp_D_1 -> e3 [style=invis]
+	gp_C_2 [label="Sp(4)" fontcolor="#333333" fontname=Helvetica fontsize=11 group=gp_labels shape=plaintext]
+	{
+		rank=same
+		gp_C_2
+		e0
+		e5
+		e7
+		e9
+		e13
+	}
+	gp_C_2 -> e0 [style=invis]
+	gp_D_2 [label="SO(4)" fontcolor="#333333" fontname=Helvetica fontsize=11 group=gp_labels shape=plaintext]
+	{
+		rank=same
+		gp_D_2
+		e1
+		e6
+		e8
+		e10
+		e14
+	}
+	gp_D_2 -> e1 [style=invis]
+	gp_C_0 -> gp_C_1 [style=invis]
+	gp_C_1 -> gp_D_1 [style=invis]
+	gp_D_1 -> gp_C_2 [style=invis]
+	gp_C_2 -> gp_D_2 [style=invis]
+}

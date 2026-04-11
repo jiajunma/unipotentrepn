@@ -1,0 +1,108 @@
+digraph "Combined Lift Tree" {
+	graph [compound=true dpi=150 newrank=true nodesep=0.3 rankdir=TB ranksep=1.5]
+	node [fontname="Courier New" fontsize=7 shape=box]
+	subgraph cluster_ls_0 {
+		color="#aaaaaa" fillcolor="#fff3e6" fontname="Courier New" fontsize=8 label="-\l-\l+\l+\l" labeljust=l style=filled
+		d0 [label="(2,2) ε=0\lc|\ld|\l" fillcolor=white fontsize=7 shape=box style=filled]
+	}
+	subgraph cluster_ls_1 {
+		color="#aaaaaa" fillcolor="#e6f3ff" fontname="Courier New" fontsize=8 label="(triv)\l" labeljust=l style=filled
+		d1 [label="(0,0) ε=0\l\l" fillcolor=white fontsize=7 shape=box style=filled]
+	}
+	subgraph cluster_ls_2 {
+		color="#aaaaaa" fillcolor="#fff3e6" fontname="Courier New" fontsize=8 label="-\l+\l+\l+\l" labeljust=l style=filled
+		d2 [label="(3,1) ε=0\lr|\ld|\l" fillcolor=white fontsize=7 shape=box style=filled]
+	}
+	subgraph cluster_ls_3 {
+		color="#aaaaaa" fillcolor="#fff3e6" fontname="Courier New" fontsize=8 label="-\l-\l-\l+\l" labeljust=l style=filled
+		d3 [label="(1,3) ε=0\ls|\ld|\l" fillcolor=white fontsize=7 shape=box style=filled]
+	}
+	subgraph cluster_ls_4 {
+		color="#aaaaaa" fillcolor="#fff3e6" fontname="Courier New" fontsize=8 label="=\l+\l+\l+\l" labeljust=l style=filled
+		d4 [label="(3,1) ε=1\lr|\lc|\l" fillcolor=white fontsize=7 shape=box style=filled]
+	}
+	subgraph cluster_ls_5 {
+		color="#aaaaaa" fillcolor="#fff3e6" fontname="Courier New" fontsize=8 label="=\l=\l=\l+\l" labeljust=l style=filled
+		d5 [label="(1,3) ε=1\ls|\lc|\l" fillcolor=white fontsize=7 shape=box style=filled]
+	}
+	subgraph cluster_ls_6 {
+		color="#aaaaaa" fillcolor="#fff3e6" fontname="Courier New" fontsize=8 label="+\l+\l+\l+\l" labeljust=l style=filled
+		d6 [label="(4,0) ε=1\lr|\lr|\l" fillcolor=white fontsize=7 shape=box style=filled]
+	}
+	subgraph cluster_ls_7 {
+		color="#aaaaaa" fillcolor="#fff3e6" fontname="Courier New" fontsize=8 label="=\l=\l+\l+\l" labeljust=l style=filled
+		d7 [label="(2,2) ε=1\ls|\lr|\l" fillcolor=white fontsize=7 shape=box style=filled]
+	}
+	subgraph cluster_ls_8 {
+		color="#aaaaaa" fillcolor="#fff3e6" fontname="Courier New" fontsize=8 label="=\l=\l=\l=\l" labeljust=l style=filled
+		d8 [label="(0,4) ε=1\ls|\ls|\l" fillcolor=white fontsize=7 shape=box style=filled]
+	}
+	g9 [label="=\l=\l*\l*\l" fillcolor="#f8f8f8" fontsize=7 labeljust=l style=filled]
+	g10 [label="-\l-\l*\l*\l" fillcolor="#f8f8f8" fontsize=7 labeljust=l style=filled]
+	g11 [label="=\l*\l*\l*\l" fillcolor="#f8f8f8" fontsize=7 labeljust=l style=filled]
+	g12 [label="-\l*\l*\l*\l" fillcolor="#f8f8f8" fontsize=7 labeljust=l style=filled]
+	g13 [label="=\l=\l=\l*\l" fillcolor="#f8f8f8" fontsize=7 labeljust=l style=filled]
+	g14 [label="-\l-\l-\l*\l" fillcolor="#f8f8f8" fontsize=7 labeljust=l style=filled]
+	g15 [label="*\l*\l*\l*\l" fillcolor="#f8f8f8" fontsize=7 labeljust=l style=filled]
+	g16 [label="-\l-\l-\l-\l" fillcolor="#f8f8f8" fontsize=7 labeljust=l style=filled]
+	d1 -> d0 [arrowsize=0.5 color="#888888" style=dashed]
+	d1 -> d2 [arrowsize=0.5 color="#888888" style=dashed]
+	d1 -> d3 [arrowsize=0.5 color="#888888" style=dashed]
+	d1 -> d4 [arrowsize=0.5 color="#888888" style=dashed]
+	d1 -> d5 [arrowsize=0.5 color="#888888" style=dashed]
+	d1 -> d6 [arrowsize=0.5 color="#888888" style=dashed]
+	d1 -> d7 [arrowsize=0.5 color="#888888" style=dashed]
+	d1 -> d8 [arrowsize=0.5 color="#888888" style=dashed]
+	d4 -> g12 [arrowsize=0.3 color=red constraint=false dir=both]
+	d4 -> d2 [arrowsize=0.3 color=green constraint=false dir=both]
+	d4 -> g11 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	d0 -> g9 [arrowsize=0.3 color=red constraint=false dir=both]
+	d0 -> d7 [arrowsize=0.3 color=green constraint=false dir=both]
+	d0 -> g10 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	d5 -> g14 [arrowsize=0.3 color=red constraint=false dir=both]
+	d5 -> d3 [arrowsize=0.3 color=green constraint=false dir=both]
+	d5 -> g13 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	g10 -> d7 [arrowsize=0.3 color=red constraint=false dir=both]
+	g10 -> g9 [arrowsize=0.3 color=green constraint=false dir=both]
+	d6 -> g15 [arrowsize=0.3 color=red constraint=false dir=both]
+	d6 -> g15 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	d8 -> g16 [arrowsize=0.3 color=red constraint=false dir=both]
+	d8 -> g16 [arrowsize=0.3 color=green constraint=false dir=both]
+	g14 -> g13 [arrowsize=0.3 color=green constraint=false dir=both]
+	g14 -> d3 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	g11 -> d2 [arrowsize=0.3 color=red constraint=false dir=both]
+	g11 -> g12 [arrowsize=0.3 color=green constraint=false dir=both]
+	d7 -> g9 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	g13 -> d3 [arrowsize=0.3 color=red constraint=false dir=both]
+	d2 -> g12 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	gp_C_0 [label="Sp(0)" fontcolor="#333333" fontname=Helvetica fontsize=11 group=gp_labels shape=plaintext]
+	{
+		rank=same
+		gp_C_0
+		d1
+	}
+	gp_C_0 -> d1 [style=invis]
+	gp_D_2 [label="SO(4)" fontcolor="#333333" fontname=Helvetica fontsize=11 group=gp_labels shape=plaintext]
+	{
+		rank=same
+		gp_D_2
+		d0
+		d2
+		d3
+		d4
+		d5
+		d6
+		d7
+		d8
+		g9
+		g10
+		g11
+		g12
+		g13
+		g14
+		g15
+		g16
+	}
+	gp_D_2 -> d0 [style=invis]
+	gp_C_0 -> gp_D_2 [style=invis]
+}

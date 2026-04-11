@@ -132,7 +132,7 @@ def lift_extdrc_B_M_trivial(drc, cL=None):
         if exttype == 'a':
             return (drcLL, drcRR)
         elif exttype == 'b':
-            if drcLL[0][-1] == 's':
+            if len(drcLL[0])>0 and  drcLL[0][-1] == 's':
                 drcLL = (drcLL[0][:-1]+'c', *drcLL[1:])
                 return (drcLL, drcRR)
             else:

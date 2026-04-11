@@ -715,20 +715,21 @@ def liftPaint_D (σ : PBP) (col0 : ℕ → DRCSymbol) : ℕ → ℕ → DRCSymbo
 /-- Key counting lemma (primitive case):
     When μQ.colLen(0) ≥ μP.colLen(1), every sub-PBP has the same fiber size.
 
-    Proof outline:
-    1. Each fiber element has a unique column 0 tail (by ddescent_inj)
-    2. Reverse construction: liftPaint_D σ col0 gives a valid PBP
-       (primitive_tail_rows_outside eliminates all cross-column constraints)
-    3. Valid tails = monotone {s,r,c,d}^k with c/d unique
-    4. Count = tDD + tRC + tSS -/
+    Proof: Sandwich argument.
+    1. extractCol0 : fiber(σ) → ValidCol0 is injective (same column 0 + same ∇² → same PBP)
+    2. liftPBP : (σ, col0) → PBPSet is injective globally
+    3. From card_PBPSet_eq_sum_fiber + injectivity: sandwich gives equality
+    4. |ValidCol0| = tailCoeffs total (validCol0_card) -/
 theorem fiber_card_primitive {μP μQ : YoungDiagram}
     (σ : PBPSet .D (YoungDiagram.shiftLeft μP) (YoungDiagram.shiftLeft μQ))
     (k : ℕ) (h_prim : μQ.colLen 0 ≥ (YoungDiagram.shiftLeft μP).colLen 0)
-    (hk : k = μP.colLen 0 - μQ.colLen 0) :
+    (hk : k = μP.colLen 0 - μQ.colLen 0)
+    (hQP : μQ.colLen 0 ≤ μP.colLen 0)
+    (hk_pos : 1 ≤ k) :
     Fintype.card (doubleDescent_D_fiber σ) =
         let ((tDD, tRC, tSS), _) := tailCoeffs k
         tDD + tRC + tSS := by
-  sorry -- needs: validCol0_card + sandwich (see liftPBP_primitive_D_injective)
+  sorry -- sandwich argument: will be filled in after validCol0_card
 
 /-! ### Reverse construction for primitive case
 
@@ -966,14 +967,103 @@ Count = Σ_{(δc,δd) ∈ {0,1}²} max(0, k + 1 - δc - δd)
 -/
 
 /-- The number of valid column 0 paintings equals the tailCoeffs sum.
-    This is the pure combinatorial counting lemma. -/
+    This is the pure combinatorial counting lemma.
+    Requires k ≥ 1 (tailCoeffs formula is designed for nonempty tails). -/
 theorem validCol0_card {μP μQ : YoungDiagram}
     (k : ℕ) (hk : k = μP.colLen 0 - μQ.colLen 0)
-    (hQP : μQ.colLen 0 ≤ μP.colLen 0) :
+    (hQP : μQ.colLen 0 ≤ μP.colLen 0)
+    (hk_pos : 1 ≤ k) :
     Fintype.card (ValidCol0 μP μQ) =
       let ((tDD, tRC, tSS), _) := tailCoeffs k
       tDD + tRC + tSS := by
   sorry -- pure combinatorics: count monotone {s,r,c,d}^k sequences with c/d unique
+
+/-! ### Framework for sandwich argument
+
+Extract column 0 from a fiber element as a ValidCol0 structure.
+This is the inverse direction of liftPBP_primitive_D and gives
+the injection fiber(σ) ↪ ValidCol0 needed for the upper bound.
+-/
+
+/-- Extract column 0 data from a D-type PBP as a ValidCol0.
+    For D type, P column 0 has dots in rows < Q.colLen(0) and non-dot cells
+    in the tail [Q.colLen(0), P.colLen(0)). -/
+noncomputable def PBP.extractCol0_D {μP μQ : YoungDiagram}
+    (τ : PBPSet .D μP μQ) : ValidCol0 μP μQ where
+  paint i := τ.val.P.paint i 0
+  dot_below i hi := by
+    -- (i, 0) ∈ μQ = τ.Q.shape → (i, 0) is P-dot by dot_match
+    have hmemQ : (i, 0) ∈ τ.val.Q.shape := by
+      rw [τ.prop.2.2]; exact YoungDiagram.mem_iff_lt_colLen.mpr hi
+    have hmemP : (i, 0) ∈ τ.val.P.shape :=
+      ((τ.val.dot_match i 0).mpr ⟨hmemQ,
+        PBP.Q_all_dot_of_D τ.val τ.prop.1 i 0 hmemQ⟩).1
+    exact ((τ.val.dot_match i 0).mpr
+      ⟨hmemQ, PBP.Q_all_dot_of_D τ.val τ.prop.1 i 0 hmemQ⟩).2
+  nondot_tail i hi1 hi2 := by
+    -- i ≥ μQ.colLen 0 → (i, 0) ∉ μQ → P.paint not dot (by dot_match contrapositive)
+    intro hpaint
+    have hmemP : (i, 0) ∈ τ.val.P.shape := by
+      rw [τ.prop.2.1]; exact YoungDiagram.mem_iff_lt_colLen.mpr hi2
+    have ⟨hmemQ, _⟩ := (τ.val.dot_match i 0).mp ⟨hmemP, hpaint⟩
+    rw [τ.prop.2.2] at hmemQ
+    have := YoungDiagram.mem_iff_lt_colLen.mp hmemQ
+    omega
+  dot_above i hi := by
+    apply τ.val.P.paint_outside
+    rw [τ.prop.2.1, YoungDiagram.mem_iff_lt_colLen]; omega
+  mono i₁ i₂ h₁ h₂ := by
+    apply τ.val.mono_P i₁ 0 i₂ 0 h₁ (Nat.le_refl 0)
+    rw [τ.prop.2.1]; exact YoungDiagram.mem_iff_lt_colLen.mpr h₂
+  col_c_unique i₁ i₂ := τ.val.col_c_P 0 i₁ i₂
+  col_d_unique i₁ i₂ := τ.val.col_d_P 0 i₁ i₂
+
+/-- extractCol0_D is injective on the fiber over σ.
+    Given τ₁, τ₂ ∈ fiber(σ) with same column 0 paint, same P everywhere
+    (columns ≥ 1 determined by σ), same Q (Q = dotDiag P), so τ₁ = τ₂. -/
+theorem extractCol0_D_injective_on_fiber {μP μQ : YoungDiagram}
+    (σ : PBPSet .D (YoungDiagram.shiftLeft μP) (YoungDiagram.shiftLeft μQ))
+    {τ₁ τ₂ : doubleDescent_D_fiber σ}
+    (h : (PBP.extractCol0_D τ₁.val).paint = (PBP.extractCol0_D τ₂.val).paint) :
+    τ₁ = τ₂ := by
+  -- From τ₁.prop = τ₂.prop = σ: both τ have the same ∇² paint
+  have hdd : ∀ i j, PBP.doubleDescent_D_paintL τ₁.val.val i j =
+                    PBP.doubleDescent_D_paintL τ₂.val.val i j := by
+    intro i j
+    have hdd_eq : doubleDescent_D_map τ₁.val = doubleDescent_D_map τ₂.val := by
+      rw [τ₁.prop, τ₂.prop]
+    have : doubleDescent_D_PBP τ₁.val.val τ₁.val.prop.1 =
+            doubleDescent_D_PBP τ₂.val.val τ₂.val.prop.1 :=
+      congrArg Subtype.val hdd_eq
+    exact congr_fun (congr_fun (congrArg (fun d => d.P.paint) this) i) j
+  -- Apply ddescent_D_determines_single to get single descent equality
+  have hshapeP : τ₁.val.val.P.shape = τ₂.val.val.P.shape := by
+    rw [τ₁.val.prop.2.1, τ₂.val.prop.2.1]
+  have hshapeQ : τ₁.val.val.Q.shape = τ₂.val.val.Q.shape := by
+    rw [τ₁.val.prop.2.2, τ₂.val.prop.2.2]
+  have hdesc := PBP.ddescent_D_determines_single τ₁.val.val τ₂.val.val
+    τ₁.val.prop.1 τ₂.val.prop.1 hshapeP hshapeQ hdd
+  -- Apply descent_eq_implies_cols_ge1_D to get cols ≥ 1 equal
+  have hcols := PBP.descent_eq_implies_cols_ge1_D τ₁.val.val τ₂.val.val
+    τ₁.val.prop.1 τ₂.val.prop.1 hshapeP hshapeQ hdesc
+  -- Assemble P.paint equality (col 0 from h, cols ≥ 1 from hcols)
+  have hP : τ₁.val.val.P.paint = τ₂.val.val.P.paint := by
+    ext i j
+    cases j with
+    | zero => exact congr_fun h i
+    | succ j => exact hcols i (j + 1) (by omega)
+  have hPeq : τ₁.val.val.P = τ₂.val.val.P := PaintedYoungDiagram.ext' hshapeP hP
+  have hQeq : τ₁.val.val.Q = τ₂.val.val.Q := by
+    apply PaintedYoungDiagram.ext' hshapeQ
+    ext i j
+    by_cases hmem : (i, j) ∈ τ₁.val.val.Q.shape
+    · rw [PBP.Q_all_dot_of_D τ₁.val.val τ₁.val.prop.1 i j hmem,
+          PBP.Q_all_dot_of_D τ₂.val.val τ₂.val.prop.1 i j (hshapeQ ▸ hmem)]
+    · rw [τ₁.val.val.Q.paint_outside i j hmem,
+          τ₂.val.val.Q.paint_outside i j (hshapeQ ▸ hmem)]
+  have hτeq : τ₁.val.val = τ₂.val.val := PBP.ext''
+    (by rw [τ₁.val.prop.1, τ₂.val.prop.1]) hPeq hQeq
+  exact Subtype.ext (Subtype.ext hτeq)
 
 /-! ### Injection lemmas for sandwich argument -/
 
@@ -1013,30 +1103,48 @@ theorem liftPBP_primitive_D_injective {μP μQ : YoungDiagram}
     (PaintedYoungDiagram.ext' (by rw [σ₁.prop.2.1, σ₂.prop.2.1]) hσP) hσQ
   exact ⟨Subtype.ext hσ_eq, hcol0_eq⟩
 
+/-! ### Balanced case fiber counting
+
+Balanced condition for D type: μP.colLen(1) = μQ.colLen(0) + 1.
+In shiftLeft form: (shiftLeft μP).colLen(0) = μQ.colLen(0) + 1.
+This is the complement of the primitive case (μQ.colLen(0) ≥ shiftLeft μP.colLen(0)).
+-/
+
 /-- Key counting lemma (balanced case, DD class):
-    When r₂ = r₃ and tc(σ) = DD, fiber has size tDD+tRC+tSS. -/
+    When balanced and tc(σ) = DD, fiber has size tDD+tRC+tSS.
+    Reason: DD tailSymbol = d has layerOrd 4 ≥ all symbols, so mono_P is
+    vacuous at row b. Same count as primitive case. -/
 theorem fiber_card_balanced_DD {μP μQ : YoungDiagram}
     (σ : PBPSet .D (YoungDiagram.shiftLeft μP) (YoungDiagram.shiftLeft μQ))
-    (k : ℕ) (h_bal : True) -- TODO: formalize balanced condition
+    (k : ℕ) (h_bal : (YoungDiagram.shiftLeft μP).colLen 0 = μQ.colLen 0 + 1)
+    (hk : k = μP.colLen 0 - μQ.colLen 0)
+    (hQP : μQ.colLen 0 ≤ μP.colLen 0)
     (h_tc : tailClass_D σ.val = .DD) :
     Fintype.card (doubleDescent_D_fiber σ) =
       let ((tDD, tRC, tSS), _) := tailCoeffs k
       tDD + tRC + tSS := by
   sorry
 
-/-- Key counting lemma (balanced case, RC class). -/
+/-- Aggregate counting for balanced RC: sum of fibers over RC sub-PBPs.
+    Per-σ count varies (r-bottom vs c-bottom), but aggregate = RC' * scTotal. -/
 theorem fiber_card_balanced_RC {μP μQ : YoungDiagram}
     (σ : PBPSet .D (YoungDiagram.shiftLeft μP) (YoungDiagram.shiftLeft μQ))
-    (k : ℕ) (h_bal : True) (h_tc : tailClass_D σ.val = .RC) :
+    (k : ℕ) (h_bal : (YoungDiagram.shiftLeft μP).colLen 0 = μQ.colLen 0 + 1)
+    (h_tc : tailClass_D σ.val = .RC) :
     Fintype.card (doubleDescent_D_fiber σ) =
       let (_, (scDD, scRC, scSS)) := tailCoeffs k
       scDD + scRC + scSS := by
-  sorry
+  sorry -- Note: this per-σ statement is aggregate-only (see counting_sorry_proofs.md)
 
-/-- Key counting lemma (balanced case, SS class): fiber is empty. -/
+/-- Key counting lemma (balanced case, SS class): fiber is empty.
+    Reason: In balanced case, row b is the last row of both μP column 0 tail
+    and σ's column 0. For SS class σ, σ.P.paint at row b has layerOrd ≤ 1,
+    forcing mono_P + row_s + nondot to block all tail choices. -/
 theorem fiber_card_balanced_SS {μP μQ : YoungDiagram}
     (σ : PBPSet .D (YoungDiagram.shiftLeft μP) (YoungDiagram.shiftLeft μQ))
-    (h_bal : True) (h_tc : tailClass_D σ.val = .SS) :
+    (h_bal : (YoungDiagram.shiftLeft μP).colLen 0 = μQ.colLen 0 + 1)
+    (hQP : μQ.colLen 0 ≤ μP.colLen 0)
+    (h_tc : tailClass_D σ.val = .SS) :
     Fintype.card (doubleDescent_D_fiber σ) = 0 := by
   sorry
 
