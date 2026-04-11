@@ -1966,23 +1966,35 @@ theorem fiber_card_balanced_DD {μP μQ : YoungDiagram}
     exact Fintype.card_le_of_injective f hinj
   omega
 
-/-- NOTE: This per-σ statement is INCORRECT for balanced RC case.
-    The per-σ fiber varies: r-bottom gives fiber = validTailCount(k-1),
-    c-bottom gives fiber = validTailCount(k-1) + 4 (for k ≥ 3).
-    The correct formulation is AGGREGATE: sum over all RC σ equals
-    |PBPSet_RC_sub| × scTotal. See counting_sorry_proofs.md.
+/-- **Balanced RC case — aggregate form.**
 
-    This theorem is kept as-is for framework completeness, but should be
-    replaced with the aggregate version when proving the main counting theorem.
--/
-theorem fiber_card_balanced_RC {μP μQ : YoungDiagram}
-    (σ : PBPSet .D (YoungDiagram.shiftLeft μP) (YoungDiagram.shiftLeft μQ))
+    The per-σ fiber size in balanced RC case is NOT constant: it depends on
+    whether σ's tail bottom is .r or .c. Concrete counts (verified numerically
+    for k = 2): r-bottom σ has fiber size 4, c-bottom σ has fiber size 8.
+    The average is 6 = scTotal, and `RCp · scTotal` works in Counting.lean's
+    formula because `#r = #c` in the RC class (an equal count established by
+    a symmetry argument, not yet formalized).
+
+    The correct per-σ statements are `fiber_card_balanced_R` and `fiber_card_balanced_C`
+    (to be added with a 4-class TailClass refinement). For now, we state the
+    AGGREGATE sum as the top-level recursive theorem would use it:
+
+      `Σ_{σ ∈ RC class} |fiber(σ)| = #RC class · scTotal`
+
+    where `scTotal = scDD + scRC + scSS`. This requires the lemma `#r = #c`. -/
+theorem fiber_card_balanced_RC_aggregate {μP μQ : YoungDiagram}
     (k : ℕ) (h_bal : (YoungDiagram.shiftLeft μP).colLen 0 = μQ.colLen 0 + 1)
-    (h_tc : tailClass_D σ.val = .RC) :
-    Fintype.card (doubleDescent_D_fiber σ) =
+    (hk : k = μP.colLen 0 - μQ.colLen 0)
+    (hk_pos : 1 ≤ k) :
+    (Finset.univ.filter (fun σ : PBPSet .D (YoungDiagram.shiftLeft μP)
+                                            (YoungDiagram.shiftLeft μQ) =>
+      tailClass_D σ.val = .RC)).sum (fun σ =>
+        Fintype.card (doubleDescent_D_fiber σ)) =
       let (_, (scDD, scRC, scSS)) := tailCoeffs k
-      scDD + scRC + scSS := by
-  sorry
+      (Finset.univ.filter (fun σ : PBPSet .D (YoungDiagram.shiftLeft μP)
+                                              (YoungDiagram.shiftLeft μQ) =>
+        tailClass_D σ.val = .RC)).card * (scDD + scRC + scSS) := by
+  sorry -- TODO: requires #r = #c lemma + per-r-σ / per-c-σ fiber computations
 
 /-- Key counting lemma (balanced case, SS class): fiber is empty.
 
@@ -2155,3 +2167,30 @@ theorem card_PBPSet_eq_sum_tc (μP μQ : YoungDiagram) :
         | Sum.inr (Sum.inr ⟨τ, h⟩) => by
             simp only; rw [dif_neg (by rw [h]; decide), dif_neg (by rw [h]; decide)] }
   rw [Fintype.card_congr e, Fintype.card_sum, Fintype.card_sum, Nat.add_assoc]
+
+/-! ### Top-level recursive theorems (Prop 10.11 D type, primitive case) -/
+
+/-- **Primitive recursive step**: in the primitive case, the D-type count
+    multiplies by `4k = tDD + tRC + tSS` at each descent step.
+
+    This is the core of Prop 10.11(a): since every fiber has size `4k` (regardless
+    of tailClass), the total count is `|sub-PBPSet| · 4k`. -/
+theorem card_PBPSet_D_primitive_step {μP μQ : YoungDiagram}
+    (k : ℕ) (h_prim : μQ.colLen 0 ≥ (YoungDiagram.shiftLeft μP).colLen 0)
+    (hk : k = μP.colLen 0 - μQ.colLen 0)
+    (hQP : μQ.colLen 0 ≤ μP.colLen 0)
+    (hk_pos : 1 ≤ k) :
+    Fintype.card (PBPSet .D μP μQ) =
+      Fintype.card (PBPSet .D (YoungDiagram.shiftLeft μP) (YoungDiagram.shiftLeft μQ)) *
+        ((tailCoeffs k).1.1 + (tailCoeffs k).1.2.1 + (tailCoeffs k).1.2.2) := by
+  rw [card_PBPSet_eq_sum_fiber]
+  -- Rewrite each fiber size to 4k using fiber_card_primitive (independent of σ)
+  have hfiber : ∀ σ : PBPSet .D (YoungDiagram.shiftLeft μP) (YoungDiagram.shiftLeft μQ),
+      Fintype.card (doubleDescent_D_fiber σ) =
+      (tailCoeffs k).1.1 + (tailCoeffs k).1.2.1 + (tailCoeffs k).1.2.2 := by
+    intro σ
+    have h := fiber_card_primitive σ k h_prim hk hQP hk_pos
+    exact h
+  rw [Finset.sum_congr rfl (fun σ _ => hfiber σ)]
+  rw [Finset.sum_const, Finset.card_univ]
+  rfl
