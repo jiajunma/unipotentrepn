@@ -783,54 +783,52 @@ noncomputable def liftPBP_primitive_D {μP μQ : YoungDiagram}
     (h_prim : μQ.colLen 0 ≥ (YoungDiagram.shiftLeft μP).colLen 0)
     (hQP : μQ.colLen 0 ≤ μP.colLen 0) :
     PBPSet .D μP μQ := by
+  -- Define P and Q as named PYDs to avoid anonymous structure issues
+  have hpo : ∀ i j, (i, j) ∉ μP → liftPaint_D σ.val col0.paint i j = .dot := by
+    intro i j hmem; cases j with
+    | zero => exact col0.dot_above i (by rw [YoungDiagram.mem_iff_lt_colLen] at hmem; omega)
+    | succ j => exact σ.val.P.paint_outside i j (by
+        rw [σ.prop.2.1, YoungDiagram.mem_shiftLeft]; exact hmem)
+  have h_prim' : μP.colLen 1 ≤ μQ.colLen 0 := by
+    rw [YoungDiagram.colLen_shiftLeft] at h_prim; exact h_prim
   refine ⟨⟨.D,
-    ⟨μP, liftPaint_D σ.val col0.paint, ?paint_outside_P⟩,
+    ⟨μP, liftPaint_D σ.val col0.paint, hpo⟩,
     ⟨μQ, fun _ _ => .dot, fun _ _ _ => rfl⟩,
     ?sym_P, ?sym_Q, ?dot_match, ?mono_P, ?mono_Q,
     ?row_s, ?row_r, ?col_c_P, ?col_c_Q, ?col_d_P, ?col_d_Q⟩,
     rfl, rfl, rfl⟩
-  case paint_outside_P =>
-    intro i j hmem
-    cases j with
-    | zero => exact col0.dot_above i (by rw [YoungDiagram.mem_iff_lt_colLen] at hmem; omega)
-    | succ j => exact σ.val.P.paint_outside i j (by
-        rw [σ.prop.2.1, YoungDiagram.mem_shiftLeft]; exact hmem)
-  case sym_P => intro _ _ _; simp [DRCSymbol.allowed]
+  case sym_P => intro _ _ _; trivial  -- D/L allows all
   case sym_Q => intro _ _ _; simp [DRCSymbol.allowed]
   case dot_match =>
-    show ∀ i j, ((i, j) ∈ μP ∧ liftPaint_D σ.val col0.paint i j = .dot) ↔
-                ((i, j) ∈ μQ ∧ (fun _ _ => DRCSymbol.dot) i j = .dot)
-    intro i j; simp only [and_true]; constructor
+    intro i j; constructor
     · intro ⟨hmem, hpaint⟩
       cases j with
       | zero =>
         simp only [liftPaint_D] at hpaint
-        exact YoungDiagram.mem_iff_lt_colLen.mpr (by
+        exact ⟨YoungDiagram.mem_iff_lt_colLen.mpr (by
           by_contra h; push_neg at h
-          exact col0.nondot_tail i h (YoungDiagram.mem_iff_lt_colLen.mp hmem) hpaint)
+          exact col0.nondot_tail i h (YoungDiagram.mem_iff_lt_colLen.mp hmem) hpaint), rfl⟩
       | succ j =>
         simp only [liftPaint_D] at hpaint
         have hmemσ : (i, j) ∈ σ.val.P.shape := by
           rw [σ.prop.2.1]; exact YoungDiagram.mem_shiftLeft.mpr hmem
         have ⟨hq, _⟩ := (σ.val.dot_match i j).mp ⟨hmemσ, hpaint⟩
-        rw [σ.prop.2.2, YoungDiagram.mem_shiftLeft] at hq
-        exact hq
-    · intro hmem
+        rw [σ.prop.2.2, YoungDiagram.mem_shiftLeft] at hq; exact ⟨hq, rfl⟩
+    · intro ⟨hmem, _⟩
       cases j with
       | zero =>
         have hq := YoungDiagram.mem_iff_lt_colLen.mp hmem
-        exact ⟨YoungDiagram.mem_iff_lt_colLen.mpr (by omega), by
+        exact ⟨YoungDiagram.mem_iff_lt_colLen.mpr (Nat.lt_of_lt_of_le hq hQP), by
           simp only [liftPaint_D]; exact col0.dot_below i hq⟩
       | succ j =>
         have hq : (i, j) ∈ σ.val.Q.shape := by
           rw [σ.prop.2.2]; exact YoungDiagram.mem_shiftLeft.mpr hmem
         have ⟨hp, hpaint⟩ := (σ.val.dot_match i j).mpr
           ⟨hq, PBP.Q_all_dot_of_D σ.val σ.prop.1 i j hq⟩
-        exact ⟨by rw [σ.prop.2.1, YoungDiagram.mem_shiftLeft] at hp; exact hp,
-               by simp only [liftPaint_D]; exact hpaint⟩
+        rw [σ.prop.2.1, YoungDiagram.mem_shiftLeft] at hp
+        exact ⟨hp, by simp only [liftPaint_D]; exact hpaint⟩
   case mono_P =>
     intro i₁ j₁ i₂ j₂ hi hj hmem
-    dsimp only at hmem ⊢
     cases j₁ with
     | zero =>
       cases j₂ with
@@ -838,13 +836,9 @@ noncomputable def liftPBP_primitive_D {μP μQ : YoungDiagram}
       | succ j₂ =>
         by_cases h : i₁ < μQ.colLen 0
         · simp only [liftPaint_D]; rw [col0.dot_below i₁ h]; simp [DRCSymbol.layerOrd]
-        · push_neg at h
-          exfalso
+        · push_neg at h; exfalso
           have hmem' : i₂ < μP.colLen (j₂ + 1) := YoungDiagram.mem_iff_lt_colLen.mp hmem
-          have hcol : μP.colLen (j₂ + 1) ≤ μP.colLen 1 :=
-            YoungDiagram.colLen_anti μP 1 (j₂ + 1) (by omega)
-          have h_prim' : μP.colLen 1 ≤ μQ.colLen 0 := by
-            rw [YoungDiagram.colLen_shiftLeft] at h_prim; exact h_prim
+          have hcol := YoungDiagram.colLen_anti μP 1 (j₂ + 1) (by omega)
           omega
     | succ j₁ =>
       cases j₂ with
@@ -854,8 +848,97 @@ noncomputable def liftPBP_primitive_D {μP μQ : YoungDiagram}
         exact σ.val.mono_P i₁ j₁ i₂ j₂ hi (by omega) (by
           rw [σ.prop.2.1]; exact YoungDiagram.mem_shiftLeft.mpr hmem)
   case mono_Q => intro _ _ _ _ _ _ _; simp [DRCSymbol.layerOrd]
-  case row_s => exact sorry -- primitive_tail_rows_outside: tail rows have dot at cols ≥ 1
-  case row_r => exact sorry -- same argument as row_s
+  case row_s =>
+    intro i s₁ s₂ j₁ j₂ h₁ h₂
+    simp only [paintBySide] at h₁ h₂
+    cases s₁ <;> cases s₂ <;> simp only at h₁ h₂
+    · -- Both L
+      cases j₁ with
+      | zero =>
+        cases j₂ with
+        | zero => simp only [liftPaint_D] at h₁ h₂; exact ⟨rfl, rfl⟩
+        | succ j₂ =>
+          simp only [liftPaint_D] at h₁ h₂
+          have hi : μQ.colLen 0 ≤ i := by
+            by_contra hh; push_neg at hh; rw [col0.dot_below i hh] at h₁; exact absurd h₁ (by decide)
+          -- σ.P at tail rows is outside shape → dot
+          have hdot_σ : ∀ k, σ.val.P.paint i k = .dot := fun k => by
+            apply σ.val.P.paint_outside
+            rw [σ.prop.2.1, YoungDiagram.mem_iff_lt_colLen]; push_neg
+            calc (YoungDiagram.shiftLeft μP).colLen k
+                ≤ (YoungDiagram.shiftLeft μP).colLen 0 := YoungDiagram.colLen_anti _ 0 k (Nat.zero_le _)
+              _ ≤ μQ.colLen 0 := h_prim
+              _ ≤ i := hi
+          rw [show σ.val.P.paint i _ = .dot from hdot_σ _] at h₂; exact absurd h₂ (by decide)
+      | succ j₁ =>
+        cases j₂ with
+        | zero =>
+          simp only [liftPaint_D] at h₁ h₂
+          have hi : μQ.colLen 0 ≤ i := by
+            by_contra hh; push_neg at hh; rw [col0.dot_below i hh] at h₂; exact absurd h₂ (by decide)
+          -- σ.P at tail rows is outside shape → dot
+          have hdot_σ : ∀ k, σ.val.P.paint i k = .dot := fun k => by
+            apply σ.val.P.paint_outside
+            rw [σ.prop.2.1, YoungDiagram.mem_iff_lt_colLen]; push_neg
+            calc (YoungDiagram.shiftLeft μP).colLen k
+                ≤ (YoungDiagram.shiftLeft μP).colLen 0 := YoungDiagram.colLen_anti _ 0 k (Nat.zero_le _)
+              _ ≤ μQ.colLen 0 := h_prim
+              _ ≤ i := hi
+          rw [show σ.val.P.paint i _ = .dot from hdot_σ _] at h₁; exact absurd h₁ (by decide)
+        | succ j₂ =>
+          simp only [liftPaint_D] at h₁ h₂
+          have := σ.val.row_s i .L .L j₁ j₂
+            (show paintBySide σ.val.P σ.val.Q .L i j₁ = .s by simp [paintBySide]; exact h₁)
+            (show paintBySide σ.val.P σ.val.Q .L i j₂ = .s by simp [paintBySide]; exact h₂)
+          exact ⟨rfl, by omega⟩
+    · exact absurd h₂ (by decide)
+    · exact absurd h₁ (by decide)
+    · exact absurd h₁ (by decide)
+  case row_r =>
+    intro i s₁ s₂ j₁ j₂ h₁ h₂
+    simp only [paintBySide] at h₁ h₂
+    cases s₁ <;> cases s₂ <;> simp only at h₁ h₂
+    · cases j₁ with
+      | zero =>
+        cases j₂ with
+        | zero => simp only [liftPaint_D] at h₁ h₂; exact ⟨rfl, rfl⟩
+        | succ j₂ =>
+          simp only [liftPaint_D] at h₁ h₂
+          have hi : μQ.colLen 0 ≤ i := by
+            by_contra hh; push_neg at hh; rw [col0.dot_below i hh] at h₁; exact absurd h₁ (by decide)
+          -- σ.P at tail rows is outside shape → dot
+          have hdot_σ : ∀ k, σ.val.P.paint i k = .dot := fun k => by
+            apply σ.val.P.paint_outside
+            rw [σ.prop.2.1, YoungDiagram.mem_iff_lt_colLen]; push_neg
+            calc (YoungDiagram.shiftLeft μP).colLen k
+                ≤ (YoungDiagram.shiftLeft μP).colLen 0 := YoungDiagram.colLen_anti _ 0 k (Nat.zero_le _)
+              _ ≤ μQ.colLen 0 := h_prim
+              _ ≤ i := hi
+          rw [show σ.val.P.paint i _ = .dot from hdot_σ _] at h₂; exact absurd h₂ (by decide)
+      | succ j₁ =>
+        cases j₂ with
+        | zero =>
+          simp only [liftPaint_D] at h₁ h₂
+          have hi : μQ.colLen 0 ≤ i := by
+            by_contra hh; push_neg at hh; rw [col0.dot_below i hh] at h₂; exact absurd h₂ (by decide)
+          -- σ.P at tail rows is outside shape → dot
+          have hdot_σ : ∀ k, σ.val.P.paint i k = .dot := fun k => by
+            apply σ.val.P.paint_outside
+            rw [σ.prop.2.1, YoungDiagram.mem_iff_lt_colLen]; push_neg
+            calc (YoungDiagram.shiftLeft μP).colLen k
+                ≤ (YoungDiagram.shiftLeft μP).colLen 0 := YoungDiagram.colLen_anti _ 0 k (Nat.zero_le _)
+              _ ≤ μQ.colLen 0 := h_prim
+              _ ≤ i := hi
+          rw [show σ.val.P.paint i _ = .dot from hdot_σ _] at h₁; exact absurd h₁ (by decide)
+        | succ j₂ =>
+          simp only [liftPaint_D] at h₁ h₂
+          have := σ.val.row_r i .L .L j₁ j₂
+            (show paintBySide σ.val.P σ.val.Q .L i j₁ = .r by simp [paintBySide]; exact h₁)
+            (show paintBySide σ.val.P σ.val.Q .L i j₂ = .r by simp [paintBySide]; exact h₂)
+          exact ⟨rfl, by omega⟩
+    · exact absurd h₂ (by decide)
+    · exact absurd h₁ (by decide)
+    · exact absurd h₁ (by decide)
   case col_c_P =>
     intro j i₁ i₂ h₁ h₂
     simp only [liftPaint_D] at h₁ h₂
