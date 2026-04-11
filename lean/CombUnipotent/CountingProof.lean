@@ -955,6 +955,66 @@ private theorem tailCoeffs_total (k : ℕ) (hk : 1 ≤ k) :
   · omega
   · omega
 
+/-! ### Counting via Sum of Fin's
+
+The cleanest approach to computing |ValidCol0| = 4k: build an Equiv with a
+Sum of Fin types where each component corresponds to a (δc, δd) case:
+- (F, F): α ∈ Fin (k+1), count = k+1
+- (T, F): α ∈ Fin k, count = k
+- (F, T): α ∈ Fin k, count = k
+- (T, T): α ∈ Fin (k-1), count = k-1 (max 0 if k < 2)
+
+Total = (k+1) + k + k + (k-1) = 4k for k ≥ 1.
+-/
+
+/-- Canonical tail parameter type: Sum of Fin's for the 4 (δc, δd) cases. -/
+abbrev TailParam (k : ℕ) : Type :=
+  Fin (k + 1) ⊕ Fin k ⊕ Fin k ⊕ Fin (k - 1)
+
+/-- TailParam k has cardinality 4k for k ≥ 1. -/
+theorem TailParam_card (k : ℕ) (hk : 1 ≤ k) :
+    Fintype.card (TailParam k) = 4 * k := by
+  simp only [TailParam, Fintype.card_sum, Fintype.card_fin]
+  omega
+
+/-! Canonical form helpers for validCol0_card.
+
+    Each ValidCol0 has a canonical form s^α r^β c^δc d^δd determined by (α, δc, δd).
+    We construct canonicalValidCol0 : (α, δc, δd) → ValidCol0 and show it's a bijection. -/
+
+/-- Construct a ValidCol0 from canonical parameters (α, δc, δd).
+    Paint is: dot for rows [0, b), then s for α rows, r for β = k-α-δc-δd rows,
+    then optional c and optional d, finally dot for rows ≥ c. -/
+noncomputable def canonicalValidCol0 (μP μQ : YoungDiagram)
+    (hQP : μQ.colLen 0 ≤ μP.colLen 0)
+    (α : ℕ) (δc δd : Bool)
+    (h_sum : α + (if δc then 1 else 0) + (if δd then 1 else 0) ≤ μP.colLen 0 - μQ.colLen 0) :
+    ValidCol0 μP μQ := by
+  -- Defer construction: we use a placeholder for now
+  -- The canonical form is uniquely determined, but the detailed verification
+  -- of all 6 ValidCol0 fields is lengthy
+  sorry
+
+/-- The forward map: given a ValidCol0, extract (α, δc, δd).
+    α = number of s's in the tail.
+    δc = ∃ i, paint i = c. δd = ∃ i, paint i = d. -/
+noncomputable def ValidCol0.toParams {μP μQ : YoungDiagram} (v : ValidCol0 μP μQ) :
+    ℕ × Bool × Bool :=
+  let b := μQ.colLen 0
+  let c := μP.colLen 0
+  ((Finset.range c).filter (fun i => b ≤ i ∧ v.paint i = .s) |>.card,
+   decide (∃ i, v.paint i = .c),
+   decide (∃ i, v.paint i = .d))
+
+/-- Build the validCol0_card Equiv (sketched).
+    Forward: v ↦ toParams v (split by δc, δd into Sum components)
+    Backward: canonicalValidCol0 (with case split on Sum) -/
+noncomputable def validCol0_equiv (μP μQ : YoungDiagram)
+    (k : ℕ) (hk : k = μP.colLen 0 - μQ.colLen 0)
+    (hQP : μQ.colLen 0 ≤ μP.colLen 0) (hk_pos : 1 ≤ k) :
+    ValidCol0 μP μQ ≃ TailParam k := by
+  sorry
+
 /-- The number of valid column 0 paintings equals the tailCoeffs sum.
     We first reduce to showing |ValidCol0| = 4k, then equate with tailCoeffs sum.
 
@@ -977,8 +1037,9 @@ theorem validCol0_card {μP μQ : YoungDiagram}
     (tailCoeffs k).1.1 + (tailCoeffs k).1.2.1 + (tailCoeffs k).1.2.2
   rw [tailCoeffs_total k hk_pos]
   -- Goal: Fintype.card (ValidCol0 μP μQ) = 4 * k
-  -- Construct explicit bijection with tuples (α, δc, δd), α ∈ [0, k-δc-δd]
-  sorry
+  -- Use the Equiv with TailParam k, then TailParam_card
+  rw [Fintype.card_congr (validCol0_equiv μP μQ k hk hQP hk_pos)]
+  exact TailParam_card k hk_pos
 
 /-! ### Framework for sandwich argument
 
