@@ -913,3 +913,125 @@ theorem C_ValidCol0_card {μP μQ : YoungDiagram}
     omega
   rw [h_total, h_d] at hsplit
   omega
+
+/-! ## Fiber card for R and C cases -/
+
+/-- Helper: for τ ∈ fiber σ with σ.P.paint b 0 = .r, τ.P.paint b 1 = .r. -/
+lemma fiber_paint_b1_of_R {μP μQ : YoungDiagram}
+    {σ : PBPSet .D (YoungDiagram.shiftLeft μP) (YoungDiagram.shiftLeft μQ)}
+    (τ : doubleDescent_D_fiber σ)
+    (h_r : σ.val.P.paint (μQ.colLen 0) 0 = DRCSymbol.r) :
+    τ.val.val.P.paint (μQ.colLen 0) 1 = DRCSymbol.r := by
+  -- From ∇²τ = σ, σ.val.P.paint b 0 = PBP.doubleDescent_D_paintL τ.val.val b 0
+  have hdd : σ.val = doubleDescent_D_PBP τ.val.val τ.val.prop.1 := by
+    have := τ.prop
+    unfold doubleDescent_D_map at this
+    exact (congr_arg Subtype.val this).symm
+  have h_eq : σ.val.P.paint (μQ.colLen 0) 0 =
+      PBP.doubleDescent_D_paintL τ.val.val (μQ.colLen 0) 0 := by
+    rw [hdd]; rfl
+  rw [h_r] at h_eq
+  -- Unfold the ∇² formula
+  simp only [PBP.doubleDescent_D_paintL] at h_eq
+  -- Analyze the if-then-else: branch is the last `else` (else we'd get .dot or .s)
+  by_cases hA : μQ.colLen 0 < τ.val.val.Q.shape.colLen (0 + 1)
+  · rw [if_pos hA] at h_eq; exact absurd h_eq (by decide)
+  · rw [if_neg hA] at h_eq
+    by_cases hB : μQ.colLen 0 < PBP.dotScolLen τ.val.val.P (0 + 1)
+    · rw [if_pos hB] at h_eq; exact absurd h_eq (by decide)
+    · rw [if_neg hB] at h_eq
+      exact h_eq.symm
+
+/-- For σ ∈ R_sub, every τ ∈ fiber σ has τ.P.paint b 0 = .s. -/
+lemma fiber_col0_of_R_forced_s {μP μQ : YoungDiagram}
+    {σ : PBPSet .D (YoungDiagram.shiftLeft μP) (YoungDiagram.shiftLeft μQ)}
+    (h_bal : (YoungDiagram.shiftLeft μP).colLen 0 = μQ.colLen 0 + 1)
+    (τ : doubleDescent_D_fiber σ)
+    (h_r : σ.val.P.paint (μQ.colLen 0) 0 = DRCSymbol.r) :
+    τ.val.val.P.paint (μQ.colLen 0) 0 = DRCSymbol.s := by
+  have h_b1 := fiber_paint_b1_of_R τ h_r
+  -- col0(b) = τ.P.paint b 0. From mono_P at (b, 0) ≤ (b, 1) with (b, 1) ∈ shape:
+  -- layer col0(b) ≤ layer .r = 2. So col0(b) ∈ {dot, s, r}.
+  -- nondot_tail: col0(b) ≠ .dot.
+  -- row_r at row b: (b, 1) has .r, can't have another .r at (b, 0). So col0(b) ≠ .r.
+  -- → col0(b) = .s.
+  have hbal' : μP.colLen 1 = μQ.colLen 0 + 1 := by
+    have := h_bal; rw [YoungDiagram.colLen_shiftLeft] at this; exact this
+  have hμP_gt : μQ.colLen 0 < μP.colLen 0 := by
+    have h01 : μP.colLen 1 ≤ μP.colLen 0 := μP.colLen_anti 0 1 (by omega)
+    omega
+  have hμP_ge_2 : μQ.colLen 0 + 1 < μP.colLen 0 + 1 := by omega
+  have hmem_b1 : (μQ.colLen 0, 1) ∈ τ.val.val.P.shape := by
+    rw [τ.val.prop.2.1, YoungDiagram.mem_iff_lt_colLen]; omega
+  have hmono := τ.val.val.mono_P (μQ.colLen 0) 0 (μQ.colLen 0) 1 (le_refl _) (by omega) hmem_b1
+  rw [h_b1] at hmono
+  simp only [DRCSymbol.layerOrd] at hmono
+  -- col0(b).layerOrd ≤ 2
+  have hmem_b0 : (μQ.colLen 0, 0) ∈ τ.val.val.P.shape := by
+    rw [τ.val.prop.2.1, YoungDiagram.mem_iff_lt_colLen]; omega
+  have hnotQ : (μQ.colLen 0, 0) ∉ τ.val.val.Q.shape := by
+    intro hmem
+    rw [τ.val.prop.2.2, YoungDiagram.mem_iff_lt_colLen] at hmem
+    omega
+  have hne_dot : τ.val.val.P.paint (μQ.colLen 0) 0 ≠ DRCSymbol.dot := by
+    intro hd
+    exact hnotQ ((τ.val.val.dot_match _ _).mp ⟨hmem_b0, hd⟩).1
+  have hne_r : τ.val.val.P.paint (μQ.colLen 0) 0 ≠ DRCSymbol.r := by
+    intro hr
+    have := τ.val.val.row_r (μQ.colLen 0) .L .L 0 1
+      (by simp [paintBySide]; exact hr)
+      (by simp [paintBySide]; exact h_b1)
+    exact absurd this.2 (by decide)
+  -- Case on paint
+  cases hp : τ.val.val.P.paint (μQ.colLen 0) 0
+  · exact absurd hp hne_dot
+  · rfl
+  · exact absurd hp hne_r
+  · rw [hp] at hmono; simp only [DRCSymbol.layerOrd] at hmono; omega
+  · rw [hp] at hmono; simp only [DRCSymbol.layerOrd] at hmono; omega
+
+/-- For σ ∈ R_sub, the fiber over σ has cardinality |TSeq(k-1)|. -/
+theorem fiber_card_balanced_R {μP μQ : YoungDiagram}
+    (σ : PBPSet .D (YoungDiagram.shiftLeft μP) (YoungDiagram.shiftLeft μQ))
+    (k : ℕ) (h_bal : (YoungDiagram.shiftLeft μP).colLen 0 = μQ.colLen 0 + 1)
+    (hk : k = μP.colLen 0 - μQ.colLen 0)
+    (hQP : μQ.colLen 0 ≤ μP.colLen 0) (hk_pos : 1 ≤ k)
+    (h_r : σ.val.P.paint (μQ.colLen 0) 0 = DRCSymbol.r) :
+    Fintype.card (doubleDescent_D_fiber σ) = Fintype.card (TSeq (k - 1)) := by
+  rw [← R_ValidCol0_card k hk hQP hk_pos]
+  have h_cond := liftCondition_RC_of_R_sub σ h_bal h_r
+  -- Upper bound: fiber ↪ R_ValidCol0 via extractCol0_D
+  have h_le :
+      Fintype.card (doubleDescent_D_fiber σ) ≤
+      Fintype.card {v : ValidCol0 μP μQ // v.paint (μQ.colLen 0) = DRCSymbol.s} := by
+    apply Fintype.card_le_of_injective
+      (fun τ => ⟨PBP.extractCol0_D τ.val,
+        fiber_col0_of_R_forced_s h_bal τ h_r⟩)
+    intro τ₁ τ₂ h
+    have h_paint : (PBP.extractCol0_D τ₁.val).paint = (PBP.extractCol0_D τ₂.val).paint :=
+      congr_arg (·.val.paint) h
+    exact extractCol0_D_injective_on_fiber σ h_paint
+  -- Lower bound: R_ValidCol0 ↪ fiber via liftPBP_RC_D
+  have h_ge :
+      Fintype.card {v : ValidCol0 μP μQ // v.paint (μQ.colLen 0) = DRCSymbol.s} ≤
+      Fintype.card (doubleDescent_D_fiber σ) := by
+    let f : {v : ValidCol0 μP μQ // v.paint (μQ.colLen 0) = DRCSymbol.s} →
+            doubleDescent_D_fiber σ :=
+      fun v =>
+        have h_compat : v.val.compat_with_RC σ := by
+          refine ⟨?_, ?_⟩
+          · rw [v.prop, h_r]; decide
+          · intro _; rw [v.prop]; decide
+        ⟨liftPBP_RC_D σ v.val h_cond h_compat h_bal hQP,
+         liftPBP_RC_D_round_trip σ v.val h_cond h_compat h_bal hQP⟩
+    have hinj : Function.Injective f := by
+      intro v₁ v₂ hv
+      apply Subtype.ext
+      -- Both sides are wrapped in Subtype of fiber; extract the val equality
+      have h_val : (f v₁).val = (f v₂).val := by rw [hv]
+      simp only [f] at h_val
+      -- liftPBP_RC_D v₁ = liftPBP_RC_D v₂; conclude v₁.val = v₂.val
+      have := (liftPBP_RC_D_injective h_bal hQP h_val).2
+      exact this
+    exact Fintype.card_le_of_injective f hinj
+  omega
