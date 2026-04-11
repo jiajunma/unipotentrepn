@@ -1185,16 +1185,28 @@ theorem fiber_card_balanced_SS {μP μQ : YoungDiagram}
     (σ : PBPSet .D (YoungDiagram.shiftLeft μP) (YoungDiagram.shiftLeft μQ))
     (h_bal : (YoungDiagram.shiftLeft μP).colLen 0 = μQ.colLen 0 + 1)
     (hQP : μQ.colLen 0 ≤ μP.colLen 0)
+    (hQP_lt : μQ.colLen 0 < μP.colLen 0)
     (h_tc : tailClass_D σ.val = .SS) :
     Fintype.card (doubleDescent_D_fiber σ) = 0 := by
-  -- Strategy: show the fiber is empty.
-  -- Key facts:
-  -- 1. In balanced case, σ.P.colLen 0 = μQ.colLen 0 + 1 (from h_bal)
-  -- 2. For SS class σ, σ.P.paint at row b (= μQ.colLen 0) has layerOrd ≤ 1
-  -- 3. Combined with nondot_tail, it must be .s
-  -- 4. For any τ in fiber, τ.P.paint b 1 = .s (via double descent)
-  -- 5. row_s + mono_P + nondot_tail → no valid τ.P.paint b 0
-  sorry -- see counting_sorry_proofs.md for detailed proof
+  -- Show fiber is empty via Fintype.card_eq_zero_iff
+  rw [Fintype.card_eq_zero_iff]
+  refine ⟨fun τ => ?_⟩
+  -- Extract key facts from h_tc: tailClass_D σ.val = .SS
+  -- This means tailLen_D σ.val = 0 OR tailSymbol_D σ.val ∈ {s, dot}
+  -- In balanced case, tailLen_D σ.val ≥ 1 (since σ.P.colLen 0 > σ.Q.colLen 0)
+  -- So tailSymbol_D σ.val ∈ {s, dot}
+  set b := μQ.colLen 0 with hb_def
+  -- σ.val.P.shape.colLen 0 = (shiftLeft μP).colLen 0 = b + 1 (from h_bal and σ.prop.2.1)
+  have hσP_colLen : σ.val.P.shape.colLen 0 = b + 1 := by
+    rw [σ.prop.2.1, h_bal]
+  -- TODO: detailed proof
+  -- σ.val.P.paint at bottom (row b) has layerOrd ≤ 1 (from SS class)
+  -- τ.val.val.P.paint at (b, 1) equals σ.val.P.paint b 0 (via double descent)
+  -- This forces τ.val.val.P.paint b 0 to be blocked:
+  --   - dot: violates nondot (b ≥ μQ.colLen 0)
+  --   - s: violates row_s with paint(b, 1)
+  --   - r/c/d: violates mono_P (layerOrd > 1)
+  sorry
 
 /-! ### Fiber sum = total count (no surjectivity needed) -/
 
