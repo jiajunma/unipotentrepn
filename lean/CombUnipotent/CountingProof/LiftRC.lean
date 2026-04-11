@@ -1035,3 +1035,104 @@ theorem fiber_card_balanced_R {μP μQ : YoungDiagram}
       exact this
     exact Fintype.card_le_of_injective f hinj
   omega
+
+/-- Helper: for τ ∈ fiber σ with σ.P.paint b 0 = .c, τ.P.paint b 1 = .c. -/
+lemma fiber_paint_b1_of_C {μP μQ : YoungDiagram}
+    {σ : PBPSet .D (YoungDiagram.shiftLeft μP) (YoungDiagram.shiftLeft μQ)}
+    (τ : doubleDescent_D_fiber σ)
+    (h_c : σ.val.P.paint (μQ.colLen 0) 0 = DRCSymbol.c) :
+    τ.val.val.P.paint (μQ.colLen 0) 1 = DRCSymbol.c := by
+  have hdd : σ.val = doubleDescent_D_PBP τ.val.val τ.val.prop.1 := by
+    have := τ.prop
+    unfold doubleDescent_D_map at this
+    exact (congr_arg Subtype.val this).symm
+  have h_eq : σ.val.P.paint (μQ.colLen 0) 0 =
+      PBP.doubleDescent_D_paintL τ.val.val (μQ.colLen 0) 0 := by
+    rw [hdd]; rfl
+  rw [h_c] at h_eq
+  simp only [PBP.doubleDescent_D_paintL] at h_eq
+  by_cases hA : μQ.colLen 0 < τ.val.val.Q.shape.colLen (0 + 1)
+  · rw [if_pos hA] at h_eq; exact absurd h_eq (by decide)
+  · rw [if_neg hA] at h_eq
+    by_cases hB : μQ.colLen 0 < PBP.dotScolLen τ.val.val.P (0 + 1)
+    · rw [if_pos hB] at h_eq; exact absurd h_eq (by decide)
+    · rw [if_neg hB] at h_eq
+      exact h_eq.symm
+
+/-- For σ ∈ C_sub, every τ ∈ fiber σ has τ.P.paint b 0 ≠ .d. -/
+lemma fiber_col0_of_C_ne_d {μP μQ : YoungDiagram}
+    {σ : PBPSet .D (YoungDiagram.shiftLeft μP) (YoungDiagram.shiftLeft μQ)}
+    (h_bal : (YoungDiagram.shiftLeft μP).colLen 0 = μQ.colLen 0 + 1)
+    (τ : doubleDescent_D_fiber σ)
+    (h_c : σ.val.P.paint (μQ.colLen 0) 0 = DRCSymbol.c) :
+    τ.val.val.P.paint (μQ.colLen 0) 0 ≠ DRCSymbol.d := by
+  have h_b1 := fiber_paint_b1_of_C τ h_c
+  -- mono_P at (b, 0) ≤ (b, 1): layer col0(b) ≤ layer .c = 3. So col0(b) ∈ {dot, s, r, c}, not .d.
+  have hbal' : μP.colLen 1 = μQ.colLen 0 + 1 := by
+    have := h_bal; rw [YoungDiagram.colLen_shiftLeft] at this; exact this
+  have h01 : μP.colLen 1 ≤ μP.colLen 0 := μP.colLen_anti 0 1 (by omega)
+  have hmem_b1 : (μQ.colLen 0, 1) ∈ τ.val.val.P.shape := by
+    rw [τ.val.prop.2.1, YoungDiagram.mem_iff_lt_colLen]; omega
+  have hmono := τ.val.val.mono_P (μQ.colLen 0) 0 (μQ.colLen 0) 1 (le_refl _) (by omega) hmem_b1
+  rw [h_b1] at hmono
+  intro hd
+  rw [hd] at hmono
+  simp only [DRCSymbol.layerOrd] at hmono
+  omega
+
+/-- For σ ∈ C_sub, the fiber over σ has cardinality |C_ValidCol0|. -/
+theorem fiber_card_balanced_C {μP μQ : YoungDiagram}
+    (σ : PBPSet .D (YoungDiagram.shiftLeft μP) (YoungDiagram.shiftLeft μQ))
+    (k : ℕ) (h_bal : (YoungDiagram.shiftLeft μP).colLen 0 = μQ.colLen 0 + 1)
+    (hk : k = μP.colLen 0 - μQ.colLen 0)
+    (hQP : μQ.colLen 0 ≤ μP.colLen 0) (hk_pos : 1 ≤ k)
+    (h_c : σ.val.P.paint (μQ.colLen 0) 0 = DRCSymbol.c) :
+    Fintype.card (doubleDescent_D_fiber σ) = 4 * k - (if k = 1 then 1 else 0) := by
+  rw [← C_ValidCol0_card k hk hQP hk_pos]
+  have h_cond := liftCondition_RC_of_C_sub σ h_bal h_c
+  -- Upper bound: fiber ↪ C_ValidCol0 via extractCol0_D
+  have h_le :
+      Fintype.card (doubleDescent_D_fiber σ) ≤
+      Fintype.card {v : ValidCol0 μP μQ // v.paint (μQ.colLen 0) ≠ DRCSymbol.d} := by
+    apply Fintype.card_le_of_injective
+      (fun τ => ⟨PBP.extractCol0_D τ.val,
+        fiber_col0_of_C_ne_d h_bal τ h_c⟩)
+    intro τ₁ τ₂ h
+    have h_paint : (PBP.extractCol0_D τ₁.val).paint = (PBP.extractCol0_D τ₂.val).paint :=
+      congr_arg (·.val.paint) h
+    exact extractCol0_D_injective_on_fiber σ h_paint
+  -- Lower bound: C_ValidCol0 ↪ fiber via liftPBP_RC_D
+  have h_ge :
+      Fintype.card {v : ValidCol0 μP μQ // v.paint (μQ.colLen 0) ≠ DRCSymbol.d} ≤
+      Fintype.card (doubleDescent_D_fiber σ) := by
+    let f : {v : ValidCol0 μP μQ // v.paint (μQ.colLen 0) ≠ DRCSymbol.d} →
+            doubleDescent_D_fiber σ :=
+      fun v =>
+        have h_compat : v.val.compat_with_RC σ := by
+          refine ⟨?_, ?_⟩
+          · -- v.paint b.layerOrd ≤ .c.layerOrd = 3
+            rw [h_c]
+            -- v.val.paint b ∈ {.s, .r, .c} (nondot + not .d)
+            -- Need layer ≤ 3
+            have h_nd : v.val.paint (μQ.colLen 0) ≠ DRCSymbol.d := v.prop
+            -- Also v.val.paint b ≠ .dot since nondot_tail
+            have hqp_lt : μQ.colLen 0 < μP.colLen 0 := by omega
+            have h_dot : v.val.paint (μQ.colLen 0) ≠ DRCSymbol.dot :=
+              v.val.nondot_tail _ (le_refl _) hqp_lt
+            cases hp : v.val.paint (μQ.colLen 0)
+            · exact absurd hp h_dot
+            · decide
+            · decide
+            · decide
+            · exact absurd hp h_nd
+          · intro hr; rw [h_c] at hr; exact absurd hr (by decide)
+        ⟨liftPBP_RC_D σ v.val h_cond h_compat h_bal hQP,
+         liftPBP_RC_D_round_trip σ v.val h_cond h_compat h_bal hQP⟩
+    have hinj : Function.Injective f := by
+      intro v₁ v₂ hv
+      apply Subtype.ext
+      have h_val : (f v₁).val = (f v₂).val := by rw [hv]
+      simp only [f] at h_val
+      exact (liftPBP_RC_D_injective h_bal hQP h_val).2
+    exact Fintype.card_le_of_injective f hinj
+  omega
