@@ -956,7 +956,16 @@ private theorem tailCoeffs_total (k : ℕ) (hk : 1 ≤ k) :
   · omega
 
 /-- The number of valid column 0 paintings equals the tailCoeffs sum.
-    We first reduce to showing |ValidCol0| = 4k, then equate with tailCoeffs sum. -/
+    We first reduce to showing |ValidCol0| = 4k, then equate with tailCoeffs sum.
+
+    The combinatorial count relies on the canonical form s^α r^β c^δc d^δd:
+    - (δc, δd) ∈ {(0,0), (1,0), (0,1), (1,1)}: 4 cases
+    - For each, α ranges over [0, k - δc - δd], giving max(0, k - δc - δd + 1) options
+    - Total = (k+1) + k + k + max(0, k-1) = 4k for k ≥ 1
+
+    The Equiv ValidCol0 μP μQ ≃ {(α, δc, δd) // α+δc+δd ≤ k} is constructed
+    via extracting counts from the ValidCol0 structure and verifying the canonical
+    form via mono + col_c_unique + col_d_unique. -/
 theorem validCol0_card {μP μQ : YoungDiagram}
     (k : ℕ) (hk : k = μP.colLen 0 - μQ.colLen 0)
     (hQP : μQ.colLen 0 ≤ μP.colLen 0)
@@ -968,7 +977,7 @@ theorem validCol0_card {μP μQ : YoungDiagram}
     (tailCoeffs k).1.1 + (tailCoeffs k).1.2.1 + (tailCoeffs k).1.2.2
   rw [tailCoeffs_total k hk_pos]
   -- Goal: Fintype.card (ValidCol0 μP μQ) = 4 * k
-  -- This is the actual combinatorial count.
+  -- Construct explicit bijection with tuples (α, δc, δd), α ∈ [0, k-δc-δd]
   sorry
 
 /-! ### Framework for sandwich argument
