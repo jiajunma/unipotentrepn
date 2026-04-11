@@ -770,6 +770,53 @@ instance {μP μQ : YoungDiagram} : Finite (ValidCol0 μP μQ) := by
 noncomputable instance {μP μQ : YoungDiagram} : Fintype (ValidCol0 μP μQ) :=
   Fintype.ofFinite _
 
+/-- Lift construction: given σ ∈ PBPSet(rest) and a valid column 0 painting,
+    produce a D-type PBP with the given shapes.
+
+    P.paint = liftPaint_D σ col0.paint
+    Q = all dots with shape μQ
+
+    In the primitive case (h_prim), all PBP constraints hold automatically. -/
+noncomputable def liftPBP_primitive_D {μP μQ : YoungDiagram}
+    (σ : PBPSet .D (YoungDiagram.shiftLeft μP) (YoungDiagram.shiftLeft μQ))
+    (col0 : ValidCol0 μP μQ)
+    (h_prim : μQ.colLen 0 ≥ (YoungDiagram.shiftLeft μP).colLen 0)
+    (hQP : μQ.colLen 0 ≤ μP.colLen 0) :
+    PBPSet .D μP μQ := by
+  refine ⟨⟨.D,
+    ⟨μP, liftPaint_D σ.val col0.paint, ?paint_outside_P⟩,
+    ⟨μQ, fun _ _ => .dot, fun _ _ _ => rfl⟩,
+    ?sym_P, ?sym_Q, ?dot_match, ?mono_P, ?mono_Q,
+    ?row_s, ?row_r, ?col_c_P, ?col_c_Q, ?col_d_P, ?col_d_Q⟩,
+    rfl, rfl, rfl⟩
+  case paint_outside_P =>
+    intro i j hmem
+    cases j with
+    | zero => exact col0.dot_above i (by rw [YoungDiagram.mem_iff_lt_colLen] at hmem; omega)
+    | succ j => exact σ.val.P.paint_outside i j (by
+        rw [σ.prop.2.1, YoungDiagram.mem_shiftLeft]; exact hmem)
+  case sym_P => intro _ _ _; simp [DRCSymbol.allowed]
+  case sym_Q => intro _ _ _; simp [DRCSymbol.allowed]
+  case dot_match => exact sorry -- dot_match: col0 dots ↔ μQ membership (uses col0.dot_below/nondot_tail + σ.dot_match)
+  case mono_P => exact sorry -- mono_P: col0.mono for j=0; primitive_tail_rows_outside for cross-col; σ.mono_P for j≥1
+  case mono_Q => intro _ _ _ _ _ _ _; simp [DRCSymbol.layerOrd]
+  case row_s => exact sorry -- primitive_tail_rows_outside: no s conflicts across columns
+  case row_r => exact sorry -- same argument as row_s
+  case col_c_P =>
+    intro j i₁ i₂ h₁ h₂
+    simp only [liftPaint_D] at h₁ h₂
+    cases j with
+    | zero => exact col0.col_c_unique i₁ i₂ h₁ h₂
+    | succ j => exact σ.val.col_c_P j i₁ i₂ h₁ h₂
+  case col_c_Q => intro _ _ _ h; exact DRCSymbol.noConfusion h
+  case col_d_P =>
+    intro j i₁ i₂ h₁ h₂
+    simp only [liftPaint_D] at h₁ h₂
+    cases j with
+    | zero => exact col0.col_d_unique i₁ i₂ h₁ h₂
+    | succ j => exact σ.val.col_d_P j i₁ i₂ h₁ h₂
+  case col_d_Q => intro _ _ _ h; exact DRCSymbol.noConfusion h
+
 /-- Key counting lemma (balanced case, DD class):
     When r₂ = r₃ and tc(σ) = DD, fiber has size tDD+tRC+tSS. -/
 theorem fiber_card_balanced_DD {μP μQ : YoungDiagram}
