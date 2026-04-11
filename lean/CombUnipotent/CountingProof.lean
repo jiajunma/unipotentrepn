@@ -712,25 +712,6 @@ def liftPaint_D (σ : PBP) (col0 : ℕ → DRCSymbol) : ℕ → ℕ → DRCSymbo
     | 0 => col0 i
     | j + 1 => σ.P.paint i j
 
-/-- Key counting lemma (primitive case):
-    When μQ.colLen(0) ≥ μP.colLen(1), every sub-PBP has the same fiber size.
-
-    Proof: Sandwich argument.
-    1. extractCol0 : fiber(σ) → ValidCol0 is injective (same column 0 + same ∇² → same PBP)
-    2. liftPBP : (σ, col0) → PBPSet is injective globally
-    3. From card_PBPSet_eq_sum_fiber + injectivity: sandwich gives equality
-    4. |ValidCol0| = tailCoeffs total (validCol0_card) -/
-theorem fiber_card_primitive {μP μQ : YoungDiagram}
-    (σ : PBPSet .D (YoungDiagram.shiftLeft μP) (YoungDiagram.shiftLeft μQ))
-    (k : ℕ) (h_prim : μQ.colLen 0 ≥ (YoungDiagram.shiftLeft μP).colLen 0)
-    (hk : k = μP.colLen 0 - μQ.colLen 0)
-    (hQP : μQ.colLen 0 ≤ μP.colLen 0)
-    (hk_pos : 1 ≤ k) :
-    Fintype.card (doubleDescent_D_fiber σ) =
-        let ((tDD, tRC, tSS), _) := tailCoeffs k
-        tDD + tRC + tSS := by
-  sorry -- sandwich argument: will be filled in after validCol0_card
-
 /-! ### Reverse construction for primitive case
 
 Given σ ∈ PBPSet(rest) and a column 0 painting, construct τ ∈ PBPSet(dp).
@@ -967,8 +948,24 @@ Count = Σ_{(δc,δd) ∈ {0,1}²} max(0, k + 1 - δc - δd)
 -/
 
 /-- The number of valid column 0 paintings equals the tailCoeffs sum.
-    This is the pure combinatorial counting lemma.
-    Requires k ≥ 1 (tailCoeffs formula is designed for nonempty tails). -/
+    Pure combinatorial counting lemma. Requires k ≥ 1.
+
+    **Proof approach**: Construct bijection ValidCol0 ↔ {(α, δc, δd) : α+δc+δd ≤ k}.
+    Each ValidCol0 has canonical form s^α r^(k-α-δc-δd) c^δc d^δd where:
+    - α = number of s's in the tail
+    - δc = (is there a c?) — at most 1 by col_c_unique
+    - δd = (is there a d?) — at most 1 by col_d_unique
+    - β = k - α - δc - δd ≥ 0 is the number of r's
+
+    Count by (δc, δd):
+    - (0,0): α ∈ [0,k], k+1 options
+    - (1,0): α ∈ [0,k-1], k options (need k ≥ 1)
+    - (0,1): α ∈ [0,k-1], k options
+    - (1,1): α ∈ [0,k-2], k-1 options (need k ≥ 2)
+
+    Total = (k+1) + k + k + max(0,k-1) = tDD + tRC + tSS.
+
+    See lean/docs/counting_sorry_proofs.md for detailed proof. -/
 theorem validCol0_card {μP μQ : YoungDiagram}
     (k : ℕ) (hk : k = μP.colLen 0 - μQ.colLen 0)
     (hQP : μQ.colLen 0 ≤ μP.colLen 0)
@@ -976,7 +973,7 @@ theorem validCol0_card {μP μQ : YoungDiagram}
     Fintype.card (ValidCol0 μP μQ) =
       let ((tDD, tRC, tSS), _) := tailCoeffs k
       tDD + tRC + tSS := by
-  sorry -- pure combinatorics: count monotone {s,r,c,d}^k sequences with c/d unique
+  sorry
 
 /-! ### Framework for sandwich argument
 
@@ -1103,6 +1100,36 @@ theorem liftPBP_primitive_D_injective {μP μQ : YoungDiagram}
     (PaintedYoungDiagram.ext' (by rw [σ₁.prop.2.1, σ₂.prop.2.1]) hσP) hσQ
   exact ⟨Subtype.ext hσ_eq, hcol0_eq⟩
 
+/-! ### Primitive case fiber counting
+
+Using the sandwich argument with validCol0_card, extractCol0_D_injective_on_fiber,
+and liftPBP_primitive_D_injective. -/
+
+/-- Key counting lemma (primitive case):
+    When μQ.colLen(0) ≥ μP.colLen(1), every sub-PBP has the same fiber size. -/
+theorem fiber_card_primitive {μP μQ : YoungDiagram}
+    (σ : PBPSet .D (YoungDiagram.shiftLeft μP) (YoungDiagram.shiftLeft μQ))
+    (k : ℕ) (h_prim : μQ.colLen 0 ≥ (YoungDiagram.shiftLeft μP).colLen 0)
+    (hk : k = μP.colLen 0 - μQ.colLen 0)
+    (hQP : μQ.colLen 0 ≤ μP.colLen 0)
+    (hk_pos : 1 ≤ k) :
+    Fintype.card (doubleDescent_D_fiber σ) =
+        let ((tDD, tRC, tSS), _) := tailCoeffs k
+        tDD + tRC + tSS := by
+  -- Reduce to showing fiber card = ValidCol0 card
+  rw [← validCol0_card k hk hQP hk_pos]
+  -- Upper bound: fiber → ValidCol0 via extractCol0_D is injective
+  have h_le : Fintype.card (doubleDescent_D_fiber σ) ≤
+      Fintype.card (ValidCol0 μP μQ) := by
+    apply Fintype.card_le_of_injective
+      (fun τ => PBP.extractCol0_D τ.val)
+    intro τ₁ τ₂ h
+    apply extractCol0_D_injective_on_fiber σ
+    exact congr_arg ValidCol0.paint h
+  -- Lower bound requires the sandwich argument with liftPBP_primitive_D_injective
+  -- and card_PBPSet_eq_sum_fiber. For now, we assume equality (to be filled in).
+  sorry
+
 /-! ### Balanced case fiber counting
 
 Balanced condition for D type: μP.colLen(1) = μQ.colLen(0) + 1.
@@ -1112,21 +1139,35 @@ This is the complement of the primitive case (μQ.colLen(0) ≥ shiftLeft μP.co
 
 /-- Key counting lemma (balanced case, DD class):
     When balanced and tc(σ) = DD, fiber has size tDD+tRC+tSS.
-    Reason: DD tailSymbol = d has layerOrd 4 ≥ all symbols, so mono_P is
-    vacuous at row b. Same count as primitive case. -/
+
+    **Proof approach**: In balanced case, μP.colLen 1 = μQ.colLen 0 + 1, so row b
+    (= μQ.colLen 0) is in P.shape at column 1. DD class means σ.P.paint(b, 0) = d
+    (layerOrd 4 ≥ all symbols). So P.paint(b, 1) = d, and mono_P gives
+    col0(b).layerOrd ≤ 4, which is vacuous (all symbols satisfy this).
+    Row uniqueness for d is column-based (col_d_unique), so no row_d constraint.
+    Hence the tail cell at row b is unconstrained, same as primitive case.
+    Sandwich argument gives fiber = |ValidCol0| = tDD + tRC + tSS. -/
 theorem fiber_card_balanced_DD {μP μQ : YoungDiagram}
     (σ : PBPSet .D (YoungDiagram.shiftLeft μP) (YoungDiagram.shiftLeft μQ))
     (k : ℕ) (h_bal : (YoungDiagram.shiftLeft μP).colLen 0 = μQ.colLen 0 + 1)
     (hk : k = μP.colLen 0 - μQ.colLen 0)
     (hQP : μQ.colLen 0 ≤ μP.colLen 0)
+    (hk_pos : 1 ≤ k)
     (h_tc : tailClass_D σ.val = .DD) :
     Fintype.card (doubleDescent_D_fiber σ) =
       let ((tDD, tRC, tSS), _) := tailCoeffs k
       tDD + tRC + tSS := by
   sorry
 
-/-- Aggregate counting for balanced RC: sum of fibers over RC sub-PBPs.
-    Per-σ count varies (r-bottom vs c-bottom), but aggregate = RC' * scTotal. -/
+/-- NOTE: This per-σ statement is INCORRECT for balanced RC case.
+    The per-σ fiber varies: r-bottom gives fiber = validTailCount(k-1),
+    c-bottom gives fiber = validTailCount(k-1) + 4 (for k ≥ 3).
+    The correct formulation is AGGREGATE: sum over all RC σ equals
+    |PBPSet_RC_sub| × scTotal. See counting_sorry_proofs.md.
+
+    This theorem is kept as-is for framework completeness, but should be
+    replaced with the aggregate version when proving the main counting theorem.
+-/
 theorem fiber_card_balanced_RC {μP μQ : YoungDiagram}
     (σ : PBPSet .D (YoungDiagram.shiftLeft μP) (YoungDiagram.shiftLeft μQ))
     (k : ℕ) (h_bal : (YoungDiagram.shiftLeft μP).colLen 0 = μQ.colLen 0 + 1)
@@ -1134,7 +1175,7 @@ theorem fiber_card_balanced_RC {μP μQ : YoungDiagram}
     Fintype.card (doubleDescent_D_fiber σ) =
       let (_, (scDD, scRC, scSS)) := tailCoeffs k
       scDD + scRC + scSS := by
-  sorry -- Note: this per-σ statement is aggregate-only (see counting_sorry_proofs.md)
+  sorry
 
 /-- Key counting lemma (balanced case, SS class): fiber is empty.
     Reason: In balanced case, row b is the last row of both μP column 0 tail
@@ -1146,7 +1187,14 @@ theorem fiber_card_balanced_SS {μP μQ : YoungDiagram}
     (hQP : μQ.colLen 0 ≤ μP.colLen 0)
     (h_tc : tailClass_D σ.val = .SS) :
     Fintype.card (doubleDescent_D_fiber σ) = 0 := by
-  sorry
+  -- Strategy: show the fiber is empty.
+  -- Key facts:
+  -- 1. In balanced case, σ.P.colLen 0 = μQ.colLen 0 + 1 (from h_bal)
+  -- 2. For SS class σ, σ.P.paint at row b (= μQ.colLen 0) has layerOrd ≤ 1
+  -- 3. Combined with nondot_tail, it must be .s
+  -- 4. For any τ in fiber, τ.P.paint b 1 = .s (via double descent)
+  -- 5. row_s + mono_P + nondot_tail → no valid τ.P.paint b 0
+  sorry -- see counting_sorry_proofs.md for detailed proof
 
 /-! ### Fiber sum = total count (no surjectivity needed) -/
 
