@@ -794,3 +794,122 @@ theorem R_ValidCol0_card {μP μQ : YoungDiagram}
   rw [Fintype.card_congr (R_col0_equiv_TSeqPred hQP hm_pos)]
   have hsub : μP.colLen 0 - μQ.colLen 0 - 1 = k - 1 := by omega
   rw [hsub]
+
+/-! ## D_ValidCol0 and C_ValidCol0 counts -/
+
+/-- Number of valid col0 with `v.paint b = .d`. Equals 1 if k=1, else 0. -/
+theorem D_ValidCol0_card {μP μQ : YoungDiagram}
+    (k : ℕ) (hk : k = μP.colLen 0 - μQ.colLen 0)
+    (hQP : μQ.colLen 0 ≤ μP.colLen 0) (hk_pos : 1 ≤ k) :
+    Fintype.card {v : ValidCol0 μP μQ // v.paint (μQ.colLen 0) = DRCSymbol.d} =
+      (if k = 1 then 1 else 0) := by
+  by_cases hk1 : k = 1
+  · -- k = 1: exactly one element
+    rw [if_pos hk1]
+    rw [Fintype.card_eq_one_iff]
+    -- Construct the unique element: v with v.paint b = .d, dot elsewhere
+    have hc_eq : μP.colLen 0 = μQ.colLen 0 + 1 := by omega
+    let paint_fn : ℕ → DRCSymbol :=
+      fun i => if i = μQ.colLen 0 then DRCSymbol.d else DRCSymbol.dot
+    refine ⟨⟨⟨paint_fn, ?_, ?_, ?_, ?_, ?_, ?_⟩, ?_⟩, ?_⟩
+    · -- dot_below
+      intro i hi
+      show paint_fn i = DRCSymbol.dot
+      simp only [paint_fn, if_neg (by omega : i ≠ μQ.colLen 0)]
+    · -- nondot_tail
+      intro i h1 h2
+      show paint_fn i ≠ DRCSymbol.dot
+      have : i = μQ.colLen 0 := by omega
+      simp only [paint_fn, this, if_pos rfl]; decide
+    · -- dot_above
+      intro i hi
+      show paint_fn i = DRCSymbol.dot
+      simp only [paint_fn, if_neg (by omega : i ≠ μQ.colLen 0)]
+    · -- mono
+      intro i₁ i₂ h12 h2
+      show (paint_fn i₁).layerOrd ≤ (paint_fn i₂).layerOrd
+      by_cases he1 : i₁ = μQ.colLen 0
+      · by_cases he2 : i₂ = μQ.colLen 0
+        · simp only [paint_fn, if_pos he1, if_pos he2]; exact le_refl _
+        · exfalso; omega
+      · by_cases he2 : i₂ = μQ.colLen 0
+        · simp only [paint_fn, if_neg he1, if_pos he2]; decide
+        · simp only [paint_fn, if_neg he1, if_neg he2]; exact le_refl _
+    · -- col_c_unique
+      intro i₁ i₂ h1 h2
+      show i₁ = i₂
+      simp only [paint_fn] at h1
+      by_cases he : i₁ = μQ.colLen 0
+      · rw [if_pos he] at h1; exact absurd h1 (by decide)
+      · rw [if_neg he] at h1; exact absurd h1 (by decide)
+    · -- col_d_unique
+      intro i₁ i₂ h1 h2
+      show i₁ = i₂
+      simp only [paint_fn] at h1 h2
+      by_cases he1 : i₁ = μQ.colLen 0
+      · by_cases he2 : i₂ = μQ.colLen 0
+        · rw [he1, he2]
+        · rw [if_neg he2] at h2; exact absurd h2 (by decide)
+      · rw [if_neg he1] at h1; exact absurd h1 (by decide)
+    · -- v.paint (μQ.colLen 0) = .d
+      show paint_fn (μQ.colLen 0) = _
+      simp only [paint_fn, if_pos rfl]
+    · -- Uniqueness
+      intro ⟨v, hv_eq⟩
+      apply Subtype.ext
+      apply ValidCol0.ext
+      funext i
+      show v.paint i = paint_fn i
+      by_cases hi : i = μQ.colLen 0
+      · simp only [paint_fn, hi, if_pos rfl]; exact hv_eq
+      · simp only [paint_fn, if_neg hi]
+        by_cases hi_lt : i < μQ.colLen 0
+        · exact v.dot_below i hi_lt
+        · have : μP.colLen 0 ≤ i := by omega
+          exact v.dot_above i this
+  · -- k ≥ 2: empty
+    rw [if_neg hk1]
+    rw [Fintype.card_eq_zero_iff]
+    constructor
+    intro ⟨v, hv⟩
+    -- (μQ.colLen 0 + 1) is also in the tail, mono forces .d there, col_d_unique fails
+    have hk2 : k ≥ 2 := by omega
+    have h_b_lt : μQ.colLen 0 < μP.colLen 0 := by omega
+    have h_b1_lt : μQ.colLen 0 + 1 < μP.colLen 0 := by omega
+    have hnd : v.paint (μQ.colLen 0 + 1) ≠ DRCSymbol.dot :=
+      v.nondot_tail _ (by omega) h_b1_lt
+    have hmono := v.mono (μQ.colLen 0) (μQ.colLen 0 + 1) (by omega) h_b1_lt
+    rw [hv] at hmono
+    have hd_next : v.paint (μQ.colLen 0 + 1) = DRCSymbol.d := by
+      generalize hsym : v.paint (μQ.colLen 0 + 1) = sym at hnd hmono
+      cases sym
+      · exact absurd rfl hnd
+      · rw [DRCSymbol.layerOrd, DRCSymbol.layerOrd] at hmono; omega
+      · rw [DRCSymbol.layerOrd, DRCSymbol.layerOrd] at hmono; omega
+      · rw [DRCSymbol.layerOrd, DRCSymbol.layerOrd] at hmono; omega
+      · rfl
+    have := v.col_d_unique (μQ.colLen 0) (μQ.colLen 0 + 1) hv hd_next
+    omega
+
+/-- Number of valid col0 with `v.paint b ∈ {.s, .r, .c}` (equivalently, `v.paint b ≠ .d`). -/
+theorem C_ValidCol0_card {μP μQ : YoungDiagram}
+    (k : ℕ) (hk : k = μP.colLen 0 - μQ.colLen 0)
+    (hQP : μQ.colLen 0 ≤ μP.colLen 0) (hk_pos : 1 ≤ k) :
+    Fintype.card {v : ValidCol0 μP μQ // v.paint (μQ.colLen 0) ≠ DRCSymbol.d} =
+      4 * k - (if k = 1 then 1 else 0) := by
+  -- |C_ValidCol0| = |ValidCol0| - |D_ValidCol0|
+  have h_total : Fintype.card (ValidCol0 μP μQ) = 4 * k := by
+    have := validCol0_card k hk hQP hk_pos
+    rw [this, tailCoeffs_total k hk_pos]
+  have h_d : Fintype.card {v : ValidCol0 μP μQ // v.paint (μQ.colLen 0) = DRCSymbol.d} =
+      (if k = 1 then 1 else 0) := D_ValidCol0_card k hk hQP hk_pos
+  -- Use Fintype.card_subtype_or_disjoint or manual splitting
+  have hsplit : Fintype.card (ValidCol0 μP μQ) =
+      Fintype.card {v : ValidCol0 μP μQ // v.paint (μQ.colLen 0) = DRCSymbol.d} +
+      Fintype.card {v : ValidCol0 μP μQ // v.paint (μQ.colLen 0) ≠ DRCSymbol.d} := by
+    rw [Fintype.card_subtype_compl]
+    have : Fintype.card {v : ValidCol0 μP μQ // v.paint (μQ.colLen 0) = DRCSymbol.d} ≤
+           Fintype.card (ValidCol0 μP μQ) := Fintype.card_subtype_le _
+    omega
+  rw [h_total, h_d] at hsplit
+  omega
