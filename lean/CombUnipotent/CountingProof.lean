@@ -728,6 +728,12 @@ theorem fiber_card_primitive {μP μQ : YoungDiagram}
     Fintype.card (doubleDescent_D_fiber σ) =
         let ((tDD, tRC, tSS), _) := tailCoeffs k
         tDD + tRC + tSS := by
+  -- Sandwich argument: avoid round-trip proof
+  -- Step 1: |fiber(σ)| ≤ |ValidCol0| (extract column 0 is injective)
+  -- Step 2: Σ_σ |ValidCol0| ≤ |PBPSet| (liftPBP is injective across all σ)
+  -- Step 3: |PBPSet| = Σ |fiber| (card_PBPSet_eq_sum_fiber)
+  -- Sandwich: Σ|ValidCol0| ≤ Σ|fiber| ≤ Σ|ValidCol0| → |fiber| = |ValidCol0| ∀σ
+  -- Step 4: |ValidCol0| = tDD + tRC + tSS (pure counting)
   sorry
 
 /-! ### Reverse construction for primitive case
@@ -953,6 +959,44 @@ noncomputable def liftPBP_primitive_D {μP μQ : YoungDiagram}
     | zero => exact col0.col_d_unique i₁ i₂ h₁ h₂
     | succ j => exact σ.val.col_d_P j i₁ i₂ h₁ h₂
   case col_d_Q => intro _ _ _ h; exact DRCSymbol.noConfusion h
+
+/-! ### Injection lemmas for sandwich argument -/
+
+/-- liftPBP is injective across all (σ, col0): different inputs → different PBPs. -/
+theorem liftPBP_primitive_D_injective {μP μQ : YoungDiagram}
+    {σ₁ σ₂ : PBPSet .D (YoungDiagram.shiftLeft μP) (YoungDiagram.shiftLeft μQ)}
+    {col0₁ col0₂ : ValidCol0 μP μQ}
+    (h_prim : μQ.colLen 0 ≥ (YoungDiagram.shiftLeft μP).colLen 0)
+    (hQP : μQ.colLen 0 ≤ μP.colLen 0)
+    (h : liftPBP_primitive_D σ₁ col0₁ h_prim hQP = liftPBP_primitive_D σ₂ col0₂ h_prim hQP) :
+    σ₁ = σ₂ ∧ col0₁ = col0₂ := by
+  have hval := congrArg Subtype.val h
+  -- P paint equal → column 0 equal + σ.P equal
+  have hP : (liftPBP_primitive_D σ₁ col0₁ h_prim hQP).val.P.paint =
+            (liftPBP_primitive_D σ₂ col0₂ h_prim hQP).val.P.paint :=
+    congr_arg (fun τ => τ.P.paint) hval
+  -- Extract column 0: col0₁ = col0₂
+  have hcol0 : col0₁.paint = col0₂.paint := by
+    ext i; have := congr_fun (congr_fun hP i) 0; simp [liftPaint_D] at this; exact this
+  have hcol0_eq : col0₁ = col0₂ := by
+    cases col0₁; cases col0₂; simp only [ValidCol0.mk.injEq]; exact hcol0
+  -- Extract columns ≥ 1: σ₁.P = σ₂.P
+  have hσP : σ₁.val.P.paint = σ₂.val.P.paint := by
+    ext i j; have := congr_fun (congr_fun hP i) (j + 1); simp [liftPaint_D] at this; exact this
+  -- σ₁.Q = σ₂.Q (D type: Q paint = dot everywhere, shapes equal)
+  have hσQ : σ₁.val.Q = σ₂.val.Q := by
+    apply PaintedYoungDiagram.ext' (by rw [σ₁.prop.2.2, σ₂.prop.2.2])
+    ext i j
+    have hQshape_eq : σ₁.val.Q.shape = σ₂.val.Q.shape := by rw [σ₁.prop.2.2, σ₂.prop.2.2]
+    by_cases hmem : (i, j) ∈ σ₁.val.Q.shape
+    · rw [PBP.Q_all_dot_of_D σ₁.val σ₁.prop.1 i j hmem,
+          PBP.Q_all_dot_of_D σ₂.val σ₂.prop.1 i j (hQshape_eq ▸ hmem)]
+    · rw [σ₁.val.Q.paint_outside i j hmem,
+          σ₂.val.Q.paint_outside i j (hQshape_eq ▸ hmem)]
+  -- Assemble: σ₁ = σ₂
+  have hσ_eq : σ₁.val = σ₂.val := PBP.ext'' (by rw [σ₁.prop.1, σ₂.prop.1])
+    (PaintedYoungDiagram.ext' (by rw [σ₁.prop.2.1, σ₂.prop.2.1]) hσP) hσQ
+  exact ⟨Subtype.ext hσ_eq, hcol0_eq⟩
 
 /-- Key counting lemma (balanced case, DD class):
     When r₂ = r₃ and tc(σ) = DD, fiber has size tDD+tRC+tSS. -/
