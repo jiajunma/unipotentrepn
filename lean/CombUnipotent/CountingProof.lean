@@ -947,7 +947,16 @@ Count = Σ_{(δc,δd) ∈ {0,1}²} max(0, k + 1 - δc - δd)
       = tDD + tRC + tSS from tailCoeffs k
 -/
 
-/-- The number of valid column 0 paintings equals the tailCoeffs sum. -/
+/-- First, show that the total tailCoeffs sum simplifies to 4k for k ≥ 1. -/
+private theorem tailCoeffs_total (k : ℕ) (hk : 1 ≤ k) :
+    (tailCoeffs k).1.1 + (tailCoeffs k).1.2.1 + (tailCoeffs k).1.2.2 = 4 * k := by
+  simp only [tailCoeffs, nu]
+  split_ifs with h
+  · omega
+  · omega
+
+/-- The number of valid column 0 paintings equals the tailCoeffs sum.
+    We first reduce to showing |ValidCol0| = 4k, then equate with tailCoeffs sum. -/
 theorem validCol0_card {μP μQ : YoungDiagram}
     (k : ℕ) (hk : k = μP.colLen 0 - μQ.colLen 0)
     (hQP : μQ.colLen 0 ≤ μP.colLen 0)
@@ -955,6 +964,11 @@ theorem validCol0_card {μP μQ : YoungDiagram}
     Fintype.card (ValidCol0 μP μQ) =
       let ((tDD, tRC, tSS), _) := tailCoeffs k
       tDD + tRC + tSS := by
+  show Fintype.card (ValidCol0 μP μQ) =
+    (tailCoeffs k).1.1 + (tailCoeffs k).1.2.1 + (tailCoeffs k).1.2.2
+  rw [tailCoeffs_total k hk_pos]
+  -- Goal: Fintype.card (ValidCol0 μP μQ) = 4 * k
+  -- This is the actual combinatorial count.
   sorry
 
 /-! ### Framework for sandwich argument
