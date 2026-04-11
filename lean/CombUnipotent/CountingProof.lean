@@ -797,11 +797,41 @@ noncomputable def liftPBP_primitive_D {μP μQ : YoungDiagram}
         rw [σ.prop.2.1, YoungDiagram.mem_shiftLeft]; exact hmem)
   case sym_P => intro _ _ _; simp [DRCSymbol.allowed]
   case sym_Q => intro _ _ _; simp [DRCSymbol.allowed]
-  case dot_match => exact sorry -- dot_match: col0 dots ↔ μQ membership (uses col0.dot_below/nondot_tail + σ.dot_match)
-  case mono_P => exact sorry -- mono_P: col0.mono for j=0; primitive_tail_rows_outside for cross-col; σ.mono_P for j≥1
+  case dot_match =>
+    show ∀ i j, ((i, j) ∈ μP ∧ liftPaint_D σ.val col0.paint i j = .dot) ↔
+                ((i, j) ∈ μQ ∧ (fun _ _ => DRCSymbol.dot) i j = .dot)
+    intro i j; simp only [and_true]; constructor
+    · intro ⟨hmem, hpaint⟩
+      cases j with
+      | zero =>
+        simp only [liftPaint_D] at hpaint
+        exact YoungDiagram.mem_iff_lt_colLen.mpr (by
+          by_contra h; push_neg at h
+          exact col0.nondot_tail i h (YoungDiagram.mem_iff_lt_colLen.mp hmem) hpaint)
+      | succ j =>
+        simp only [liftPaint_D] at hpaint
+        have hmemσ : (i, j) ∈ σ.val.P.shape := by
+          rw [σ.prop.2.1]; exact YoungDiagram.mem_shiftLeft.mpr hmem
+        have ⟨hq, _⟩ := (σ.val.dot_match i j).mp ⟨hmemσ, hpaint⟩
+        rw [σ.prop.2.2, YoungDiagram.mem_shiftLeft] at hq
+        exact hq
+    · intro hmem
+      cases j with
+      | zero =>
+        have hq := YoungDiagram.mem_iff_lt_colLen.mp hmem
+        exact ⟨YoungDiagram.mem_iff_lt_colLen.mpr (by omega), by
+          simp only [liftPaint_D]; exact col0.dot_below i hq⟩
+      | succ j =>
+        have hq : (i, j) ∈ σ.val.Q.shape := by
+          rw [σ.prop.2.2]; exact YoungDiagram.mem_shiftLeft.mpr hmem
+        have ⟨hp, hpaint⟩ := (σ.val.dot_match i j).mpr
+          ⟨hq, PBP.Q_all_dot_of_D σ.val σ.prop.1 i j hq⟩
+        exact ⟨by rw [σ.prop.2.1, YoungDiagram.mem_shiftLeft] at hp; exact hp,
+               by simp only [liftPaint_D]; exact hpaint⟩
+  case mono_P => exact sorry -- col0.mono for j=0; primitive vacuous for 0→≥1; σ.mono_P for ≥1
   case mono_Q => intro _ _ _ _ _ _ _; simp [DRCSymbol.layerOrd]
-  case row_s => exact sorry -- primitive_tail_rows_outside: no s conflicts across columns
-  case row_r => exact sorry -- same argument as row_s
+  case row_s => exact sorry -- s row uniqueness: primitive_tail_rows_outside gives col≥1 = dot at tail rows
+  case row_r => exact sorry -- same as row_s
   case col_c_P =>
     intro j i₁ i₂ h₁ h₂
     simp only [liftPaint_D] at h₁ h₂
