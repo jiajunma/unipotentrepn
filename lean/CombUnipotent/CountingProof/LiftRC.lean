@@ -1753,3 +1753,141 @@ theorem card_PBPSet_D_recursive_step (μP μQ : YoungDiagram) (hPQ : μQ ≤ μP
     exact card_PBPSet_D_balanced_step k h_bal hk hQP hk_pos
 
 
+
+/-! ## Final top-level theorem (closed form)
+
+The top-level theorem states: `Fintype.card (PBPSet .D μP μQ) = card_D μP μQ`
+where `card_D` is computed recursively by chaining the step theorems.
+
+Since the `balanced step` theorem only handles `(shiftLeft μP).colLen 0 = μQ.colLen 0 + 1`,
+the closed form is only well-defined when every recursive level is either primitive,
+k=0, or "tight" balanced (the non-primitive case reduces to exactly the balanced
+condition). For dp-derived shapes via `dpartColLens{P,Q}_D`, this always holds.
+-/
+
+/-- Well-formed shape predicate: at each recursive level, one of four cases applies:
+    base (μP empty), k=0 (equal colLen 0), primitive, or tight-balanced.
+    The well-formedness propagates recursively. This holds for all dp-derived shapes. -/
+def IsWellFormedD : ℕ → YoungDiagram → YoungDiagram → Prop
+  | 0, _, _ => True
+  | n + 1, μP, μQ =>
+    μP.colLen 0 = 0 ∨
+    (μP.colLen 0 = μQ.colLen 0 ∧
+      IsWellFormedD n (YoungDiagram.shiftLeft μP) (YoungDiagram.shiftLeft μQ)) ∨
+    (μQ.colLen 0 ≥ (YoungDiagram.shiftLeft μP).colLen 0 ∧ μP.colLen 0 > μQ.colLen 0 ∧
+      IsWellFormedD n (YoungDiagram.shiftLeft μP) (YoungDiagram.shiftLeft μQ)) ∨
+    ((YoungDiagram.shiftLeft μP).colLen 0 = μQ.colLen 0 + 1 ∧
+      IsWellFormedD n (YoungDiagram.shiftLeft μP) (YoungDiagram.shiftLeft μQ))
+
+/-- Closed-form counter, fuel-parameterized and well-formed. -/
+noncomputable def card_D_aux : ℕ → YoungDiagram → YoungDiagram → ℕ
+  | 0, _, _ => 1
+  | n + 1, μP, μQ =>
+    if μP.colLen 0 = 0 then 1
+    else if μP.colLen 0 = μQ.colLen 0 then
+      card_D_aux n (YoungDiagram.shiftLeft μP) (YoungDiagram.shiftLeft μQ)
+    else if μQ.colLen 0 ≥ (YoungDiagram.shiftLeft μP).colLen 0 then
+      let k := μP.colLen 0 - μQ.colLen 0
+      let sub := card_D_aux n (YoungDiagram.shiftLeft μP) (YoungDiagram.shiftLeft μQ)
+      sub * ((tailCoeffs k).1.1 + (tailCoeffs k).1.2.1 + (tailCoeffs k).1.2.2)
+    else
+      let k := μP.colLen 0 - μQ.colLen 0
+      let subDD := (Finset.univ.filter
+        (fun σ : PBPSet .D (YoungDiagram.shiftLeft μP) (YoungDiagram.shiftLeft μQ) =>
+          tailClass_D σ.val = .DD)).card
+      let subRC := (Finset.univ.filter
+        (fun σ : PBPSet .D (YoungDiagram.shiftLeft μP) (YoungDiagram.shiftLeft μQ) =>
+          tailClass_D σ.val = .RC)).card
+      subDD * ((tailCoeffs k).1.1 + (tailCoeffs k).1.2.1 + (tailCoeffs k).1.2.2) +
+      subRC * ((tailCoeffs k).2.1 + (tailCoeffs k).2.2.1 + (tailCoeffs k).2.2.2)
+
+/-- **Top-level D theorem** (fuel-parameterized form):
+    `Fintype.card (PBPSet .D μP μQ) = card_D_aux n μP μQ`
+    whenever `μP.rowLen 0 ≤ n` and the shape is well-formed. -/
+theorem card_PBPSet_D_eq_card_D_aux :
+    ∀ (n : ℕ) (μP μQ : YoungDiagram),
+      μP.rowLen 0 ≤ n → μQ ≤ μP → IsWellFormedD n μP μQ →
+      Fintype.card (PBPSet .D μP μQ) = card_D_aux n μP μQ := by
+  intro n
+  induction n with
+  | zero =>
+    intro μP μQ hn hPQ _
+    have h_row : μP.rowLen 0 = 0 := Nat.le_zero.mp hn
+    have h_col : μP.colLen 0 = 0 := by
+      by_contra h
+      have h_pos : 0 < μP.colLen 0 := Nat.pos_of_ne_zero h
+      have : (0, 0) ∈ μP := YoungDiagram.mem_iff_lt_colLen.mpr h_pos
+      have : 0 < μP.rowLen 0 := YoungDiagram.mem_iff_lt_rowLen.mp this
+      omega
+    have h_μP_bot := bot_of_colLen_zero h_col
+    have hQP_col : μQ.colLen 0 ≤ μP.colLen 0 := by
+      by_contra h
+      push_neg at h
+      have : (μP.colLen 0, 0) ∈ μQ := YoungDiagram.mem_iff_lt_colLen.mpr h
+      have : (μP.colLen 0, 0) ∈ μP := hPQ this
+      have := YoungDiagram.mem_iff_lt_colLen.mp this
+      omega
+    have h_μQ_bot : μQ = ⊥ := bot_of_colLen_zero (by omega)
+    rw [h_μP_bot, h_μQ_bot, card_PBPSet_bot]
+    rfl
+  | succ n ih =>
+    intro μP μQ hn hPQ h_wf
+    have hQP_col : μQ.colLen 0 ≤ μP.colLen 0 := by
+      by_contra h
+      push_neg at h
+      have : (μP.colLen 0, 0) ∈ μQ := YoungDiagram.mem_iff_lt_colLen.mpr h
+      have : (μP.colLen 0, 0) ∈ μP := hPQ this
+      have := YoungDiagram.mem_iff_lt_colLen.mp this
+      omega
+    simp only [card_D_aux]
+    by_cases h : μP.colLen 0 = 0
+    · rw [if_pos h]
+      have h_μP_bot := bot_of_colLen_zero h
+      have h_μQ_bot : μQ = ⊥ := bot_of_colLen_zero (by omega)
+      rw [h_μP_bot, h_μQ_bot, card_PBPSet_bot]
+    · rw [if_neg h]
+      have h_pos : 0 < μP.colLen 0 := Nat.pos_of_ne_zero h
+      have hPQ_shift : μQ.shiftLeft ≤ μP.shiftLeft := shiftLeft_mono hPQ
+      have h_dec : μP.shiftLeft.rowLen 0 < μP.rowLen 0 := rowLen_shiftLeft_lt h_pos
+      have h_shift_n : μP.shiftLeft.rowLen 0 ≤ n := by omega
+      -- Unpack IsWellFormedD for the current level
+      simp only [IsWellFormedD] at h_wf
+      by_cases h_eq : μP.colLen 0 = μQ.colLen 0
+      · rw [if_pos h_eq]
+        rcases h_wf with h_bot | ⟨_, h_sub⟩ | ⟨_, _, h_sub⟩ | ⟨h_bal_eq, _⟩
+        · exact absurd h_bot h
+        · rw [card_PBPSet_D_k_zero_step h_eq hPQ]
+          exact ih _ _ h_shift_n hPQ_shift h_sub
+        · -- k=0 branch but well-formedness says primitive: also valid
+          rw [card_PBPSet_D_k_zero_step h_eq hPQ]
+          exact ih _ _ h_shift_n hPQ_shift h_sub
+        · -- balanced: contradicts k = 0.
+          exfalso
+          rw [YoungDiagram.colLen_shiftLeft] at h_bal_eq
+          have h1 : μP.colLen 1 ≤ μP.colLen 0 := μP.colLen_anti 0 1 (Nat.zero_le _)
+          have : μP.colLen 1 = μP.colLen 0 + 1 := by rw [h_eq]; exact h_bal_eq
+          omega
+      · rw [if_neg h_eq]
+        have hk_pos : 1 ≤ μP.colLen 0 - μQ.colLen 0 := by omega
+        by_cases h_prim : μQ.colLen 0 ≥ μP.shiftLeft.colLen 0
+        · rw [if_pos h_prim]
+          rcases h_wf with h_bot | ⟨h_k0, _⟩ | ⟨_, _, h_sub⟩ | ⟨h_bal_eq, _⟩
+          · exact absurd h_bot h
+          · exact absurd h_k0 h_eq
+          · rw [card_PBPSet_D_primitive_step (μP.colLen 0 - μQ.colLen 0) h_prim rfl
+              hQP_col hk_pos]
+            rw [ih _ _ h_shift_n hPQ_shift h_sub]
+          · exfalso
+            rw [YoungDiagram.colLen_shiftLeft] at h_bal_eq
+            rw [YoungDiagram.colLen_shiftLeft] at h_prim
+            omega
+        · rw [if_neg h_prim]
+          push_neg at h_prim
+          rcases h_wf with h_bot | ⟨h_k0, _⟩ | ⟨h_prim_wf, _, _⟩ | ⟨h_bal_eq, _⟩
+          · exact absurd h_bot h
+          · exact absurd h_k0 h_eq
+          · exfalso
+            rw [YoungDiagram.colLen_shiftLeft] at h_prim h_prim_wf
+            omega
+          · rw [card_PBPSet_D_balanced_step (μP.colLen 0 - μQ.colLen 0) h_bal_eq rfl
+              hQP_col hk_pos]
