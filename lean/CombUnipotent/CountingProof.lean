@@ -1122,9 +1122,14 @@ theorem fiber_card_primitive {μP μQ : YoungDiagram}
     intro τ₁ τ₂ h
     apply extractCol0_D_injective_on_fiber σ
     exact congr_arg ValidCol0.paint h
-  -- Lower bound requires the sandwich argument with liftPBP_primitive_D_injective
-  -- and card_PBPSet_eq_sum_fiber. For now, we assume equality (to be filled in).
-  sorry
+  -- Lower bound: ValidCol0 → fiber via liftPBP_primitive_D is injective (and in fiber).
+  -- This requires the round-trip property: ∇²(liftPBP σ col0) = σ
+  -- Combined with liftPBP_primitive_D_injective, this gives the lower bound.
+  -- The proof is deferred; see counting_sorry_proofs.md for the round-trip argument.
+  have h_ge : Fintype.card (ValidCol0 μP μQ) ≤
+      Fintype.card (doubleDescent_D_fiber σ) := by
+    sorry -- TODO: round-trip property + liftPBP injection
+  omega
 
 /-! ### Balanced case fiber counting
 
@@ -1153,7 +1158,23 @@ theorem fiber_card_balanced_DD {μP μQ : YoungDiagram}
     Fintype.card (doubleDescent_D_fiber σ) =
       let ((tDD, tRC, tSS), _) := tailCoeffs k
       tDD + tRC + tSS := by
-  sorry
+  -- Reduce to showing fiber card = ValidCol0 card (same as primitive case)
+  rw [← validCol0_card k hk hQP hk_pos]
+  -- Upper bound (same as primitive): fiber ↪ ValidCol0 via extractCol0_D
+  have h_le : Fintype.card (doubleDescent_D_fiber σ) ≤
+      Fintype.card (ValidCol0 μP μQ) := by
+    apply Fintype.card_le_of_injective
+      (fun τ => PBP.extractCol0_D τ.val)
+    intro τ₁ τ₂ h
+    apply extractCol0_D_injective_on_fiber σ
+    exact congr_arg ValidCol0.paint h
+  -- Lower bound: in balanced DD case, the constraint at row b is vacuous
+  -- (layerOrd d = 4 ≥ all symbols, so mono_P trivially satisfied).
+  -- Hence the fiber has the same structure as primitive case.
+  have h_ge : Fintype.card (ValidCol0 μP μQ) ≤
+      Fintype.card (doubleDescent_D_fiber σ) := by
+    sorry -- TODO: same as fiber_card_primitive h_ge, using DD class for row b vacuous
+  omega
 
 /-- NOTE: This per-σ statement is INCORRECT for balanced RC case.
     The per-σ fiber varies: r-bottom gives fiber = validTailCount(k-1),
