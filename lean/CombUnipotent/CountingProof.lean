@@ -2444,19 +2444,30 @@ theorem c_bottom_unique_c_in_col0 {μP μQ : YoungDiagram}
   intro i hi
   exact σ.val.col_c_P 0 i (μQ.colLen 0) hi h_c
 
-/-- The swapped paint function: replaces (b, 0) with newS, leaves everything else. -/
+/-- The swapped paint function: replaces (b, 0) with newS, leaves everything else.
+    Uses nested if for cleaner case analysis. -/
 def swappedPaint (b : ℕ) (newS : DRCSymbol) (paint : ℕ → ℕ → DRCSymbol) :
     ℕ → ℕ → DRCSymbol :=
-  fun i j => if i = b ∧ j = 0 then newS else paint i j
+  fun i j => if j = 0 then (if i = b then newS else paint i j) else paint i j
+
+@[simp] lemma swappedPaint_at_b0 (b : ℕ) (newS : DRCSymbol) (paint : ℕ → ℕ → DRCSymbol) :
+    swappedPaint b newS paint b 0 = newS := by
+  simp [swappedPaint]
+
+lemma swappedPaint_off_col0 (b : ℕ) (newS : DRCSymbol) (paint : ℕ → ℕ → DRCSymbol)
+    (i j : ℕ) (hj : j ≠ 0) :
+    swappedPaint b newS paint i j = paint i j := by
+  simp [swappedPaint, hj]
+
+lemma swappedPaint_col0_ne_b (b : ℕ) (newS : DRCSymbol) (paint : ℕ → ℕ → DRCSymbol)
+    (i : ℕ) (hi : i ≠ b) :
+    swappedPaint b newS paint i 0 = paint i 0 := by
+  simp [swappedPaint, hi]
 
 /-- Construct a new PBP by swapping (b, 0) from oldS to newS, where {oldS, newS} = {.r, .c}.
 
     The resulting PBP has the same shape, same Q, and same P.paint everywhere except
-    at (b, 0) where it's newS instead of oldS.
-
-    Verification of all 13 PBP constraints is left as sorry for this phase;
-    the natural language proof in `docs/fiber_card_balanced_RC_aggregate_proof.md`
-    walks through each constraint. -/
+    at (b, 0) where it's newS instead of oldS. -/
 noncomputable def swap_b0_cell {μP μQ : YoungDiagram}
     (h_bal : (YoungDiagram.shiftLeft μP).colLen 0 = μQ.colLen 0 + 1)
     (σ : PBPSet .D (YoungDiagram.shiftLeft μP) (YoungDiagram.shiftLeft μQ))
@@ -2464,7 +2475,7 @@ noncomputable def swap_b0_cell {μP μQ : YoungDiagram}
     (h_symbols : (oldS = .r ∧ newS = .c) ∨ (oldS = .c ∧ newS = .r))
     (h_old : σ.val.P.paint (μQ.colLen 0) 0 = oldS) :
     PBPSet .D (YoungDiagram.shiftLeft μP) (YoungDiagram.shiftLeft μQ) := by
-  sorry  -- Phase 1, step 6: construct PBP with swapped cell, verify all 13 constraints
+  sorry  -- Phase 1, step 6: full PBP construction with 13 constraint verifications
 
 /-- The swap preserves the (b, 0) cell becoming newS. -/
 theorem swap_b0_cell_paint {μP μQ : YoungDiagram}
