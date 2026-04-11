@@ -2464,10 +2464,45 @@ lemma swappedPaint_col0_ne_b (b : ℕ) (newS : DRCSymbol) (paint : ℕ → ℕ �
     swappedPaint b newS paint i 0 = paint i 0 := by
   simp [swappedPaint, hi]
 
-/-- Construct a new PBP by swapping (b, 0) from oldS to newS, where {oldS, newS} = {.r, .c}.
+/-- Helper: the new P with swapped cell at (b, 0), as a separate PaintedYoungDiagram. -/
+noncomputable def swappedP_PYD {μP μQ : YoungDiagram}
+    (h_bal : (YoungDiagram.shiftLeft μP).colLen 0 = μQ.colLen 0 + 1)
+    (σ : PBPSet .D (YoungDiagram.shiftLeft μP) (YoungDiagram.shiftLeft μQ))
+    (newS : DRCSymbol) : PaintedYoungDiagram where
+  shape := σ.val.P.shape
+  paint := swappedPaint (μQ.colLen 0) newS σ.val.P.paint
+  paint_outside := by
+    intro i j hmem
+    -- Shape facts
+    have hbal' : μP.colLen 1 = μQ.colLen 0 + 1 := by
+      have := h_bal; rw [YoungDiagram.colLen_shiftLeft] at this; exact this
+    have hσP_colLen : σ.val.P.shape.colLen 0 = μQ.colLen 0 + 1 := by
+      rw [σ.prop.2.1, YoungDiagram.colLen_shiftLeft]; exact hbal'
+    by_cases hj : j = 0
+    · subst hj
+      by_cases hi : i = μQ.colLen 0
+      · -- (b, 0) ∈ σ.val.P.shape, contradiction with hmem
+        exfalso; apply hmem
+        rw [hi, YoungDiagram.mem_iff_lt_colLen, hσP_colLen]; omega
+      · rw [swappedPaint_col0_ne_b _ _ _ _ hi]
+        exact σ.val.P.paint_outside i 0 hmem
+    · rw [swappedPaint_off_col0 _ _ _ _ _ hj]
+      exact σ.val.P.paint_outside i j hmem
 
-    The resulting PBP has the same shape, same Q, and same P.paint everywhere except
-    at (b, 0) where it's newS instead of oldS. -/
+@[simp] lemma swappedP_PYD_shape {μP μQ : YoungDiagram}
+    (h_bal : (YoungDiagram.shiftLeft μP).colLen 0 = μQ.colLen 0 + 1)
+    (σ : PBPSet .D (YoungDiagram.shiftLeft μP) (YoungDiagram.shiftLeft μQ))
+    (newS : DRCSymbol) :
+    (swappedP_PYD h_bal σ newS).shape = σ.val.P.shape := rfl
+
+@[simp] lemma swappedP_PYD_paint {μP μQ : YoungDiagram}
+    (h_bal : (YoungDiagram.shiftLeft μP).colLen 0 = μQ.colLen 0 + 1)
+    (σ : PBPSet .D (YoungDiagram.shiftLeft μP) (YoungDiagram.shiftLeft μQ))
+    (newS : DRCSymbol) :
+    (swappedP_PYD h_bal σ newS).paint =
+      swappedPaint (μQ.colLen 0) newS σ.val.P.paint := rfl
+
+/-- Construct a new PBP by swapping (b, 0) from oldS to newS, where {oldS, newS} = {.r, .c}. -/
 noncomputable def swap_b0_cell {μP μQ : YoungDiagram}
     (h_bal : (YoungDiagram.shiftLeft μP).colLen 0 = μQ.colLen 0 + 1)
     (σ : PBPSet .D (YoungDiagram.shiftLeft μP) (YoungDiagram.shiftLeft μQ))
@@ -2475,7 +2510,78 @@ noncomputable def swap_b0_cell {μP μQ : YoungDiagram}
     (h_symbols : (oldS = .r ∧ newS = .c) ∨ (oldS = .c ∧ newS = .r))
     (h_old : σ.val.P.paint (μQ.colLen 0) 0 = oldS) :
     PBPSet .D (YoungDiagram.shiftLeft μP) (YoungDiagram.shiftLeft μQ) := by
-  sorry  -- Phase 1, step 6: full PBP construction with 13 constraint verifications
+  set b := μQ.colLen 0 with hb_def
+  -- Pre-extract facts for use in proofs
+  have hnew_ne_dot : newS ≠ .dot := by
+    rcases h_symbols with ⟨_, rfl⟩ | ⟨_, rfl⟩ <;> decide
+  have hnew_ne_s : newS ≠ .s := by
+    rcases h_symbols with ⟨_, rfl⟩ | ⟨_, rfl⟩ <;> decide
+  have hnew_ne_d : newS ≠ .d := by
+    rcases h_symbols with ⟨_, rfl⟩ | ⟨_, rfl⟩ <;> decide
+  have hbal' : μP.colLen 1 = b + 1 := by
+    have := h_bal; rw [YoungDiagram.colLen_shiftLeft] at this; exact this
+  have hσP_colLen : σ.val.P.shape.colLen 0 = b + 1 := by
+    rw [σ.prop.2.1, YoungDiagram.colLen_shiftLeft]; exact hbal'
+  have hmem_b0 : (b, 0) ∈ σ.val.P.shape := by
+    rw [YoungDiagram.mem_iff_lt_colLen, hσP_colLen]; omega
+  have hnotmem_Q_b0 : (b, 0) ∉ σ.val.Q.shape := by
+    intro hmem
+    rw [σ.prop.2.2, YoungDiagram.mem_iff_lt_colLen,
+        YoungDiagram.colLen_shiftLeft] at hmem
+    have h1 : μQ.colLen (0 + 1) ≤ μQ.colLen 0 := μQ.colLen_anti 0 (0 + 1) (by omega)
+    omega
+  -- The new PBP
+  refine ⟨{
+    γ := .D
+    P := swappedP_PYD h_bal σ newS
+    Q := σ.val.Q
+    sym_P := fun _ _ _ => by trivial
+    sym_Q := by
+      intro i j hmem
+      have := σ.val.sym_Q i j hmem
+      rw [σ.prop.1] at this
+      exact this
+    dot_match := ?dot_match
+    mono_P := ?mono_P
+    mono_Q := σ.val.mono_Q
+    row_s := ?row_s
+    row_r := ?row_r
+    col_c_P := ?col_c_P
+    col_c_Q := σ.val.col_c_Q
+    col_d_P := ?col_d_P
+    col_d_Q := σ.val.col_d_Q
+  }, rfl, σ.prop.2.1, σ.prop.2.2⟩
+  case dot_match =>
+    intro i j
+    show ((i, j) ∈ σ.val.P.shape ∧ swappedPaint b newS σ.val.P.paint i j = .dot) ↔
+         ((i, j) ∈ σ.val.Q.shape ∧ σ.val.Q.paint i j = .dot)
+    by_cases hj : j = 0
+    · subst hj
+      by_cases hi : i = b
+      · subst hi
+        rw [swappedPaint_at_b0]
+        constructor
+        · intro ⟨_, hdot⟩; exact absurd hdot hnew_ne_dot
+        · intro ⟨hmemQ, _⟩; exact absurd hmemQ hnotmem_Q_b0
+      · rw [swappedPaint_col0_ne_b _ _ _ _ hi]
+        exact σ.val.dot_match i 0
+    · rw [swappedPaint_off_col0 _ _ _ _ _ hj]
+      exact σ.val.dot_match i j
+  case mono_P =>
+    intro i₁ j₁ i₂ j₂ hi hj hmem
+    sorry  -- Full mono_P case analysis: see docs/swap_b0_cell_detailed.md
+  case row_s =>
+    intro i s₁ s₂ j₁ j₂ h₁ h₂
+    sorry
+  case row_r =>
+    intro i s₁ s₂ j₁ j₂ h₁ h₂
+    sorry
+  case col_c_P =>
+    intro j i₁ i₂ h₁ h₂
+    sorry
+  case col_d_P =>
+    intro j i₁ i₂ h₁ h₂
+    sorry
 
 /-- The swap preserves the (b, 0) cell becoming newS. -/
 theorem swap_b0_cell_paint {μP μQ : YoungDiagram}
