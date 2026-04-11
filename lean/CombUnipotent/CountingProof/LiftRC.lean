@@ -474,3 +474,113 @@ theorem liftPBP_RC_D_injective {μP μQ : YoungDiagram}
   have hσ_eq : σ₁.val = σ₂.val := PBP.ext'' (by rw [σ₁.prop.1, σ₂.prop.1])
     (PaintedYoungDiagram.ext' (by rw [σ₁.prop.2.1, σ₂.prop.2.1]) hσP) hσQ
   exact ⟨Subtype.ext hσ_eq, hv_eq⟩
+
+
+/-! ## TSeq peel-first equivalence
+
+`{w : TSeq (k + 1) | w.val 0 = .s} ≃ TSeq k` by dropping the `.s` at position 0. -/
+
+/-- Peel the first element `.s` from a TSeq(k+1). -/
+noncomputable def TSeq_peel_first_s (k : ℕ) :
+    {w : TSeq (k + 1) // w.val ⟨0, Nat.succ_pos k⟩ = DRCSymbol.s} ≃ TSeq k where
+  toFun := fun ⟨w, _⟩ => ⟨
+    fun i => w.val ⟨i.val + 1, Nat.succ_lt_succ i.isLt⟩,
+    fun i => w.property.1 ⟨i.val + 1, Nat.succ_lt_succ i.isLt⟩,
+    fun i j hij => w.property.2.1
+      ⟨i.val + 1, Nat.succ_lt_succ i.isLt⟩
+      ⟨j.val + 1, Nat.succ_lt_succ j.isLt⟩
+      (by show i.val + 1 ≤ j.val + 1; omega),
+    fun i j hi hj => Fin.ext (by
+      have hh := w.property.2.2.1
+        ⟨i.val + 1, Nat.succ_lt_succ i.isLt⟩
+        ⟨j.val + 1, Nat.succ_lt_succ j.isLt⟩ hi hj
+      have : i.val + 1 = j.val + 1 := Fin.mk.inj_iff.mp hh
+      omega),
+    fun i j hi hj => Fin.ext (by
+      have hh := w.property.2.2.2
+        ⟨i.val + 1, Nat.succ_lt_succ i.isLt⟩
+        ⟨j.val + 1, Nat.succ_lt_succ j.isLt⟩ hi hj
+      have : i.val + 1 = j.val + 1 := Fin.mk.inj_iff.mp hh
+      omega)⟩
+  invFun := fun w' => ⟨⟨
+    fun i => if h : i.val = 0 then DRCSymbol.s else w'.val ⟨i.val - 1, by omega⟩,
+    by
+      intro i
+      by_cases hi : i.val = 0
+      · dsimp only; rw [dif_pos hi]
+        exact Or.inl rfl
+      · dsimp only; rw [dif_neg hi]
+        exact w'.property.1 ⟨i.val - 1, by omega⟩,
+    by
+      intro i j hij
+      dsimp only
+      by_cases hi : i.val = 0
+      · rw [dif_pos hi]
+        by_cases hj : j.val = 0
+        · rw [dif_pos hj]
+        · rw [dif_neg hj]
+          have := w'.property.1 ⟨j.val - 1, by omega⟩
+          rcases this with h | h | h | h <;> rw [h] <;> decide
+      · have hj : j.val ≠ 0 := by omega
+        rw [dif_neg hi, dif_neg hj]
+        exact w'.property.2.1 ⟨i.val - 1, by omega⟩ ⟨j.val - 1, by omega⟩
+          (by show i.val - 1 ≤ j.val - 1; omega),
+    by
+      intro i j hi hj
+      dsimp only at hi hj
+      by_cases hi0 : i.val = 0
+      · rw [dif_pos hi0] at hi
+        exact absurd hi (by decide)
+      · by_cases hj0 : j.val = 0
+        · rw [dif_pos hj0] at hj
+          exact absurd hj (by decide)
+        · rw [dif_neg hi0] at hi
+          rw [dif_neg hj0] at hj
+          have hh := w'.property.2.2.1 ⟨i.val - 1, by omega⟩
+            ⟨j.val - 1, by omega⟩ hi hj
+          have : i.val - 1 = j.val - 1 := Fin.mk.inj_iff.mp hh
+          exact Fin.ext (by omega),
+    by
+      intro i j hi hj
+      dsimp only at hi hj
+      by_cases hi0 : i.val = 0
+      · rw [dif_pos hi0] at hi
+        exact absurd hi (by decide)
+      · by_cases hj0 : j.val = 0
+        · rw [dif_pos hj0] at hj
+          exact absurd hj (by decide)
+        · rw [dif_neg hi0] at hi
+          rw [dif_neg hj0] at hj
+          have hh := w'.property.2.2.2 ⟨i.val - 1, by omega⟩
+            ⟨j.val - 1, by omega⟩ hi hj
+          have : i.val - 1 = j.val - 1 := Fin.mk.inj_iff.mp hh
+          exact Fin.ext (by omega)⟩,
+    by
+      dsimp only
+      rw [dif_pos (show (0 : ℕ) = 0 from rfl)]⟩
+  left_inv := fun ⟨w, hw⟩ => by
+    apply Subtype.ext
+    apply Subtype.ext
+    funext i
+    dsimp only
+    by_cases hi : i.val = 0
+    · rw [dif_pos hi]
+      have : i = ⟨0, Nat.succ_pos k⟩ := Fin.ext hi
+      rw [this]; exact hw.symm
+    · rw [dif_neg hi]
+      have hpos : i.val ≥ 1 := Nat.one_le_iff_ne_zero.mpr hi
+      have h1 : i.val - 1 + 1 < k + 1 := by
+        have := i.isLt; omega
+      have h2 : (⟨i.val - 1 + 1, h1⟩ : Fin (k + 1)) = i := Fin.ext (by
+        show i.val - 1 + 1 = i.val; omega)
+      rw [h2]
+  right_inv := fun w' => by
+    apply Subtype.ext
+    funext i
+    dsimp only
+    have hne : (⟨i.val + 1, Nat.succ_lt_succ i.isLt⟩ : Fin (k + 1)).val ≠ 0 := by
+      simp
+    rw [dif_neg hne]
+    have : (⟨i.val + 1 - 1, by omega⟩ : Fin k) = i := Fin.ext (by simp)
+    rw [this]
+
