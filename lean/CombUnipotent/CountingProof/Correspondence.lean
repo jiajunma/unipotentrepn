@@ -6,6 +6,7 @@ top-level theorem `card_PBPSet_D_eq_countPBP_D` states that for any (μP, μQ)
 whose colLens match the dp-derived colLens, the fiber count equals `countPBP_D dp`.
 -/
 import CombUnipotent.CountingProof.LiftRC
+import Mathlib.Algebra.Ring.Parity
 
 open Classical
 
