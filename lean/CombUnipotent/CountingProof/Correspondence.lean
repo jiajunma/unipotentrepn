@@ -563,8 +563,31 @@ theorem card_PBPSet_D_combined (dp : DualPart) (μP μQ : YoungDiagram)
           h_ih.1
           (fun hne => (h_ih.2 hne).1)
           (fun hne => (h_ih.2 hne).2)
-    · -- Per-tc for r₁::r₂::rest (inlined from per_tc_cons₂)
-      sorry
+    · -- Per-tc for r₁::r₂::rest
+      -- Setup
+      have hr₁_ge3 := hge3 r₁ (by simp)
+      have hr₂_ge3 := hge3 r₂ (by simp)
+      have hr₁_odd := hodd r₁ (by simp)
+      have hr₂_odd := hodd r₂ (by simp)
+      have hr₁_ge_r₂ : r₂ ≤ r₁ := by
+        have := hsort.pairwise; rw [List.pairwise_cons] at this; exact this.1 r₂ (by simp)
+      have hP_colLen : μP.colLen 0 = (r₁ + 1) / 2 :=
+        colLen_0_eq_of_colLens_cons (by rw [hP]; rfl)
+      have hQ_colLen : μQ.colLen 0 = (r₂ - 1) / 2 :=
+        colLen_0_eq_of_colLens_cons (by rw [hQ, dpartColLensQ_D_cons₂_pos r₁ r₂ rest (by omega)])
+      have hQP : μQ.colLen 0 ≤ μP.colLen 0 := by
+        rw [hP_colLen, hQ_colLen]
+        obtain ⟨a, rfl⟩ := hr₁_odd; obtain ⟨b, rfl⟩ := hr₂_odd; omega
+      have hQP_lt : μQ.colLen 0 < μP.colLen 0 := by
+        rw [hP_colLen, hQ_colLen]
+        obtain ⟨a, rfl⟩ := hr₁_odd; obtain ⟨b, rfl⟩ := hr₂_odd; omega
+      simp only [← Fintype.card_subtype]
+      by_cases h_prim_dp : r₂ > rest.head?.getD 0
+      · -- Primitive per-tc: same total-DD-SS technique as per_tc_singleton
+        -- (technical: tailCoeffs arithmetic with if-then-else + division)
+        sorry
+      · -- Balanced per-tc: needs RC_sub aggregate (Task 25)
+        sorry
 termination_by dp.length
 decreasing_by simp [List.length_cons]; omega
 
