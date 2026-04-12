@@ -230,3 +230,96 @@ lemma sorted_tail₂ {r₁ r₂ : ℕ} {rest : DualPart}
   have hp := h.pairwise
   have h1 : (r₂ :: rest).Pairwise (· ≥ ·) := (List.pairwise_cons.mp hp).2
   exact ((List.pairwise_cons.mp h1).2).sortedGE
+
+/-! ## Triple-valued per-tc step theorems (with sorry for gaps)
+
+The triple `(dd, rc, ss)` from `countPBP_D` matches `(card(PBPSet_tc DD), card(PBPSet_tc RC),
+card(PBPSet_tc SS))` at each recursive step. -/
+
+/-- **Gap 1 (technical)**: Primitive per-tc step.
+    Proved from `card_PBPSet_D_primitive_step` + IH on total. -/
+theorem card_PBPSet_D_primitive_tripleSum {μP μQ : YoungDiagram}
+    (hQP : μQ.colLen 0 ≤ μP.colLen 0) (hk_pos : 1 ≤ μP.colLen 0 - μQ.colLen 0)
+    (h_prim : μQ.colLen 0 ≥ (YoungDiagram.shiftLeft μP).colLen 0) :
+    Fintype.card (PBPSet .D μP μQ) =
+      Fintype.card (PBPSet .D μP.shiftLeft μQ.shiftLeft) *
+        tripleSum (tailCoeffs (μP.colLen 0 - μQ.colLen 0)).1 := by
+  rw [tripleSum]
+  exact card_PBPSet_D_primitive_step _ h_prim rfl hQP hk_pos
+
+/-- **Gap 2 (main technical gap)**: Balanced per-tc step.
+    Needs: `card(PBPSet_tc DD shifted) = dd'` and `card(PBPSet_tc RC shifted) = rc'`
+    from the inductive triple. This requires per-tc fiber analysis for RC_sub σ. -/
+theorem card_PBPSet_D_balanced_tripleSum {μP μQ : YoungDiagram}
+    (hQP : μQ.colLen 0 ≤ μP.colLen 0) (hk_pos : 1 ≤ μP.colLen 0 - μQ.colLen 0)
+    (h_bal : μP.shiftLeft.colLen 0 = μQ.colLen 0 + 1)
+    (dd' rc' ss' : ℕ)
+    (h_dd : dd' = Fintype.card (PBPSet_tc .D μP.shiftLeft μQ.shiftLeft .DD))
+    (h_rc : rc' = Fintype.card (PBPSet_tc .D μP.shiftLeft μQ.shiftLeft .RC))
+    (h_ss : ss' = Fintype.card (PBPSet_tc .D μP.shiftLeft μQ.shiftLeft .SS))
+    (h_total : dd' + rc' + ss' =
+        Fintype.card (PBPSet .D μP.shiftLeft μQ.shiftLeft)) :
+    let k := μP.colLen 0 - μQ.colLen 0
+    let ((tDD, tRC, tSS), (scDD, scRC, scSS)) := tailCoeffs k
+    Fintype.card (PBPSet .D μP μQ) =
+      dd' * (tDD + tRC + tSS) + rc' * (scDD + scRC + scSS) := by
+  sorry
+
+/-! ## Main theorem: dp → card matching -/
+
+/-! Main theorem: For sorted dp with all entries ≥ 3,
+    `card(PBPSet .D μP μQ) = tripleSum(countPBP_D dp)`.
+
+    Sorries: singleton (arithmetic), pair step (balanced triple match). -/
+
+/-- Base case: dp = []. -/
+theorem card_PBPSet_D_eq_tripleSum_nil {μP μQ : YoungDiagram}
+    (hP : μP.colLens = dpartColLensP_D [])
+    (hQ : μQ.colLens = dpartColLensQ_D []) :
+    Fintype.card (PBPSet .D μP μQ) = tripleSum (countPBP_D []) := by
+  have hP' : μP.colLens = [] := by rw [hP]; rfl
+  have hQ' : μQ.colLens = [] := by rw [hQ]; rfl
+  rw [yd_of_colLens_nil hP', yd_of_colLens_nil hQ']
+  simp [tripleSum, countPBP_D, card_PBPSet_bot]
+
+/-- Singleton case: dp = [r₁].
+    Sorry: arithmetic connecting dp params to YD colLen, then primitive step. -/
+theorem card_PBPSet_D_eq_tripleSum_singleton (r₁ : ℕ) {μP μQ : YoungDiagram}
+    (hP : μP.colLens = dpartColLensP_D [r₁])
+    (hQ : μQ.colLens = dpartColLensQ_D [r₁])
+    (hge3 : r₁ ≥ 3) :
+    Fintype.card (PBPSet .D μP μQ) = tripleSum (countPBP_D [r₁]) := by
+  sorry
+
+/-- Pair step: dp = r₁ :: r₂ :: rest.
+    Given IH for rest, proves the result for the full dp.
+    Sorry: arithmetic gap (k computation) + balanced triple match. -/
+theorem card_PBPSet_D_eq_tripleSum_cons₂ (r₁ r₂ : ℕ) (rest : DualPart)
+    {μP μQ : YoungDiagram}
+    (hP : μP.colLens = dpartColLensP_D (r₁ :: r₂ :: rest))
+    (hQ : μQ.colLens = dpartColLensQ_D (r₁ :: r₂ :: rest))
+    (hsort : (r₁ :: r₂ :: rest).SortedGE) (hge3 : ∀ r ∈ r₁ :: r₂ :: rest, r ≥ 3)
+    (h_ih : Fintype.card (PBPSet .D μP.shiftLeft μQ.shiftLeft) =
+        tripleSum (countPBP_D rest)) :
+    Fintype.card (PBPSet .D μP μQ) = tripleSum (countPBP_D (r₁ :: r₂ :: rest)) := by
+  sorry
+
+/-- **Main theorem**: `card(PBPSet .D μP μQ) = tripleSum(countPBP_D dp)`.
+    Combines base, singleton, and pair-step by strong induction on dp.length. -/
+theorem card_PBPSet_D_eq_tripleSum_countPBP_D (dp : DualPart) (μP μQ : YoungDiagram)
+    (hP : μP.colLens = dpartColLensP_D dp)
+    (hQ : μQ.colLens = dpartColLensQ_D dp)
+    (hsort : dp.SortedGE) (hge3 : ∀ r ∈ dp, r ≥ 3) :
+    Fintype.card (PBPSet .D μP μQ) = tripleSum (countPBP_D dp) := by
+  match dp with
+  | [] => exact card_PBPSet_D_eq_tripleSum_nil hP hQ
+  | [r₁] => exact card_PBPSet_D_eq_tripleSum_singleton r₁ hP hQ (hge3 r₁ (by simp))
+  | r₁ :: r₂ :: rest =>
+    have hr₂ : r₂ > 1 := by
+      have := hge3 r₂ (List.mem_cons_of_mem _ (List.mem_cons.mpr (Or.inl rfl))); omega
+    apply card_PBPSet_D_eq_tripleSum_cons₂ r₁ r₂ rest hP hQ hsort hge3
+    exact card_PBPSet_D_eq_tripleSum_countPBP_D rest _ _
+        (colLens_eq_tail hP) (colLens_eq_tail_Q hr₂ hQ)
+        (sorted_tail₂ hsort) (all_ge3_tail₂ hge3)
+termination_by dp.length
+decreasing_by simp [List.length_cons]; omega
