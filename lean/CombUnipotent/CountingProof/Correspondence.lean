@@ -292,6 +292,19 @@ theorem card_PBPSet_D_eq_tripleSum_singleton (r₁ : ℕ) {μP μQ : YoungDiagra
     (hQ : μQ.colLens = dpartColLensQ_D [r₁])
     (hge3 : r₁ ≥ 3) (hodd : Odd r₁) :
     Fintype.card (PBPSet .D μP μQ) = tripleSum (countPBP_D [r₁]) := by
+  -- μQ = ⊥ (Q colLens = [])
+  have hμQ_bot : μQ = ⊥ := yd_of_colLens_nil (by rw [hQ]; rfl)
+  -- μP has one column of height (r₁+1)/2
+  have hP_colLen : μP.colLen 0 = (r₁ + 1) / 2 :=
+    colLen_0_eq_of_colLens_cons (by rw [hP]; rfl)
+  -- shiftLeft μP = ⊥ (only one column)
+  have h_shifted_P : μP.shiftLeft = ⊥ :=
+    yd_of_colLens_nil (by rw [YoungDiagram.colLens_shiftLeft, hP]; rfl)
+  -- Key arithmetic: (r₁+1)/2 = r₁/2 + 1 for odd r₁
+  have hK_eq : (r₁ + 1) / 2 = r₁ / 2 + 1 := odd_div2_succ hodd
+  -- Apply primitive step (shifted = ⊥, card_shifted = 1)
+  -- card = 1 * tailCoeffs_total((r₁+1)/2) = tailCoeffs_total(r₁/2+1)
+  -- = tripleSum(countPBP_D [r₁])
   sorry
 
 /-- Pair step: dp = r₁ :: r₂ :: rest.
