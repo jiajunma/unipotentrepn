@@ -568,8 +568,35 @@ theorem per_tc_cons₂ (r₁ r₂ : ℕ) (rest : DualPart) {μP μQ : YoungDiagr
   simp only [← Fintype.card_subtype]
   -- Branch primitive vs balanced
   by_cases h_prim_dp : r₂ > rest.head?.getD 0
-  · -- Primitive: same approach as singleton (total - DD - SS)
-    sorry
+  · -- Primitive: same approach as singleton
+    have h_prim : μQ.colLen 0 ≥ μP.shiftLeft.colLen 0 := by
+      rw [hQ_colLen]
+      have h_sh := colLens_eq_tail hP
+      match rest with
+      | [] =>
+        have h_bot := yd_of_colLens_nil (by rw [h_sh]; rfl)
+        rw [h_bot, colLen_bot]; omega
+      | [r₃] =>
+        rw [colLen_0_eq_of_colLens_cons (by rw [h_sh, dpartColLensP_D_singleton])]
+        have hr₃_odd := hodd r₃ (List.mem_cons_of_mem _ (List.mem_cons_of_mem _ (by simp)))
+        obtain ⟨a, rfl⟩ := hr₂_odd; obtain ⟨b, rfl⟩ := hr₃_odd
+        simp at h_prim_dp; omega
+      | r₃ :: _ :: _ =>
+        rw [colLen_0_eq_of_colLens_cons (by rw [h_sh, dpartColLensP_D_cons₂_eq])]
+        have hr₃_odd := hodd r₃ (List.mem_cons_of_mem _ (List.mem_cons_of_mem _ (by simp)))
+        obtain ⟨a, rfl⟩ := hr₂_odd; obtain ⟨b, rfl⟩ := hr₃_odd
+        simp at h_prim_dp; omega
+    -- DD
+    have h_dd : Fintype.card {τ : PBPSet .D μP μQ // tailClass_D τ.val = .DD} =
+        (countPBP_D (r₁ :: r₂ :: rest)).1 := by
+      rw [card_PBPSet_D_primitive_step_tc hQP hQP_lt h_prim .DD]
+      simp_rw [tailClassOfSymbol_DD]
+      sorry -- DD = card_shifted × validCol0_top_d = total × tDD = countPBP_D component
+    -- RC via total - DD - SS
+    have h_rc : Fintype.card {τ : PBPSet .D μP μQ // tailClass_D τ.val = .RC} =
+        (countPBP_D (r₁ :: r₂ :: rest)).2.1 := by
+      sorry -- same total-DD-SS approach
+    exact ⟨h_dd, h_rc⟩
   · -- Balanced: needs RC_sub per-tc aggregate (Task 25)
     sorry
 
