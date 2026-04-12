@@ -377,8 +377,22 @@ theorem card_PBPSet_D_eq_tripleSum_cons₂ (r₁ r₂ : ℕ) (rest : DualPart)
     rw [if_pos h_prim_dp]
     -- primitive condition on YD: μQ.colLen 0 ≥ shiftLeft μP.colLen 0
     have h_prim : μQ.colLen 0 ≥ μP.shiftLeft.colLen 0 := by
-      -- r₂ > r₃ with oddness → (r₂-1)/2 ≥ first(dpartColLensP_D rest)
-      sorry
+      rw [hQ_colLen]
+      have h_sh := colLens_eq_tail hP
+      match rest with
+      | [] =>
+        have h_bot := yd_of_colLens_nil (by rw [h_sh]; rfl)
+        rw [h_bot, colLen_bot]; omega
+      | [r₃] =>
+        rw [colLen_0_eq_of_colLens_cons (by rw [h_sh, dpartColLensP_D_singleton])]
+        have hr₃_odd := hodd r₃ (List.mem_cons_of_mem _ (List.mem_cons_of_mem _ (by simp)))
+        obtain ⟨a, rfl⟩ := hr₂_odd; obtain ⟨b, rfl⟩ := hr₃_odd
+        simp at h_prim_dp; omega
+      | r₃ :: _ :: _ =>
+        rw [colLen_0_eq_of_colLens_cons (by rw [h_sh, dpartColLensP_D_cons₂_eq])]
+        have hr₃_odd := hodd r₃ (List.mem_cons_of_mem _ (List.mem_cons_of_mem _ (by simp)))
+        obtain ⟨a, rfl⟩ := hr₂_odd; obtain ⟨b, rfl⟩ := hr₃_odd
+        simp at h_prim_dp; omega
     have h_card := card_PBPSet_D_primitive_step (μP.colLen 0 - μQ.colLen 0)
         h_prim rfl hQP hK_pos
     rw [h_card, h_ih, hK]
