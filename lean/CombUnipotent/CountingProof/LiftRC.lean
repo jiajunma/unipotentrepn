@@ -2376,3 +2376,4 @@ lemma validCol0_card_top_d {μP μQ : YoungDiagram}
         2 * (μP.colLen 0 - μQ.colLen 0) - 1 := by
   rw [Fintype.card_congr (ValidCol0.equivTSeq_top hQP hk_pos .d)]
   exact TSeq_card_last_d' _ (by omega)
+
