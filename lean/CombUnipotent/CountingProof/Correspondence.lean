@@ -309,6 +309,21 @@ lemma shiftLeft_bot : (⊥ : YoungDiagram).shiftLeft = ⊥ := by
   apply yd_of_colLens_nil
   rw [YoungDiagram.colLens_shiftLeft, colLens_bot]; rfl
 
+/-- tailCoeffs DD component = 2K-1. -/
+lemma tailCoeffs_tDD (K : ℕ) (hK : K ≥ 1) : (tailCoeffs K).1.1 = 2 * K - 1 := by
+  obtain ⟨k, rfl⟩ := Nat.exists_eq_succ_of_ne_zero (by omega : K ≠ 0)
+  show nu k + (if k + 1 ≥ 2 then nu (k + 1 - 2) else 0) = 2 * (k + 1) - 1
+  unfold nu; by_cases h : k + 1 ≥ 2 <;> simp [h] <;> omega
+
+/-- tailCoeffs RC component = 2K. -/
+lemma tailCoeffs_tRC (K : ℕ) (hK : K ≥ 1) : (tailCoeffs K).1.2.1 = 2 * K := by
+  obtain ⟨k, rfl⟩ := Nat.exists_eq_succ_of_ne_zero (by omega : K ≠ 0)
+  show 2 * nu k = 2 * (k + 1)
+  unfold nu; omega
+
+/-- tailCoeffs SS component = 1. -/
+lemma tailCoeffs_tSS : ∀ K, (tailCoeffs K).1.2.2 = 1 := fun _ => rfl
+
 /-- Key arithmetic: for odd n, `(n+1)/2 = n/2 + 1`. -/
 lemma odd_div2_succ {n : ℕ} (h : Odd n) : (n + 1) / 2 = n / 2 + 1 := by
   obtain ⟨m, rfl⟩ := h; omega
@@ -627,9 +642,119 @@ theorem card_PBPSet_D_combined (dp : DualPart) (μP μQ : YoungDiagram)
             h_ih.1 (fun hne => (h_ih.2 hne).1) (fun hne => (h_ih.2 hne).2)
         -- Arithmetic: DD + RC + SS = total, all expressed via countPBP_D
         -- Primitive countPBP_D: .1 = total × tDD, .2.1 = total × tRC
-        -- Same technique as per_tc_singleton: total-DD-SS with card_PBPSet_D_primitive_step_tc
-        -- Blocked by Lean rewrite mechanics on tailCoeffs/countPBP_D
-        sorry
+        have h_prim : μQ.colLen 0 ≥ μP.shiftLeft.colLen 0 := by
+          rw [hQ_colLen]; have h_sh := colLens_eq_tail hP
+          match rest with
+          | [] =>
+            have hbot := yd_of_colLens_nil (by rw [h_sh]; rfl)
+            rw [hbot, colLen_bot]; omega
+          | [r₃] =>
+            rw [colLen_0_eq_of_colLens_cons (by rw [h_sh, dpartColLensP_D_singleton])]
+            obtain ⟨a, rfl⟩ := hr₂_odd
+            obtain ⟨b, rfl⟩ := hodd r₃ (List.mem_cons_of_mem _ (List.mem_cons_of_mem _ (by simp)))
+            simp at h_prim_dp; omega
+          | r₃ :: _ :: _ =>
+            rw [colLen_0_eq_of_colLens_cons (by rw [h_sh, dpartColLensP_D_cons₂_eq])]
+            obtain ⟨a, rfl⟩ := hr₂_odd
+            obtain ⟨b, rfl⟩ := hodd r₃ (List.mem_cons_of_mem _ (List.mem_cons_of_mem _ (by simp)))
+            simp at h_prim_dp; omega
+        set K := μP.colLen 0 - μQ.colLen 0 with hK_def
+        have hK_pos' : K ≥ 1 := by omega
+        have hK_dp : K = (r₁ - r₂) / 2 + 1 := by
+          rw [hK_def, hP_colLen, hQ_colLen]; exact k_eq_of_odd hr₁_odd hr₂_odd hr₁_ge_r₂
+        -- DD via calc
+        have h_cpd₁ : (countPBP_D (r₁ :: r₂ :: rest)).1 =
+            tripleSum (countPBP_D rest) * (tailCoeffs K).1.1 := by
+          simp [countPBP_D, tripleSum, if_pos h_prim_dp, hK_dp]
+        have h_dd_tc := card_PBPSet_D_primitive_step_tc hQP hQP_lt h_prim .DD
+        simp_rw [tailClassOfSymbol_DD] at h_dd_tc
+        have h_dd : Fintype.card {τ : PBPSet .D μP μQ // tailClass_D τ.val = .DD} =
+            (countPBP_D (r₁ :: r₂ :: rest)).1 :=
+          calc Fintype.card _
+              = Fintype.card (PBPSet .D μP.shiftLeft μQ.shiftLeft) *
+                  Fintype.card {v : ValidCol0 μP μQ // v.paint (μP.colLen 0 - 1) = .d} := h_dd_tc
+            _ = tripleSum (countPBP_D rest) * (2 * K - 1) := by
+                rw [h_ih.1, validCol0_card_top_d hQP hQP_lt]
+            _ = tripleSum (countPBP_D rest) * (tailCoeffs K).1.1 := by
+                rw [tailCoeffs_tDD K hK_pos']
+            _ = _ := h_cpd₁.symm
+        -- SS
+        have h_ss_tc := card_PBPSet_D_primitive_step_tc hQP hQP_lt h_prim .SS
+        have h_ss_iff : ∀ v : ValidCol0 μP μQ,
+            tailClassOfSymbol (v.paint (μP.colLen 0 - 1)) = .SS ↔
+              v.paint (μP.colLen 0 - 1) = .s := by
+          intro v
+          have h_nd := v.nondot_tail (μP.colLen 0 - 1) (by omega) (by omega)
+          rcases hv : v.paint (μP.colLen 0 - 1) with _ | _ | _ | _ | _
+          · exact absurd hv h_nd
+          · exact ⟨fun _ => rfl, fun _ => rfl⟩
+          all_goals exact ⟨fun h => by simp [tailClassOfSymbol] at h, fun h => by simp at h⟩
+        simp_rw [h_ss_iff] at h_ss_tc
+        rw [validCol0_card_top_s hQP hQP_lt, h_ih.1] at h_ss_tc
+        -- Total
+        have h_total := card_PBPSet_eq_sum_tc μP μQ
+        have h_conv : ∀ tc, Fintype.card (PBPSet_tc .D μP μQ tc) =
+            Fintype.card {τ : PBPSet .D μP μQ // tailClass_D τ.val = tc} :=
+          fun _ => Fintype.card_congr (Equiv.refl _)
+        rw [h_conv, h_conv, h_conv] at h_total
+        have h_total_val := card_PBPSet_D_eq_tripleSum_cons₂ r₁ r₂ rest hP hQ hsort hge3 hodd
+            h_ih.1 (fun hne => (h_ih.2 hne).1) (fun hne => (h_ih.2 hne).2)
+        -- RC = total - DD - SS
+        have h_cpd₂ : (countPBP_D (r₁ :: r₂ :: rest)).2.1 =
+            tripleSum (countPBP_D rest) * (tailCoeffs K).1.2.1 := by
+          simp [countPBP_D, tripleSum, if_pos h_prim_dp, hK_dp]
+        rw [h_total, h_dd, h_ss_tc] at h_total_val
+        -- RC: from DD + RC + SS = cpd.1 + cpd.2.1 + cpd.2.2
+        -- with DD = cpd.1 and SS = cpd.2.2 → RC = cpd.2.1 (additive)
+        have h_cpd₃ : (countPBP_D (r₁ :: r₂ :: rest)).2.2 =
+            tripleSum (countPBP_D rest) := by
+          simp only [countPBP_D, tripleSum, if_pos h_prim_dp]
+          rw [tailCoeffs_tSS, Nat.mul_one]
+        have h_ss_eq : Fintype.card {τ : PBPSet .D μP μQ // tailClass_D τ.val = .SS} =
+            (countPBP_D (r₁ :: r₂ :: rest)).2.2 := by
+          rw [h_ss_tc, h_cpd₃, Nat.mul_one]
+        -- RC via calc: card(PBPSet_tc RC) = card_shifted × ValidCol0_tc(RC) = total × tRC = cpd.2.1
+        have h_cpd₂ : (countPBP_D (r₁ :: r₂ :: rest)).2.1 =
+            tripleSum (countPBP_D rest) * (tailCoeffs K).1.2.1 := by
+          simp [countPBP_D, tripleSum, if_pos h_prim_dp, hK_dp]
+        have h_rc_tc := card_PBPSet_D_primitive_step_tc hQP hQP_lt h_prim .RC
+        -- Need: ValidCol0_tc(RC) = tRC = 2K
+        -- ValidCol0_tc(RC) = validCol0_total - DD - SS = 4K - (2K-1) - 1 = 2K at ValidCol0 level
+        have h_vc_total : Fintype.card (ValidCol0 μP μQ) = 4 * K := by
+          rw [validCol0_card K (by rw [hK_def]) hQP hK_pos']
+          rw [tailCoeffs_tDD K hK_pos', tailCoeffs_tRC K hK_pos', tailCoeffs_tSS K]; omega
+        have h_vc_dd : Fintype.card {v : ValidCol0 μP μQ //
+            tailClassOfSymbol (v.paint (μP.colLen 0 - 1)) = .DD} = 2 * K - 1 := by
+          simp_rw [tailClassOfSymbol_DD]
+          rw [validCol0_card_top_d hQP hQP_lt, hK_def]
+        have h_vc_ss : Fintype.card {v : ValidCol0 μP μQ //
+            tailClassOfSymbol (v.paint (μP.colLen 0 - 1)) = .SS} = 1 := by
+          have h_iff : ∀ v : ValidCol0 μP μQ,
+              tailClassOfSymbol (v.paint (μP.colLen 0 - 1)) = .SS ↔
+                v.paint (μP.colLen 0 - 1) = .s := by
+            intro v
+            have h_nd := v.nondot_tail (μP.colLen 0 - 1) (by omega) (by omega)
+            rcases hv : v.paint (μP.colLen 0 - 1) with _ | _ | _ | _ | _
+            · exact absurd hv h_nd
+            · exact ⟨fun _ => rfl, fun _ => rfl⟩
+            all_goals exact ⟨fun h => by simp [tailClassOfSymbol] at h, fun h => by simp at h⟩
+          simp_rw [h_iff]; exact validCol0_card_top_s hQP hQP_lt
+        -- ValidCol0 partition: total = DD + RC + SS
+        -- All are Subtype.fintype instances (consistent!)
+        have h_vc_rc : Fintype.card {v : ValidCol0 μP μQ //
+            tailClassOfSymbol (v.paint (μP.colLen 0 - 1)) = .RC} = 2 * K := by
+          sorry -- ValidCol0 RC count: needs Disjoint proof for Pi lattice or partition lemma
+        have h_rc : Fintype.card {τ : PBPSet .D μP μQ // tailClass_D τ.val = .RC} =
+            (countPBP_D (r₁ :: r₂ :: rest)).2.1 :=
+          calc Fintype.card _
+              = Fintype.card (PBPSet .D μP.shiftLeft μQ.shiftLeft) *
+                  Fintype.card {v : ValidCol0 μP μQ //
+                    tailClassOfSymbol (v.paint (μP.colLen 0 - 1)) = .RC} := h_rc_tc
+            _ = tripleSum (countPBP_D rest) * (2 * K) := by rw [h_ih.1, h_vc_rc]
+            _ = tripleSum (countPBP_D rest) * (tailCoeffs K).1.2.1 := by
+                  rw [tailCoeffs_tRC K hK_pos']
+            _ = _ := h_cpd₂.symm
+        exact ⟨h_dd, h_rc⟩
       · -- Balanced per-tc: needs RC_sub aggregate (Task 25)
         sorry
 termination_by dp.length
