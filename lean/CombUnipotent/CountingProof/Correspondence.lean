@@ -492,6 +492,19 @@ lemma tailClassOfSymbol_RC (sym : DRCSymbol) :
     tailClassOfSymbol sym = .RC ↔ (sym = .r ∨ sym = .c) := by
   cases sym <;> simp [tailClassOfSymbol]
 
+/-- R_ValidCol0 with given top symbol = TSeq(K-1) with given last symbol.
+    Via equivTSeq + peel_first_s. -/
+lemma R_ValidCol0_tc_eq_TSeq_last {μP μQ : YoungDiagram}
+    (hQP : μQ.colLen 0 ≤ μP.colLen 0) (hk_pos : μQ.colLen 0 < μP.colLen 0)
+    (hK2 : μP.colLen 0 - μQ.colLen 0 ≥ 2) (sym : DRCSymbol) :
+    Fintype.card {v : ValidCol0 μP μQ //
+      v.paint (μQ.colLen 0) = .s ∧ v.paint (μP.colLen 0 - 1) = sym} =
+    Fintype.card {w : TSeq (μP.colLen 0 - μQ.colLen 0 - 1) //
+      w.val ⟨μP.colLen 0 - μQ.colLen 0 - 2, by omega⟩ = sym} := by
+  -- Via equivTSeq + TSeq_peel_first_s, both preserving conditions.
+  -- Engineering-heavy (Equiv composition with Fin bound management).
+  sorry
+
 /-! RC_sub per-tc aggregate (Task 25 core) -/
 
 /-- Per-tc value for R_sub σ: |{v // compat_R ∧ topTC = tc}|. -/
