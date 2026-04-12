@@ -2432,3 +2432,40 @@ theorem fiber_card_primitive_tc {μP μQ : YoungDiagram}
     have h_fiber_eq := congr_arg Subtype.val heq
     exact liftPBP_to_fiber_injective σ h_prim hQP h_fiber_eq
 
+/-- Per-tc fiber count in the balanced DD case: same as ValidCol0 per-tc count.
+    LiftCondition holds for DD_sub σ, so fiber = full ValidCol0. -/
+theorem fiber_card_balanced_DD_tc {μP μQ : YoungDiagram}
+    (σ : PBPSet .D (YoungDiagram.shiftLeft μP) (YoungDiagram.shiftLeft μQ))
+    (h_bal : (YoungDiagram.shiftLeft μP).colLen 0 = μQ.colLen 0 + 1)
+    (hQP : μQ.colLen 0 ≤ μP.colLen 0)
+    (hk_pos : μQ.colLen 0 < μP.colLen 0)
+    (h_tc : tailClass_D σ.val = .DD) (tc : TailClass) :
+    Fintype.card {τ : doubleDescent_D_fiber σ // tailClass_D τ.val.val = tc} =
+      Fintype.card {v : ValidCol0 μP μQ //
+        tailClassOfSymbol (v.paint (μP.colLen 0 - 1)) = tc} := by
+  apply le_antisymm
+  · -- Upper: same extractCol0_D injection
+    apply Fintype.card_le_of_injective
+      (fun ⟨τ, htc'⟩ => (⟨PBP.extractCol0_D τ.val, by
+        rw [extractCol0_preserves_tailClass τ.val hk_pos]; exact htc'⟩ :
+        {v : ValidCol0 μP μQ //
+          tailClassOfSymbol (v.paint (μP.colLen 0 - 1)) = tc}))
+    intro ⟨τ₁, _⟩ ⟨τ₂, _⟩ heq
+    apply Subtype.ext
+    exact extractCol0_D_injective_on_fiber σ (congr_arg ValidCol0.paint (congr_arg Subtype.val heq))
+  · -- Lower: liftPBP_balanced_DD_D injection
+    apply Fintype.card_le_of_injective
+      (fun ⟨v, htc'⟩ => (⟨⟨liftPBP_balanced_DD_D σ v h_bal h_tc hQP,
+          liftPBP_balanced_DD_D_round_trip σ v h_bal h_tc hQP⟩, by
+        show tailClass_D (liftPBP_balanced_DD_D σ v h_bal h_tc hQP).val = tc
+        simp only [liftPBP_balanced_DD_D]
+        rw [tailClass_of_liftPBP_D σ v _ hQP hk_pos]; exact htc'⟩ :
+        {τ : doubleDescent_D_fiber σ // tailClass_D τ.val.val = tc}))
+    intro ⟨v₁, _⟩ ⟨v₂, _⟩ heq
+    apply Subtype.ext
+    have h_fiber_eq : (liftPBP_balanced_DD_D σ v₁ h_bal h_tc hQP) =
+        (liftPBP_balanced_DD_D σ v₂ h_bal h_tc hQP) :=
+      congr_arg Subtype.val (congr_arg Subtype.val heq)
+    simp only [liftPBP_balanced_DD_D] at h_fiber_eq
+    exact (liftPBP_D_injective hQP h_fiber_eq).2
+
