@@ -743,7 +743,12 @@ theorem card_PBPSet_D_combined (dp : DualPart) (μP μQ : YoungDiagram)
         -- All are Subtype.fintype instances (consistent!)
         have h_vc_rc : Fintype.card {v : ValidCol0 μP μQ //
             tailClassOfSymbol (v.paint (μP.colLen 0 - 1)) = .RC} = 2 * K := by
-          sorry -- ValidCol0 RC count: needs Disjoint proof for Pi lattice or partition lemma
+          simp_rw [tailClassOfSymbol_RC]
+          rw [Fintype.card_subtype_or_disjoint _ _
+              (Set.disjoint_iff.2 fun v ⟨hr, hc⟩ => by
+                change v.paint _ = .r at hr; change v.paint _ = .c at hc
+                rw [hr] at hc; exact DRCSymbol.noConfusion hc),
+              validCol0_card_top_r hQP hQP_lt, validCol0_card_top_c hQP hQP_lt, hK_def]; omega
         have h_rc : Fintype.card {τ : PBPSet .D μP μQ // tailClass_D τ.val = .RC} =
             (countPBP_D (r₁ :: r₂ :: rest)).2.1 :=
           calc Fintype.card _
