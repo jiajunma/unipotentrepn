@@ -377,7 +377,8 @@ theorem card_PBPSet_D_eq_tripleSum_cons₂ (r₁ r₂ : ℕ) (rest : DualPart)
     rw [if_pos h_prim_dp]
     -- primitive condition on YD: μQ.colLen 0 ≥ shiftLeft μP.colLen 0
     have h_prim : μQ.colLen 0 ≥ μP.shiftLeft.colLen 0 := by
-      sorry -- arithmetic: r₂ > r₃ with oddness → (r₂-1)/2 ≥ (r₃+1)/2
+      -- r₂ > r₃ with oddness → (r₂-1)/2 ≥ first(dpartColLensP_D rest)
+      sorry
     have h_card := card_PBPSet_D_primitive_step (μP.colLen 0 - μQ.colLen 0)
         h_prim rfl hQP hK_pos
     rw [h_card, h_ih, hK]
