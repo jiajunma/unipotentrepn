@@ -2469,6 +2469,62 @@ theorem fiber_card_balanced_DD_tc {μP μQ : YoungDiagram}
     simp only [liftPBP_balanced_DD_D] at h_fiber_eq
     exact (liftPBP_D_injective hQP h_fiber_eq).2
 
+/-- Per-tc fiber count for RC_sub σ in balanced case:
+    fiber_tc(σ, tc) = |{v : ValidCol0 // compat_with_RC σ v ∧ topTC = tc}|.
+    Uses sandwich with extractCol0 (preserves tc + forced compat) and
+    liftPBP_RC_D (preserves tc + uses compat). -/
+theorem fiber_card_balanced_RC_tc {μP μQ : YoungDiagram}
+    (σ : PBPSet .D μP.shiftLeft μQ.shiftLeft)
+    (h_bal : μP.shiftLeft.colLen 0 = μQ.colLen 0 + 1)
+    (hQP : μQ.colLen 0 ≤ μP.colLen 0) (hk_pos : μQ.colLen 0 < μP.colLen 0)
+    (h_rc : tailClass_D σ.val = .RC) (tc : TailClass) :
+    Fintype.card {τ : doubleDescent_D_fiber σ // tailClass_D τ.val.val = tc} =
+      Fintype.card {v : ValidCol0 μP μQ //
+        v.compat_with_RC σ ∧ tailClassOfSymbol (v.paint (μP.colLen 0 - 1)) = tc} := by
+  have h_paint_rc := (tailClass_RC_iff_paint_rc σ h_bal).mp h_rc
+  have h_cond : LiftCondition_RC σ := by
+    rcases h_paint_rc with hr | hc
+    · exact liftCondition_RC_of_R_sub σ h_bal hr
+    · exact liftCondition_RC_of_C_sub σ h_bal hc
+  apply le_antisymm
+  · -- Upper: extractCol0 maps fiber_tc → compat ∧ tc
+    apply Fintype.card_le_of_injective
+      (fun ⟨τ, htc⟩ => ⟨PBP.extractCol0_D τ.val, by
+        constructor
+        · -- compat_with_RC from fiber membership
+          constructor
+          · -- layerOrd: use R/C structural lemmas
+            show (τ.val.val.P.paint (μQ.colLen 0) 0).layerOrd ≤ (σ.val.P.paint (μQ.colLen 0) 0).layerOrd
+            rcases h_paint_rc with hr | hc
+            · -- R case: extractCol0.paint(b) = .s, σ paint = .r. s.layerOrd ≤ r.layerOrd.
+              rw [fiber_col0_of_R_forced_s h_bal τ hr, hr]; decide
+            · -- C case: extractCol0.paint(b) ≠ .d, σ paint = .c.
+              have hne_d := fiber_col0_of_C_ne_d h_bal τ hc
+              rw [hc]; simp only [DRCSymbol.layerOrd]
+              rcases hp : τ.val.val.P.paint (μQ.colLen 0) 0 with _ | _ | _ | _ | _
+              all_goals (simp [DRCSymbol.layerOrd]; try omega)
+              exact absurd hp hne_d
+          · -- σ.P.paint = .r → extractCol0.paint ≠ .r
+            intro hr
+            have := fiber_col0_of_R_forced_s h_bal τ hr
+            show τ.val.val.P.paint (μQ.colLen 0) 0 ≠ .r
+            rw [this]; decide
+        · rw [extractCol0_preserves_tailClass τ.val hk_pos]; exact htc⟩)
+    intro ⟨τ₁, _⟩ ⟨τ₂, _⟩ heq
+    apply Subtype.ext
+    exact extractCol0_D_injective_on_fiber σ (congr_arg ValidCol0.paint (congr_arg Subtype.val heq))
+  · -- Lower: liftPBP_RC_D maps compat ∧ tc → fiber_tc
+    apply Fintype.card_le_of_injective
+      (fun ⟨v, hcompat, htc⟩ => (⟨⟨liftPBP_RC_D σ v h_cond hcompat h_bal hQP,
+          liftPBP_RC_D_round_trip σ v h_cond hcompat h_bal hQP⟩, by
+        show tailClass_D (liftPBP_RC_D σ v h_cond hcompat h_bal hQP).val = tc
+        rw [tailClass_of_liftPBP_RC_D σ v h_cond hcompat h_bal hQP hk_pos]; exact htc⟩ :
+        {τ : doubleDescent_D_fiber σ // tailClass_D τ.val.val = tc}))
+    intro ⟨v₁, hc₁, _⟩ ⟨v₂, hc₂, _⟩ heq
+    apply Subtype.ext
+    have h_eq := congr_arg Subtype.val (congr_arg Subtype.val heq)
+    exact (@liftPBP_RC_D_injective _ _ σ σ v₁ v₂ h_cond h_cond hc₁ hc₂ h_bal hQP h_eq).2
+
 /-- Primitive per-tc step at PBPSet level:
     `card(PBPSet_tc tc) = card_shifted × card(ValidCol0_tc)`.
     Proved via sandwich: both extractCol0 and liftPBP preserve tc. -/
