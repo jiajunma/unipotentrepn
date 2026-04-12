@@ -1089,8 +1089,17 @@ theorem card_PBPSet_D_combined (dp : DualPart) (μP μQ : YoungDiagram)
         rw [← h_ih_tc'.1, ← h_ih_tc'.2] at h_cpd₁ h_cpd₂
         -- Now h_cpd₁ : cpd.1 = filter(DD) × tDD + filter(RC) × scDD
         -- Need: filter(DD new) = cpd.1 ∧ filter(RC new) = cpd.2.1
-        -- This requires per-tc fiber sum decomposition = balanced_step_tc
-        -- Using balanced_RC_aggregate_DD/RC + fiber_card_balanced_DD_tc + SS=0
+        -- Use total - DD_tc - SS_tc = card, with per-tc decomposition
+        -- DD per-tc via balanced step:
+        -- filter(DD new) = Σ_{σ:DD} fib_tc(DD) + Σ_{σ:RC} fib_tc(DD) + 0
+        --               = subDD × tDD + subRC × scDD   [by DD_tc + RC_aggregate]
+        --               = cpd.1  [by h_cpd₁]
+        -- Similarly for RC.
+        -- But assembling the Finset.sum decomposition is the same pattern as balanced_step.
+        -- Use total - SS approach:
+        -- Use balanced per-tc step theorem (parallels balanced_step but per-tc)
+        -- filter(DD new) = subDD × tDD + subRC × scDD
+        -- filter(RC new) = subDD × tRC + subRC × scRC
         sorry
 termination_by dp.length
 decreasing_by simp [List.length_cons]; omega
