@@ -454,6 +454,16 @@ theorem card_PBPSet_D_primitive_step_tc {μP μQ : YoungDiagram}
           tailClassOfSymbol (v.paint (μP.colLen 0 - 1)) = tc} :=
   card_PBPSet_D_primitive_step_tc' hQP hk_pos h_prim tc
 
+/-- tailClassOfSymbol = DD iff symbol = .d -/
+lemma tailClassOfSymbol_DD (sym : DRCSymbol) :
+    tailClassOfSymbol sym = .DD ↔ sym = .d := by
+  cases sym <;> simp [tailClassOfSymbol]
+
+/-- tailClassOfSymbol = RC iff symbol ∈ {.r, .c} -/
+lemma tailClassOfSymbol_RC (sym : DRCSymbol) :
+    tailClassOfSymbol sym = .RC ↔ (sym = .r ∨ sym = .c) := by
+  cases sym <;> simp [tailClassOfSymbol]
+
 /-! Per-tc matching for dp.length ≥ 1: filter counts match countPBP_D components.
     Note: dp=[] doesn't satisfy per-tc (countPBP_D []=(1,0,0) but actual is (0,0,1)).
     But dp=[] never appears as rest in balanced step. -/
@@ -467,7 +477,30 @@ theorem per_tc_singleton (r₁ : ℕ) {μP μQ : YoungDiagram}
         tailClass_D σ.val = .DD)).card = (countPBP_D [r₁]).1 ∧
     (Finset.univ.filter (fun σ : PBPSet .D μP μQ =>
         tailClass_D σ.val = .RC)).card = (countPBP_D [r₁]).2.1 := by
-  sorry
+  simp only [← Fintype.card_subtype]
+  have hμQ_bot := yd_of_colLens_nil (by rw [hQ]; rfl : μQ.colLens = [])
+  subst hμQ_bot
+  have hP_col : μP.colLen 0 = (r₁ + 1) / 2 := colLen_0_eq_of_colLens_cons (by rw [hP]; rfl)
+  have hK_eq := odd_div2_succ hodd
+  have hQP_lt : (⊥ : YoungDiagram).colLen 0 < μP.colLen 0 := by rw [colLen_bot, hP_col]; omega
+  have h_shifted := yd_of_colLens_nil (by rw [YoungDiagram.colLens_shiftLeft, hP]; rfl)
+  have h_prim : (⊥ : YoungDiagram).colLen 0 ≥ μP.shiftLeft.colLen 0 := by
+    rw [h_shifted, colLen_bot]
+  have h_hQP := (show (⊥ : YoungDiagram).colLen 0 ≤ μP.colLen 0 by rw [colLen_bot]; omega)
+  constructor <;>
+    rw [card_PBPSet_D_primitive_step_tc h_hQP hQP_lt h_prim,
+        h_shifted, shiftLeft_bot, card_PBPSet_bot, Nat.one_mul]
+  · -- DD: rewrite tailClassOfSymbol = DD as top = .d
+    simp_rw [tailClassOfSymbol_DD]
+    rw [validCol0_card_top_d h_hQP hQP_lt, hP_col, colLen_bot]
+    obtain ⟨m, rfl⟩ := hodd
+    have h1 : (2 * m + 1 + 1) / 2 = m + 1 := by omega
+    have h2 : (2 * m + 1) / 2 = m := by omega
+    have h3 : (⊥ : YoungDiagram).colLen 0 = 0 := colLen_bot 0
+    have hm_ge : m + 1 ≥ 2 := by omega
+    simp only [h1, h2, countPBP_D, tailCoeffs, nu, ge_iff_le, hm_ge, ite_true]; omega
+  · -- RC: split into .r and .c subtypes
+    sorry
 
 /-- Per-tc step for dp = r₁::r₂::rest. -/
 theorem per_tc_cons₂ (r₁ r₂ : ℕ) (rest : DualPart) {μP μQ : YoungDiagram}
