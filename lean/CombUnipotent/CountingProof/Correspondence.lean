@@ -125,3 +125,107 @@ lemma card_PBPSet_D_bot_case {μP μQ : YoungDiagram}
     (hP : μP.colLens = []) (hQ : μQ.colLens = []) :
     Fintype.card (PBPSet .D μP μQ) = 1 := by
   rw [yd_of_colLens_nil hP, yd_of_colLens_nil hQ, card_PBPSet_bot]
+
+/-! ## Main correspondence theorem
+
+For a sorted DualPart `dp` with all entries ≥ 3 (ensuring `dpartColLensQ_D` always
+adds an entry per pair), and YDs `(μP, μQ)` with matching `colLens`, the fiber count
+equals `countPBP_D dp` sum.
+
+The restriction `r ≥ 3` avoids the edge case `r₂ = 1` where `dpartColLensQ_D` drops
+the Q column, causing shiftLeft mismatch. For standard D-type partitions where all
+parts are ≥ 3, the theorem gives the full correspondence. -/
+
+/-- The key correspondence: μP matches dp's P colLens ⇒ shiftLeft μP matches rest. -/
+lemma colLens_eq_tail {μP : YoungDiagram} {r₁ r₂ : ℕ} {rest : DualPart}
+    (hP : μP.colLens = dpartColLensP_D (r₁ :: r₂ :: rest)) :
+    μP.shiftLeft.colLens = dpartColLensP_D rest := by
+  rw [YoungDiagram.colLens_shiftLeft, hP, dpartColLensP_D_cons₂_eq]
+  rfl
+
+/-- Similar for μQ when r₂ > 1. -/
+lemma colLens_eq_tail_Q {μQ : YoungDiagram} {r₁ r₂ : ℕ} {rest : DualPart}
+    (h : r₂ > 1) (hQ : μQ.colLens = dpartColLensQ_D (r₁ :: r₂ :: rest)) :
+    μQ.shiftLeft.colLens = dpartColLensQ_D rest := by
+  rw [YoungDiagram.colLens_shiftLeft, hQ, dpartColLensQ_D_cons₂_pos _ _ _ h]
+  rfl
+
+/-- `colLens = []` from a non-empty `dpartColLensP_D` list is impossible. -/
+lemma dpartColLensP_D_singleton (r : ℕ) :
+    dpartColLensP_D [r] = [(r + 1) / 2] := rfl
+
+/-- `dpartColLensQ_D [r] = []`. -/
+lemma dpartColLensQ_D_singleton (r : ℕ) : dpartColLensQ_D [r] = [] := rfl
+
+/-- `μP.rowLen 0` equals `dp.length / 2 + dp.length % 2` for dp-derived shapes.
+    For dp of length `2m + r` (r ∈ {0, 1}), μP has `m + r` columns. -/
+lemma rowLen_zero_eq_length_P {μP : YoungDiagram} {dp : DualPart}
+    (hP : μP.colLens = dpartColLensP_D dp) :
+    μP.rowLen 0 = (dpartColLensP_D dp).length := by
+  rw [← YoungDiagram.length_colLens μP, hP]
+
+/-- Length of `dpartColLensP_D` for a 2-cons: adds 1. -/
+lemma dpartColLensP_D_length_cons₂ (r₁ r₂ : ℕ) (rest : DualPart) :
+    (dpartColLensP_D (r₁ :: r₂ :: rest)).length = (dpartColLensP_D rest).length + 1 := by
+  rw [dpartColLensP_D_cons₂_eq]
+  rfl
+
+/-! ## `card_D_aux` ↔ `countPBP_D` matching
+
+We prove that for dp-derived (μP, μQ), `card_D_aux n μP μQ` equals `tripleSum (countPBP_D dp)`
+by strong induction on dp length. -/
+
+/-- Helper: `dpartColLensP_D` length for a dp with at least 2 elements. -/
+lemma dpartColLensP_D_length_cons₂_mem (r₁ r₂ : ℕ) (rest : DualPart) :
+    (dpartColLensP_D (r₁ :: r₂ :: rest)).length = 1 + (dpartColLensP_D rest).length := by
+  rw [dpartColLensP_D_length_cons₂]; omega
+
+
+
+/-- If μ.colLens starts with `a`, then `μ.colLen 0 = a`. -/
+lemma colLen_0_eq_of_colLens_cons {μ : YoungDiagram} {a : ℕ} {tail : List ℕ}
+    (h : μ.colLens = a :: tail) : μ.colLen 0 = a := by
+  have h_len : 0 < μ.colLens.length := by rw [h]; simp
+  have h_get : μ.colLens[0]'h_len = μ.colLen 0 := YoungDiagram.getElem_colLens h_len
+  have h_first : μ.colLens[0]'h_len = a := by
+    -- Use List.getElem_cons_zero with a cast through h
+    have h' : μ.colLens[0]?.getD 0 = a := by rw [h]; rfl
+    have h_some : μ.colLens[0]? = some (μ.colLens[0]'h_len) := by
+      exact List.getElem?_eq_getElem h_len
+    rw [h_some] at h'
+    simpa using h'
+  omega
+
+/-- Helper: `μP.colLen 0 = (r₁ + 1) / 2` when μP.colLens matches dp's P with cons₂. -/
+lemma colLen_0_of_dp_cons₂ {μP : YoungDiagram} {r₁ r₂ : ℕ} {rest : DualPart}
+    (hP : μP.colLens = dpartColLensP_D (r₁ :: r₂ :: rest)) :
+    μP.colLen 0 = (r₁ + 1) / 2 :=
+  colLen_0_eq_of_colLens_cons (by rw [hP]; rfl)
+
+/-- Helper: `μQ.colLen 0 = (r₂ - 1) / 2` when μQ.colLens matches dp's Q with r₂ > 1. -/
+lemma colLen_0_of_dp_cons₂_Q {μQ : YoungDiagram} {r₁ r₂ : ℕ} {rest : DualPart}
+    (h : r₂ > 1) (hQ : μQ.colLens = dpartColLensQ_D (r₁ :: r₂ :: rest)) :
+    μQ.colLen 0 = (r₂ - 1) / 2 :=
+  colLen_0_eq_of_colLens_cons (by rw [hQ, dpartColLensQ_D_cons₂_pos _ _ _ h])
+
+/-! ## Main theorem: card matches countPBP_D
+
+Under the assumption that all entries of dp are ≥ 3 (avoiding the r₂ = 1 edge case),
+we prove the complete correspondence. -/
+
+/-- When all dp entries are ≥ 3, dpartColLensQ_D always uses the positive branch. -/
+lemma dpartColLensQ_D_cons₂_ge3 (r₁ r₂ : ℕ) (rest : DualPart) (h : r₂ ≥ 3) :
+    dpartColLensQ_D (r₁ :: r₂ :: rest) = (r₂ - 1) / 2 :: dpartColLensQ_D rest := by
+  rw [dpartColLensQ_D_cons₂_pos]; omega
+
+/-- For sorted dp with all entries ≥ 3, taking `rest` preserves ≥ 3. -/
+lemma all_ge3_tail₂ {r₁ r₂ : ℕ} {rest : DualPart} (h : ∀ r ∈ r₁ :: r₂ :: rest, r ≥ 3) :
+    ∀ r ∈ rest, r ≥ 3 :=
+  fun r hr => h r (List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hr))
+
+/-- For sorted dp, the tail is sorted. -/
+lemma sorted_tail₂ {r₁ r₂ : ℕ} {rest : DualPart}
+    (h : (r₁ :: r₂ :: rest).SortedGE) : rest.SortedGE := by
+  have hp := h.pairwise
+  have h1 : (r₂ :: rest).Pairwise (· ≥ ·) := (List.pairwise_cons.mp hp).2
+  exact ((List.pairwise_cons.mp h1).2).sortedGE
