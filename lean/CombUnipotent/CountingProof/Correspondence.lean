@@ -1097,9 +1097,24 @@ theorem card_PBPSet_D_combined (dp : DualPart) (μP μQ : YoungDiagram)
         -- Similarly for RC.
         -- But assembling the Finset.sum decomposition is the same pattern as balanced_step.
         -- Use total - SS approach:
-        -- Use balanced per-tc step theorem (parallels balanced_step but per-tc)
-        -- filter(DD new) = subDD × tDD + subRC × scDD
-        -- filter(RC new) = subDD × tRC + subRC × scRC
+        -- Per-tc fiber sum: card(PBPSet_tc tc) = Σ_σ card(fiber_tc(σ, tc))
+        -- via sigma-subtype exchange on sigmaFiberEquiv
+        have card_tc_sum : ∀ tc' : TailClass,
+            Fintype.card {τ : PBPSet .D μP μQ // tailClass_D τ.val = tc'} =
+            Finset.univ.sum (fun σ : PBPSet .D μP.shiftLeft μQ.shiftLeft =>
+              Fintype.card {τ : doubleDescent_D_fiber σ // tailClass_D τ.val.val = tc'}) := by
+          intro tc'; rw [← Fintype.card_sigma]; apply Fintype.card_congr
+          sorry -- Sigma-subtype exchange: {τ : A // P τ} ≃ Σ_σ {τ : fiber(σ) // P τ}
+        -- Use card_tc_sum + split + compute each part
+        -- For DD: card_tc_sum DD = Σ_σ fib_tc(σ,DD)
+        -- Split: Σ_{σ:DD} fib_tc(DD) + Σ_{σ:RC} fib_tc(DD) + Σ_{σ:SS} fib_tc(DD)
+        -- DD_sub: Σ = subDD × tDD (fiber_card_balanced_DD_tc + validCol0_tc(DD))
+        -- RC_sub: Σ = subRC × scDD (balanced_RC_aggregate_DD)
+        -- SS_sub: Σ = 0 (fiber=0)
+        -- Total: subDD × tDD + subRC × scDD = cpd.1 [h_cpd₁]
+        -- Similarly for RC.
+        -- This decomposition parallels card_PBPSet_D_balanced_step exactly.
+        -- Instead of re-proving the Finset.sum split, sorry for now.
         sorry
 termination_by dp.length
 decreasing_by simp [List.length_cons]; omega
