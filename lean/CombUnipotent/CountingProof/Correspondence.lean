@@ -546,7 +546,32 @@ theorem per_tc_cons₂ (r₁ r₂ : ℕ) (rest : DualPart) {μP μQ : YoungDiagr
         tailClass_D σ.val = .DD)).card = (countPBP_D (r₁ :: r₂ :: rest)).1 ∧
     (Finset.univ.filter (fun σ : PBPSet .D μP μQ =>
         tailClass_D σ.val = .RC)).card = (countPBP_D (r₁ :: r₂ :: rest)).2.1 := by
-  sorry
+  -- Same setup as cons₂ total proof
+  have hr₁_ge3 := hge3 r₁ (by simp)
+  have hr₂_ge3 := hge3 r₂ (by simp)
+  have hr₁_odd := hodd r₁ (by simp)
+  have hr₂_odd := hodd r₂ (by simp)
+  have hr₁_ge_r₂ : r₂ ≤ r₁ := by
+    have := hsort.pairwise; rw [List.pairwise_cons] at this; exact this.1 r₂ (by simp)
+  have hP_colLen : μP.colLen 0 = (r₁ + 1) / 2 :=
+    colLen_0_eq_of_colLens_cons (by rw [hP]; rfl)
+  have hQ_colLen : μQ.colLen 0 = (r₂ - 1) / 2 :=
+    colLen_0_eq_of_colLens_cons (by
+      rw [hQ, dpartColLensQ_D_cons₂_pos r₁ r₂ rest (by omega)])
+  have hQP : μQ.colLen 0 ≤ μP.colLen 0 := by
+    rw [hP_colLen, hQ_colLen]
+    obtain ⟨a, rfl⟩ := hr₁_odd; obtain ⟨b, rfl⟩ := hr₂_odd; omega
+  have hQP_lt : μQ.colLen 0 < μP.colLen 0 := by
+    rw [hP_colLen, hQ_colLen]
+    obtain ⟨a, rfl⟩ := hr₁_odd; obtain ⟨b, rfl⟩ := hr₂_odd; omega
+  -- Convert filter.card to Fintype.card subtype
+  simp only [← Fintype.card_subtype]
+  -- Branch primitive vs balanced
+  by_cases h_prim_dp : r₂ > rest.head?.getD 0
+  · -- Primitive: same approach as singleton (total - DD - SS)
+    sorry
+  · -- Balanced: needs RC_sub per-tc aggregate (Task 25)
+    sorry
 
 theorem card_PBPSet_D_per_tc (dp : DualPart) (μP μQ : YoungDiagram)
     (hP : μP.colLens = dpartColLensP_D dp)
