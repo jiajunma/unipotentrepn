@@ -583,8 +583,52 @@ theorem card_PBPSet_D_combined (dp : DualPart) (μP μQ : YoungDiagram)
         obtain ⟨a, rfl⟩ := hr₁_odd; obtain ⟨b, rfl⟩ := hr₂_odd; omega
       simp only [← Fintype.card_subtype]
       by_cases h_prim_dp : r₂ > rest.head?.getD 0
-      · -- Primitive per-tc: same total-DD-SS technique as per_tc_singleton
-        -- (technical: tailCoeffs arithmetic with if-then-else + division)
+      · -- Primitive per-tc via total-DD-SS
+        have h_prim : μQ.colLen 0 ≥ μP.shiftLeft.colLen 0 := by
+          rw [hQ_colLen]; have h_sh := colLens_eq_tail hP
+          match rest with
+          | [] =>
+            have hbot := yd_of_colLens_nil (by rw [h_sh]; rfl)
+            rw [hbot, colLen_bot]; omega
+          | [r₃] =>
+            rw [colLen_0_eq_of_colLens_cons (by rw [h_sh, dpartColLensP_D_singleton])]
+            obtain ⟨a, rfl⟩ := hr₂_odd
+            obtain ⟨b, rfl⟩ := hodd r₃ (List.mem_cons_of_mem _ (List.mem_cons_of_mem _ (by simp)))
+            simp at h_prim_dp; omega
+          | r₃ :: _ :: _ =>
+            rw [colLen_0_eq_of_colLens_cons (by rw [h_sh, dpartColLensP_D_cons₂_eq])]
+            obtain ⟨a, rfl⟩ := hr₂_odd
+            obtain ⟨b, rfl⟩ := hodd r₃ (List.mem_cons_of_mem _ (List.mem_cons_of_mem _ (by simp)))
+            simp at h_prim_dp; omega
+        -- DD
+        have h_dd := card_PBPSet_D_primitive_step_tc hQP hQP_lt h_prim .DD
+        simp_rw [tailClassOfSymbol_DD] at h_dd
+        rw [validCol0_card_top_d hQP hQP_lt, h_ih.1] at h_dd
+        -- SS
+        have h_ss := card_PBPSet_D_primitive_step_tc hQP hQP_lt h_prim .SS
+        have h_ss_iff : ∀ v : ValidCol0 μP μQ,
+            tailClassOfSymbol (v.paint (μP.colLen 0 - 1)) = .SS ↔
+              v.paint (μP.colLen 0 - 1) = .s := by
+          intro v
+          have h_nd := v.nondot_tail (μP.colLen 0 - 1) (by omega) (by omega)
+          rcases hv : v.paint (μP.colLen 0 - 1) with _ | _ | _ | _ | _
+          · exact absurd hv h_nd
+          · exact ⟨fun _ => rfl, fun _ => rfl⟩
+          all_goals exact ⟨fun h => by simp [tailClassOfSymbol] at h, fun h => by simp at h⟩
+        simp_rw [h_ss_iff] at h_ss
+        rw [validCol0_card_top_s hQP hQP_lt, h_ih.1] at h_ss
+        -- Total (already proved)
+        have h_total := card_PBPSet_eq_sum_tc μP μQ
+        have h_conv : ∀ tc, Fintype.card (PBPSet_tc .D μP μQ tc) =
+            Fintype.card {τ : PBPSet .D μP μQ // tailClass_D τ.val = tc} :=
+          fun _ => Fintype.card_congr (Equiv.refl _)
+        rw [h_conv, h_conv, h_conv] at h_total
+        have h_total_val := card_PBPSet_D_eq_tripleSum_cons₂ r₁ r₂ rest hP hQ hsort hge3 hodd
+            h_ih.1 (fun hne => (h_ih.2 hne).1) (fun hne => (h_ih.2 hne).2)
+        -- Arithmetic: DD + RC + SS = total, all expressed via countPBP_D
+        -- Primitive countPBP_D: .1 = total × tDD, .2.1 = total × tRC
+        -- Same technique as per_tc_singleton: total-DD-SS with card_PBPSet_D_primitive_step_tc
+        -- Blocked by Lean rewrite mechanics on tailCoeffs/countPBP_D
         sorry
       · -- Balanced per-tc: needs RC_sub aggregate (Task 25)
         sorry
