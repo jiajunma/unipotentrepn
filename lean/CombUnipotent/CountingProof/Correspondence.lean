@@ -477,7 +477,58 @@ theorem per_tc_singleton (r₁ : ℕ) {μP μQ : YoungDiagram}
         tailClass_D σ.val = .DD)).card = (countPBP_D [r₁]).1 ∧
     (Finset.univ.filter (fun σ : PBPSet .D μP μQ =>
         tailClass_D σ.val = .RC)).card = (countPBP_D [r₁]).2.1 := by
-  sorry
+  obtain ⟨m, rfl⟩ := hodd
+  have h_div : (2 * m + 1) / 2 = m := by omega
+  have hm1 : m + 1 ≥ 2 := by omega
+  simp only [← Fintype.card_subtype]
+  have hμQ_bot := yd_of_colLens_nil (by rw [hQ]; rfl : μQ.colLens = [])
+  subst hμQ_bot
+  have hP_col : μP.colLen 0 = m + 1 := by
+    rw [colLen_0_eq_of_colLens_cons (by rw [hP]; rfl)]; omega
+  have hQP_lt : (⊥ : YoungDiagram).colLen 0 < μP.colLen 0 := by rw [colLen_bot]; omega
+  have h_shifted := yd_of_colLens_nil (by rw [YoungDiagram.colLens_shiftLeft, hP]; rfl)
+  have h_prim : (⊥ : YoungDiagram).colLen 0 ≥ μP.shiftLeft.colLen 0 := by
+    rw [h_shifted, colLen_bot]
+  have h_hQP : (⊥ : YoungDiagram).colLen 0 ≤ μP.colLen 0 := by rw [colLen_bot]; omega
+  -- DD
+  have h_dd : Fintype.card {τ : PBPSet .D μP ⊥ // tailClass_D τ.val = .DD} =
+      2 * (m + 1) - 1 := by
+    rw [card_PBPSet_D_primitive_step_tc h_hQP hQP_lt h_prim,
+        h_shifted, shiftLeft_bot, card_PBPSet_bot, Nat.one_mul]
+    simp_rw [tailClassOfSymbol_DD]
+    rw [validCol0_card_top_d h_hQP hQP_lt, hP_col, colLen_bot]; omega
+  -- RC via total - DD - SS
+  have h_rc : Fintype.card {τ : PBPSet .D μP ⊥ // tailClass_D τ.val = .RC} =
+      2 * (m + 1) := by
+    -- SS value
+    have h_ss : Fintype.card {τ : PBPSet .D μP ⊥ // tailClass_D τ.val = .SS} = 1 := by
+      rw [card_PBPSet_D_primitive_step_tc h_hQP hQP_lt h_prim,
+          h_shifted, shiftLeft_bot, card_PBPSet_bot, Nat.one_mul]
+      have : ∀ v : ValidCol0 μP ⊥,
+          tailClassOfSymbol (v.paint (μP.colLen 0 - 1)) = .SS ↔
+            v.paint (μP.colLen 0 - 1) = .s := by
+        intro v
+        have h_nd := v.nondot_tail (μP.colLen 0 - 1) (by rw [colLen_bot]; omega) (by omega)
+        rcases hv : v.paint (μP.colLen 0 - 1) with _ | _ | _ | _ | _
+        · exact absurd hv h_nd
+        · exact ⟨fun _ => rfl, fun _ => rfl⟩
+        all_goals exact ⟨fun h => by simp [tailClassOfSymbol] at h, fun h => by simp at h⟩
+      simp_rw [this]; exact validCol0_card_top_s h_hQP hQP_lt
+    -- Total
+    have h_total : Fintype.card (PBPSet .D μP ⊥) = 4 * (m + 1) := by
+      rw [card_PBPSet_D_eq_tripleSum_singleton (2*m+1) hP hQ hge3 ⟨m, rfl⟩]
+      simp only [countPBP_D, tailCoeffs, nu, ge_iff_le, hm1, ite_true, h_div, tripleSum]; omega
+    -- Partition via card_PBPSet_eq_sum_tc
+    have h_sum := card_PBPSet_eq_sum_tc μP ⊥
+    -- PBPSet_tc and subtype have same card
+    have h_conv : ∀ tc, Fintype.card (PBPSet_tc .D μP ⊥ tc) =
+        Fintype.card {τ : PBPSet .D μP ⊥ // tailClass_D τ.val = tc} :=
+      fun _ => Fintype.card_congr (Equiv.refl _)
+    rw [h_conv, h_conv, h_conv] at h_sum
+    omega
+  constructor
+  · rw [h_dd]; simp only [countPBP_D, tailCoeffs, nu, ge_iff_le, hm1, ite_true, h_div]; omega
+  · rw [h_rc]; simp only [countPBP_D, tailCoeffs, nu, ge_iff_le, hm1, ite_true, h_div]; omega
 
 /-- Per-tc step for dp = r₁::r₂::rest. -/
 theorem per_tc_cons₂ (r₁ r₂ : ℕ) (rest : DualPart) {μP μQ : YoungDiagram}
