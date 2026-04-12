@@ -1104,7 +1104,33 @@ theorem card_PBPSet_D_combined (dp : DualPart) (μP μQ : YoungDiagram)
             Finset.univ.sum (fun σ : PBPSet .D μP.shiftLeft μQ.shiftLeft =>
               Fintype.card {τ : doubleDescent_D_fiber σ // tailClass_D τ.val.val = tc'}) := by
           intro tc'; rw [← Fintype.card_sigma]; apply Fintype.card_congr
-          sorry -- Sigma-subtype exchange: {τ : A // P τ} ≃ Σ_σ {τ : fiber(σ) // P τ}
+          -- Both directions: sandwich via card_PBPSet_eq_sum_fiber (total) restricted to tc
+          -- Lower: Σ_σ fiber_tc → PBPSet_tc (simple projection)
+          have h_ge : Finset.univ.sum (fun σ : PBPSet .D μP.shiftLeft μQ.shiftLeft =>
+              Fintype.card {τ : doubleDescent_D_fiber σ // tailClass_D τ.val.val = tc'}) ≤
+              Fintype.card {τ : PBPSet .D μP μQ // tailClass_D τ.val = tc'} := by
+            rw [← Fintype.card_sigma]
+            apply Fintype.card_le_of_injective
+              (fun (p : (σ : _) × {τ : doubleDescent_D_fiber σ // _}) =>
+                (⟨p.2.val.val, p.2.prop⟩ : {τ : PBPSet .D μP μQ // tailClass_D τ.val = tc'}))
+            intro ⟨σ₁, ⟨⟨τ₁, h₁⟩, _⟩⟩ ⟨σ₂, ⟨⟨τ₂, h₂⟩, _⟩⟩ h
+            simp only [Subtype.mk.injEq] at h
+            subst h
+            have : σ₁ = σ₂ := h₁.symm.trans h₂
+            subst this; rfl
+          -- Upper: use total - other tc's ≤ this tc via partition
+          -- card(PBPSet) = card_tc(DD) + card_tc(RC) + card_tc(SS) [from sum_tc]
+          -- card(PBPSet) = Σ_σ card(fiber σ) [from sum_fiber]
+          -- Σ_σ card(fiber σ) ≥ Σ_σ card(fiber_tc(σ, tc')) [subtype ≤ type]
+          -- So card_tc(tc') ≤ Σ_σ card(fiber_tc(σ, tc'))
+          -- Combined with h_ge: equality.
+          have h_total := card_PBPSet_eq_sum_fiber (μP := μP) (μQ := μQ)
+          have h_sum_tc := card_PBPSet_eq_sum_tc μP μQ
+          have h_conv : ∀ t, Fintype.card (PBPSet_tc .D μP μQ t) =
+              Fintype.card {τ : PBPSet .D μP μQ // tailClass_D τ.val = t} :=
+            fun _ => Fintype.card_congr (Equiv.refl _)
+          rw [h_conv, h_conv, h_conv] at h_sum_tc
+          sorry -- Lean infra: sigma-subtype exchange + sum partition (no math)
         -- Use card_tc_sum + split + compute each part
         -- For DD: card_tc_sum DD = Σ_σ fib_tc(σ,DD)
         -- Split: Σ_{σ:DD} fib_tc(DD) + Σ_{σ:RC} fib_tc(DD) + Σ_{σ:SS} fib_tc(DD)
