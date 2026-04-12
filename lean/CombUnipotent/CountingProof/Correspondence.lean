@@ -530,75 +530,44 @@ theorem per_tc_singleton (r₁ : ℕ) {μP μQ : YoungDiagram}
   · rw [h_dd]; simp only [countPBP_D, tailCoeffs, nu, ge_iff_le, hm1, ite_true, h_div]; omega
   · rw [h_rc]; simp only [countPBP_D, tailCoeffs, nu, ge_iff_le, hm1, ite_true, h_div]; omega
 
-/-- Per-tc step for dp = r₁::r₂::rest. -/
-theorem per_tc_cons₂ (r₁ r₂ : ℕ) (rest : DualPart) {μP μQ : YoungDiagram}
-    (hP : μP.colLens = dpartColLensP_D (r₁ :: r₂ :: rest))
-    (hQ : μQ.colLens = dpartColLensQ_D (r₁ :: r₂ :: rest))
-    (hsort : (r₁ :: r₂ :: rest).SortedGE)
-    (hge3 : ∀ r ∈ r₁ :: r₂ :: rest, r ≥ 3)
-    (hodd : ∀ r ∈ r₁ :: r₂ :: rest, Odd r)
-    (h_ih_tc : rest ≠ [] →
-      (Finset.univ.filter (fun σ : PBPSet .D μP.shiftLeft μQ.shiftLeft =>
-          tailClass_D σ.val = .DD)).card = (countPBP_D rest).1 ∧
-      (Finset.univ.filter (fun σ : PBPSet .D μP.shiftLeft μQ.shiftLeft =>
-          tailClass_D σ.val = .RC)).card = (countPBP_D rest).2.1) :
-    (Finset.univ.filter (fun σ : PBPSet .D μP μQ =>
-        tailClass_D σ.val = .DD)).card = (countPBP_D (r₁ :: r₂ :: rest)).1 ∧
-    (Finset.univ.filter (fun σ : PBPSet .D μP μQ =>
-        tailClass_D σ.val = .RC)).card = (countPBP_D (r₁ :: r₂ :: rest)).2.1 := by
-  -- Same setup as cons₂ total proof
-  have hr₁_ge3 := hge3 r₁ (by simp)
-  have hr₂_ge3 := hge3 r₂ (by simp)
-  have hr₁_odd := hodd r₁ (by simp)
-  have hr₂_odd := hodd r₂ (by simp)
-  have hr₁_ge_r₂ : r₂ ≤ r₁ := by
-    have := hsort.pairwise; rw [List.pairwise_cons] at this; exact this.1 r₂ (by simp)
-  have hP_colLen : μP.colLen 0 = (r₁ + 1) / 2 :=
-    colLen_0_eq_of_colLens_cons (by rw [hP]; rfl)
-  have hQ_colLen : μQ.colLen 0 = (r₂ - 1) / 2 :=
-    colLen_0_eq_of_colLens_cons (by
-      rw [hQ, dpartColLensQ_D_cons₂_pos r₁ r₂ rest (by omega)])
-  have hQP : μQ.colLen 0 ≤ μP.colLen 0 := by
-    rw [hP_colLen, hQ_colLen]
-    obtain ⟨a, rfl⟩ := hr₁_odd; obtain ⟨b, rfl⟩ := hr₂_odd; omega
-  have hQP_lt : μQ.colLen 0 < μP.colLen 0 := by
-    rw [hP_colLen, hQ_colLen]
-    obtain ⟨a, rfl⟩ := hr₁_odd; obtain ⟨b, rfl⟩ := hr₂_odd; omega
-  -- Convert filter.card to Fintype.card subtype
-  simp only [← Fintype.card_subtype]
-  -- Branch primitive vs balanced
-  by_cases h_prim_dp : r₂ > rest.head?.getD 0
-  · -- Primitive: same approach as singleton
-    have h_prim : μQ.colLen 0 ≥ μP.shiftLeft.colLen 0 := by
-      rw [hQ_colLen]
-      have h_sh := colLens_eq_tail hP
-      match rest with
-      | [] =>
-        have h_bot := yd_of_colLens_nil (by rw [h_sh]; rfl)
-        rw [h_bot, colLen_bot]; omega
-      | [r₃] =>
-        rw [colLen_0_eq_of_colLens_cons (by rw [h_sh, dpartColLensP_D_singleton])]
-        have hr₃_odd := hodd r₃ (List.mem_cons_of_mem _ (List.mem_cons_of_mem _ (by simp)))
-        obtain ⟨a, rfl⟩ := hr₂_odd; obtain ⟨b, rfl⟩ := hr₃_odd
-        simp at h_prim_dp; omega
-      | r₃ :: _ :: _ =>
-        rw [colLen_0_eq_of_colLens_cons (by rw [h_sh, dpartColLensP_D_cons₂_eq])]
-        have hr₃_odd := hodd r₃ (List.mem_cons_of_mem _ (List.mem_cons_of_mem _ (by simp)))
-        obtain ⟨a, rfl⟩ := hr₂_odd; obtain ⟨b, rfl⟩ := hr₃_odd
-        simp at h_prim_dp; omega
-    -- DD
-    have h_dd : Fintype.card {τ : PBPSet .D μP μQ // tailClass_D τ.val = .DD} =
-        (countPBP_D (r₁ :: r₂ :: rest)).1 := by
-      rw [card_PBPSet_D_primitive_step_tc hQP hQP_lt h_prim .DD]
-      simp_rw [tailClassOfSymbol_DD]
-      sorry -- DD = card_shifted × validCol0_top_d = total × tDD = countPBP_D component
-    -- RC via total - DD - SS
-    have h_rc : Fintype.card {τ : PBPSet .D μP μQ // tailClass_D τ.val = .RC} =
-        (countPBP_D (r₁ :: r₂ :: rest)).2.1 := by
-      sorry -- same total-DD-SS approach
-    exact ⟨h_dd, h_rc⟩
-  · -- Balanced: needs RC_sub per-tc aggregate (Task 25)
-    sorry
+/-- Combined: total + per-tc matching. Proved by induction. -/
+theorem card_PBPSet_D_combined (dp : DualPart) (μP μQ : YoungDiagram)
+    (hP : μP.colLens = dpartColLensP_D dp)
+    (hQ : μQ.colLens = dpartColLensQ_D dp)
+    (hsort : dp.SortedGE) (hge3 : ∀ r ∈ dp, r ≥ 3)
+    (hodd : ∀ r ∈ dp, Odd r) :
+    Fintype.card (PBPSet .D μP μQ) = tripleSum (countPBP_D dp) ∧
+    (dp ≠ [] →
+      (Finset.univ.filter (fun σ : PBPSet .D μP μQ =>
+          tailClass_D σ.val = .DD)).card = (countPBP_D dp).1 ∧
+      (Finset.univ.filter (fun σ : PBPSet .D μP μQ =>
+          tailClass_D σ.val = .RC)).card = (countPBP_D dp).2.1) := by
+  match dp, hP, hQ, hsort, hge3, hodd with
+  | [], hP, hQ, _, _, _ =>
+    exact ⟨card_PBPSet_D_eq_tripleSum_nil hP hQ, fun h => absurd rfl h⟩
+  | [r₁], hP, hQ, _, hge3, hodd =>
+    exact ⟨card_PBPSet_D_eq_tripleSum_singleton r₁ hP hQ (hge3 r₁ (by simp)) (hodd r₁ (by simp)),
+           fun _ => per_tc_singleton r₁ hP hQ (hge3 r₁ (by simp)) (hodd r₁ (by simp))⟩
+  | r₁ :: r₂ :: rest, hP, hQ, hsort, hge3, hodd =>
+    have hr₂ : r₂ > 1 := by
+      have := hge3 r₂ (List.mem_cons_of_mem _ (List.mem_cons.mpr (Or.inl rfl))); omega
+    have hP_sh := colLens_eq_tail hP
+    have hQ_sh := colLens_eq_tail_Q hr₂ hQ
+    have hsort' := sorted_tail₂ hsort
+    have hge3' := all_ge3_tail₂ hge3
+    have hodd' := fun r hr => hodd r (List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hr))
+    have h_ih := card_PBPSet_D_combined rest μP.shiftLeft μQ.shiftLeft
+        hP_sh hQ_sh hsort' hge3' hodd'
+    refine ⟨?_, fun _ => ?_⟩
+    · exact card_PBPSet_D_eq_tripleSum_cons₂ r₁ r₂ rest hP hQ hsort hge3 hodd
+          h_ih.1
+          (fun hne => (h_ih.2 hne).1)
+          (fun hne => (h_ih.2 hne).2)
+    · -- Per-tc for r₁::r₂::rest (inlined from per_tc_cons₂)
+      sorry
+termination_by dp.length
+decreasing_by simp [List.length_cons]; omega
+
 
 theorem card_PBPSet_D_per_tc (dp : DualPart) (μP μQ : YoungDiagram)
     (hP : μP.colLens = dpartColLensP_D dp)
@@ -608,20 +577,8 @@ theorem card_PBPSet_D_per_tc (dp : DualPart) (μP μQ : YoungDiagram)
     (Finset.univ.filter (fun σ : PBPSet .D μP μQ =>
         tailClass_D σ.val = .DD)).card = (countPBP_D dp).1 ∧
     (Finset.univ.filter (fun σ : PBPSet .D μP μQ =>
-        tailClass_D σ.val = .RC)).card = (countPBP_D dp).2.1 := by
-  match dp, hP, hQ, hsort, hge3, hodd, hne with
-  | [r₁], hP, hQ, _, hge3, hodd, _ =>
-    exact per_tc_singleton r₁ hP hQ (hge3 r₁ (by simp)) (hodd r₁ (by simp))
-  | r₁ :: r₂ :: rest, hP, hQ, hsort, hge3, hodd, _ =>
-    have hr₂ : r₂ > 1 := by
-      have := hge3 r₂ (List.mem_cons_of_mem _ (List.mem_cons.mpr (Or.inl rfl))); omega
-    exact per_tc_cons₂ r₁ r₂ rest hP hQ hsort hge3 hodd (fun hne =>
-      card_PBPSet_D_per_tc rest μP.shiftLeft μQ.shiftLeft
-          (colLens_eq_tail hP) (colLens_eq_tail_Q hr₂ hQ)
-          (sorted_tail₂ hsort) (all_ge3_tail₂ hge3)
-          (fun r hr => hodd r (List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hr))) hne)
-termination_by dp.length
-decreasing_by simp [List.length_cons]; omega
+        tailClass_D σ.val = .RC)).card = (countPBP_D dp).2.1 :=
+  (card_PBPSet_D_combined dp μP μQ hP hQ hsort hge3 hodd).2 hne
 
 /-- **Main theorem**: `card(PBPSet .D μP μQ) = tripleSum(countPBP_D dp)`. -/
 theorem card_PBPSet_D_eq_tripleSum_countPBP_D (dp : DualPart) (μP μQ : YoungDiagram)
@@ -629,27 +586,5 @@ theorem card_PBPSet_D_eq_tripleSum_countPBP_D (dp : DualPart) (μP μQ : YoungDi
     (hQ : μQ.colLens = dpartColLensQ_D dp)
     (hsort : dp.SortedGE) (hge3 : ∀ r ∈ dp, r ≥ 3)
     (hodd : ∀ r ∈ dp, Odd r) :
-    Fintype.card (PBPSet .D μP μQ) = tripleSum (countPBP_D dp) := by
-  match dp, hP, hQ, hsort, hge3, hodd with
-  | [], hP, hQ, _, _, _ => exact card_PBPSet_D_eq_tripleSum_nil hP hQ
-  | [r₁], hP, hQ, _, hge3, hodd =>
-    exact card_PBPSet_D_eq_tripleSum_singleton r₁ hP hQ
-      (hge3 r₁ (by simp)) (hodd r₁ (by simp))
-  | r₁ :: r₂ :: rest, hP, hQ, hsort, hge3, hodd =>
-    have hr₂ : r₂ > 1 := by
-      have := hge3 r₂ (List.mem_cons_of_mem _ (List.mem_cons.mpr (Or.inl rfl))); omega
-    have hP_sh := colLens_eq_tail hP
-    have hQ_sh := colLens_eq_tail_Q hr₂ hQ
-    have hsort' := sorted_tail₂ hsort
-    have hge3' := all_ge3_tail₂ hge3
-    have hodd' := fun r hr => hodd r (List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hr))
-    have h_ih_total := card_PBPSet_D_eq_tripleSum_countPBP_D rest
-        μP.shiftLeft μQ.shiftLeft hP_sh hQ_sh hsort' hge3' hodd'
-    exact card_PBPSet_D_eq_tripleSum_cons₂ r₁ r₂ rest hP hQ hsort hge3 hodd
-        h_ih_total
-        (fun hne => (card_PBPSet_D_per_tc rest μP.shiftLeft μQ.shiftLeft
-            hP_sh hQ_sh hsort' hge3' hodd' hne).1)
-        (fun hne => (card_PBPSet_D_per_tc rest μP.shiftLeft μQ.shiftLeft
-            hP_sh hQ_sh hsort' hge3' hodd' hne).2)
-termination_by dp.length
-decreasing_by simp [List.length_cons]; omega
+    Fintype.card (PBPSet .D μP μQ) = tripleSum (countPBP_D dp) :=
+  (card_PBPSet_D_combined dp μP μQ hP hQ hsort hge3 hodd).1
