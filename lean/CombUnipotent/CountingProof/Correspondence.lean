@@ -499,7 +499,10 @@ theorem per_tc_singleton (r₁ : ℕ) {μP μQ : YoungDiagram}
     have h3 : (⊥ : YoungDiagram).colLen 0 = 0 := colLen_bot 0
     have hm_ge : m + 1 ≥ 2 := by omega
     simp only [h1, h2, countPBP_D, tailCoeffs, nu, ge_iff_le, hm_ge, ite_true]; omega
-  · -- RC: split into .r and .c subtypes
+  · -- RC: use total - DD - SS = RC
+    -- total = 4K, DD = 2K-1, so RC = 4K - (2K-1) - SS
+    -- We compute directly via card_PBPSet_D_primitive_step_tc
+    -- and the total/DD results
     sorry
 
 /-- Per-tc step for dp = r₁::r₂::rest. -/
