@@ -7,6 +7,7 @@ whose colLens match the dp-derived colLens, the fiber count equals `countPBP_D d
 -/
 import CombUnipotent.CountingProof.LiftRC
 import Mathlib.Algebra.Ring.Parity
+import Mathlib.Tactic.Ring
 
 open Classical
 
@@ -399,11 +400,44 @@ theorem card_PBPSet_D_eq_tripleSum_cons₂ (r₁ r₂ : ℕ) (rest : DualPart)
         h_prim rfl hQP hK_pos
     rw [h_card, h_ih, hK]
     simp only [tripleSum, Nat.add_mul, Nat.mul_add]
-  · -- Balanced case: r₂ ≤ r₃
+  · -- Balanced case: r₂ ≤ r₃ (hence r₂ = r₃ by sortedness)
     rw [if_neg h_prim_dp]
-    -- Need: card = dd' * tSum + rc' * scSum
-    -- where (dd', rc', ss') = countPBP_D rest
-    sorry
+    -- YD balanced condition: shiftLeft μP.colLen 0 = μQ.colLen 0 + 1
+    have h_bal : μP.shiftLeft.colLen 0 = μQ.colLen 0 + 1 := by
+      -- r₂ = r₃ (from ¬(r₂ > r₃) + r₂ ≥ r₃ by sortedness)
+      push_neg at h_prim_dp
+      have hr₂_ge_r₃ : r₂ ≥ rest.head?.getD 0 := by
+        match rest with
+        | [] => simp
+        | r₃ :: _ =>
+          simp only [List.head?_cons, Option.getD_some]
+          have hp := hsort.pairwise; rw [List.pairwise_cons] at hp
+          exact (List.pairwise_cons.mp hp.2).1 r₃ (by simp)
+      have hr₂_eq_r₃ : r₂ = rest.head?.getD 0 := Nat.le_antisymm h_prim_dp hr₂_ge_r₃
+      -- shiftLeft μP.colLen 0 = first(dpartColLensP_D rest)
+      have h_sh := colLens_eq_tail hP
+      match rest with
+      | [] => exfalso; simp at hr₂_eq_r₃; omega
+      | [r₃] =>
+        rw [colLen_0_eq_of_colLens_cons (by rw [h_sh, dpartColLensP_D_singleton]), hQ_colLen]
+        simp at hr₂_eq_r₃
+        obtain ⟨a, rfl⟩ := hr₂_odd
+        obtain ⟨b, rfl⟩ := hodd r₃ (List.mem_cons_of_mem _ (List.mem_cons_of_mem _ (by simp)))
+        omega
+      | r₃ :: _ :: _ =>
+        rw [colLen_0_eq_of_colLens_cons (by rw [h_sh, dpartColLensP_D_cons₂_eq]), hQ_colLen]
+        simp at hr₂_eq_r₃
+        obtain ⟨a, rfl⟩ := hr₂_odd
+        obtain ⟨b, rfl⟩ := hodd r₃ (List.mem_cons_of_mem _ (List.mem_cons_of_mem _ (by simp)))
+        omega
+    -- Apply balanced step directly
+    have h_step := card_PBPSet_D_balanced_step _ h_bal rfl hQP hK_pos
+    -- Need: filter counts = countPBP_D rest components (per-tc IH = Task 25)
+    have h_dd_eq : (Finset.univ.filter (fun σ : PBPSet .D μP.shiftLeft μQ.shiftLeft =>
+        tailClass_D σ.val = .DD)).card = (countPBP_D rest).1 := by sorry
+    have h_rc_eq : (Finset.univ.filter (fun σ : PBPSet .D μP.shiftLeft μQ.shiftLeft =>
+        tailClass_D σ.val = .RC)).card = (countPBP_D rest).2.1 := by sorry
+    rw [h_step, h_dd_eq, h_rc_eq, hK]; ring
 
 /-- **Main theorem**: `card(PBPSet .D μP μQ) = tripleSum(countPBP_D dp)`.
     Combines base, singleton, and pair-step by strong induction on dp.length. -/
