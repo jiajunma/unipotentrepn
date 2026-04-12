@@ -263,7 +263,9 @@ theorem card_PBPSet_D_balanced_tripleSum {μP μQ : YoungDiagram}
     let ((tDD, tRC, tSS), (scDD, scRC, scSS)) := tailCoeffs k
     Fintype.card (PBPSet .D μP μQ) =
       dd' * (tDD + tRC + tSS) + rc' * (scDD + scRC + scSS) := by
-  sorry
+  rw [h_dd, h_rc]
+  simp only [PBPSet_tc, Fintype.card_subtype]
+  exact card_PBPSet_D_balanced_step _ h_bal rfl hQP hk_pos
 
 /-! ## Main theorem: dp → card matching -/
 
