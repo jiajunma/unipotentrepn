@@ -443,6 +443,24 @@ theorem card_PBPSet_D_eq_tripleSum_cons₂ (r₁ r₂ : ℕ) (rest : DualPart)
     have h_rc_eq := h_ih_rc h_rest_ne
     rw [h_step, h_dd_eq, h_rc_eq, hK]; ring
 
+/-- Primitive per-tc step: filter(tc).card = card_shifted × validCol0_tc_count.
+    Uses: PBPSet_tc DD = Σ_σ fiber_tc(σ, DD) and fiber_tc constant over σ. -/
+theorem card_PBPSet_D_primitive_step_tc {μP μQ : YoungDiagram}
+    (hQP : μQ.colLen 0 ≤ μP.colLen 0) (hk_pos : μQ.colLen 0 < μP.colLen 0)
+    (h_prim : μQ.colLen 0 ≥ μP.shiftLeft.colLen 0) (tc : TailClass) :
+    Fintype.card (PBPSet_tc .D μP μQ tc) =
+      Fintype.card (PBPSet .D μP.shiftLeft μQ.shiftLeft) *
+        Fintype.card {v : ValidCol0 μP μQ //
+          tailClassOfSymbol (v.paint (μP.colLen 0 - 1)) = tc} := by
+  -- PBPSet_tc = {τ // tailClass τ = tc}
+  -- Decompose as Σ_σ {τ : fiber(σ) // tailClass τ = tc}
+  -- Each fiber_tc has constant size (by fiber_card_primitive_tc)
+  -- So total = card_shifted × fiber_tc_size
+  -- Sandwich argument: card ≤ and ≥
+  -- Upper: PBPSet_tc ↪ Σ_σ ValidCol0_tc via extractCol0 (preserves tc)
+  -- Lower: Σ_σ ValidCol0_tc ↪ PBPSet_tc via liftPBP (preserves tc)
+  sorry
+
 /-! Per-tc matching for dp.length ≥ 1: filter counts match countPBP_D components.
     Note: dp=[] doesn't satisfy per-tc (countPBP_D []=(1,0,0) but actual is (0,0,1)).
     But dp=[] never appears as rest in balanced step. -/
