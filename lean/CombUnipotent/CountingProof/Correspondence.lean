@@ -509,14 +509,105 @@ theorem X_r_tc_plus_X_c_tc_DD {μP μQ : YoungDiagram}
     (hQP : μQ.colLen 0 ≤ μP.colLen 0) (hk_pos : μQ.colLen 0 < μP.colLen 0) :
     R_ValidCol0_tc μP μQ .DD + C_ValidCol0_tc μP μQ .DD =
       2 * (tailCoeffs (μP.colLen 0 - μQ.colLen 0)).2.1 := by
-  sorry
+  set K := μP.colLen 0 - μQ.colLen 0 with hK_def
+  have hK_pos : K ≥ 1 := by omega
+  simp_rw [R_ValidCol0_tc, C_ValidCol0_tc, tailClassOfSymbol_DD]
+  rcases Nat.lt_or_ge K 2 with hK1 | hK2
+  · -- K = 1: both R and C are 0 (contradictory conditions)
+    have hK_eq : K = 1 := by omega
+    have h_top_eq_b : μP.colLen 0 - 1 = μQ.colLen 0 := by omega
+    have h_R : Fintype.card {v : ValidCol0 μP μQ //
+        v.paint (μQ.colLen 0) = .s ∧ v.paint (μP.colLen 0 - 1) = .d} = 0 :=
+      Fintype.card_eq_zero_iff.mpr ⟨fun ⟨_, hs, hd⟩ => by
+        rw [h_top_eq_b] at hd; rw [hs] at hd; exact DRCSymbol.noConfusion hd⟩
+    have h_C : Fintype.card {v : ValidCol0 μP μQ //
+        (v.paint (μQ.colLen 0)).layerOrd ≤ 3 ∧ v.paint (μP.colLen 0 - 1) = .d} = 0 :=
+      Fintype.card_eq_zero_iff.mpr ⟨fun ⟨_, hlo, hd⟩ => by
+        rw [h_top_eq_b] at hd; rw [hd] at hlo; simp [DRCSymbol.layerOrd] at hlo⟩
+    rw [h_R, h_C, hK_eq]; simp [tailCoeffs_scDD]
+  · -- K ≥ 2: R = 2K-3, C = 2K-1
+    -- C_tc(DD): layerOrd ≤ 3 is automatic for top=.d with K≥2 (d_unique)
+    have h_C : Fintype.card {v : ValidCol0 μP μQ //
+        (v.paint (μQ.colLen 0)).layerOrd ≤ 3 ∧ v.paint (μP.colLen 0 - 1) = .d} =
+        Fintype.card {v : ValidCol0 μP μQ // v.paint (μP.colLen 0 - 1) = .d} := by
+      apply Fintype.card_congr
+      apply Equiv.subtypeEquivRight
+      intro v; constructor
+      · exact fun ⟨_, hd⟩ => hd
+      · intro hd; refine ⟨?_, hd⟩
+        have h_ne : μQ.colLen 0 ≠ μP.colLen 0 - 1 := by omega
+        have hb_ne_d : v.paint (μQ.colLen 0) ≠ .d := fun hbd =>
+          h_ne (v.col_d_unique _ _ hbd hd)
+        rcases hp : v.paint (μQ.colLen 0) with _ | _ | _ | _ | _
+        all_goals (simp [DRCSymbol.layerOrd]; try omega)
+        exact absurd hp hb_ne_d
+    rw [h_C, validCol0_card_top_d hQP (by omega), hK_def]
+    -- R_tc(DD) = |{v // paint(b)=.s ∧ top=.d}| = TSeq(K-1) last=.d = 2(K-1)-1
+    -- Goal: R_tc + (2K-1) = 2·scDD = 2·(2K-2) = 4K-4
+    -- So R_tc = 2K-3
+    have h_R_val : Fintype.card {v : ValidCol0 μP μQ //
+        v.paint (μQ.colLen 0) = .s ∧ v.paint (μP.colLen 0 - 1) = .d} = 2 * K - 3 := by
+      sorry -- TSeq bridge: R_ValidCol0 ≃ TSeq(K-1), restricted to last=.d = TSeq_card_last_d'(K-1) = 2(K-1)-1
+    rw [h_R_val, tailCoeffs_scDD, if_pos hK2]; omega
 
 /-- R_tc(RC) + C_tc(RC) = 2 × scRC. -/
 theorem X_r_tc_plus_X_c_tc_RC {μP μQ : YoungDiagram}
     (hQP : μQ.colLen 0 ≤ μP.colLen 0) (hk_pos : μQ.colLen 0 < μP.colLen 0) :
     R_ValidCol0_tc μP μQ .RC + C_ValidCol0_tc μP μQ .RC =
       2 * (tailCoeffs (μP.colLen 0 - μQ.colLen 0)).2.2.1 := by
-  sorry
+  set K := μP.colLen 0 - μQ.colLen 0 with hK_def
+  have hK_pos : K ≥ 1 := by omega
+  simp_rw [R_ValidCol0_tc, C_ValidCol0_tc, tailClassOfSymbol_RC]
+  rcases Nat.lt_or_ge K 2 with hK1 | hK2
+  · -- K = 1
+    have hK_eq : K = 1 := by omega
+    have h_top_eq_b : μP.colLen 0 - 1 = μQ.colLen 0 := by omega
+    -- R: {paint(b)=.s ∧ (top=.r ∨ top=.c)}. K=1: top=b → .s=.r∨.c impossible
+    have h_R : Fintype.card {v : ValidCol0 μP μQ //
+        v.paint (μQ.colLen 0) = .s ∧
+        (v.paint (μP.colLen 0 - 1) = .r ∨ v.paint (μP.colLen 0 - 1) = .c)} = 0 :=
+      Fintype.card_eq_zero_iff.mpr ⟨fun ⟨_, hs, hrc⟩ => by
+        rw [h_top_eq_b] at hrc; rcases hrc with hr | hc
+        · rw [hs] at hr; exact DRCSymbol.noConfusion hr
+        · rw [hs] at hc; exact DRCSymbol.noConfusion hc⟩
+    -- C: {layerOrd≤3 ∧ (top=.r ∨ top=.c)}. K=1: top=b. .r.layerOrd=2≤3 and .c.layerOrd=3≤3. So 2 elements.
+    have h_C : Fintype.card {v : ValidCol0 μP μQ //
+        (v.paint (μQ.colLen 0)).layerOrd ≤ 3 ∧
+        (v.paint (μP.colLen 0 - 1) = .r ∨ v.paint (μP.colLen 0 - 1) = .c)} = 2 := by
+      sorry -- K=1: TSeq 1 \ {.d} restricted to last ∈ {.r,.c} = 2 elements
+    rw [h_R, h_C, hK_eq]; simp [tailCoeffs_scRC]
+  · -- K ≥ 2
+    -- C: layerOrd ≤ 3 is automatic (same as DD case: top ∈ {.r,.c} → no d_unique issue)
+    have h_C : Fintype.card {v : ValidCol0 μP μQ //
+        (v.paint (μQ.colLen 0)).layerOrd ≤ 3 ∧
+        (v.paint (μP.colLen 0 - 1) = .r ∨ v.paint (μP.colLen 0 - 1) = .c)} =
+        Fintype.card {v : ValidCol0 μP μQ //
+        v.paint (μP.colLen 0 - 1) = .r ∨ v.paint (μP.colLen 0 - 1) = .c} := by
+      apply Fintype.card_congr; apply Equiv.subtypeEquivRight; intro v; constructor
+      · exact fun ⟨_, h⟩ => h
+      · intro h; refine ⟨?_, h⟩
+        -- top ∈ {.r,.c} → paint(b) can be anything except .d requires K≥2
+        -- Actually layerOrd ≤ 3 means ≠ .d. For K≥2 with top ∈ {.r,.c}:
+        -- by col_c_unique or general argument, paint(b) ≤ top in layerOrd
+        -- Since b < top by K≥2, monotonicity gives paint(b).layerOrd ≤ top.layerOrd ≤ 3
+        have h_top_lt : μQ.colLen 0 < μP.colLen 0 - 1 := by omega
+        have := v.mono (μQ.colLen 0) (μP.colLen 0 - 1) (by omega) (by omega)
+        rcases h with hr | hc
+        · rw [hr, DRCSymbol.layerOrd] at this; exact Nat.le_trans this (by omega)
+        · rw [hc, DRCSymbol.layerOrd] at this; exact this
+    rw [h_C]
+    -- ValidCol0 top ∈ {.r,.c} = K + K = 2K
+    rw [Fintype.card_subtype_or_disjoint _ _
+        (Set.disjoint_iff.2 fun v ⟨hr, hc⟩ => by
+          change v.paint _ = .r at hr; change v.paint _ = .c at hc
+          rw [hr] at hc; exact DRCSymbol.noConfusion hc)]
+    rw [validCol0_card_top_r hQP (by omega), validCol0_card_top_c hQP (by omega), hK_def]
+    -- R_tc(RC) via TSeq bridge
+    have h_R_val : Fintype.card {v : ValidCol0 μP μQ //
+        v.paint (μQ.colLen 0) = .s ∧
+        (v.paint (μP.colLen 0 - 1) = .r ∨ v.paint (μP.colLen 0 - 1) = .c)} = 2 * (K - 1) := by
+      sorry -- TSeq(K-1) last ∈ {.r,.c} = (K-1) + (K-1) = 2(K-1)
+    rw [h_R_val, tailCoeffs_scRC K hK_pos]; omega
 
 /-- Helper: for R_sub σ, compat_with_RC σ v ↔ v.paint(b) = .s. -/
 private lemma compat_R_iff {μP μQ : YoungDiagram}
