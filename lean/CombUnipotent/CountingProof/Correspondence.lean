@@ -492,9 +492,80 @@ lemma tailClassOfSymbol_RC (sym : DRCSymbol) :
     tailClassOfSymbol sym = .RC ↔ (sym = .r ∨ sym = .c) := by
   cases sym <;> simp [tailClassOfSymbol]
 
-/-- **RC_sub per-tc aggregate (Task 25 core)**: for balanced case, the sum over
-    RC_sub σ of fib_tc(σ, DD) equals subRC × scDD (and similarly for RC, SS).
-    Proof needs R/C fiber per-tc + |R_sub| = |C_sub|. -/
+/-! RC_sub per-tc aggregate (Task 25 core) -/
+
+/-- Per-tc value for R_sub σ: |{v // compat_R ∧ topTC = tc}|. -/
+private noncomputable def R_ValidCol0_tc (μP μQ : YoungDiagram) (tc : TailClass) : ℕ :=
+  Fintype.card {v : ValidCol0 μP μQ //
+    v.paint (μQ.colLen 0) = .s ∧ tailClassOfSymbol (v.paint (μP.colLen 0 - 1)) = tc}
+
+/-- Per-tc value for C_sub σ: |{v // compat_C ∧ topTC = tc}|. -/
+private noncomputable def C_ValidCol0_tc (μP μQ : YoungDiagram) (tc : TailClass) : ℕ :=
+  Fintype.card {v : ValidCol0 μP μQ //
+    (v.paint (μQ.colLen 0)).layerOrd ≤ 3 ∧ tailClassOfSymbol (v.paint (μP.colLen 0 - 1)) = tc}
+
+/-- R_tc(DD) + C_tc(DD) = 2 × scDD. -/
+theorem X_r_tc_plus_X_c_tc_DD {μP μQ : YoungDiagram}
+    (hQP : μQ.colLen 0 ≤ μP.colLen 0) (hk_pos : μQ.colLen 0 < μP.colLen 0) :
+    R_ValidCol0_tc μP μQ .DD + C_ValidCol0_tc μP μQ .DD =
+      2 * (tailCoeffs (μP.colLen 0 - μQ.colLen 0)).2.1 := by
+  sorry
+
+/-- R_tc(RC) + C_tc(RC) = 2 × scRC. -/
+theorem X_r_tc_plus_X_c_tc_RC {μP μQ : YoungDiagram}
+    (hQP : μQ.colLen 0 ≤ μP.colLen 0) (hk_pos : μQ.colLen 0 < μP.colLen 0) :
+    R_ValidCol0_tc μP μQ .RC + C_ValidCol0_tc μP μQ .RC =
+      2 * (tailCoeffs (μP.colLen 0 - μQ.colLen 0)).2.2.1 := by
+  sorry
+
+/-- Helper: for R_sub σ, compat_with_RC σ v ↔ v.paint(b) = .s. -/
+private lemma compat_R_iff {μP μQ : YoungDiagram}
+    (σ : PBPSet .D μP.shiftLeft μQ.shiftLeft)
+    (h_r : σ.val.P.paint (μQ.colLen 0) 0 = .r)
+    (v : ValidCol0 μP μQ) (hQP : μQ.colLen 0 ≤ μP.colLen 0) (hk_pos : μQ.colLen 0 < μP.colLen 0) :
+    v.compat_with_RC σ ↔ v.paint (μQ.colLen 0) = .s := by
+  constructor
+  · intro ⟨h1, h2⟩
+    rw [h_r, DRCSymbol.layerOrd] at h1
+    have h_nd := v.nondot_tail (μQ.colLen 0) (le_refl _) hk_pos
+    have h_ne_r := h2 h_r
+    rcases hp : v.paint (μQ.colLen 0) with _ | _ | _ | _ | _
+    · exact absurd hp h_nd
+    · rfl
+    · exact absurd hp h_ne_r
+    all_goals (rw [hp, DRCSymbol.layerOrd] at h1; omega)
+  · intro h; exact ⟨by rw [h, h_r]; decide, fun _ => by rw [h]; decide⟩
+
+/-- Helper: for C_sub σ, compat_with_RC σ v ↔ v.paint(b).layerOrd ≤ 2. -/
+private lemma compat_C_iff {μP μQ : YoungDiagram}
+    (σ : PBPSet .D μP.shiftLeft μQ.shiftLeft)
+    (h_c : σ.val.P.paint (μQ.colLen 0) 0 = .c)
+    (v : ValidCol0 μP μQ) :
+    v.compat_with_RC σ ↔ (v.paint (μQ.colLen 0)).layerOrd ≤ 3 := by
+  constructor
+  · intro ⟨h1, _⟩; rw [h_c, DRCSymbol.layerOrd] at h1; exact h1
+  · intro h; exact ⟨by rw [h_c, DRCSymbol.layerOrd]; exact h,
+      fun hr => by rw [h_c] at hr; exact DRCSymbol.noConfusion hr⟩
+
+/-- Balanced RC aggregate for DD (and RC) per-tc.
+    Follows fiber_card_balanced_RC_aggregate structure with per-tc restriction. -/
+theorem balanced_RC_aggregate_tc {μP μQ : YoungDiagram}
+    (hQP : μQ.colLen 0 ≤ μP.colLen 0) (hk_pos : μQ.colLen 0 < μP.colLen 0)
+    (h_bal : μP.shiftLeft.colLen 0 = μQ.colLen 0 + 1) (tc : TailClass)
+    (h_sum : R_ValidCol0_tc μP μQ tc + C_ValidCol0_tc μP μQ tc =
+      2 * (match tc with | .DD => (tailCoeffs (μP.colLen 0 - μQ.colLen 0)).2.1
+                         | .RC => (tailCoeffs (μP.colLen 0 - μQ.colLen 0)).2.2.1
+                         | .SS => (tailCoeffs (μP.colLen 0 - μQ.colLen 0)).2.2.2)) :
+    (Finset.univ.filter (fun σ : PBPSet .D μP.shiftLeft μQ.shiftLeft =>
+        tailClass_D σ.val = .RC)).sum
+      (fun σ => Fintype.card {τ : doubleDescent_D_fiber σ // tailClass_D τ.val.val = tc}) =
+    (Finset.univ.filter (fun σ : PBPSet .D μP.shiftLeft μQ.shiftLeft =>
+        tailClass_D σ.val = .RC)).card *
+      (match tc with | .DD => (tailCoeffs (μP.colLen 0 - μQ.colLen 0)).2.1
+                     | .RC => (tailCoeffs (μP.colLen 0 - μQ.colLen 0)).2.2.1
+                     | .SS => (tailCoeffs (μP.colLen 0 - μQ.colLen 0)).2.2.2) := by
+  sorry
+
 theorem balanced_RC_aggregate_DD {μP μQ : YoungDiagram}
     (hQP : μQ.colLen 0 ≤ μP.colLen 0) (hk_pos : μQ.colLen 0 < μP.colLen 0)
     (h_bal : μP.shiftLeft.colLen 0 = μQ.colLen 0 + 1) :
@@ -503,8 +574,8 @@ theorem balanced_RC_aggregate_DD {μP μQ : YoungDiagram}
       (fun σ => Fintype.card {τ : doubleDescent_D_fiber σ // tailClass_D τ.val.val = .DD}) =
     (Finset.univ.filter (fun σ : PBPSet .D μP.shiftLeft μQ.shiftLeft =>
         tailClass_D σ.val = .RC)).card *
-      (tailCoeffs (μP.colLen 0 - μQ.colLen 0)).2.1 := by
-  sorry
+      (tailCoeffs (μP.colLen 0 - μQ.colLen 0)).2.1 :=
+  balanced_RC_aggregate_tc hQP hk_pos h_bal .DD (X_r_tc_plus_X_c_tc_DD hQP hk_pos)
 
 theorem balanced_RC_aggregate_RC {μP μQ : YoungDiagram}
     (hQP : μQ.colLen 0 ≤ μP.colLen 0) (hk_pos : μQ.colLen 0 < μP.colLen 0)
@@ -514,8 +585,8 @@ theorem balanced_RC_aggregate_RC {μP μQ : YoungDiagram}
       (fun σ => Fintype.card {τ : doubleDescent_D_fiber σ // tailClass_D τ.val.val = .RC}) =
     (Finset.univ.filter (fun σ : PBPSet .D μP.shiftLeft μQ.shiftLeft =>
         tailClass_D σ.val = .RC)).card *
-      (tailCoeffs (μP.colLen 0 - μQ.colLen 0)).2.2.1 := by
-  sorry
+      (tailCoeffs (μP.colLen 0 - μQ.colLen 0)).2.2.1 :=
+  balanced_RC_aggregate_tc hQP hk_pos h_bal .RC (X_r_tc_plus_X_c_tc_RC hQP hk_pos)
 
 /-! Per-tc matching for dp.length ≥ 1: filter counts match countPBP_D components.
     Note: dp=[] doesn't satisfy per-tc (countPBP_D []=(1,0,0) but actual is (0,0,1)).
@@ -840,16 +911,13 @@ theorem card_PBPSet_D_combined (dp : DualPart) (μP μQ : YoungDiagram)
             (countPBP_D rest).1 * (tailCoeffs K).1.2.1 +
             (countPBP_D rest).2.1 * (tailCoeffs K).2.2.1 := by
           simp [countPBP_D, tripleSum, show ¬(r₂ > (List.head? rest).getD 0) from by omega, hK_dp]
-        -- Per-tc IH: subDD = dd', subRC = rc'
-        rw [h_ih_tc'.1, h_ih_tc'.2] at h_cpd₁ h_cpd₂
-        -- DD per-tc: DD_sub gives validCol0_tc(DD), RC_sub gives aggregate
-        simp only [← Fintype.card_subtype]
-        -- Need: DD = subDD × tDD + subRC × scDD (per-tc fiber sum decomposition)
-        -- DD_sub contribution: subDD × tDD (from fiber_card_balanced_DD_tc)
-        -- RC_sub contribution: subRC × scDD (from balanced_RC_aggregate_DD)
-        -- SS_sub: 0
-        -- Similarly for RC.
-        -- Requires per-tc Finset.sum decomposition (not yet assembled)
+        -- cpd.1 = dd' × tDD + rc' × scDD where dd' = filter(DD), rc' = filter(RC) by IH
+        -- cpd.2.1 = dd' × tRC + rc' × scRC
+        rw [← h_ih_tc'.1, ← h_ih_tc'.2] at h_cpd₁ h_cpd₂
+        -- Now h_cpd₁ : cpd.1 = filter(DD) × tDD + filter(RC) × scDD
+        -- Need: filter(DD new) = cpd.1 ∧ filter(RC new) = cpd.2.1
+        -- This requires per-tc fiber sum decomposition = balanced_step_tc
+        -- Using balanced_RC_aggregate_DD/RC + fiber_card_balanced_DD_tc + SS=0
         sorry
 termination_by dp.length
 decreasing_by simp [List.length_cons]; omega
