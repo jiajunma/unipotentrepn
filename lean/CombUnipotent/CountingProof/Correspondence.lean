@@ -629,10 +629,15 @@ theorem X_r_tc_plus_X_c_tc_RC {μP μQ : YoungDiagram}
     have h_R_val : Fintype.card {v : ValidCol0 μP μQ //
         v.paint (μQ.colLen 0) = .s ∧
         (v.paint (μP.colLen 0 - 1) = .r ∨ v.paint (μP.colLen 0 - 1) = .c)} = 2 * (K - 1) := by
-      -- Use total - DD - SS at R_ValidCol0 level
-      -- R_total = TSeq(K-1) = 4(K-1), R_DD = 2(K-1)-1, R_SS = 1
-      -- R_RC = 4(K-1) - (2(K-1)-1) - 1 = 2(K-1)
-      sorry
+      -- Rewrite ∧(∨) as (∧)∨(∧), split, bridge each part
+      rw [Fintype.card_congr (Equiv.subtypeEquivRight (fun v : ValidCol0 μP μQ => and_or_left)),
+          Fintype.card_subtype_or_disjoint _ _
+            (Set.disjoint_iff.2 fun v hv => by
+              obtain ⟨⟨_, hr⟩, ⟨_, hc⟩⟩ := hv
+              rw [hr] at hc; exact DRCSymbol.noConfusion hc),
+          R_ValidCol0_tc_eq_TSeq_last hQP (by omega) hK2 .r, TSeq_card_last_r' _ (by omega),
+          R_ValidCol0_tc_eq_TSeq_last hQP (by omega) hK2 .c, TSeq_card_last_c' _ (by omega)]
+      omega
     rw [h_R_val, tailCoeffs_scRC K hK_pos]; omega
 
 /-- Helper: for R_sub σ, compat_with_RC σ v ↔ v.paint(b) = .s. -/
