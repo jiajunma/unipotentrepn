@@ -1960,3 +1960,114 @@ lemma tailClass_of_liftPBP_RC_D {μP μQ : YoungDiagram}
   rw [if_neg h_tailLen_pos]
   rw [h_tailSym_eq]
   rcases hp : v.paint (μP.colLen 0 - 1) with _ | _ | _ | _ | _ <;> rfl
+
+/-! ## ValidCol0 split by last-cell class
+
+For each TailClass tc, count the number of ValidCol0 μP μQ with
+`v.paint (μP.colLen 0 - 1) = <symbol corresponding to tc>`. -/
+
+/-- Number of TSeq of length `k + 1` with last element `.d` equals `|GSeq k|`.
+
+    Uses the TSeq_equiv_succ bijection: the Sum.inr component captures last = .d. -/
+lemma TSeq_card_last_d (k : ℕ) :
+    Fintype.card {w : TSeq (k + 1) //
+      w.val ⟨k, Nat.lt_succ_self k⟩ = DRCSymbol.d} = Fintype.card (GSeq k) := by
+  -- Build an equiv: the subtype maps to GSeq k via TSeq_equiv_succ's inr component.
+  apply Fintype.card_of_bijective (f := fun (⟨w, hw⟩ :
+      {w : TSeq (k + 1) // w.val ⟨k, Nat.lt_succ_self k⟩ = DRCSymbol.d}) =>
+    (⟨truncLast w.val, by
+      refine ⟨fun i => ?_, fun i j hij => w.property.2.1 _ _ hij,
+              fun i j hi hj => ?_⟩
+      · rcases w.property.1 ⟨i.val, Nat.lt_succ_of_lt i.isLt⟩ with hs | hr | hc | hd
+        · left; exact hs
+        · right; left; exact hr
+        · right; right; exact hc
+        · exfalso
+          have := w.property.2.2.2 ⟨i.val, _⟩ ⟨k, Nat.lt_succ_self k⟩ hd hw
+          have : i.val = k := Fin.mk.inj_iff.mp this
+          omega
+      · have := w.property.2.2.1 ⟨i.val, Nat.lt_succ_of_lt i.isLt⟩
+                  ⟨j.val, Nat.lt_succ_of_lt j.isLt⟩ hi hj
+        exact Fin.ext (Fin.mk.inj_iff.mp this)⟩ : GSeq k))
+  refine ⟨?_, ?_⟩
+  · -- Injective
+    intro ⟨w₁, hw₁⟩ ⟨w₂, hw₂⟩ heq
+    apply Subtype.ext
+    apply Subtype.ext
+    funext i
+    have h_trunc : truncLast w₁.val = truncLast w₂.val :=
+      congr_arg Subtype.val heq
+    by_cases hi : i.val < k
+    · have h₁ : truncLast w₁.val ⟨i.val, hi⟩ = w₁.val i := rfl
+      have h₂ : truncLast w₂.val ⟨i.val, hi⟩ = w₂.val i := rfl
+      rw [← h₁, ← h₂, h_trunc]
+    · have hi_eq : i.val = k := by have := i.isLt; omega
+      have hi' : i = ⟨k, Nat.lt_succ_self k⟩ := Fin.ext hi_eq
+      rw [hi', hw₁, hw₂]
+  · -- Surjective
+    intro w'
+    refine ⟨⟨⟨snocLast w'.val DRCSymbol.d, ?_, ?_, ?_, ?_⟩, ?_⟩, ?_⟩
+    · -- membership
+      intro i
+      by_cases hi : i.val < k
+      · rw [snocLast_lt _ _ _ hi]
+        rcases w'.property.1 ⟨i.val, hi⟩ with h | h | h
+        · left; exact h
+        · right; left; exact h
+        · right; right; left; exact h
+      · right; right; right
+        have : i.val = k := by have := i.isLt; omega
+        simp [snocLast, this]
+    · -- mono
+      intro i j hij
+      by_cases hj : j.val < k
+      · have hi : i.val < k := by omega
+        rw [snocLast_lt _ _ _ hi, snocLast_lt _ _ _ hj]
+        exact w'.property.2.1 _ _ hij
+      · have hj' : j.val = k := by have := j.isLt; omega
+        rw [show snocLast w'.val DRCSymbol.d j = .d by simp [snocLast, hj']]
+        by_cases hi : i.val < k
+        · rw [snocLast_lt _ _ _ hi]
+          rcases w'.property.1 ⟨i.val, hi⟩ with h | h | h <;>
+            simp [h, DRCSymbol.layerOrd]
+        · have : i.val = k := by have := i.isLt; omega
+          simp [snocLast, this, DRCSymbol.layerOrd]
+    · -- col_c_unique
+      intro i j hi hj
+      by_cases hi' : i.val < k
+      · by_cases hj' : j.val < k
+        · rw [snocLast_lt _ _ _ hi'] at hi
+          rw [snocLast_lt _ _ _ hj'] at hj
+          have := w'.property.2.2 _ _ hi hj
+          exact Fin.ext (Fin.mk.inj_iff.mp this)
+        · exfalso
+          have hj_eq : j.val = k := by have := j.isLt; omega
+          rw [show snocLast w'.val DRCSymbol.d j = .d by simp [snocLast, hj_eq]] at hj
+          exact DRCSymbol.noConfusion hj
+      · exfalso
+        have hi_eq : i.val = k := by have := i.isLt; omega
+        rw [show snocLast w'.val DRCSymbol.d i = .d by simp [snocLast, hi_eq]] at hi
+        exact DRCSymbol.noConfusion hi
+    · -- col_d_unique
+      intro i j hi hj
+      by_cases hi' : i.val < k
+      · exfalso
+        rw [snocLast_lt _ _ _ hi'] at hi
+        rcases w'.property.1 ⟨i.val, hi'⟩ with h | h | h <;>
+          rw [h] at hi <;> exact DRCSymbol.noConfusion hi
+      · by_cases hj' : j.val < k
+        · exfalso
+          rw [snocLast_lt _ _ _ hj'] at hj
+          rcases w'.property.1 ⟨j.val, hj'⟩ with h | h | h <;>
+            rw [h] at hj <;> exact DRCSymbol.noConfusion hj
+        · have hi_eq : i.val = k := by have := i.isLt; omega
+          have hj_eq : j.val = k := by have := j.isLt; omega
+          exact Fin.ext (hi_eq.trans hj_eq.symm)
+    · -- The subtype requirement: last cell = .d
+      show snocLast w'.val DRCSymbol.d ⟨k, _⟩ = DRCSymbol.d
+      simp [snocLast]
+    · -- The image equals w'
+      apply Subtype.ext
+      funext i
+      show truncLast (snocLast w'.val DRCSymbol.d) i = w'.val i
+      simp [truncLast, snocLast, i.isLt]
