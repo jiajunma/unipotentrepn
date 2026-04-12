@@ -1099,38 +1099,45 @@ theorem card_PBPSet_D_combined (dp : DualPart) (μP μQ : YoungDiagram)
         -- Use total - SS approach:
         -- Per-tc fiber sum: card(PBPSet_tc tc) = Σ_σ card(fiber_tc(σ, tc))
         -- via sigma-subtype exchange on sigmaFiberEquiv
+        -- Per-tc fiber sum: proved by sandwich (lower bound injection) + total consistency
         have card_tc_sum : ∀ tc' : TailClass,
             Fintype.card {τ : PBPSet .D μP μQ // tailClass_D τ.val = tc'} =
             Finset.univ.sum (fun σ : PBPSet .D μP.shiftLeft μQ.shiftLeft =>
               Fintype.card {τ : doubleDescent_D_fiber σ // tailClass_D τ.val.val = tc'}) := by
-          intro tc'; rw [← Fintype.card_sigma]; apply Fintype.card_congr
-          -- Both directions: sandwich via card_PBPSet_eq_sum_fiber (total) restricted to tc
-          -- Lower: Σ_σ fiber_tc → PBPSet_tc (simple projection)
-          have h_ge : Finset.univ.sum (fun σ : PBPSet .D μP.shiftLeft μQ.shiftLeft =>
+          -- Lower bound for ALL tc'
+          have h_ge : ∀ tc', Finset.univ.sum (fun σ : PBPSet .D μP.shiftLeft μQ.shiftLeft =>
               Fintype.card {τ : doubleDescent_D_fiber σ // tailClass_D τ.val.val = tc'}) ≤
               Fintype.card {τ : PBPSet .D μP μQ // tailClass_D τ.val = tc'} := by
-            rw [← Fintype.card_sigma]
+            intro tc'; rw [← Fintype.card_sigma]
             apply Fintype.card_le_of_injective
               (fun (p : (σ : _) × {τ : doubleDescent_D_fiber σ // _}) =>
                 (⟨p.2.val.val, p.2.prop⟩ : {τ : PBPSet .D μP μQ // tailClass_D τ.val = tc'}))
             intro ⟨σ₁, ⟨⟨τ₁, h₁⟩, _⟩⟩ ⟨σ₂, ⟨⟨τ₂, h₂⟩, _⟩⟩ h
-            simp only [Subtype.mk.injEq] at h
-            subst h
-            have : σ₁ = σ₂ := h₁.symm.trans h₂
-            subst this; rfl
-          -- Upper: use total - other tc's ≤ this tc via partition
-          -- card(PBPSet) = card_tc(DD) + card_tc(RC) + card_tc(SS) [from sum_tc]
-          -- card(PBPSet) = Σ_σ card(fiber σ) [from sum_fiber]
-          -- Σ_σ card(fiber σ) ≥ Σ_σ card(fiber_tc(σ, tc')) [subtype ≤ type]
-          -- So card_tc(tc') ≤ Σ_σ card(fiber_tc(σ, tc'))
-          -- Combined with h_ge: equality.
+            simp only [Subtype.mk.injEq] at h; subst h
+            have : σ₁ = σ₂ := h₁.symm.trans h₂; subst this; rfl
+          -- Total consistency
           have h_total := card_PBPSet_eq_sum_fiber (μP := μP) (μQ := μQ)
           have h_sum_tc := card_PBPSet_eq_sum_tc μP μQ
           have h_conv : ∀ t, Fintype.card (PBPSet_tc .D μP μQ t) =
               Fintype.card {τ : PBPSet .D μP μQ // tailClass_D τ.val = t} :=
             fun _ => Fintype.card_congr (Equiv.refl _)
           rw [h_conv, h_conv, h_conv] at h_sum_tc
-          sorry -- Lean infra: sigma-subtype exchange + sum partition (no math)
+          have h_S_total : Finset.univ.sum (fun σ : PBPSet .D μP.shiftLeft μQ.shiftLeft =>
+              Fintype.card {τ : doubleDescent_D_fiber σ // tailClass_D τ.val.val = .DD}) +
+            Finset.univ.sum (fun σ : PBPSet .D μP.shiftLeft μQ.shiftLeft =>
+              Fintype.card {τ : doubleDescent_D_fiber σ // tailClass_D τ.val.val = .RC}) +
+            Finset.univ.sum (fun σ : PBPSet .D μP.shiftLeft μQ.shiftLeft =>
+              Fintype.card {τ : doubleDescent_D_fiber σ // tailClass_D τ.val.val = .SS}) =
+            Fintype.card (PBPSet .D μP μQ) := by
+            trans (Finset.univ.sum (fun σ : PBPSet .D μP.shiftLeft μQ.shiftLeft =>
+                Fintype.card {τ : doubleDescent_D_fiber σ // tailClass_D τ.val.val = .DD} +
+                Fintype.card {τ : doubleDescent_D_fiber σ // tailClass_D τ.val.val = .RC} +
+                Fintype.card {τ : doubleDescent_D_fiber σ // tailClass_D τ.val.val = .SS}))
+            · simp only [Finset.sum_add_distrib]
+            · rw [Finset.sum_congr rfl (fun σ _ => (card_fiber_eq_sum_tc σ).symm), h_total]
+          -- S(tc) ≤ C(tc) for all tc, and Σ S = Σ C → S = C for each
+          have hgDD := h_ge .DD; have hgRC := h_ge .RC; have hgSS := h_ge .SS
+          intro tc'; rcases tc' with _ | _ | _ <;> omega
         -- Use card_tc_sum + split + compute each part
         -- For DD: card_tc_sum DD = Σ_σ fib_tc(σ,DD)
         -- Split: Σ_{σ:DD} fib_tc(DD) + Σ_{σ:RC} fib_tc(DD) + Σ_{σ:SS} fib_tc(DD)
@@ -1139,8 +1146,30 @@ theorem card_PBPSet_D_combined (dp : DualPart) (μP μQ : YoungDiagram)
         -- SS_sub: Σ = 0 (fiber=0)
         -- Total: subDD × tDD + subRC × scDD = cpd.1 [h_cpd₁]
         -- Similarly for RC.
-        -- This decomposition parallels card_PBPSet_D_balanced_step exactly.
-        -- Instead of re-proving the Finset.sum split, sorry for now.
+        -- Use card_tc_sum + Finset.sum split + known sub-sums
+        -- card_tc(DD) = Σ_σ fib_tc(σ,DD) [by card_tc_sum]
+        --            = Σ_{σ:DD} + Σ_{σ:RC} + Σ_{σ:SS} [by balanced_step split]
+        -- Σ_{σ:DD} = subDD × tDD [fiber_card_balanced_DD_tc]
+        -- Σ_{σ:RC} = subRC × scDD [balanced_RC_aggregate_DD]
+        -- Σ_{σ:SS} = 0 [fiber_card_balanced_SS → fiber_tc ≤ fiber = 0]
+        -- Sum = subDD × tDD + subRC × scDD = cpd.1 [h_cpd₁]
+        -- Similarly for RC.
+        -- These facts are all proved; assembly needs balanced_step split (Finset.sum over tc partition)
+        -- Use h_step (total balanced step) + h_sum_tc + card_tc_sum for all tc to derive:
+        have h_card_DD := card_tc_sum .DD
+        have h_card_RC := card_tc_sum .RC
+        have h_card_SS := card_tc_sum .SS
+        -- h_card_DD : card_tc(DD) = Σ fib_tc(DD), etc.
+        -- h_step : card = subDD × tSum + subRC × scSum
+        -- h_sum_tc (via h_conv) : card = card_tc(DD) + card_tc(RC) + card_tc(SS)
+        -- h_cpd₁ : cpd.1 = subDD × tDD + subRC × scDD (with subDD/RC = IH filter)
+        -- h_cpd₂ : cpd.2.1 = subDD × tRC + subRC × scRC
+        -- From balanced_RC_aggregate_DD/RC:
+        have h_agg_DD := balanced_RC_aggregate_DD hQP hQP_lt h_bal
+        have h_agg_RC := balanced_RC_aggregate_RC hQP hQP_lt h_bal
+        -- TODO: assemble using Finset.sum partition
+        -- For now, all ingredients available. The sum partition is the SAME
+        -- as in card_PBPSet_D_balanced_step.
         sorry
 termination_by dp.length
 decreasing_by simp [List.length_cons]; omega

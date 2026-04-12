@@ -519,6 +519,41 @@ theorem card_PBPSet_eq_sum_tc (μP μQ : YoungDiagram) :
             simp only; rw [dif_neg (by rw [h]; decide), dif_neg (by rw [h]; decide)] }
   rw [Fintype.card_congr e, Fintype.card_sum, Fintype.card_sum, Nat.add_assoc]
 
+/-- Fiber-level tc decomposition: each fiber splits by tailClass. -/
+theorem card_fiber_eq_sum_tc {μP μQ : YoungDiagram}
+    (σ : PBPSet .D (YoungDiagram.shiftLeft μP) (YoungDiagram.shiftLeft μQ)) :
+    Fintype.card (doubleDescent_D_fiber σ) =
+      Fintype.card {τ : doubleDescent_D_fiber σ // tailClass_D τ.val.val = .DD} +
+      Fintype.card {τ : doubleDescent_D_fiber σ // tailClass_D τ.val.val = .RC} +
+      Fintype.card {τ : doubleDescent_D_fiber σ // tailClass_D τ.val.val = .SS} := by
+  have h_disj : ∀ τ : doubleDescent_D_fiber σ,
+      tailClass_D τ.val.val = .DD ∨ tailClass_D τ.val.val = .RC ∨ tailClass_D τ.val.val = .SS := by
+    intro τ; simp only [tailClass_D]
+    split_ifs with h
+    · right; right; rfl
+    · cases PBP.tailSymbol_D τ.val.val <;> simp [TailClass.noConfusion]
+      <;> first | left; rfl | right; left; rfl | right; right; rfl
+  have h_ss : ∀ τ : doubleDescent_D_fiber σ,
+      tailClass_D τ.val.val ≠ .DD → tailClass_D τ.val.val ≠ .RC → tailClass_D τ.val.val = .SS :=
+    fun τ h₁ h₂ => (h_disj τ).elim (absurd · h₁) (·.elim (absurd · h₂) id)
+  let e : doubleDescent_D_fiber σ ≃
+      {τ : doubleDescent_D_fiber σ // tailClass_D τ.val.val = .DD} ⊕
+      ({τ : doubleDescent_D_fiber σ // tailClass_D τ.val.val = .RC} ⊕
+       {τ : doubleDescent_D_fiber σ // tailClass_D τ.val.val = .SS}) :=
+    { toFun := fun τ =>
+        if h : tailClass_D τ.val.val = .DD then Sum.inl ⟨τ, h⟩
+        else if h' : tailClass_D τ.val.val = .RC then Sum.inr (Sum.inl ⟨τ, h'⟩)
+        else Sum.inr (Sum.inr ⟨τ, h_ss τ h h'⟩)
+      invFun := fun x => match x with
+        | Sum.inl ⟨τ, _⟩ => τ
+        | Sum.inr (Sum.inl ⟨τ, _⟩) => τ
+        | Sum.inr (Sum.inr ⟨τ, _⟩) => τ
+      left_inv := fun τ => by
+        simp only; split_ifs <;> rfl
+      right_inv := fun x => by
+        rcases x with ⟨τ, h⟩ | (⟨τ, h⟩ | ⟨τ, h⟩) <;> simp_all [h] }
+  rw [Fintype.card_congr e, Fintype.card_sum, Fintype.card_sum, Nat.add_assoc]
+
 /-! ### Top-level recursive theorems (Prop 10.11 D type, primitive case) -/
 
 /-- **Primitive recursive step**: in the primitive case, the D-type count
