@@ -1891,3 +1891,72 @@ theorem card_PBPSet_D_eq_card_D_aux :
             omega
           · rw [card_PBPSet_D_balanced_step (μP.colLen 0 - μQ.colLen 0) h_bal_eq rfl
               hQP_col hk_pos]
+
+/-! ## Top-tail class of a liftPBP
+
+The top-tail class of a τ constructed via `liftPBP_D σ col0` is determined by
+`col0.paint (μP.colLen 0 - 1)` — the last cell in col0's tail region. -/
+
+/-- Classifies a symbol as a tail class (assuming it's the bottom of a non-empty tail). -/
+def tailClassOfSymbol : DRCSymbol → TailClass
+  | .d => .DD
+  | .r => .RC
+  | .c => .RC
+  | .s => .SS
+  | .dot => .SS
+
+/-- The top-tail class of `liftPBP_D σ col0 ...` equals the class of `col0`'s last cell. -/
+lemma tailClass_of_liftPBP_D {μP μQ : YoungDiagram}
+    (σ : PBPSet .D (YoungDiagram.shiftLeft μP) (YoungDiagram.shiftLeft μQ))
+    (col0 : ValidCol0 μP μQ)
+    (h_cond : LiftCondition σ)
+    (hQP : μQ.colLen 0 ≤ μP.colLen 0)
+    (hk_pos : μQ.colLen 0 < μP.colLen 0) :
+    tailClass_D (liftPBP_D σ col0 h_cond hQP).val =
+      tailClassOfSymbol (col0.paint (μP.colLen 0 - 1)) := by
+  set τ := liftPBP_D σ col0 h_cond hQP
+  have hP_shape : τ.val.P.shape = μP := rfl
+  have hQ_shape : τ.val.Q.shape = μQ := rfl
+  have h_tailLen : PBP.tailLen_D τ.val = μP.colLen 0 - μQ.colLen 0 := by
+    simp only [PBP.tailLen_D, hP_shape, hQ_shape]
+  have h_tailLen_pos : PBP.tailLen_D τ.val ≠ 0 := by
+    rw [h_tailLen]; omega
+  have h_tail_paint : τ.val.P.paint (μP.colLen 0 - 1) 0 = col0.paint (μP.colLen 0 - 1) := by
+    show liftPaint_D σ.val col0.paint (μP.colLen 0 - 1) 0 = _
+    rfl
+  have h_tailSym_eq : PBP.tailSymbol_D τ.val = col0.paint (μP.colLen 0 - 1) := by
+    simp only [PBP.tailSymbol_D, hP_shape]
+    rw [h_tail_paint]
+  simp only [tailClass_D]
+  rw [if_neg h_tailLen_pos]
+  rw [h_tailSym_eq]
+  rcases hp : col0.paint (μP.colLen 0 - 1) with _ | _ | _ | _ | _ <;> rfl
+
+/-- Same for `liftPBP_RC_D`. -/
+lemma tailClass_of_liftPBP_RC_D {μP μQ : YoungDiagram}
+    (σ : PBPSet .D (YoungDiagram.shiftLeft μP) (YoungDiagram.shiftLeft μQ))
+    (v : ValidCol0 μP μQ)
+    (h_cond : LiftCondition_RC σ)
+    (h_compat : v.compat_with_RC σ)
+    (h_bal : (YoungDiagram.shiftLeft μP).colLen 0 = μQ.colLen 0 + 1)
+    (hQP : μQ.colLen 0 ≤ μP.colLen 0)
+    (hk_pos : μQ.colLen 0 < μP.colLen 0) :
+    tailClass_D (liftPBP_RC_D σ v h_cond h_compat h_bal hQP).val =
+      tailClassOfSymbol (v.paint (μP.colLen 0 - 1)) := by
+  set τ := liftPBP_RC_D σ v h_cond h_compat h_bal hQP
+  have hP_shape : τ.val.P.shape = μP := rfl
+  have hQ_shape : τ.val.Q.shape = μQ := rfl
+  have h_tailLen : PBP.tailLen_D τ.val = μP.colLen 0 - μQ.colLen 0 := by
+    simp only [PBP.tailLen_D, hP_shape, hQ_shape]
+  have h_tailLen_pos : PBP.tailLen_D τ.val ≠ 0 := by
+    rw [h_tailLen]; omega
+  have h_tail_paint : τ.val.P.paint (μP.colLen 0 - 1) 0 = v.paint (μP.colLen 0 - 1) := by
+    show liftPaint_D σ.val v.paint (μP.colLen 0 - 1) 0 = _
+    rfl
+  have h_tailSym_eq : PBP.tailSymbol_D τ.val = v.paint (μP.colLen 0 - 1) := by
+    simp only [PBP.tailSymbol_D, hP_shape]
+    rw [h_tail_paint]
+  simp only [tailClass_D]
+  rw [if_neg h_tailLen_pos]
+  rw [h_tailSym_eq]
+  rcases hp : v.paint (μP.colLen 0 - 1) with _ | _ | _ | _ | _ <;> rfl
