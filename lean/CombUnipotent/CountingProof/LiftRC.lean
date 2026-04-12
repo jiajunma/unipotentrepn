@@ -2277,3 +2277,102 @@ lemma TSeq_card_last_c (k : ℕ) :
       · apply Subtype.ext
         show truncLast (snocLast w'.val DRCSymbol.c) = w'.val
         exact truncLast_snocLast _ _
+
+/-! ## Transfer TSeq last-cell counts to ValidCol0 top-cell counts
+
+Via `ValidCol0.equivTSeq`, the top cell `v.paint (μP.colLen 0 - 1)` corresponds
+to `TSeq` position `⟨K - 1, _⟩` where `K = μP.colLen 0 - μQ.colLen 0`. -/
+
+/-- The `ValidCol0 ↔ TSeq` equivalence preserves the top cell paint.
+    `v.paint (μP.colLen 0 - 1) = v.toTSeq.val ⟨K - 1, _⟩`. -/
+lemma ValidCol0.toTSeq_last {μP μQ : YoungDiagram}
+    (hQP : μQ.colLen 0 ≤ μP.colLen 0)
+    (hk_pos : μQ.colLen 0 < μP.colLen 0)
+    (v : ValidCol0 μP μQ) :
+    (ValidCol0.toTSeq hQP v).val
+        ⟨μP.colLen 0 - μQ.colLen 0 - 1, by omega⟩ =
+      v.paint (μP.colLen 0 - 1) := by
+  show v.paint (μQ.colLen 0 + (μP.colLen 0 - μQ.colLen 0 - 1)) =
+    v.paint (μP.colLen 0 - 1)
+  congr 1; omega
+
+/-- Subtype equivalence: ValidCol0 with given top symbol ≃ TSeq with given last symbol. -/
+noncomputable def ValidCol0.equivTSeq_top {μP μQ : YoungDiagram}
+    (hQP : μQ.colLen 0 ≤ μP.colLen 0)
+    (hk_pos : μQ.colLen 0 < μP.colLen 0)
+    (sym : DRCSymbol) :
+    {v : ValidCol0 μP μQ // v.paint (μP.colLen 0 - 1) = sym} ≃
+      {w : TSeq (μP.colLen 0 - μQ.colLen 0) //
+        w.val ⟨μP.colLen 0 - μQ.colLen 0 - 1, by omega⟩ = sym} :=
+  (ValidCol0.equivTSeq hQP).subtypeEquiv (fun v => by
+    constructor
+    · intro h
+      have := ValidCol0.toTSeq_last hQP hk_pos v
+      show (ValidCol0.toTSeq hQP v).val _ = sym
+      rw [this]; exact h
+    · intro h
+      have := ValidCol0.toTSeq_last hQP hk_pos v
+      show v.paint _ = sym
+      rw [← this]
+      show (ValidCol0.toTSeq hQP v).val _ = sym
+      exact h)
+
+private lemma TSeq_card_last_s' (K : ℕ) (hK : K ≠ 0) :
+    Fintype.card {w : TSeq K // w.val ⟨K - 1, by omega⟩ = DRCSymbol.s} = 1 := by
+  obtain ⟨k, rfl⟩ := Nat.exists_eq_succ_of_ne_zero hK
+  exact TSeq_card_last_s k
+
+private lemma TSeq_card_last_r' (K : ℕ) (hK : K ≠ 0) :
+    Fintype.card {w : TSeq K // w.val ⟨K - 1, by omega⟩ = DRCSymbol.r} = K := by
+  obtain ⟨k, rfl⟩ := Nat.exists_eq_succ_of_ne_zero hK
+  exact TSeq_card_last_r k
+
+private lemma TSeq_card_last_c' (K : ℕ) (hK : K ≠ 0) :
+    Fintype.card {w : TSeq K // w.val ⟨K - 1, by omega⟩ = DRCSymbol.c} = K := by
+  obtain ⟨k, rfl⟩ := Nat.exists_eq_succ_of_ne_zero hK
+  exact TSeq_card_last_c k
+
+private lemma TSeq_card_last_d' (K : ℕ) (hK : K ≠ 0) :
+    Fintype.card {w : TSeq K // w.val ⟨K - 1, by omega⟩ = DRCSymbol.d} = 2 * K - 1 := by
+  obtain ⟨k, rfl⟩ := Nat.exists_eq_succ_of_ne_zero hK
+  simp only [Nat.succ_sub_one]
+  rw [TSeq_card_last_d k, GSeq_card k]; omega
+
+/-- Count ValidCol0 with top cell = .s equals 1. -/
+lemma validCol0_card_top_s {μP μQ : YoungDiagram}
+    (hQP : μQ.colLen 0 ≤ μP.colLen 0)
+    (hk_pos : μQ.colLen 0 < μP.colLen 0) :
+    Fintype.card {v : ValidCol0 μP μQ //
+      v.paint (μP.colLen 0 - 1) = DRCSymbol.s} = 1 := by
+  rw [Fintype.card_congr (ValidCol0.equivTSeq_top hQP hk_pos .s)]
+  exact TSeq_card_last_s' _ (by omega)
+
+/-- Count ValidCol0 with top cell = .r equals `K` where `K = μP.colLen 0 - μQ.colLen 0`. -/
+lemma validCol0_card_top_r {μP μQ : YoungDiagram}
+    (hQP : μQ.colLen 0 ≤ μP.colLen 0)
+    (hk_pos : μQ.colLen 0 < μP.colLen 0) :
+    Fintype.card {v : ValidCol0 μP μQ //
+      v.paint (μP.colLen 0 - 1) = DRCSymbol.r} =
+        μP.colLen 0 - μQ.colLen 0 := by
+  rw [Fintype.card_congr (ValidCol0.equivTSeq_top hQP hk_pos .r)]
+  exact TSeq_card_last_r' _ (by omega)
+
+/-- Count ValidCol0 with top cell = .c equals `K`. -/
+lemma validCol0_card_top_c {μP μQ : YoungDiagram}
+    (hQP : μQ.colLen 0 ≤ μP.colLen 0)
+    (hk_pos : μQ.colLen 0 < μP.colLen 0) :
+    Fintype.card {v : ValidCol0 μP μQ //
+      v.paint (μP.colLen 0 - 1) = DRCSymbol.c} =
+        μP.colLen 0 - μQ.colLen 0 := by
+  rw [Fintype.card_congr (ValidCol0.equivTSeq_top hQP hk_pos .c)]
+  exact TSeq_card_last_c' _ (by omega)
+
+/-- Count ValidCol0 with top cell = .d equals `2K - 1`. -/
+lemma validCol0_card_top_d {μP μQ : YoungDiagram}
+    (hQP : μQ.colLen 0 ≤ μP.colLen 0)
+    (hk_pos : μQ.colLen 0 < μP.colLen 0) :
+    Fintype.card {v : ValidCol0 μP μQ //
+      v.paint (μP.colLen 0 - 1) = DRCSymbol.d} =
+        2 * (μP.colLen 0 - μQ.colLen 0) - 1 := by
+  rw [Fintype.card_congr (ValidCol0.equivTSeq_top hQP hk_pos .d)]
+  exact TSeq_card_last_d' _ (by omega)
