@@ -1167,9 +1167,45 @@ theorem card_PBPSet_D_combined (dp : DualPart) (μP μQ : YoungDiagram)
         -- From balanced_RC_aggregate_DD/RC:
         have h_agg_DD := balanced_RC_aggregate_DD hQP hQP_lt h_bal
         have h_agg_RC := balanced_RC_aggregate_RC hQP hQP_lt h_bal
-        -- TODO: assemble using Finset.sum partition
-        -- For now, all ingredients available. The sum partition is the SAME
-        -- as in card_PBPSet_D_balanced_step.
+        -- Split Σ_σ fib_tc(σ, tc) into DD_sub + RC_sub + SS_sub
+        -- using Finset.sum_filter_add_sum_filter_not
+        have h_split_sum : ∀ tc' : TailClass,
+            Finset.univ.sum (fun σ : PBPSet .D μP.shiftLeft μQ.shiftLeft =>
+              Fintype.card {τ : doubleDescent_D_fiber σ // tailClass_D τ.val.val = tc'}) =
+            (Finset.univ.filter (fun σ : PBPSet .D μP.shiftLeft μQ.shiftLeft =>
+              tailClass_D σ.val = .DD)).sum (fun σ =>
+              Fintype.card {τ : doubleDescent_D_fiber σ // tailClass_D τ.val.val = tc'}) +
+            (Finset.univ.filter (fun σ : PBPSet .D μP.shiftLeft μQ.shiftLeft =>
+              tailClass_D σ.val = .RC)).sum (fun σ =>
+              Fintype.card {τ : doubleDescent_D_fiber σ // tailClass_D τ.val.val = tc'}) +
+            (Finset.univ.filter (fun σ : PBPSet .D μP.shiftLeft μQ.shiftLeft =>
+              tailClass_D σ.val = .SS)).sum (fun σ =>
+              Fintype.card {τ : doubleDescent_D_fiber σ // tailClass_D τ.val.val = tc'}) := by
+          intro tc'
+          have step1 := (Finset.sum_filter_add_sum_filter_not Finset.univ
+            (fun σ : PBPSet .D μP.shiftLeft μQ.shiftLeft => tailClass_D σ.val = .DD)
+            (fun σ => Fintype.card {τ : doubleDescent_D_fiber σ // tailClass_D τ.val.val = tc'})).symm
+          have h_tri : ∀ σ : PBPSet .D μP.shiftLeft μQ.shiftLeft,
+              tailClass_D σ.val = .DD ∨ tailClass_D σ.val = .RC ∨ tailClass_D σ.val = .SS := by
+            intro σ; simp only [tailClass_D]; split_ifs
+            · right; right; rfl
+            · cases PBP.tailSymbol_D σ.val <;> simp
+          have hf_eq : Finset.univ.filter (fun σ : PBPSet .D μP.shiftLeft μQ.shiftLeft =>
+              ¬tailClass_D σ.val = .DD) =
+            Finset.univ.filter (fun σ => tailClass_D σ.val = .RC ∨ tailClass_D σ.val = .SS) := by
+            apply Finset.filter_congr; intro σ _
+            exact ⟨fun h => (h_tri σ).elim (absurd · h) id,
+                   fun h => h.elim (· ▸ by decide) (· ▸ by decide)⟩
+          rw [step1, hf_eq, Finset.filter_or,
+              Finset.sum_union (by rw [Finset.disjoint_filter]; intro σ _ hr hs
+                                   rw [hr] at hs; exact absurd hs (by decide))]
+          ring
+        -- Assembly: use card_tc_sum + h_split_sum + sub-sum computations
+        -- DD_sub sum = subDD × validCol0_tc via fiber_card_balanced_DD_tc (constant)
+        -- RC_sub sum = from balanced_RC_aggregate_DD/RC
+        -- SS_sub sum = 0 (fiber = 0)
+        -- Total = cpd.1 / cpd.2.1 via h_cpd₁/h_cpd₂
+        -- All ingredients proved. Finset.sum mechanics needed.
         sorry
 termination_by dp.length
 decreasing_by simp [List.length_cons]; omega
