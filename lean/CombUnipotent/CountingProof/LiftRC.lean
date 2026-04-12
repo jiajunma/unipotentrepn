@@ -2071,3 +2071,209 @@ lemma TSeq_card_last_d (k : ℕ) :
       funext i
       show truncLast (snocLast w'.val DRCSymbol.d) i = w'.val i
       simp [truncLast, snocLast, i.isLt]
+
+/-- Number of TSeq of length `k` with last element `.s` equals 1 when `k ≥ 1`.
+
+    Monotonicity + last = .s forces all entries to be .s. -/
+lemma TSeq_card_last_s (k : ℕ) :
+    Fintype.card {w : TSeq (k + 1) //
+      w.val ⟨k, Nat.lt_succ_self k⟩ = DRCSymbol.s} = 1 := by
+  apply Fintype.card_eq_one_iff.mpr
+  refine ⟨⟨⟨fun _ => .s, ?_, ?_, ?_, ?_⟩, rfl⟩, ?_⟩
+  · exact fun _ => Or.inl rfl
+  · intro _ _ _; simp [DRCSymbol.layerOrd]
+  · intro _ _ _ h; exact absurd h DRCSymbol.noConfusion
+  · intro _ _ _ h; exact absurd h DRCSymbol.noConfusion
+  rintro ⟨w, hlast⟩
+  apply Subtype.ext; apply Subtype.ext
+  funext i
+  have hile : i.val ≤ k := Nat.le_of_lt_succ i.isLt
+  have h_ord := w.property.2.1 i ⟨k, Nat.lt_succ_self k⟩ hile
+  rw [hlast, DRCSymbol.layerOrd] at h_ord
+  rcases w.property.1 i with h | h | h | h
+  · exact h
+  all_goals (rw [h, DRCSymbol.layerOrd] at h_ord; omega)
+
+/-- Number of TSeq of length `k+1` with last element `.r` equals `k + 1`.
+
+    Monotonicity forces prefix to be in HSeq k (all s or r), giving a bijection to HSeq k. -/
+lemma TSeq_card_last_r (k : ℕ) :
+    Fintype.card {w : TSeq (k + 1) //
+      w.val ⟨k, Nat.lt_succ_self k⟩ = DRCSymbol.r} = k + 1 := by
+  suffices h : Fintype.card {w : TSeq (k + 1) //
+      w.val ⟨k, Nat.lt_succ_self k⟩ = DRCSymbol.r} = Fintype.card (HSeq k) by
+    rw [h]; exact HSeq_card k
+  let f : {w : TSeq (k + 1) // w.val ⟨k, Nat.lt_succ_self k⟩ = DRCSymbol.r}
+      → HSeq k := fun ww =>
+    ⟨truncLast ww.val.val, by
+      intro i
+      rcases ww.val.property.1 ⟨i.val, Nat.lt_succ_of_lt i.isLt⟩ with h | h | h | h
+      · left; exact h
+      · right; exact h
+      · exfalso
+        have hile : i.val ≤ k := Nat.le_of_lt i.isLt
+        have hmono := ww.val.property.2.1 ⟨i.val, Nat.lt_succ_of_lt i.isLt⟩
+          ⟨k, Nat.lt_succ_self k⟩ hile
+        rw [h, ww.property, DRCSymbol.layerOrd, DRCSymbol.layerOrd] at hmono; omega
+      · exfalso
+        have hile : i.val ≤ k := Nat.le_of_lt i.isLt
+        have hmono := ww.val.property.2.1 ⟨i.val, Nat.lt_succ_of_lt i.isLt⟩
+          ⟨k, Nat.lt_succ_self k⟩ hile
+        rw [h, ww.property, DRCSymbol.layerOrd, DRCSymbol.layerOrd] at hmono; omega,
+      fun i j hij => ww.val.property.2.1 _ _ hij⟩
+  apply Fintype.card_of_bijective (f := f)
+  · refine ⟨?_, ?_⟩
+    · intro ⟨w₁, hw₁⟩ ⟨w₂, hw₂⟩ heq
+      apply Subtype.ext; apply Subtype.ext
+      funext i
+      have h_trunc : truncLast w₁.val = truncLast w₂.val :=
+        congr_arg Subtype.val heq
+      by_cases hi : i.val < k
+      · have h₁ : truncLast w₁.val ⟨i.val, hi⟩ = w₁.val i := rfl
+        have h₂ : truncLast w₂.val ⟨i.val, hi⟩ = w₂.val i := rfl
+        rw [← h₁, ← h₂, h_trunc]
+      · have hi_eq : i.val = k := by have := i.isLt; omega
+        have hi' : i = ⟨k, Nat.lt_succ_self k⟩ := Fin.ext hi_eq
+        rw [hi', hw₁, hw₂]
+    · intro w'
+      refine ⟨⟨⟨snocLast w'.val DRCSymbol.r, ?_, ?_, ?_, ?_⟩, ?_⟩, ?_⟩
+      · intro i
+        by_cases hi : i.val < k
+        · rw [snocLast_lt _ _ _ hi]
+          rcases w'.property.1 ⟨i.val, hi⟩ with h | h
+          · left; exact h
+          · right; left; exact h
+        · right; left
+          have : i.val = k := by have := i.isLt; omega
+          simp [snocLast, this]
+      · intro i j hij
+        by_cases hj : j.val < k
+        · have hi : i.val < k := by omega
+          rw [snocLast_lt _ _ _ hi, snocLast_lt _ _ _ hj]
+          exact w'.property.2 _ _ hij
+        · rw [show snocLast w'.val DRCSymbol.r j = .r by
+              have : j.val = k := by omega
+              simp [snocLast, this]]
+          by_cases hi : i.val < k
+          · rw [snocLast_lt _ _ _ hi]
+            rcases w'.property.1 ⟨i.val, hi⟩ with h | h <;>
+              simp [h, DRCSymbol.layerOrd]
+          · have : i.val = k := by omega
+            simp [snocLast, this, DRCSymbol.layerOrd]
+      · intro i j hi hj
+        exfalso
+        by_cases hi' : i.val < k
+        · rw [snocLast_lt _ _ _ hi'] at hi
+          rcases w'.property.1 ⟨i.val, hi'⟩ with h | h <;>
+            rw [h] at hi <;> exact DRCSymbol.noConfusion hi
+        · have : i.val = k := by have := i.isLt; omega
+          rw [show snocLast w'.val DRCSymbol.r i = .r by simp [snocLast, this]] at hi
+          exact DRCSymbol.noConfusion hi
+      · intro i j hi hj
+        exfalso
+        by_cases hi' : i.val < k
+        · rw [snocLast_lt _ _ _ hi'] at hi
+          rcases w'.property.1 ⟨i.val, hi'⟩ with h | h <;>
+            rw [h] at hi <;> exact DRCSymbol.noConfusion hi
+        · have : i.val = k := by have := i.isLt; omega
+          rw [show snocLast w'.val DRCSymbol.r i = .r by simp [snocLast, this]] at hi
+          exact DRCSymbol.noConfusion hi
+      · show snocLast w'.val DRCSymbol.r ⟨k, _⟩ = DRCSymbol.r
+        simp [snocLast]
+      · apply Subtype.ext
+        show truncLast (snocLast w'.val DRCSymbol.r) = w'.val
+        exact truncLast_snocLast _ _
+
+/-- Number of TSeq of length `k+1` with last element `.c` equals `k + 1`.
+
+    `col_c_unique` forces c at position k only; prefix is HSeq k. -/
+lemma TSeq_card_last_c (k : ℕ) :
+    Fintype.card {w : TSeq (k + 1) //
+      w.val ⟨k, Nat.lt_succ_self k⟩ = DRCSymbol.c} = k + 1 := by
+  suffices h : Fintype.card {w : TSeq (k + 1) //
+      w.val ⟨k, Nat.lt_succ_self k⟩ = DRCSymbol.c} = Fintype.card (HSeq k) by
+    rw [h]; exact HSeq_card k
+  let f : {w : TSeq (k + 1) // w.val ⟨k, Nat.lt_succ_self k⟩ = DRCSymbol.c}
+      → HSeq k := fun ww =>
+    ⟨truncLast ww.val.val, by
+      intro i
+      rcases ww.val.property.1 ⟨i.val, Nat.lt_succ_of_lt i.isLt⟩ with h | h | h | h
+      · left; exact h
+      · right; exact h
+      · exfalso
+        have h_eq := ww.val.property.2.2.1 ⟨i.val, _⟩ ⟨k, Nat.lt_succ_self k⟩ h ww.property
+        have : i.val = k := Fin.mk.inj_iff.mp h_eq
+        omega
+      · exfalso
+        have hile : i.val ≤ k := Nat.le_of_lt i.isLt
+        have hmono := ww.val.property.2.1 ⟨i.val, Nat.lt_succ_of_lt i.isLt⟩
+          ⟨k, Nat.lt_succ_self k⟩ hile
+        rw [h, ww.property, DRCSymbol.layerOrd, DRCSymbol.layerOrd] at hmono; omega,
+      fun i j hij => ww.val.property.2.1 _ _ hij⟩
+  apply Fintype.card_of_bijective (f := f)
+  · refine ⟨?_, ?_⟩
+    · intro ⟨w₁, hw₁⟩ ⟨w₂, hw₂⟩ heq
+      apply Subtype.ext; apply Subtype.ext
+      funext i
+      have h_trunc : truncLast w₁.val = truncLast w₂.val :=
+        congr_arg Subtype.val heq
+      by_cases hi : i.val < k
+      · have h₁ : truncLast w₁.val ⟨i.val, hi⟩ = w₁.val i := rfl
+        have h₂ : truncLast w₂.val ⟨i.val, hi⟩ = w₂.val i := rfl
+        rw [← h₁, ← h₂, h_trunc]
+      · have hi_eq : i.val = k := by have := i.isLt; omega
+        have hi' : i = ⟨k, Nat.lt_succ_self k⟩ := Fin.ext hi_eq
+        rw [hi', hw₁, hw₂]
+    · intro w'
+      refine ⟨⟨⟨snocLast w'.val DRCSymbol.c, ?_, ?_, ?_, ?_⟩, ?_⟩, ?_⟩
+      · intro i
+        by_cases hi : i.val < k
+        · rw [snocLast_lt _ _ _ hi]
+          rcases w'.property.1 ⟨i.val, hi⟩ with h | h
+          · left; exact h
+          · right; left; exact h
+        · right; right; left
+          have : i.val = k := by have := i.isLt; omega
+          simp [snocLast, this]
+      · intro i j hij
+        by_cases hj : j.val < k
+        · have hi : i.val < k := by omega
+          rw [snocLast_lt _ _ _ hi, snocLast_lt _ _ _ hj]
+          exact w'.property.2 _ _ hij
+        · rw [show snocLast w'.val DRCSymbol.c j = .c by
+              have : j.val = k := by omega
+              simp [snocLast, this]]
+          by_cases hi : i.val < k
+          · rw [snocLast_lt _ _ _ hi]
+            rcases w'.property.1 ⟨i.val, hi⟩ with h | h <;>
+              simp [h, DRCSymbol.layerOrd]
+          · have : i.val = k := by omega
+            simp [snocLast, this, DRCSymbol.layerOrd]
+      · intro i j hi hj
+        by_cases hi' : i.val < k
+        · exfalso
+          rw [snocLast_lt _ _ _ hi'] at hi
+          rcases w'.property.1 ⟨i.val, hi'⟩ with h | h <;>
+            rw [h] at hi <;> exact DRCSymbol.noConfusion hi
+        · by_cases hj' : j.val < k
+          · exfalso
+            rw [snocLast_lt _ _ _ hj'] at hj
+            rcases w'.property.1 ⟨j.val, hj'⟩ with h | h <;>
+              rw [h] at hj <;> exact DRCSymbol.noConfusion hj
+          · have hi_eq : i.val = k := by have := i.isLt; omega
+            have hj_eq : j.val = k := by have := j.isLt; omega
+            exact Fin.ext (hi_eq.trans hj_eq.symm)
+      · intro i j hi hj
+        exfalso
+        by_cases hi' : i.val < k
+        · rw [snocLast_lt _ _ _ hi'] at hi
+          rcases w'.property.1 ⟨i.val, hi'⟩ with h | h <;>
+            rw [h] at hi <;> exact DRCSymbol.noConfusion hi
+        · have : i.val = k := by have := i.isLt; omega
+          rw [show snocLast w'.val DRCSymbol.c i = .c by simp [snocLast, this]] at hi
+          exact DRCSymbol.noConfusion hi
+      · show snocLast w'.val DRCSymbol.c ⟨k, _⟩ = DRCSymbol.c
+        simp [snocLast]
+      · apply Subtype.ext
+        show truncLast (snocLast w'.val DRCSymbol.c) = w'.val
+        exact truncLast_snocLast _ _
