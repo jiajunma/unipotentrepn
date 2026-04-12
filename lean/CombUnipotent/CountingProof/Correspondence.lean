@@ -686,7 +686,58 @@ theorem balanced_RC_aggregate_tc {μP μQ : YoungDiagram}
       (match tc with | .DD => (tailCoeffs (μP.colLen 0 - μQ.colLen 0)).2.1
                      | .RC => (tailCoeffs (μP.colLen 0 - μQ.colLen 0)).2.2.1
                      | .SS => (tailCoeffs (μP.colLen 0 - μQ.colLen 0)).2.2.2) := by
-  sorry
+  -- Follow fiber_card_balanced_RC_aggregate: split RC into R ∪ C
+  have hfilter_eq : Finset.univ.filter
+      (fun σ : PBPSet .D μP.shiftLeft μQ.shiftLeft => tailClass_D σ.val = .RC) =
+    Finset.univ.filter (fun σ => σ.val.P.paint (μQ.colLen 0) 0 = .r ∨
+      σ.val.P.paint (μQ.colLen 0) 0 = .c) := by
+    apply Finset.filter_congr; intros σ _; exact tailClass_RC_iff_paint_rc σ h_bal
+  have hfilter_or := Finset.filter_or
+    (fun σ : PBPSet .D μP.shiftLeft μQ.shiftLeft => σ.val.P.paint (μQ.colLen 0) 0 = .r)
+    (fun σ => σ.val.P.paint (μQ.colLen 0) 0 = .c)
+  have hdisj : Disjoint
+      (Finset.univ.filter (fun σ : PBPSet .D μP.shiftLeft μQ.shiftLeft =>
+        σ.val.P.paint (μQ.colLen 0) 0 = .r))
+      (Finset.univ.filter (fun σ => σ.val.P.paint (μQ.colLen 0) 0 = .c)) := by
+    rw [Finset.disjoint_filter]; intros σ _ hr hc; rw [hr] at hc; exact absurd hc (by decide)
+  rw [hfilter_eq, hfilter_or, Finset.sum_union hdisj, Finset.card_union_of_disjoint hdisj]
+  -- R sum: each R_sub σ gives fiber_tc = R_ValidCol0_tc via fiber_card_balanced_RC_tc + compat_R_iff
+  have h_R_sum : (Finset.univ.filter (fun σ : PBPSet .D μP.shiftLeft μQ.shiftLeft =>
+      σ.val.P.paint (μQ.colLen 0) 0 = .r)).sum
+      (fun σ => Fintype.card {τ : doubleDescent_D_fiber σ // tailClass_D τ.val.val = tc}) =
+    (Finset.univ.filter (fun σ : PBPSet .D μP.shiftLeft μQ.shiftLeft =>
+      σ.val.P.paint (μQ.colLen 0) 0 = .r)).card * R_ValidCol0_tc μP μQ tc := by
+    rw [Finset.sum_congr rfl (fun σ hσ => ?_)]; · rw [Finset.sum_const]; rfl
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hσ
+    rw [fiber_card_balanced_RC_tc σ h_bal hQP hk_pos
+        ((tailClass_RC_iff_paint_rc σ h_bal).mpr (Or.inl hσ)) tc]
+    simp only [R_ValidCol0_tc]
+    exact Fintype.card_congr (Equiv.subtypeEquivRight (fun v =>
+      ⟨fun ⟨hc, ht⟩ => ⟨(compat_R_iff σ hσ v hQP hk_pos).mp hc, ht⟩,
+       fun ⟨hs, ht⟩ => ⟨(compat_R_iff σ hσ v hQP hk_pos).mpr hs, ht⟩⟩))
+  -- C sum: similarly
+  have h_C_sum : (Finset.univ.filter (fun σ : PBPSet .D μP.shiftLeft μQ.shiftLeft =>
+      σ.val.P.paint (μQ.colLen 0) 0 = .c)).sum
+      (fun σ => Fintype.card {τ : doubleDescent_D_fiber σ // tailClass_D τ.val.val = tc}) =
+    (Finset.univ.filter (fun σ : PBPSet .D μP.shiftLeft μQ.shiftLeft =>
+      σ.val.P.paint (μQ.colLen 0) 0 = .c)).card * C_ValidCol0_tc μP μQ tc := by
+    rw [Finset.sum_congr rfl (fun σ hσ => ?_)]; · rw [Finset.sum_const]; rfl
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hσ
+    rw [fiber_card_balanced_RC_tc σ h_bal hQP hk_pos
+        ((tailClass_RC_iff_paint_rc σ h_bal).mpr (Or.inr hσ)) tc]
+    simp only [C_ValidCol0_tc]
+    exact Fintype.card_congr (Equiv.subtypeEquivRight (fun v =>
+      ⟨fun ⟨hc, ht⟩ => ⟨(compat_C_iff σ hσ v).mp hc, ht⟩,
+       fun ⟨hs, ht⟩ => ⟨(compat_C_iff σ hσ v).mpr hs, ht⟩⟩))
+  rw [h_R_sum, h_C_sum]
+  -- |R| = |C| + h_sum
+  set n := (Finset.univ.filter (fun σ : PBPSet .D μP.shiftLeft μQ.shiftLeft =>
+    σ.val.P.paint (μQ.colLen 0) 0 = .r)).card
+  have h_eq_n : (Finset.univ.filter (fun σ : PBPSet .D μP.shiftLeft μQ.shiftLeft =>
+      σ.val.P.paint (μQ.colLen 0) 0 = .c)).card = n :=
+    (r_sub_card_eq_c_sub_card h_bal).symm
+  rw [h_eq_n, ← Nat.mul_add, h_sum, ← Nat.mul_assoc, ← Nat.two_mul, Nat.mul_comm 2 n]
+  cases tc <;> simp [Nat.mul_comm]
 
 theorem balanced_RC_aggregate_DD {μP μQ : YoungDiagram}
     (hQP : μQ.colLen 0 ≤ μP.colLen 0) (hk_pos : μQ.colLen 0 < μP.colLen 0)
