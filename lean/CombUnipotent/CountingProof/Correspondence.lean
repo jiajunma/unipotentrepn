@@ -352,7 +352,11 @@ theorem card_PBPSet_D_eq_tripleSum_cons₂ (r₁ r₂ : ℕ) (rest : DualPart)
     (hsort : (r₁ :: r₂ :: rest).SortedGE) (hge3 : ∀ r ∈ r₁ :: r₂ :: rest, r ≥ 3)
     (hodd : ∀ r ∈ r₁ :: r₂ :: rest, Odd r)
     (h_ih : Fintype.card (PBPSet .D μP.shiftLeft μQ.shiftLeft) =
-        tripleSum (countPBP_D rest)) :
+        tripleSum (countPBP_D rest))
+    (h_ih_dd : rest ≠ [] → (Finset.univ.filter (fun σ : PBPSet .D μP.shiftLeft μQ.shiftLeft =>
+        tailClass_D σ.val = .DD)).card = (countPBP_D rest).1)
+    (h_ih_rc : rest ≠ [] → (Finset.univ.filter (fun σ : PBPSet .D μP.shiftLeft μQ.shiftLeft =>
+        tailClass_D σ.val = .RC)).card = (countPBP_D rest).2.1) :
     Fintype.card (PBPSet .D μP μQ) = tripleSum (countPBP_D (r₁ :: r₂ :: rest)) := by
   have hr₁_ge3 := hge3 r₁ (by simp)
   have hr₂_ge3 := hge3 r₂ (by simp)
@@ -433,14 +437,27 @@ theorem card_PBPSet_D_eq_tripleSum_cons₂ (r₁ r₂ : ℕ) (rest : DualPart)
     -- Apply balanced step directly
     have h_step := card_PBPSet_D_balanced_step _ h_bal rfl hQP hK_pos
     -- Need: filter counts = countPBP_D rest components (per-tc IH = Task 25)
-    have h_dd_eq : (Finset.univ.filter (fun σ : PBPSet .D μP.shiftLeft μQ.shiftLeft =>
-        tailClass_D σ.val = .DD)).card = (countPBP_D rest).1 := by sorry
-    have h_rc_eq : (Finset.univ.filter (fun σ : PBPSet .D μP.shiftLeft μQ.shiftLeft =>
-        tailClass_D σ.val = .RC)).card = (countPBP_D rest).2.1 := by sorry
+    have h_rest_ne : rest ≠ [] := by
+      intro h; subst h; simp at h_prim_dp; exact absurd hr₂_ge3 (by omega)
+    have h_dd_eq := h_ih_dd h_rest_ne
+    have h_rc_eq := h_ih_rc h_rest_ne
     rw [h_step, h_dd_eq, h_rc_eq, hK]; ring
 
-/-- **Main theorem**: `card(PBPSet .D μP μQ) = tripleSum(countPBP_D dp)`.
-    Combines base, singleton, and pair-step by strong induction on dp.length. -/
+/-- **Per-tc matching for dp.length ≥ 1**: filter counts match countPBP_D components.
+    Note: dp=[] doesn't satisfy per-tc (countPBP_D []=(1,0,0) but actual is (0,0,1)).
+    But dp=[] never appears as rest in balanced step. -/
+theorem card_PBPSet_D_per_tc (dp : DualPart) (μP μQ : YoungDiagram)
+    (hP : μP.colLens = dpartColLensP_D dp)
+    (hQ : μQ.colLens = dpartColLensQ_D dp)
+    (hsort : dp.SortedGE) (hge3 : ∀ r ∈ dp, r ≥ 3)
+    (hodd : ∀ r ∈ dp, Odd r) (hne : dp ≠ []) :
+    (Finset.univ.filter (fun σ : PBPSet .D μP μQ =>
+        tailClass_D σ.val = .DD)).card = (countPBP_D dp).1 ∧
+    (Finset.univ.filter (fun σ : PBPSet .D μP μQ =>
+        tailClass_D σ.val = .RC)).card = (countPBP_D dp).2.1 := by
+  sorry
+
+/-- **Main theorem**: `card(PBPSet .D μP μQ) = tripleSum(countPBP_D dp)`. -/
 theorem card_PBPSet_D_eq_tripleSum_countPBP_D (dp : DualPart) (μP μQ : YoungDiagram)
     (hP : μP.colLens = dpartColLensP_D dp)
     (hQ : μQ.colLens = dpartColLensQ_D dp)
@@ -455,10 +472,18 @@ theorem card_PBPSet_D_eq_tripleSum_countPBP_D (dp : DualPart) (μP μQ : YoungDi
   | r₁ :: r₂ :: rest, hP, hQ, hsort, hge3, hodd =>
     have hr₂ : r₂ > 1 := by
       have := hge3 r₂ (List.mem_cons_of_mem _ (List.mem_cons.mpr (Or.inl rfl))); omega
-    apply card_PBPSet_D_eq_tripleSum_cons₂ r₁ r₂ rest hP hQ hsort hge3 hodd
-    exact card_PBPSet_D_eq_tripleSum_countPBP_D rest _ _
-        (colLens_eq_tail hP) (colLens_eq_tail_Q hr₂ hQ)
-        (sorted_tail₂ hsort) (all_ge3_tail₂ hge3)
-        (fun r hr => hodd r (List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hr)))
+    have hP_sh := colLens_eq_tail hP
+    have hQ_sh := colLens_eq_tail_Q hr₂ hQ
+    have hsort' := sorted_tail₂ hsort
+    have hge3' := all_ge3_tail₂ hge3
+    have hodd' := fun r hr => hodd r (List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hr))
+    have h_ih_total := card_PBPSet_D_eq_tripleSum_countPBP_D rest
+        μP.shiftLeft μQ.shiftLeft hP_sh hQ_sh hsort' hge3' hodd'
+    exact card_PBPSet_D_eq_tripleSum_cons₂ r₁ r₂ rest hP hQ hsort hge3 hodd
+        h_ih_total
+        (fun hne => (card_PBPSet_D_per_tc rest μP.shiftLeft μQ.shiftLeft
+            hP_sh hQ_sh hsort' hge3' hodd' hne).1)
+        (fun hne => (card_PBPSet_D_per_tc rest μP.shiftLeft μQ.shiftLeft
+            hP_sh hQ_sh hsort' hge3' hodd' hne).2)
 termination_by dp.length
 decreasing_by simp [List.length_cons]; omega
