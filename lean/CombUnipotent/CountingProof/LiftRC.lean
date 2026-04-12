@@ -795,6 +795,25 @@ theorem R_ValidCol0_card {μP μQ : YoungDiagram}
   have hsub : μP.colLen 0 - μQ.colLen 0 - 1 = k - 1 := by omega
   rw [hsub]
 
+/-- R_ValidCol0 restricted to top=sym ≃ TSeq(K-1) restricted to last=sym. -/
+theorem R_ValidCol0_tc_card {μP μQ : YoungDiagram}
+    (hQP : μQ.colLen 0 ≤ μP.colLen 0) (hk_pos : μQ.colLen 0 < μP.colLen 0)
+    (hK2 : μP.colLen 0 - μQ.colLen 0 ≥ 2) (sym : DRCSymbol) :
+    Fintype.card {v : ValidCol0 μP μQ //
+      v.paint (μQ.colLen 0) = .s ∧ v.paint (μP.colLen 0 - 1) = sym} =
+    Fintype.card {w : TSeq (μP.colLen 0 - μQ.colLen 0 - 1) //
+      w.val ⟨μP.colLen 0 - μQ.colLen 0 - 1 - 1, by omega⟩ = sym} := by
+  apply Fintype.card_congr
+  have hm := (show 1 ≤ μP.colLen 0 - μQ.colLen 0 by omega)
+  exact ((Equiv.subtypeSubtypeEquivSubtypeInter _ _).symm).trans
+    ((R_col0_equiv_TSeqPred hQP hm).subtypeEquiv (fun ⟨v, hv⟩ => by
+      show v.paint (μP.colLen 0 - 1) = sym ↔
+        (R_col0_toTSeqPred hQP hm ⟨v, hv⟩).val
+          ⟨μP.colLen 0 - μQ.colLen 0 - 1 - 1, by omega⟩ = sym
+      show v.paint (μP.colLen 0 - 1) = sym ↔
+        v.paint (μQ.colLen 0 + 1 + (μP.colLen 0 - μQ.colLen 0 - 1 - 1)) = sym
+      constructor <;> intro h <;> convert h using 2 <;> omega))
+
 /-! ## D_ValidCol0 and C_ValidCol0 counts -/
 
 /-- Number of valid col0 with `v.paint b = .d`. Equals 1 if k=1, else 0. -/
@@ -2317,22 +2336,22 @@ noncomputable def ValidCol0.equivTSeq_top {μP μQ : YoungDiagram}
       show (ValidCol0.toTSeq hQP v).val _ = sym
       exact h)
 
-private lemma TSeq_card_last_s' (K : ℕ) (hK : K ≠ 0) :
+lemma TSeq_card_last_s' (K : ℕ) (hK : K ≠ 0) :
     Fintype.card {w : TSeq K // w.val ⟨K - 1, by omega⟩ = DRCSymbol.s} = 1 := by
   obtain ⟨k, rfl⟩ := Nat.exists_eq_succ_of_ne_zero hK
   exact TSeq_card_last_s k
 
-private lemma TSeq_card_last_r' (K : ℕ) (hK : K ≠ 0) :
+lemma TSeq_card_last_r' (K : ℕ) (hK : K ≠ 0) :
     Fintype.card {w : TSeq K // w.val ⟨K - 1, by omega⟩ = DRCSymbol.r} = K := by
   obtain ⟨k, rfl⟩ := Nat.exists_eq_succ_of_ne_zero hK
   exact TSeq_card_last_r k
 
-private lemma TSeq_card_last_c' (K : ℕ) (hK : K ≠ 0) :
+lemma TSeq_card_last_c' (K : ℕ) (hK : K ≠ 0) :
     Fintype.card {w : TSeq K // w.val ⟨K - 1, by omega⟩ = DRCSymbol.c} = K := by
   obtain ⟨k, rfl⟩ := Nat.exists_eq_succ_of_ne_zero hK
   exact TSeq_card_last_c k
 
-private lemma TSeq_card_last_d' (K : ℕ) (hK : K ≠ 0) :
+lemma TSeq_card_last_d' (K : ℕ) (hK : K ≠ 0) :
     Fintype.card {w : TSeq K // w.val ⟨K - 1, by omega⟩ = DRCSymbol.d} = 2 * K - 1 := by
   obtain ⟨k, rfl⟩ := Nat.exists_eq_succ_of_ne_zero hK
   simp only [Nat.succ_sub_one]
