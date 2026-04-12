@@ -2377,3 +2377,58 @@ lemma validCol0_card_top_d {μP μQ : YoungDiagram}
   rw [Fintype.card_congr (ValidCol0.equivTSeq_top hQP hk_pos .d)]
   exact TSeq_card_last_d' _ (by omega)
 
+/-! ## extractCol0 preserves tail class -/
+
+/-- `extractCol0_D` preserves tail class: the ValidCol0's top paint maps to the same
+    tail class as the PBP's tail class. -/
+lemma extractCol0_preserves_tailClass {μP μQ : YoungDiagram}
+    (τ : PBPSet .D μP μQ) (hk_pos : μQ.colLen 0 < μP.colLen 0) :
+    tailClassOfSymbol ((PBP.extractCol0_D τ).paint (μP.colLen 0 - 1)) =
+      tailClass_D τ.val := by
+  have h_tailLen : PBP.tailLen_D τ.val ≠ 0 := by
+    simp only [PBP.tailLen_D]; rw [τ.prop.2.1, τ.prop.2.2]; omega
+  simp only [tailClass_D, h_tailLen, ite_false]
+  show tailClassOfSymbol (τ.val.P.paint (μP.colLen 0 - 1) 0) =
+    match PBP.tailSymbol_D τ.val with
+    | .d => .DD | .r | .c => .RC | .s | .dot => .SS
+  simp only [PBP.tailSymbol_D, τ.prop.2.1]
+  rcases hp : τ.val.P.paint (μP.colLen 0 - 1) 0 with _ | _ | _ | _ | _ <;> rfl
+
+/-! ## Per-tail-class fiber counting (primitive case) -/
+
+/-- Per-tc fiber count in the primitive case: same as ValidCol0 per-tc count.
+    Proved by sandwich: both extractCol0_D and liftPBP_to_fiber preserve tc. -/
+theorem fiber_card_primitive_tc {μP μQ : YoungDiagram}
+    (σ : PBPSet .D (YoungDiagram.shiftLeft μP) (YoungDiagram.shiftLeft μQ))
+    (h_prim : μQ.colLen 0 ≥ (YoungDiagram.shiftLeft μP).colLen 0)
+    (hQP : μQ.colLen 0 ≤ μP.colLen 0)
+    (hk_pos : μQ.colLen 0 < μP.colLen 0) (tc : TailClass) :
+    Fintype.card {τ : doubleDescent_D_fiber σ // tailClass_D τ.val.val = tc} =
+      Fintype.card {v : ValidCol0 μP μQ //
+        tailClassOfSymbol (v.paint (μP.colLen 0 - 1)) = tc} := by
+  apply le_antisymm
+  · -- Upper: fiber_tc ↪ ValidCol0_tc via extractCol0_D
+    apply Fintype.card_le_of_injective
+      (fun ⟨τ, htc⟩ => (⟨PBP.extractCol0_D τ.val, by
+        rw [extractCol0_preserves_tailClass τ.val hk_pos]; exact htc⟩ :
+        {v : ValidCol0 μP μQ //
+          tailClassOfSymbol (v.paint (μP.colLen 0 - 1)) = tc}))
+    intro ⟨τ₁, htc₁⟩ ⟨τ₂, htc₂⟩ heq
+    apply Subtype.ext
+    have h_paint : (PBP.extractCol0_D τ₁.val).paint =
+        (PBP.extractCol0_D τ₂.val).paint := by
+      have := congr_arg Subtype.val heq
+      exact congr_arg ValidCol0.paint this
+    exact extractCol0_D_injective_on_fiber σ h_paint
+  · -- Lower: ValidCol0_tc ↪ fiber_tc via liftPBP_to_fiber
+    apply Fintype.card_le_of_injective
+      (fun ⟨v, htc⟩ => (⟨liftPBP_to_fiber σ v h_prim hQP, by
+        show tailClass_D (liftPBP_primitive_D σ v h_prim hQP).val = tc
+        simp only [liftPBP_primitive_D]
+        rw [tailClass_of_liftPBP_D σ v _ hQP hk_pos]; exact htc⟩ :
+        {τ : doubleDescent_D_fiber σ // tailClass_D τ.val.val = tc}))
+    intro ⟨v₁, htc₁⟩ ⟨v₂, htc₂⟩ heq
+    apply Subtype.ext
+    have h_fiber_eq := congr_arg Subtype.val heq
+    exact liftPBP_to_fiber_injective σ h_prim hQP h_fiber_eq
+
