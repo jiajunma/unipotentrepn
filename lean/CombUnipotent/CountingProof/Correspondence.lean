@@ -1200,13 +1200,59 @@ theorem card_PBPSet_D_combined (dp : DualPart) (μP μQ : YoungDiagram)
               Finset.sum_union (by rw [Finset.disjoint_filter]; intro σ _ hr hs
                                    rw [hr] at hs; exact absurd hs (by decide))]
           ring
-        -- Assembly: use card_tc_sum + h_split_sum + sub-sum computations
-        -- DD_sub sum = subDD × validCol0_tc via fiber_card_balanced_DD_tc (constant)
-        -- RC_sub sum = from balanced_RC_aggregate_DD/RC
-        -- SS_sub sum = 0 (fiber = 0)
-        -- Total = cpd.1 / cpd.2.1 via h_cpd₁/h_cpd₂
-        -- All ingredients proved. Finset.sum mechanics needed.
-        sorry
+        -- For each tc' ∈ {DD, RC}:
+        -- card_tc(tc') = Σ fib_tc(tc') = Σ_{DD} + Σ_{RC} + Σ_{SS}
+        -- Σ_{DD} = constant sum (fiber_card_balanced_DD_tc)
+        -- Σ_{RC} = balanced_RC_aggregate
+        -- Σ_{SS} = 0 (fiber_card_balanced_SS → subtype empty)
+        -- SS_sub: fiber = 0 → per-tc fiber = 0
+        have h_ss_zero : ∀ tc',
+            (Finset.univ.filter (fun σ : PBPSet .D μP.shiftLeft μQ.shiftLeft =>
+              tailClass_D σ.val = .SS)).sum (fun σ =>
+              Fintype.card {τ : doubleDescent_D_fiber σ // tailClass_D τ.val.val = tc'}) = 0 := by
+          intro tc'; apply Finset.sum_eq_zero; intro σ hσ
+          simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hσ
+          have h0 := fiber_card_balanced_SS σ h_bal hQP hQP_lt hσ
+          apply le_antisymm _ (Nat.zero_le _)
+          calc Fintype.card {τ : doubleDescent_D_fiber σ // tailClass_D τ.val.val = tc'}
+              ≤ Fintype.card (doubleDescent_D_fiber σ) := Fintype.card_subtype_le _
+            _ = 0 := h0
+        -- DD_sub: constant per-tc fiber → sum = card × value
+        have h_dd_const : ∀ tc',
+            (Finset.univ.filter (fun σ : PBPSet .D μP.shiftLeft μQ.shiftLeft =>
+              tailClass_D σ.val = .DD)).sum (fun σ =>
+              Fintype.card {τ : doubleDescent_D_fiber σ // tailClass_D τ.val.val = tc'}) =
+            (Finset.univ.filter (fun σ : PBPSet .D μP.shiftLeft μQ.shiftLeft =>
+              tailClass_D σ.val = .DD)).card *
+            Fintype.card {v : ValidCol0 μP μQ //
+              tailClassOfSymbol (v.paint (μP.colLen 0 - 1)) = tc'} := by
+          intro tc'
+          have h_const : ∀ σ ∈ Finset.univ.filter (fun σ : PBPSet .D μP.shiftLeft μQ.shiftLeft =>
+              tailClass_D σ.val = .DD),
+            Fintype.card {τ : doubleDescent_D_fiber σ // tailClass_D τ.val.val = tc'} =
+            Fintype.card {v : ValidCol0 μP μQ // tailClassOfSymbol (v.paint (μP.colLen 0 - 1)) = tc'} := by
+            intro σ hσ; exact fiber_card_balanced_DD_tc σ h_bal hQP hQP_lt (Finset.mem_filter.mp hσ).2 tc'
+          rw [Finset.sum_congr rfl h_const, Finset.sum_const]; rfl
+        -- Combine: card_tc = DD_sub + RC_sub + SS_sub = card × validCol0_tc + RC_aggregate + 0
+        -- ValidCol0_tc(DD) = tDD, ValidCol0_tc(RC) = tRC
+        have h_vc_DD : Fintype.card {v : ValidCol0 μP μQ //
+            tailClassOfSymbol (v.paint (μP.colLen 0 - 1)) = .DD} = (tailCoeffs K).1.1 := by
+          simp_rw [tailClassOfSymbol_DD]
+          rw [validCol0_card_top_d hQP hQP_lt, hK_def, tailCoeffs_tDD _ hK_pos']
+        have h_vc_RC : Fintype.card {v : ValidCol0 μP μQ //
+            tailClassOfSymbol (v.paint (μP.colLen 0 - 1)) = .RC} = (tailCoeffs K).1.2.1 := by
+          simp_rw [tailClassOfSymbol_RC]
+          rw [Fintype.card_subtype_or_disjoint _ _
+              (Set.disjoint_iff.2 fun v ⟨hr, hc⟩ => by
+                change v.paint _ = .r at hr; change v.paint _ = .c at hc
+                rw [hr] at hc; exact DRCSymbol.noConfusion hc)]
+          rw [validCol0_card_top_r hQP hQP_lt, validCol0_card_top_c hQP hQP_lt,
+              hK_def, tailCoeffs_tRC _ hK_pos']; omega
+        constructor
+        · rw [card_tc_sum .DD, h_split_sum .DD, h_dd_const .DD, h_vc_DD,
+              h_agg_DD, h_ss_zero .DD, Nat.add_zero, ← h_cpd₁]
+        · rw [card_tc_sum .RC, h_split_sum .RC, h_dd_const .RC, h_vc_RC,
+              h_agg_RC, h_ss_zero .RC, Nat.add_zero, ← h_cpd₂]
 termination_by dp.length
 decreasing_by simp [List.length_cons]; omega
 
