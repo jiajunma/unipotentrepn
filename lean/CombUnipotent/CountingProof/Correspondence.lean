@@ -282,6 +282,30 @@ theorem card_PBPSet_D_eq_tripleSum_nil {μP μQ : YoungDiagram}
   rw [yd_of_colLens_nil hP', yd_of_colLens_nil hQ']
   simp [tripleSum, countPBP_D, card_PBPSet_bot]
 
+/-- `⊥.colLen j = 0` for all j. -/
+lemma colLen_bot (j : ℕ) : (⊥ : YoungDiagram).colLen j = 0 := by
+  by_contra h
+  have h_pos := Nat.pos_of_ne_zero h
+  have := YoungDiagram.mem_iff_lt_colLen.mpr h_pos
+  exact YoungDiagram.notMem_bot _ this
+
+/-- `⊥.rowLen j = 0`. -/
+lemma rowLen_bot (j : ℕ) : (⊥ : YoungDiagram).rowLen j = 0 := by
+  by_contra h
+  exact YoungDiagram.notMem_bot _ (YoungDiagram.mem_iff_lt_rowLen.mpr (Nat.pos_of_ne_zero h))
+
+/-- `⊥.colLens = []`. -/
+lemma colLens_bot : (⊥ : YoungDiagram).colLens = [] := by
+  have h := YoungDiagram.length_colLens (⊥ : YoungDiagram)
+  rw [rowLen_bot] at h
+  match (⊥ : YoungDiagram).colLens, h with
+  | [], _ => rfl
+
+/-- `⊥.shiftLeft = ⊥`. -/
+lemma shiftLeft_bot : (⊥ : YoungDiagram).shiftLeft = ⊥ := by
+  apply yd_of_colLens_nil
+  rw [YoungDiagram.colLens_shiftLeft, colLens_bot]; rfl
+
 /-- Key arithmetic: for odd n, `(n+1)/2 = n/2 + 1`. -/
 lemma odd_div2_succ {n : ℕ} (h : Odd n) : (n + 1) / 2 = n / 2 + 1 := by
   obtain ⟨m, rfl⟩ := h; omega
@@ -292,20 +316,26 @@ theorem card_PBPSet_D_eq_tripleSum_singleton (r₁ : ℕ) {μP μQ : YoungDiagra
     (hQ : μQ.colLens = dpartColLensQ_D [r₁])
     (hge3 : r₁ ≥ 3) (hodd : Odd r₁) :
     Fintype.card (PBPSet .D μP μQ) = tripleSum (countPBP_D [r₁]) := by
-  -- μQ = ⊥ (Q colLens = [])
   have hμQ_bot : μQ = ⊥ := yd_of_colLens_nil (by rw [hQ]; rfl)
-  -- μP has one column of height (r₁+1)/2
+  subst hμQ_bot
   have hP_colLen : μP.colLen 0 = (r₁ + 1) / 2 :=
     colLen_0_eq_of_colLens_cons (by rw [hP]; rfl)
-  -- shiftLeft μP = ⊥ (only one column)
   have h_shifted_P : μP.shiftLeft = ⊥ :=
     yd_of_colLens_nil (by rw [YoungDiagram.colLens_shiftLeft, hP]; rfl)
-  -- Key arithmetic: (r₁+1)/2 = r₁/2 + 1 for odd r₁
   have hK_eq : (r₁ + 1) / 2 = r₁ / 2 + 1 := odd_div2_succ hodd
-  -- Apply primitive step (shifted = ⊥, card_shifted = 1)
-  -- card = 1 * tailCoeffs_total((r₁+1)/2) = tailCoeffs_total(r₁/2+1)
-  -- = tripleSum(countPBP_D [r₁])
-  sorry
+  have hK_pos : 1 ≤ (r₁ + 1) / 2 := by obtain ⟨m, rfl⟩ := hodd; omega
+  have h_prim : (⊥ : YoungDiagram).colLen 0 ≥ μP.shiftLeft.colLen 0 := by
+    rw [h_shifted_P, colLen_bot]
+  have h_card := card_PBPSet_D_primitive_step ((r₁ + 1) / 2) h_prim
+      (by rw [hP_colLen, colLen_bot]; omega) (by rw [colLen_bot]; omega) hK_pos
+  rw [h_shifted_P, shiftLeft_bot] at h_card
+  rw [h_card, card_PBPSet_bot, Nat.one_mul]
+  -- Goal: tailCoeffs_total((r₁+1)/2) = tripleSum(countPBP_D [r₁])
+  -- countPBP_D [r₁] = (1 * tDD, 1 * tRC, 1 * tSS) with tailCoeffs(r₁/2 + 1)
+  -- tripleSum = tDD + tRC + tSS with tailCoeffs(r₁/2 + 1)
+  -- by hK_eq: (r₁+1)/2 = r₁/2 + 1, so same tailCoeffs
+  dsimp only [countPBP_D, tripleSum]
+  rw [hK_eq]; simp [Nat.one_mul, Nat.zero_add]
 
 /-- Pair step: dp = r₁ :: r₂ :: rest.
     Given IH for rest, proves the result for the full dp.
