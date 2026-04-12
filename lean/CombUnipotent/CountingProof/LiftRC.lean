@@ -2469,3 +2469,45 @@ theorem fiber_card_balanced_DD_tc {μP μQ : YoungDiagram}
     simp only [liftPBP_balanced_DD_D] at h_fiber_eq
     exact (liftPBP_D_injective hQP h_fiber_eq).2
 
+/-- Primitive per-tc step at PBPSet level:
+    `card(PBPSet_tc tc) = card_shifted × card(ValidCol0_tc)`.
+    Proved via sandwich: both extractCol0 and liftPBP preserve tc. -/
+theorem card_PBPSet_D_primitive_step_tc' {μP μQ : YoungDiagram}
+    (hQP : μQ.colLen 0 ≤ μP.colLen 0) (hk_pos : μQ.colLen 0 < μP.colLen 0)
+    (h_prim : μQ.colLen 0 ≥ μP.shiftLeft.colLen 0) (tc : TailClass) :
+    Fintype.card {τ : PBPSet .D μP μQ // tailClass_D τ.val = tc} =
+      Fintype.card (PBPSet .D μP.shiftLeft μQ.shiftLeft) *
+        Fintype.card {v : ValidCol0 μP μQ //
+          tailClassOfSymbol (v.paint (μP.colLen 0 - 1)) = tc} := by
+  apply le_antisymm
+  · rw [← Fintype.card_prod]
+    apply Fintype.card_le_of_injective
+      (fun (x : {τ : PBPSet .D μP μQ // tailClass_D τ.val = tc}) =>
+        ((doubleDescent_D_map x.val,
+          ⟨PBP.extractCol0_D x.val,
+            (extractCol0_preserves_tailClass x.val hk_pos).symm ▸ x.prop⟩) :
+          PBPSet .D μP.shiftLeft μQ.shiftLeft ×
+          {v : ValidCol0 μP μQ // tailClassOfSymbol (v.paint (μP.colLen 0 - 1)) = tc}))
+    intro ⟨τ₁, h1⟩ ⟨τ₂, h2⟩ heq
+    simp only [Prod.mk.injEq] at heq
+    have h_σ := heq.1
+    have h_v := heq.2
+    have h_paint : (PBP.extractCol0_D τ₁).paint = (PBP.extractCol0_D τ₂).paint :=
+      congr_arg ValidCol0.paint (Subtype.ext_iff.mp h_v)
+    have h_fib_eq := @extractCol0_D_injective_on_fiber μP μQ (doubleDescent_D_map τ₁)
+      ⟨τ₁, rfl⟩ ⟨τ₂, h_σ.symm⟩ h_paint
+    have h_val_eq : τ₁ = τ₂ := congr_arg Subtype.val h_fib_eq
+    exact Subtype.ext h_val_eq
+  · rw [← Fintype.card_prod]
+    apply Fintype.card_le_of_injective
+      (fun (p : PBPSet .D μP.shiftLeft μQ.shiftLeft ×
+          {v : ValidCol0 μP μQ // tailClassOfSymbol (v.paint (μP.colLen 0 - 1)) = tc}) =>
+        (⟨liftPBP_primitive_D p.1 p.2.1 h_prim hQP, by
+          simp only [liftPBP_primitive_D]
+          rw [tailClass_of_liftPBP_D p.1 p.2.1 _ hQP hk_pos]
+          exact p.2.prop⟩ :
+          {τ : PBPSet .D μP μQ // tailClass_D τ.val = tc}))
+    intro ⟨σ₁, v₁, _⟩ ⟨σ₂, v₂, _⟩ heq
+    simp only [Subtype.mk.injEq, liftPBP_primitive_D] at heq
+    exact Prod.ext (liftPBP_D_injective hQP heq).1 (Subtype.ext (liftPBP_D_injective hQP heq).2)
+
