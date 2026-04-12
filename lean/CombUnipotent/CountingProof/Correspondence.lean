@@ -798,7 +798,58 @@ theorem card_PBPSet_D_combined (dp : DualPart) (μP μQ : YoungDiagram)
                   rw [tailCoeffs_tRC K hK_pos']
             _ = _ := h_cpd₂.symm
         exact ⟨h_dd, h_rc⟩
-      · -- Balanced per-tc: uses balanced_RC_aggregate_DD/RC
+      · -- Balanced per-tc
+        push_neg at h_prim_dp
+        have h_bal : μP.shiftLeft.colLen 0 = μQ.colLen 0 + 1 := by
+          have hr₂_ge_r₃ : r₂ ≥ rest.head?.getD 0 := by
+            match rest with
+            | [] => simp
+            | r₃ :: _ =>
+              simp only [List.head?_cons, Option.getD_some]
+              have hp := hsort.pairwise; rw [List.pairwise_cons] at hp
+              exact (List.pairwise_cons.mp hp.2).1 r₃ (by simp)
+          have hr₂_eq_r₃ : r₂ = rest.head?.getD 0 := Nat.le_antisymm h_prim_dp hr₂_ge_r₃
+          have h_sh := colLens_eq_tail hP
+          match rest with
+          | [] => exfalso; simp at hr₂_eq_r₃; omega
+          | [r₃] =>
+            rw [colLen_0_eq_of_colLens_cons (by rw [h_sh, dpartColLensP_D_singleton]), hQ_colLen]
+            simp at hr₂_eq_r₃; obtain ⟨a, rfl⟩ := hr₂_odd
+            obtain ⟨b, rfl⟩ := hodd r₃ (List.mem_cons_of_mem _ (List.mem_cons_of_mem _ (by simp)))
+            omega
+          | r₃ :: _ :: _ =>
+            rw [colLen_0_eq_of_colLens_cons (by rw [h_sh, dpartColLensP_D_cons₂_eq]), hQ_colLen]
+            simp at hr₂_eq_r₃; obtain ⟨a, rfl⟩ := hr₂_odd
+            obtain ⟨b, rfl⟩ := hodd r₃ (List.mem_cons_of_mem _ (List.mem_cons_of_mem _ (by simp)))
+            omega
+        set K := μP.colLen 0 - μQ.colLen 0 with hK_def
+        have hK_pos' : K ≥ 1 := by omega
+        have hK_dp : K = (r₁ - r₂) / 2 + 1 := by
+          rw [hK_def, hP_colLen, hQ_colLen]; exact k_eq_of_odd hr₁_odd hr₂_odd hr₁_ge_r₂
+        have h_rest_ne : rest ≠ [] := by
+          intro h; subst h; simp at h_prim_dp; exact absurd hr₂_ge3 (by omega)
+        have h_ih_tc' := h_ih.2 h_rest_ne
+        -- Balanced step: card = subDD × tSum + subRC × scSum
+        have h_step := card_PBPSet_D_balanced_step K h_bal (by rw [hK_def]) hQP hK_pos'
+        -- Balanced countPBP_D components
+        have h_cpd₁ : (countPBP_D (r₁ :: r₂ :: rest)).1 =
+            (countPBP_D rest).1 * (tailCoeffs K).1.1 +
+            (countPBP_D rest).2.1 * (tailCoeffs K).2.1 := by
+          simp [countPBP_D, tripleSum, show ¬(r₂ > (List.head? rest).getD 0) from by omega, hK_dp]
+        have h_cpd₂ : (countPBP_D (r₁ :: r₂ :: rest)).2.1 =
+            (countPBP_D rest).1 * (tailCoeffs K).1.2.1 +
+            (countPBP_D rest).2.1 * (tailCoeffs K).2.2.1 := by
+          simp [countPBP_D, tripleSum, show ¬(r₂ > (List.head? rest).getD 0) from by omega, hK_dp]
+        -- Per-tc IH: subDD = dd', subRC = rc'
+        rw [h_ih_tc'.1, h_ih_tc'.2] at h_cpd₁ h_cpd₂
+        -- DD per-tc: DD_sub gives validCol0_tc(DD), RC_sub gives aggregate
+        simp only [← Fintype.card_subtype]
+        -- Need: DD = subDD × tDD + subRC × scDD (per-tc fiber sum decomposition)
+        -- DD_sub contribution: subDD × tDD (from fiber_card_balanced_DD_tc)
+        -- RC_sub contribution: subRC × scDD (from balanced_RC_aggregate_DD)
+        -- SS_sub: 0
+        -- Similarly for RC.
+        -- Requires per-tc Finset.sum decomposition (not yet assembled)
         sorry
 termination_by dp.length
 decreasing_by simp [List.length_cons]; omega
