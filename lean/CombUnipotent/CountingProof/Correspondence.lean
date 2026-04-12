@@ -337,18 +337,53 @@ theorem card_PBPSet_D_eq_tripleSum_singleton (r₁ : ℕ) {μP μQ : YoungDiagra
   dsimp only [countPBP_D, tripleSum]
   rw [hK_eq]; simp [Nat.one_mul, Nat.zero_add]
 
-/-- Pair step: dp = r₁ :: r₂ :: rest.
-    Given IH for rest, proves the result for the full dp.
-    Sorry: arithmetic gap (k computation) + balanced triple match. -/
+/-- Key arithmetic: for odd r₁ r₂, `(r₁+1)/2 - (r₂-1)/2 = (r₁-r₂)/2 + 1`. -/
+lemma k_eq_of_odd {r₁ r₂ : ℕ} (h₁ : Odd r₁) (h₂ : Odd r₂) (hle : r₂ ≤ r₁) :
+    (r₁ + 1) / 2 - (r₂ - 1) / 2 = (r₁ - r₂) / 2 + 1 := by
+  obtain ⟨a, rfl⟩ := h₁; obtain ⟨b, rfl⟩ := h₂; omega
+
 theorem card_PBPSet_D_eq_tripleSum_cons₂ (r₁ r₂ : ℕ) (rest : DualPart)
     {μP μQ : YoungDiagram}
     (hP : μP.colLens = dpartColLensP_D (r₁ :: r₂ :: rest))
     (hQ : μQ.colLens = dpartColLensQ_D (r₁ :: r₂ :: rest))
     (hsort : (r₁ :: r₂ :: rest).SortedGE) (hge3 : ∀ r ∈ r₁ :: r₂ :: rest, r ≥ 3)
+    (hodd : ∀ r ∈ r₁ :: r₂ :: rest, Odd r)
     (h_ih : Fintype.card (PBPSet .D μP.shiftLeft μQ.shiftLeft) =
         tripleSum (countPBP_D rest)) :
     Fintype.card (PBPSet .D μP μQ) = tripleSum (countPBP_D (r₁ :: r₂ :: rest)) := by
-  sorry
+  have hr₁_ge3 := hge3 r₁ (by simp)
+  have hr₂_ge3 := hge3 r₂ (by simp)
+  have hr₁_odd := hodd r₁ (by simp)
+  have hr₂_odd := hodd r₂ (by simp)
+  have hr₁_ge_r₂ : r₂ ≤ r₁ := by
+    have := hsort.pairwise; rw [List.pairwise_cons] at this; exact this.1 r₂ (by simp)
+  have hP_colLen : μP.colLen 0 = (r₁ + 1) / 2 :=
+    colLen_0_eq_of_colLens_cons (by rw [hP]; rfl)
+  have hQ_colLen : μQ.colLen 0 = (r₂ - 1) / 2 :=
+    colLen_0_eq_of_colLens_cons (by
+      rw [hQ, dpartColLensQ_D_cons₂_pos r₁ r₂ rest (by omega)])
+  have hQP : μQ.colLen 0 ≤ μP.colLen 0 := by rw [hP_colLen, hQ_colLen]; omega
+  have hK : μP.colLen 0 - μQ.colLen 0 = (r₁ - r₂) / 2 + 1 := by
+    rw [hP_colLen, hQ_colLen]; exact k_eq_of_odd hr₁_odd hr₂_odd hr₁_ge_r₂
+  have hK_pos : 1 ≤ μP.colLen 0 - μQ.colLen 0 := by omega
+  -- Unfold countPBP_D for r₁ :: r₂ :: rest
+  have h_r₃ := rest.head?.getD 0
+  show Fintype.card (PBPSet .D μP μQ) = tripleSum (countPBP_D (r₁ :: r₂ :: rest))
+  simp only [countPBP_D, tripleSum]
+  -- The countPBP_D branches on r₂ > r₃
+  -- We branch correspondingly on primitive vs balanced for the YD step
+  by_cases h_prim_dp : r₂ > rest.head?.getD 0
+  · -- Primitive case: r₂ > r₃
+    rw [if_pos h_prim_dp]
+    -- Need: card = total * (tDD + tRC + tSS) with tailCoeffs((r₁-r₂)/2+1)
+    -- primitive condition on YD: μQ.colLen 0 ≥ shiftLeft μP.colLen 0
+    -- This follows from r₂ > r₃ (the Q column is tall enough)
+    sorry
+  · -- Balanced case: r₂ ≤ r₃
+    rw [if_neg h_prim_dp]
+    -- Need: card = dd' * tSum + rc' * scSum
+    -- where (dd', rc', ss') = countPBP_D rest
+    sorry
 
 /-- **Main theorem**: `card(PBPSet .D μP μQ) = tripleSum(countPBP_D dp)`.
     Combines base, singleton, and pair-step by strong induction on dp.length. -/
@@ -366,7 +401,7 @@ theorem card_PBPSet_D_eq_tripleSum_countPBP_D (dp : DualPart) (μP μQ : YoungDi
   | r₁ :: r₂ :: rest, hP, hQ, hsort, hge3, hodd =>
     have hr₂ : r₂ > 1 := by
       have := hge3 r₂ (List.mem_cons_of_mem _ (List.mem_cons.mpr (Or.inl rfl))); omega
-    apply card_PBPSet_D_eq_tripleSum_cons₂ r₁ r₂ rest hP hQ hsort hge3
+    apply card_PBPSet_D_eq_tripleSum_cons₂ r₁ r₂ rest hP hQ hsort hge3 hodd
     exact card_PBPSet_D_eq_tripleSum_countPBP_D rest _ _
         (colLens_eq_tail hP) (colLens_eq_tail_Q hr₂ hQ)
         (sorted_tail₂ hsort) (all_ge3_tail₂ hge3)
