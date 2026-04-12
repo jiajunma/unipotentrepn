@@ -324,6 +324,19 @@ lemma tailCoeffs_tRC (K : ℕ) (hK : K ≥ 1) : (tailCoeffs K).1.2.1 = 2 * K := 
 /-- tailCoeffs SS component = 1. -/
 lemma tailCoeffs_tSS : ∀ K, (tailCoeffs K).1.2.2 = 1 := fun _ => rfl
 
+/-- tailCoeffs scDD component. -/
+lemma tailCoeffs_scDD (K : ℕ) : (tailCoeffs K).2.1 = 2 * (if K ≥ 2 then K - 1 else 0) := by
+  obtain _ | _ | K := K <;> simp [tailCoeffs, nu] <;> omega
+
+/-- tailCoeffs scRC component. -/
+lemma tailCoeffs_scRC (K : ℕ) (hK : K ≥ 1) : (tailCoeffs K).2.2.1 = 2 * K - 1 := by
+  obtain ⟨k, rfl⟩ := Nat.exists_eq_succ_of_ne_zero (by omega : K ≠ 0)
+  show nu k + (if k + 1 ≥ 2 then nu (k + 1 - 2) else 0) = 2 * (k + 1) - 1
+  unfold nu; by_cases h : k + 1 ≥ 2 <;> simp [h] <;> omega
+
+/-- tailCoeffs scSS component = 1. -/
+lemma tailCoeffs_scSS : ∀ K, (tailCoeffs K).2.2.2 = 1 := fun _ => rfl
+
 /-- Key arithmetic: for odd n, `(n+1)/2 = n/2 + 1`. -/
 lemma odd_div2_succ {n : ℕ} (h : Odd n) : (n + 1) / 2 = n / 2 + 1 := by
   obtain ⟨m, rfl⟩ := h; omega
@@ -478,6 +491,31 @@ lemma tailClassOfSymbol_DD (sym : DRCSymbol) :
 lemma tailClassOfSymbol_RC (sym : DRCSymbol) :
     tailClassOfSymbol sym = .RC ↔ (sym = .r ∨ sym = .c) := by
   cases sym <;> simp [tailClassOfSymbol]
+
+/-- **RC_sub per-tc aggregate (Task 25 core)**: for balanced case, the sum over
+    RC_sub σ of fib_tc(σ, DD) equals subRC × scDD (and similarly for RC, SS).
+    Proof needs R/C fiber per-tc + |R_sub| = |C_sub|. -/
+theorem balanced_RC_aggregate_DD {μP μQ : YoungDiagram}
+    (hQP : μQ.colLen 0 ≤ μP.colLen 0) (hk_pos : μQ.colLen 0 < μP.colLen 0)
+    (h_bal : μP.shiftLeft.colLen 0 = μQ.colLen 0 + 1) :
+    (Finset.univ.filter (fun σ : PBPSet .D μP.shiftLeft μQ.shiftLeft =>
+        tailClass_D σ.val = .RC)).sum
+      (fun σ => Fintype.card {τ : doubleDescent_D_fiber σ // tailClass_D τ.val.val = .DD}) =
+    (Finset.univ.filter (fun σ : PBPSet .D μP.shiftLeft μQ.shiftLeft =>
+        tailClass_D σ.val = .RC)).card *
+      (tailCoeffs (μP.colLen 0 - μQ.colLen 0)).2.1 := by
+  sorry
+
+theorem balanced_RC_aggregate_RC {μP μQ : YoungDiagram}
+    (hQP : μQ.colLen 0 ≤ μP.colLen 0) (hk_pos : μQ.colLen 0 < μP.colLen 0)
+    (h_bal : μP.shiftLeft.colLen 0 = μQ.colLen 0 + 1) :
+    (Finset.univ.filter (fun σ : PBPSet .D μP.shiftLeft μQ.shiftLeft =>
+        tailClass_D σ.val = .RC)).sum
+      (fun σ => Fintype.card {τ : doubleDescent_D_fiber σ // tailClass_D τ.val.val = .RC}) =
+    (Finset.univ.filter (fun σ : PBPSet .D μP.shiftLeft μQ.shiftLeft =>
+        tailClass_D σ.val = .RC)).card *
+      (tailCoeffs (μP.colLen 0 - μQ.colLen 0)).2.2.1 := by
+  sorry
 
 /-! Per-tc matching for dp.length ≥ 1: filter counts match countPBP_D components.
     Note: dp=[] doesn't satisfy per-tc (countPBP_D []=(1,0,0) but actual is (0,0,1)).
@@ -760,7 +798,7 @@ theorem card_PBPSet_D_combined (dp : DualPart) (μP μQ : YoungDiagram)
                   rw [tailCoeffs_tRC K hK_pos']
             _ = _ := h_cpd₂.symm
         exact ⟨h_dd, h_rc⟩
-      · -- Balanced per-tc: needs RC_sub aggregate (Task 25)
+      · -- Balanced per-tc: uses balanced_RC_aggregate_DD/RC
         sorry
 termination_by dp.length
 decreasing_by simp [List.length_cons]; omega
