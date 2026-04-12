@@ -282,12 +282,15 @@ theorem card_PBPSet_D_eq_tripleSum_nil {μP μQ : YoungDiagram}
   rw [yd_of_colLens_nil hP', yd_of_colLens_nil hQ']
   simp [tripleSum, countPBP_D, card_PBPSet_bot]
 
-/-- Singleton case: dp = [r₁].
-    Sorry: arithmetic connecting dp params to YD colLen, then primitive step. -/
+/-- Key arithmetic: for odd n, `(n+1)/2 = n/2 + 1`. -/
+lemma odd_div2_succ {n : ℕ} (h : Odd n) : (n + 1) / 2 = n / 2 + 1 := by
+  obtain ⟨m, rfl⟩ := h; omega
+
+/-- Singleton case: dp = [r₁], always primitive with shifted = ⊥. -/
 theorem card_PBPSet_D_eq_tripleSum_singleton (r₁ : ℕ) {μP μQ : YoungDiagram}
     (hP : μP.colLens = dpartColLensP_D [r₁])
     (hQ : μQ.colLens = dpartColLensQ_D [r₁])
-    (hge3 : r₁ ≥ 3) :
+    (hge3 : r₁ ≥ 3) (hodd : Odd r₁) :
     Fintype.card (PBPSet .D μP μQ) = tripleSum (countPBP_D [r₁]) := by
   sorry
 
@@ -309,17 +312,21 @@ theorem card_PBPSet_D_eq_tripleSum_cons₂ (r₁ r₂ : ℕ) (rest : DualPart)
 theorem card_PBPSet_D_eq_tripleSum_countPBP_D (dp : DualPart) (μP μQ : YoungDiagram)
     (hP : μP.colLens = dpartColLensP_D dp)
     (hQ : μQ.colLens = dpartColLensQ_D dp)
-    (hsort : dp.SortedGE) (hge3 : ∀ r ∈ dp, r ≥ 3) :
+    (hsort : dp.SortedGE) (hge3 : ∀ r ∈ dp, r ≥ 3)
+    (hodd : ∀ r ∈ dp, Odd r) :
     Fintype.card (PBPSet .D μP μQ) = tripleSum (countPBP_D dp) := by
-  match dp with
-  | [] => exact card_PBPSet_D_eq_tripleSum_nil hP hQ
-  | [r₁] => exact card_PBPSet_D_eq_tripleSum_singleton r₁ hP hQ (hge3 r₁ (by simp))
-  | r₁ :: r₂ :: rest =>
+  match dp, hP, hQ, hsort, hge3, hodd with
+  | [], hP, hQ, _, _, _ => exact card_PBPSet_D_eq_tripleSum_nil hP hQ
+  | [r₁], hP, hQ, _, hge3, hodd =>
+    exact card_PBPSet_D_eq_tripleSum_singleton r₁ hP hQ
+      (hge3 r₁ (by simp)) (hodd r₁ (by simp))
+  | r₁ :: r₂ :: rest, hP, hQ, hsort, hge3, hodd =>
     have hr₂ : r₂ > 1 := by
       have := hge3 r₂ (List.mem_cons_of_mem _ (List.mem_cons.mpr (Or.inl rfl))); omega
     apply card_PBPSet_D_eq_tripleSum_cons₂ r₁ r₂ rest hP hQ hsort hge3
     exact card_PBPSet_D_eq_tripleSum_countPBP_D rest _ _
         (colLens_eq_tail hP) (colLens_eq_tail_Q hr₂ hQ)
         (sorted_tail₂ hsort) (all_ge3_tail₂ hge3)
+        (fun r hr => hodd r (List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hr)))
 termination_by dp.length
 decreasing_by simp [List.length_cons]; omega
