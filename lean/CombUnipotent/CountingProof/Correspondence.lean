@@ -443,9 +443,39 @@ theorem card_PBPSet_D_eq_tripleSum_cons₂ (r₁ r₂ : ℕ) (rest : DualPart)
     have h_rc_eq := h_ih_rc h_rest_ne
     rw [h_step, h_dd_eq, h_rc_eq, hK]; ring
 
-/-- **Per-tc matching for dp.length ≥ 1**: filter counts match countPBP_D components.
+/-! Per-tc matching for dp.length ≥ 1: filter counts match countPBP_D components.
     Note: dp=[] doesn't satisfy per-tc (countPBP_D []=(1,0,0) but actual is (0,0,1)).
     But dp=[] never appears as rest in balanced step. -/
+
+/-- Per-tc for singleton dp = [r₁]. -/
+theorem per_tc_singleton (r₁ : ℕ) {μP μQ : YoungDiagram}
+    (hP : μP.colLens = dpartColLensP_D [r₁])
+    (hQ : μQ.colLens = dpartColLensQ_D [r₁])
+    (hge3 : r₁ ≥ 3) (hodd : Odd r₁) :
+    (Finset.univ.filter (fun σ : PBPSet .D μP μQ =>
+        tailClass_D σ.val = .DD)).card = (countPBP_D [r₁]).1 ∧
+    (Finset.univ.filter (fun σ : PBPSet .D μP μQ =>
+        tailClass_D σ.val = .RC)).card = (countPBP_D [r₁]).2.1 := by
+  sorry
+
+/-- Per-tc step for dp = r₁::r₂::rest. -/
+theorem per_tc_cons₂ (r₁ r₂ : ℕ) (rest : DualPart) {μP μQ : YoungDiagram}
+    (hP : μP.colLens = dpartColLensP_D (r₁ :: r₂ :: rest))
+    (hQ : μQ.colLens = dpartColLensQ_D (r₁ :: r₂ :: rest))
+    (hsort : (r₁ :: r₂ :: rest).SortedGE)
+    (hge3 : ∀ r ∈ r₁ :: r₂ :: rest, r ≥ 3)
+    (hodd : ∀ r ∈ r₁ :: r₂ :: rest, Odd r)
+    (h_ih_tc : rest ≠ [] →
+      (Finset.univ.filter (fun σ : PBPSet .D μP.shiftLeft μQ.shiftLeft =>
+          tailClass_D σ.val = .DD)).card = (countPBP_D rest).1 ∧
+      (Finset.univ.filter (fun σ : PBPSet .D μP.shiftLeft μQ.shiftLeft =>
+          tailClass_D σ.val = .RC)).card = (countPBP_D rest).2.1) :
+    (Finset.univ.filter (fun σ : PBPSet .D μP μQ =>
+        tailClass_D σ.val = .DD)).card = (countPBP_D (r₁ :: r₂ :: rest)).1 ∧
+    (Finset.univ.filter (fun σ : PBPSet .D μP μQ =>
+        tailClass_D σ.val = .RC)).card = (countPBP_D (r₁ :: r₂ :: rest)).2.1 := by
+  sorry
+
 theorem card_PBPSet_D_per_tc (dp : DualPart) (μP μQ : YoungDiagram)
     (hP : μP.colLens = dpartColLensP_D dp)
     (hQ : μQ.colLens = dpartColLensQ_D dp)
@@ -455,7 +485,19 @@ theorem card_PBPSet_D_per_tc (dp : DualPart) (μP μQ : YoungDiagram)
         tailClass_D σ.val = .DD)).card = (countPBP_D dp).1 ∧
     (Finset.univ.filter (fun σ : PBPSet .D μP μQ =>
         tailClass_D σ.val = .RC)).card = (countPBP_D dp).2.1 := by
-  sorry
+  match dp, hP, hQ, hsort, hge3, hodd, hne with
+  | [r₁], hP, hQ, _, hge3, hodd, _ =>
+    exact per_tc_singleton r₁ hP hQ (hge3 r₁ (by simp)) (hodd r₁ (by simp))
+  | r₁ :: r₂ :: rest, hP, hQ, hsort, hge3, hodd, _ =>
+    have hr₂ : r₂ > 1 := by
+      have := hge3 r₂ (List.mem_cons_of_mem _ (List.mem_cons.mpr (Or.inl rfl))); omega
+    exact per_tc_cons₂ r₁ r₂ rest hP hQ hsort hge3 hodd (fun hne =>
+      card_PBPSet_D_per_tc rest μP.shiftLeft μQ.shiftLeft
+          (colLens_eq_tail hP) (colLens_eq_tail_Q hr₂ hQ)
+          (sorted_tail₂ hsort) (all_ge3_tail₂ hge3)
+          (fun r hr => hodd r (List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hr))) hne)
+termination_by dp.length
+decreasing_by simp [List.length_cons]; omega
 
 /-- **Main theorem**: `card(PBPSet .D μP μQ) = tripleSum(countPBP_D dp)`. -/
 theorem card_PBPSet_D_eq_tripleSum_countPBP_D (dp : DualPart) (μP μQ : YoungDiagram)
