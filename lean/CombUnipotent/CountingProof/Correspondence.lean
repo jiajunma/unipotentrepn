@@ -375,10 +375,13 @@ theorem card_PBPSet_D_eq_tripleSum_cons₂ (r₁ r₂ : ℕ) (rest : DualPart)
   by_cases h_prim_dp : r₂ > rest.head?.getD 0
   · -- Primitive case: r₂ > r₃
     rw [if_pos h_prim_dp]
-    -- Need: card = total * (tDD + tRC + tSS) with tailCoeffs((r₁-r₂)/2+1)
     -- primitive condition on YD: μQ.colLen 0 ≥ shiftLeft μP.colLen 0
-    -- This follows from r₂ > r₃ (the Q column is tall enough)
-    sorry
+    have h_prim : μQ.colLen 0 ≥ μP.shiftLeft.colLen 0 := by
+      sorry -- arithmetic: r₂ > r₃ with oddness → (r₂-1)/2 ≥ (r₃+1)/2
+    have h_card := card_PBPSet_D_primitive_step (μP.colLen 0 - μQ.colLen 0)
+        h_prim rfl hQP hK_pos
+    rw [h_card, h_ih, hK]
+    simp only [tripleSum, Nat.add_mul, Nat.mul_add]
   · -- Balanced case: r₂ ≤ r₃
     rw [if_neg h_prim_dp]
     -- Need: card = dd' * tSum + rc' * scSum
