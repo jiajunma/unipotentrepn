@@ -278,6 +278,55 @@ lemma shiftLeft_Q_eq_D_Q {μQ : YoungDiagram} {r₁ r₂ : ℕ} {rest : DualPart
     (YoungDiagram.shiftLeft μQ).colLens = dpartColLensQ_D (r₂ :: rest) := by
   rw [YoungDiagram.colLens_shiftLeft, hQ, dpartColLensQ_C_cons₂_pos _ _ _ h]; rfl
 
+/-! ## Inverse construction: D→C lift -/
+
+/-- The C-type P paint from a D-type PBP: replace dot+s with dot, keep r/c/d. -/
+private noncomputable def liftPaintP_CD (σ : PBP) : ℕ → ℕ → DRCSymbol :=
+  fun i j => if (σ.P.paint i j).layerOrd ≤ 1 then .dot else σ.P.paint i j
+
+/-- The C-type Q paint: s where P is non-dot inside Q shape, dot elsewhere. -/
+private noncomputable def liftPaintQ_CD (σ : PBP) (μQ : YoungDiagram) : ℕ → ℕ → DRCSymbol :=
+  fun i j => if (i, j) ∈ μQ ∧ ¬(σ.P.paint i j).layerOrd ≤ 1 then .s else .dot
+
+/-- Construct C-type PBP from D-type. Sorry: PBP constraints. -/
+noncomputable def liftCD_PBP {μP μQ : YoungDiagram}
+    (σ : PBPSet .D μP (YoungDiagram.shiftLeft μQ))
+    (h_sub : YoungDiagram.shiftLeft μQ ≤ μP) :
+    PBPSet .C μP μQ := by
+  exact ⟨{
+    γ := .C
+    P := { shape := μP, paint := liftPaintP_CD σ.val
+           paint_outside := sorry }
+    Q := { shape := μQ, paint := liftPaintQ_CD σ.val μQ
+           paint_outside := sorry }
+    sym_P := sorry
+    sym_Q := sorry
+    dot_match := sorry
+    mono_P := sorry
+    mono_Q := sorry
+    row_s := sorry
+    row_r := sorry
+    col_c_P := sorry
+    col_c_Q := sorry
+    col_d_P := sorry
+    col_d_Q := sorry
+  }, ⟨rfl, rfl, rfl⟩⟩
+
+/-- Round trip: descent ∘ lift = id on D-type PBPs. -/
+theorem descentCD_liftCD_round_trip {μP μQ : YoungDiagram}
+    (h_sub : YoungDiagram.shiftLeft μQ ≤ μP)
+    (σ : PBPSet .D μP (YoungDiagram.shiftLeft μQ)) :
+    descentCD_PBP (liftCD_PBP σ h_sub) h_sub = σ := by
+  sorry
+
+/-- Descent image excludes SS in the balanced case. -/
+theorem descentCD_not_SS {μP μQ : YoungDiagram}
+    (h_sub : YoungDiagram.shiftLeft μQ ≤ μP)
+    (h_bal : μP.colLen 0 = μQ.colLen 0 + 1)
+    (τ : PBPSet .C μP μQ) :
+    tailClass_D (descentCD_PBP τ h_sub).val ≠ .SS := by
+  sorry
+
 /-! ## Image characterization -/
 
 theorem card_C_eq_card_D_primitive {μP μQ : YoungDiagram}
@@ -285,7 +334,13 @@ theorem card_C_eq_card_D_primitive {μP μQ : YoungDiagram}
     (h_prim : μQ.colLen 0 ≥ μP.colLen 0) :
     Fintype.card (PBPSet .C μP μQ) =
       Fintype.card (PBPSet .D μP (YoungDiagram.shiftLeft μQ)) := by
-  sorry
+  apply le_antisymm
+  · exact Fintype.card_le_of_injective _ (descentCD_injective h_sub)
+  · apply Fintype.card_le_of_injective (liftCD_PBP · h_sub)
+    intro σ₁ σ₂ h
+    have h1 := congrArg (descentCD_PBP · h_sub) h
+    simp only [descentCD_liftCD_round_trip] at h1
+    exact h1
 
 theorem card_C_eq_DD_plus_RC_balanced {μP μQ : YoungDiagram}
     (h_sub : YoungDiagram.shiftLeft μQ ≤ μP)
