@@ -234,61 +234,54 @@ private noncomputable def liftPaintP_CD (σ : PBP) : ℕ → ℕ → DRCSymbol :
 private noncomputable def liftPaintQ_CD (σ : PBP) (μQ : YoungDiagram) : ℕ → ℕ → DRCSymbol :=
   fun i j => if (i, j) ∈ μQ ∧ ¬(σ.P.paint i j).layerOrd ≤ 1 then .s else .dot
 
-/-- Construct C-type PBP from D-type. Sorry: PBP constraints. -/
+/-- Raw PBP for D→C lift. Uses `where` for field transparency. -/
+noncomputable def liftCD_raw (σ : PBP) (hγ : σ.γ = .D)
+    (μP μQ : YoungDiagram) (hPsh : σ.P.shape = μP)
+    (hQsh : σ.Q.shape = YoungDiagram.shiftLeft μQ)
+    (h_sub : YoungDiagram.shiftLeft μQ ≤ μP) : PBP where
+  γ := .C
+  P := { shape := μP, paint := liftPaintP_CD σ
+         paint_outside := fun i j hmem => by
+           simp [liftPaintP_CD, σ.P.paint_outside i j (by rw [hPsh]; exact hmem)] }
+  Q := { shape := μQ, paint := liftPaintQ_CD σ μQ
+         paint_outside := fun i j hmem => by simp [liftPaintQ_CD, hmem] }
+  sym_P := by
+    intro i j hmem; simp only [liftPaintP_CD]; split_ifs with h
+    · exact Or.inl rfl
+    · cases hp : σ.P.paint i j <;> (rw [hp] at h; simp [DRCSymbol.layerOrd] at h) <;>
+        simp [DRCSymbol.allowed]
+  sym_Q := by
+    intro i j hmem; simp only [liftPaintQ_CD]; split_ifs with h
+    · exact Or.inr rfl
+    · exact Or.inl rfl
+  dot_match := sorry
+  mono_P := sorry
+  mono_Q := sorry
+  row_s := sorry
+  row_r := sorry
+  col_c_P := by
+    intro j i₁ i₂ h₁ h₂; simp only [liftPaintP_CD] at h₁ h₂
+    split_ifs at h₁ with ha₁ <;> split_ifs at h₂ with ha₂ <;>
+      first | exact absurd h₁ (by decide) | exact absurd h₂ (by decide) |
+        exact σ.col_c_P j i₁ i₂ h₁ h₂
+  col_c_Q := by
+    intro j i₁ i₂ h₁ h₂; simp only [liftPaintQ_CD] at h₁ h₂
+    split_ifs at h₁ <;> exact absurd h₁ (by decide)
+  col_d_P := by
+    intro j i₁ i₂ h₁ h₂; simp only [liftPaintP_CD] at h₁ h₂
+    split_ifs at h₁ with ha₁ <;> split_ifs at h₂ with ha₂ <;>
+      first | exact absurd h₁ (by decide) | exact absurd h₂ (by decide) |
+        exact σ.col_d_P j i₁ i₂ h₁ h₂
+  col_d_Q := by
+    intro j i₁ i₂ h₁ h₂; simp only [liftPaintQ_CD] at h₁ h₂
+    split_ifs at h₁ <;> exact absurd h₁ (by decide)
+
+/-- D→C lift as PBPSet map. Fields transparent via `liftCD_raw`. -/
 noncomputable def liftCD_PBP {μP μQ : YoungDiagram}
     (σ : PBPSet .D μP (YoungDiagram.shiftLeft μQ))
     (h_sub : YoungDiagram.shiftLeft μQ ≤ μP) :
-    PBPSet .C μP μQ := by
-  have hγ : σ.val.γ = .D := σ.prop.1
-  have hPsh : σ.val.P.shape = μP := σ.prop.2.1
-  have hQsh : σ.val.Q.shape = YoungDiagram.shiftLeft μQ := σ.prop.2.2
-  -- Extract: r/c/d preserved from D-type
-  have h_rcd : ∀ i j, (σ.val.P.paint i j).layerOrd > 1 →
-      liftPaintP_CD σ.val i j = σ.val.P.paint i j := by
-    intro i j h; simp [liftPaintP_CD, show ¬(σ.val.P.paint i j).layerOrd ≤ 1 by omega]
-  exact ⟨{
-    γ := .C
-    P := { shape := μP, paint := liftPaintP_CD σ.val
-           paint_outside := fun i j hmem => by
-             simp [liftPaintP_CD, σ.val.P.paint_outside i j (by rw [hPsh]; exact hmem)] }
-    Q := { shape := μQ, paint := liftPaintQ_CD σ.val μQ
-           paint_outside := fun i j hmem => by simp [liftPaintQ_CD, hmem] }
-    sym_P := by
-      intro i j hmem; simp only [liftPaintP_CD]
-      split_ifs with h
-      · exact Or.inl rfl  -- dot is allowed for C-L
-      · -- layerOrd > 1: paint ∈ {r,c,d} (D-type allows all, C-L allows dot/r/c/d)
-        have := σ.val.sym_P i j (by rw [hPsh]; exact hmem)
-        -- paint has layerOrd > 1, so ∈ {r, c, d} — all allowed for C-L
-        cases hp : σ.val.P.paint i j <;> (rw [hp] at h; simp [DRCSymbol.layerOrd] at h) <;>
-          simp [DRCSymbol.allowed]
-    sym_Q := by
-      intro i j hmem; simp only [liftPaintQ_CD]
-      split_ifs with h
-      · exact Or.inr rfl  -- s is allowed for C-R
-      · exact Or.inl rfl  -- dot is allowed for C-R
-    dot_match := sorry
-    mono_P := sorry
-    mono_Q := sorry
-    row_s := sorry
-    row_r := sorry
-    col_c_P := by
-      intro j i₁ i₂ h₁ h₂; simp only [liftPaintP_CD] at h₁ h₂
-      split_ifs at h₁ with ha₁ <;> split_ifs at h₂ with ha₂ <;>
-        first | exact absurd h₁ (by decide) | exact absurd h₂ (by decide) |
-          exact σ.val.col_c_P j i₁ i₂ h₁ h₂
-    col_c_Q := by
-      intro j i₁ i₂ h₁ h₂; simp only [liftPaintQ_CD] at h₁ h₂
-      split_ifs at h₁ <;> exact absurd h₁ (by decide)
-    col_d_P := by
-      intro j i₁ i₂ h₁ h₂; simp only [liftPaintP_CD] at h₁ h₂
-      split_ifs at h₁ with ha₁ <;> split_ifs at h₂ with ha₂ <;>
-        first | exact absurd h₁ (by decide) | exact absurd h₂ (by decide) |
-          exact σ.val.col_d_P j i₁ i₂ h₁ h₂
-    col_d_Q := by
-      intro j i₁ i₂ h₁ h₂; simp only [liftPaintQ_CD] at h₁ h₂
-      split_ifs at h₁ <;> exact absurd h₁ (by decide)
-  }, ⟨rfl, rfl, rfl⟩⟩
+    PBPSet .C μP μQ :=
+  ⟨liftCD_raw σ.val σ.prop.1 μP μQ σ.prop.2.1 σ.prop.2.2 h_sub, ⟨rfl, rfl, rfl⟩⟩
 
 -- Access lemmas for liftCD_PBP
 @[simp] lemma liftCD_PBP_γ {μP μQ : YoungDiagram}
@@ -310,11 +303,21 @@ theorem descentCD_liftCD_round_trip {μP μQ : YoungDiagram}
     (h_sub : YoungDiagram.shiftLeft μQ ≤ μP)
     (σ : PBPSet .D μP (YoungDiagram.shiftLeft μQ)) :
     descentCD_PBP (liftCD_PBP σ h_sub) h_sub = σ := by
-  -- Use descentCD_injective: descent ∘ lift is injective (from round trip)
-  -- Equivalent: show paint equality, then use PBP extensionality
-  -- Round trip: paint equality by zone analysis (dot→dot, s→dot→s, r/c/d→same→same)
-  -- Access lemmas make paint functions transparent; zone boundaries match.
-  sorry
+  apply Subtype.ext; apply PBP.ext'' σ.prop.1.symm
+  · apply PaintedYoungDiagram.ext' σ.prop.2.1.symm; funext i j
+    show PBP.descentPaintL_CD (liftCD_raw σ.val σ.prop.1 μP μQ σ.prop.2.1 σ.prop.2.2 h_sub) i j =
+        σ.val.P.paint i j
+    -- Zone analysis: descent ∘ lift recovers σ.P.paint
+    -- Blocked by dotScolLen(liftP) vs dotScolLen(σ.P) definitional mismatch.
+    sorry
+  · apply PaintedYoungDiagram.ext' σ.prop.2.2.symm; funext i j
+    -- D-type Q is all dots: σ.Q.paint = dot everywhere
+    have hγ := σ.prop.1
+    have := σ.val.sym_Q i j
+    rw [hγ] at this
+    by_cases hmem : (i, j) ∈ σ.val.Q.shape
+    · simp [DRCSymbol.allowed] at this; exact (this hmem).symm
+    · exact (σ.val.Q.paint_outside i j hmem).symm
 
 /-- Descent image excludes SS in the balanced case. -/
 theorem descentCD_not_SS {μP μQ : YoungDiagram}
