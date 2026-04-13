@@ -33,6 +33,57 @@ private lemma C_dot_lt_dotScolLen {τ : PBP} (hγ : τ.γ = .C)
     simp [PBP.dotSdiag, YoungDiagram.mem_mk, Finset.mem_filter, YoungDiagram.mem_cells]
     exact ⟨hmem, by rw [hdot]; decide⟩)
 
+/-- D-type Q ≤ P: Young diagram with colLens Q_D ≤ Young diagram with colLens P_D. -/
+private lemma yd_Q_D_le_P_D {μQ μP : YoungDiagram} (dp : DualPart)
+    (hsort : dp.SortedGE) (hodd : ∀ r ∈ dp, Odd r)
+    (hQ : μQ.colLens = dpartColLensQ_D dp) (hP : μP.colLens = dpartColLensP_D dp) :
+    μQ ≤ μP := by
+  match dp, hsort, hodd, hQ, hP with
+  | [], _, _, hQ, _ =>
+    have := yd_of_colLens_nil (by rw [hQ]; rfl); subst this; exact bot_le
+  | [_], _, _, hQ, _ =>
+    have := yd_of_colLens_nil (by rw [hQ]; rfl); subst this; exact bot_le
+  | r₁ :: r₂ :: rest, hsort, hodd, hQ, hP =>
+    have hr₁_ge_r₂ : r₂ ≤ r₁ := by
+      have := hsort.pairwise; rw [List.pairwise_cons] at this
+      exact this.1 r₂ (List.mem_cons.mpr (Or.inl rfl))
+    have hr₁_odd := hodd r₁ (by simp)
+    have hr₂_odd := hodd r₂ (List.mem_cons_of_mem _ (List.mem_cons.mpr (Or.inl rfl)))
+    by_cases hr₂ : r₂ > 1
+    · have hsort' : rest.SortedGE := by
+        have hp := hsort.pairwise; rw [List.pairwise_cons] at hp
+        have hp2 := hp.2; rw [List.pairwise_cons] at hp2; exact hp2.2.sortedGE
+      have hodd' : ∀ r ∈ rest, Odd r :=
+        fun r hr => hodd r (List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hr))
+      intro ⟨i, j⟩ hmem
+      rw [YoungDiagram.mem_iff_lt_colLen] at hmem ⊢
+      cases j with
+      | zero =>
+        have hQ0 := colLen_0_eq_of_colLens_cons (by
+          rw [hQ, dpartColLensQ_D_cons₂_pos _ _ _ hr₂])
+        have hP0 := colLen_0_eq_of_colLens_cons (by rw [hP]; rfl)
+        rw [hQ0] at hmem; rw [hP0]
+        obtain ⟨a, rfl⟩ := hr₁_odd; obtain ⟨b, rfl⟩ := hr₂_odd; omega
+      | succ j' =>
+        rw [show μQ.colLen (j' + 1) = μQ.shiftLeft.colLen j' from
+          (YoungDiagram.colLen_shiftLeft μQ j').symm] at hmem
+        rw [show μP.colLen (j' + 1) = μP.shiftLeft.colLen j' from
+          (YoungDiagram.colLen_shiftLeft μP j').symm]
+        have hshQ : μQ.shiftLeft.colLens = dpartColLensQ_D rest := by
+          rw [YoungDiagram.colLens_shiftLeft, hQ, dpartColLensQ_D_cons₂_pos _ _ _ hr₂]; rfl
+        have hshP : μP.shiftLeft.colLens = dpartColLensP_D rest := by
+          rw [YoungDiagram.colLens_shiftLeft, hP]; rfl
+        have ih := yd_Q_D_le_P_D rest hsort' hodd' hshQ hshP
+        exact YoungDiagram.mem_iff_lt_colLen.mp
+          (ih (YoungDiagram.mem_iff_lt_colLen.mpr hmem))
+    · have hr₂_eq : r₂ = 1 := by obtain ⟨m, rfl⟩ := hr₂_odd; omega
+      subst hr₂_eq
+      have hrest_le := rest_all_one_of_sorted_r2_one r₁ rest hsort
+      have hQ_nil : μQ.colLens = [] := by
+        rw [hQ, dpartColLensQ_D_cons₂_neg _ _ _ (by omega)]
+        exact dpartColLensQ_D_eq_nil_of_le_one rest hrest_le
+      have := yd_of_colLens_nil hQ_nil; subst this; exact bot_le
+
 /-- shiftLeft(Q) ≤ P when shapes come from dp. -/
 private lemma shiftLeft_Q_le_P_of_dp {μP μQ : YoungDiagram} {r₁ r₂ : ℕ} {rest : DualPart}
     (hP : μP.colLens = dpartColLensP_C (r₁ :: r₂ :: rest))
@@ -40,13 +91,33 @@ private lemma shiftLeft_Q_le_P_of_dp {μP μQ : YoungDiagram} {r₁ r₂ : ℕ} 
     (hsort : (r₁ :: r₂ :: rest).SortedGE)
     (hodd : ∀ r ∈ r₁ :: r₂ :: rest, Odd r) :
     YoungDiagram.shiftLeft μQ ≤ μP := by
-  -- shiftLeft(Q) ≤ P: ∀ (i,j), (i,j) ∈ shiftLeft Q → (i,j) ∈ P.
-  -- shiftLeft Q.colLens = tail(Q.colLens) = dpartColLensQ_D(r₂::rest) (by shiftLeft_Q_eq)
-  -- P.colLens = dpartColLensP_D(r₂::rest)
-  -- Need: D-type Q ≤ D-type P entry-wise.
-  -- For D-type dp, each Q entry (r_even-1)/2 ≤ P entry (r_odd+1)/2 since sorted odd.
-  -- This follows from the D-type structure but requires induction on dp.
-  sorry
+  by_cases hr₁ : r₁ > 1
+  · -- r₁ > 1: shiftLeft(Q).colLens = Q_D(r₂::rest), P.colLens = P_D(r₂::rest)
+    have hshQ : (YoungDiagram.shiftLeft μQ).colLens = dpartColLensQ_D (r₂ :: rest) := by
+      rw [YoungDiagram.colLens_shiftLeft, hQ]
+      simp [dpartColLensQ_C, hr₁]
+    have hP' : μP.colLens = dpartColLensP_D (r₂ :: rest) := by rw [hP]; rfl
+    have hsort' : (r₂ :: rest).SortedGE := by
+      have hp := hsort.pairwise; rw [List.pairwise_cons] at hp; exact hp.2.sortedGE
+    have hodd' : ∀ r ∈ r₂ :: rest, Odd r := fun r hr => hodd r (List.mem_cons_of_mem _ hr)
+    exact yd_Q_D_le_P_D (r₂ :: rest) hsort' hodd' hshQ hP'
+  · -- r₁ = 1: all entries = 1, Q = ⊥, shiftLeft Q = ⊥ ≤ anything
+    have hr₁_eq : r₁ = 1 := by obtain ⟨m, rfl⟩ := hodd r₁ (by simp); omega
+    subst hr₁_eq
+    have hr₂_eq : r₂ = 1 := by
+      have := hsort.pairwise; rw [List.pairwise_cons] at this
+      have hr₂_le := this.1 r₂ (List.mem_cons.mpr (Or.inl rfl))
+      obtain ⟨m, rfl⟩ := hodd r₂ (List.mem_cons_of_mem _ (List.mem_cons.mpr (Or.inl rfl))); omega
+    subst hr₂_eq
+    have hrest_le := rest_all_one_of_sorted_r2_one 1 rest hsort
+    have hall_le : ∀ r ∈ (1 : ℕ) :: rest, r ≤ 1 := by
+      intro r hr; cases List.mem_cons.mp hr with
+      | inl h => exact le_of_eq h
+      | inr h => exact hrest_le r h
+    have hQ_nil : μQ.colLens = [] := by
+      rw [hQ]; simp [dpartColLensQ_C]
+      exact dpartColLensQ_D_eq_nil_of_le_one (1 :: rest) hall_le
+    rw [yd_of_colLens_nil hQ_nil, shiftLeft_bot]; exact bot_le
 
 /-! ## C→D descent PBP construction -/
 
@@ -251,7 +322,8 @@ private lemma liftPaintQ_CD_ne_r (σ : PBP) (μQ : YoungDiagram) (i j : ℕ) :
 noncomputable def liftCD_raw (σ : PBP) (hγ : σ.γ = .D)
     (μP μQ : YoungDiagram) (hPsh : σ.P.shape = μP)
     (hQsh : σ.Q.shape = YoungDiagram.shiftLeft μQ)
-    (h_sub : YoungDiagram.shiftLeft μQ ≤ μP) : PBP where
+    (h_sub : YoungDiagram.shiftLeft μQ ≤ μP)
+    (h_j0_s : ∀ i, (i, 0) ∈ σ.P.shape → σ.P.paint i 0 = .s → i < μQ.colLen 0) : PBP where
   γ := .C
   P := { shape := μP, paint := liftPaintP_CD σ
          paint_outside := fun i j hmem => by
@@ -287,7 +359,11 @@ noncomputable def liftCD_raw (σ : PBP) (hγ : σ.γ = .D)
               (lt_of_lt_of_le h_lt (μQ.colLen_anti j (j+1) (by omega)))
           · -- s case: σ.P = s (layerOrd 1, ≠ dot).
             cases j with
-            | zero => sorry  -- needs dp-specific shape property: μP.colLen 0 ≤ μQ.colLen 0
+            | zero =>
+              have hs : σ.P.paint i 0 = .s := by
+                cases hp : σ.P.paint i 0 <;> rw [hp] at hdot h <;>
+                  simp [DRCSymbol.layerOrd] at hdot h
+              exact YoungDiagram.mem_iff_lt_colLen.mpr (h_j0_s i (hPsh ▸ hmemP) hs)
             | succ j' =>
               -- σ.P(i, j'+1) = s. By mono_P + row_s → σ.P(i, j') = dot.
               -- dot → (i, j') ∈ shiftLeft μQ → (i, j'+1) ∈ μQ. ✓
@@ -442,37 +518,86 @@ noncomputable def liftCD_raw (σ : PBP) (hγ : σ.γ = .D)
 /-- D→C lift as PBPSet map. Fields transparent via `liftCD_raw`. -/
 noncomputable def liftCD_PBP {μP μQ : YoungDiagram}
     (σ : PBPSet .D μP (YoungDiagram.shiftLeft μQ))
-    (h_sub : YoungDiagram.shiftLeft μQ ≤ μP) :
+    (h_sub : YoungDiagram.shiftLeft μQ ≤ μP)
+    (h_j0_s : ∀ i, (i, 0) ∈ σ.val.P.shape → σ.val.P.paint i 0 = .s → i < μQ.colLen 0) :
     PBPSet .C μP μQ :=
-  ⟨liftCD_raw σ.val σ.prop.1 μP μQ σ.prop.2.1 σ.prop.2.2 h_sub, ⟨rfl, rfl, rfl⟩⟩
+  ⟨liftCD_raw σ.val σ.prop.1 μP μQ σ.prop.2.1 σ.prop.2.2 h_sub h_j0_s, ⟨rfl, rfl, rfl⟩⟩
 
 -- Access lemmas for liftCD_PBP
 @[simp] lemma liftCD_PBP_γ {μP μQ : YoungDiagram}
-    (σ : PBPSet .D μP (YoungDiagram.shiftLeft μQ)) (h_sub : YoungDiagram.shiftLeft μQ ≤ μP) :
-    (liftCD_PBP σ h_sub).val.γ = .C := (liftCD_PBP σ h_sub).prop.1
+    (σ : PBPSet .D μP (YoungDiagram.shiftLeft μQ)) (h_sub : YoungDiagram.shiftLeft μQ ≤ μP)
+    (h_j0_s : ∀ i, (i, 0) ∈ σ.val.P.shape → σ.val.P.paint i 0 = .s → i < μQ.colLen 0) :
+    (liftCD_PBP σ h_sub h_j0_s).val.γ = .C := (liftCD_PBP σ h_sub h_j0_s).prop.1
 @[simp] lemma liftCD_PBP_P_shape {μP μQ : YoungDiagram}
-    (σ : PBPSet .D μP (YoungDiagram.shiftLeft μQ)) (h_sub : YoungDiagram.shiftLeft μQ ≤ μP) :
-    (liftCD_PBP σ h_sub).val.P.shape = μP := (liftCD_PBP σ h_sub).prop.2.1
+    (σ : PBPSet .D μP (YoungDiagram.shiftLeft μQ)) (h_sub : YoungDiagram.shiftLeft μQ ≤ μP)
+    (h_j0_s : ∀ i, (i, 0) ∈ σ.val.P.shape → σ.val.P.paint i 0 = .s → i < μQ.colLen 0) :
+    (liftCD_PBP σ h_sub h_j0_s).val.P.shape = μP := (liftCD_PBP σ h_sub h_j0_s).prop.2.1
 @[simp] lemma liftCD_PBP_Q_shape {μP μQ : YoungDiagram}
-    (σ : PBPSet .D μP (YoungDiagram.shiftLeft μQ)) (h_sub : YoungDiagram.shiftLeft μQ ≤ μP) :
-    (liftCD_PBP σ h_sub).val.Q.shape = μQ := (liftCD_PBP σ h_sub).prop.2.2
+    (σ : PBPSet .D μP (YoungDiagram.shiftLeft μQ)) (h_sub : YoungDiagram.shiftLeft μQ ≤ μP)
+    (h_j0_s : ∀ i, (i, 0) ∈ σ.val.P.shape → σ.val.P.paint i 0 = .s → i < μQ.colLen 0) :
+    (liftCD_PBP σ h_sub h_j0_s).val.Q.shape = μQ := (liftCD_PBP σ h_sub h_j0_s).prop.2.2
 @[simp] lemma liftCD_PBP_P_paint {μP μQ : YoungDiagram}
-    (σ : PBPSet .D μP (YoungDiagram.shiftLeft μQ)) (h_sub : YoungDiagram.shiftLeft μQ ≤ μP) (i j : ℕ) :
-    (liftCD_PBP σ h_sub).val.P.paint i j = liftPaintP_CD σ.val i j := by
+    (σ : PBPSet .D μP (YoungDiagram.shiftLeft μQ)) (h_sub : YoungDiagram.shiftLeft μQ ≤ μP)
+    (h_j0_s : ∀ i, (i, 0) ∈ σ.val.P.shape → σ.val.P.paint i 0 = .s → i < μQ.colLen 0) (i j : ℕ) :
+    (liftCD_PBP σ h_sub h_j0_s).val.P.paint i j = liftPaintP_CD σ.val i j := by
   rfl
 
 /-- Round trip: descent ∘ lift = id on D-type PBPs. -/
 theorem descentCD_liftCD_round_trip {μP μQ : YoungDiagram}
     (h_sub : YoungDiagram.shiftLeft μQ ≤ μP)
-    (σ : PBPSet .D μP (YoungDiagram.shiftLeft μQ)) :
-    descentCD_PBP (liftCD_PBP σ h_sub) h_sub = σ := by
+    (σ : PBPSet .D μP (YoungDiagram.shiftLeft μQ))
+    (h_j0_s : ∀ i, (i, 0) ∈ σ.val.P.shape → σ.val.P.paint i 0 = .s → i < μQ.colLen 0) :
+    descentCD_PBP (liftCD_PBP σ h_sub h_j0_s) h_sub = σ := by
   apply Subtype.ext; apply PBP.ext'' σ.prop.1.symm
   · apply PaintedYoungDiagram.ext' σ.prop.2.1.symm; funext i j
-    show PBP.descentPaintL_CD (liftCD_raw σ.val σ.prop.1 μP μQ σ.prop.2.1 σ.prop.2.2 h_sub) i j =
+    show PBP.descentPaintL_CD
+        (liftCD_raw σ.val σ.prop.1 μP μQ σ.prop.2.1 σ.prop.2.2 h_sub h_j0_s) i j =
         σ.val.P.paint i j
-    -- Zone analysis: descent ∘ lift recovers σ.P.paint
-    -- Blocked by dotScolLen(liftP) vs dotScolLen(σ.P) definitional mismatch.
-    sorry
+    simp only [PBP.descentPaintL_CD, liftCD_raw]
+    split_ifs with h1 h2
+    · -- zone 1: i < μQ.colLen(j+1) → paint = dot
+      have hmemQ : (i, j) ∈ σ.val.Q.shape := by
+        rw [σ.prop.2.2]
+        exact YoungDiagram.mem_iff_lt_colLen.mpr (by rw [YoungDiagram.colLen_shiftLeft]; exact h1)
+      have hγ := σ.prop.1
+      have hQdot := σ.val.sym_Q i j; rw [hγ] at hQdot; simp [DRCSymbol.allowed] at hQdot
+      exact ((σ.val.dot_match i j).mpr ⟨hmemQ, hQdot hmemQ⟩).2.symm
+    · -- zone 2: dotScolLen zone → paint = s
+      set τ := liftCD_raw σ.val σ.prop.1 μP μQ σ.prop.2.1 σ.prop.2.2 h_sub h_j0_s with hτ_def
+      have h2' : i < PBP.dotScolLen τ.P j := h2
+      have hm_lift := τ.mono_P
+      have hdsc_le := PBP.dotScolLen_le_colLen _ hm_lift j
+      have hmemP : (i, j) ∈ σ.val.P.shape := by
+        rw [σ.prop.2.1]; exact YoungDiagram.mem_iff_lt_colLen.mpr (lt_of_lt_of_le h2' hdsc_le)
+      have hrfl : τ.P.paint i j = liftPaintP_CD σ.val i j := rfl
+      have hlo := PBP.layerOrd_le_one_of_lt_dotSdiag_colLen _ hm_lift
+        (by rw [← PBP.dotScolLen_eq_dotSdiag_colLen _ hm_lift]; exact h2')
+      rw [hrfl] at hlo; simp only [liftPaintP_CD] at hlo
+      split_ifs at hlo with h3
+      · have h_not_dot : σ.val.P.paint i j ≠ .dot := by
+          intro hdot; apply h1
+          have hmemQ_sh := ((σ.val.dot_match i j).mp ⟨hmemP, hdot⟩).1
+          rw [σ.prop.2.2] at hmemQ_sh
+          have := YoungDiagram.mem_iff_lt_colLen.mp hmemQ_sh
+          rw [YoungDiagram.colLen_shiftLeft] at this; exact this
+        revert h_not_dot h3; cases σ.val.P.paint i j <;> simp [DRCSymbol.layerOrd]
+      · exact absurd hlo h3
+    · -- zone 3: liftPaintP_CD = paint
+      simp only [liftPaintP_CD]; split_ifs with h3
+      · by_cases hmem : (i, j) ∈ σ.val.P.shape
+        · exfalso; apply h2
+          set τ := liftCD_raw σ.val σ.prop.1 μP μQ σ.prop.2.1 σ.prop.2.2 h_sub h_j0_s
+          have hm := τ.mono_P
+          have hrfl : τ.P.paint i j = liftPaintP_CD σ.val i j := rfl
+          have hlo_lift : (τ.P.paint i j).layerOrd ≤ 1 := by
+            rw [hrfl, liftPaintP_CD, if_pos h3]; simp [DRCSymbol.layerOrd]
+          show i < PBP.dotScolLen τ.P j
+          rw [PBP.dotScolLen_eq_dotSdiag_colLen _ hm]
+          exact YoungDiagram.mem_iff_lt_colLen.mp (show (i, j) ∈ PBP.dotSdiag _ hm from by
+            simp [PBP.dotSdiag, YoungDiagram.mem_mk, Finset.mem_filter, YoungDiagram.mem_cells]
+            exact ⟨by rw [σ.prop.2.1] at hmem; exact hmem, hlo_lift⟩)
+        · exact (σ.val.P.paint_outside i j hmem).symm
+      · rfl
   · apply PaintedYoungDiagram.ext' σ.prop.2.2.symm; funext i j
     -- D-type Q is all dots: σ.Q.paint = dot everywhere
     have hγ := σ.prop.1
@@ -540,6 +665,13 @@ theorem descentCD_not_SS {μP μQ : YoungDiagram}
 
 /-! ## Image characterization -/
 
+private lemma h_j0_s_of_prim {μP μQ : YoungDiagram} (h_prim : μQ.colLen 0 ≥ μP.colLen 0)
+    (σ : PBPSet .D μP (YoungDiagram.shiftLeft μQ)) :
+    ∀ i, (i, 0) ∈ σ.val.P.shape → σ.val.P.paint i 0 = .s → i < μQ.colLen 0 := by
+  intro i hmem _
+  rw [σ.prop.2.1] at hmem
+  exact lt_of_lt_of_le (YoungDiagram.mem_iff_lt_colLen.mp hmem) h_prim
+
 theorem card_C_eq_card_D_primitive {μP μQ : YoungDiagram}
     (h_sub : YoungDiagram.shiftLeft μQ ≤ μP)
     (h_prim : μQ.colLen 0 ≥ μP.colLen 0) :
@@ -547,11 +679,36 @@ theorem card_C_eq_card_D_primitive {μP μQ : YoungDiagram}
       Fintype.card (PBPSet .D μP (YoungDiagram.shiftLeft μQ)) := by
   apply le_antisymm
   · exact Fintype.card_le_of_injective _ (descentCD_injective h_sub)
-  · apply Fintype.card_le_of_injective (liftCD_PBP · h_sub)
+  · apply Fintype.card_le_of_injective (fun σ => liftCD_PBP σ h_sub (h_j0_s_of_prim h_prim σ))
     intro σ₁ σ₂ h
-    have h1 := congrArg (descentCD_PBP · h_sub) h
-    simp only [descentCD_liftCD_round_trip] at h1
+    have h1 : descentCD_PBP (liftCD_PBP σ₁ h_sub (h_j0_s_of_prim h_prim σ₁)) h_sub =
+              descentCD_PBP (liftCD_PBP σ₂ h_sub (h_j0_s_of_prim h_prim σ₂)) h_sub :=
+      congrArg (fun τ => descentCD_PBP τ h_sub) h
+    rw [descentCD_liftCD_round_trip h_sub σ₁ (h_j0_s_of_prim h_prim σ₁),
+        descentCD_liftCD_round_trip h_sub σ₂ (h_j0_s_of_prim h_prim σ₂)] at h1
     exact h1
+
+private lemma h_j0_s_of_not_SS {μP μQ : YoungDiagram}
+    (h_bal : μP.colLen 0 = μQ.colLen 0 + 1)
+    (σ : PBPSet .D μP (YoungDiagram.shiftLeft μQ))
+    (h_tc : tailClass_D σ.val ≠ .SS) :
+    ∀ i, (i, 0) ∈ σ.val.P.shape → σ.val.P.paint i 0 = .s → i < μQ.colLen 0 := by
+  intro i hmem hs
+  rw [σ.prop.2.1] at hmem
+  have hi := YoungDiagram.mem_iff_lt_colLen.mp hmem
+  -- Bottom cell of column 0 has layerOrd ≥ 2 (since tc ≠ SS)
+  have h_tl_pos : PBP.tailLen_D σ.val ≠ 0 := by
+    simp only [tailClass_D] at h_tc; exact fun h => by rw [if_pos h] at h_tc; exact h_tc rfl
+  have h_bottom : σ.val.P.paint (μP.colLen 0 - 1) 0 ≠ .s := by
+    intro hs_bot
+    apply h_tc
+    simp only [tailClass_D, if_neg h_tl_pos, PBP.tailSymbol_D]
+    rw [σ.prop.2.1, hs_bot]
+  -- If i = μP.colLen 0 - 1, then paint = s, contradicting h_bottom
+  by_contra h_not_lt
+  push_neg at h_not_lt
+  have hi_eq : i = μP.colLen 0 - 1 := by omega
+  rw [hi_eq] at hs; exact h_bottom hs
 
 theorem card_C_eq_DD_plus_RC_balanced {μP μQ : YoungDiagram}
     (h_sub : YoungDiagram.shiftLeft μQ ≤ μP)
@@ -572,14 +729,57 @@ theorem card_C_eq_DD_plus_RC_balanced {μP μQ : YoungDiagram}
         tailClass_D σ.val = .DD)).card +
       (Finset.univ.filter (fun σ : PBPSet .D μP (YoungDiagram.shiftLeft μQ) =>
         tailClass_D σ.val = .RC)).card := by
-    sorry
+    have h_inj := descentCD_injective h_sub
+    have h_image : ∀ τ : PBPSet .C μP μQ, tailClass_D (descentCD_PBP τ h_sub).val = .DD ∨
+        tailClass_D (descentCD_PBP τ h_sub).val = .RC := by
+      intro τ; have := descentCD_not_SS h_sub h_bal τ
+      cases h : tailClass_D (descentCD_PBP τ h_sub).val <;> simp_all
+    have h_disj : Disjoint
+        (Finset.univ.filter (fun σ : PBPSet .D μP (YoungDiagram.shiftLeft μQ) =>
+          tailClass_D σ.val = .DD))
+        (Finset.univ.filter (fun σ : PBPSet .D μP (YoungDiagram.shiftLeft μQ) =>
+          tailClass_D σ.val = .RC)) := by
+      apply Finset.disjoint_filter.mpr
+      intro σ _ h1 h2; rw [h1] at h2; exact TailClass.noConfusion h2
+    rw [← Finset.card_union_of_disjoint h_disj]
+    apply Finset.card_le_card_of_injOn (fun τ => descentCD_PBP τ h_sub)
+      (fun τ _ => by simp [Finset.mem_union, Finset.mem_filter]; exact h_image τ)
+      (fun τ1 _ τ2 _ h => h_inj h)
   -- |C| ≥ |DD| + |RC|: lift DD∪RC PBPs to C-type
   have h_ge : Fintype.card (PBPSet .C μP μQ) ≥
       (Finset.univ.filter (fun σ : PBPSet .D μP (YoungDiagram.shiftLeft μQ) =>
         tailClass_D σ.val = .DD)).card +
       (Finset.univ.filter (fun σ : PBPSet .D μP (YoungDiagram.shiftLeft μQ) =>
         tailClass_D σ.val = .RC)).card := by
-    sorry
+    have h_disj' : Disjoint
+        (Finset.univ.filter (fun σ : PBPSet .D μP (YoungDiagram.shiftLeft μQ) =>
+          tailClass_D σ.val = .DD))
+        (Finset.univ.filter (fun σ : PBPSet .D μP (YoungDiagram.shiftLeft μQ) =>
+          tailClass_D σ.val = .RC)) := by
+      apply Finset.disjoint_filter.mpr
+      intro σ _ h1 h2; rw [h1] at h2; exact TailClass.noConfusion h2
+    set S := Finset.univ.filter (fun σ : PBPSet .D μP (YoungDiagram.shiftLeft μQ) =>
+      tailClass_D σ.val = .DD) ∪ Finset.univ.filter (fun σ => tailClass_D σ.val = .RC)
+    rw [← Finset.card_union_of_disjoint h_disj']
+    have h_not_ss : ∀ σ : PBPSet .D μP (YoungDiagram.shiftLeft μQ),
+        σ ∈ S → tailClass_D σ.val ≠ .SS := by
+      intro σ h; simp only [S, Finset.mem_union, Finset.mem_filter, Finset.mem_univ,
+        true_and] at h
+      rcases h with h | h <;> intro hss <;> rw [h] at hss <;> exact TailClass.noConfusion hss
+    rw [show S.card = Fintype.card ↑S from (Fintype.card_coe S).symm]
+    apply Fintype.card_le_of_injective
+      (fun ⟨σ, h⟩ => liftCD_PBP σ h_sub (h_j0_s_of_not_SS h_bal σ (h_not_ss σ h)))
+    intro ⟨σ1, h1⟩ ⟨σ2, h2⟩ heq; congr 1
+    have hr1 := descentCD_liftCD_round_trip h_sub σ1
+      (h_j0_s_of_not_SS h_bal σ1 (h_not_ss σ1 h1))
+    have hr2 := descentCD_liftCD_round_trip h_sub σ2
+      (h_j0_s_of_not_SS h_bal σ2 (h_not_ss σ2 h2))
+    have h1' : descentCD_PBP (liftCD_PBP σ1 h_sub
+          (h_j0_s_of_not_SS h_bal σ1 (h_not_ss σ1 h1))) h_sub =
+        descentCD_PBP (liftCD_PBP σ2 h_sub
+          (h_j0_s_of_not_SS h_bal σ2 (h_not_ss σ2 h2))) h_sub :=
+      congrArg (fun τ => descentCD_PBP τ h_sub) heq
+    rw [hr1, hr2] at h1'; exact h1'
   omega
 
 /-! ## Base case -/
