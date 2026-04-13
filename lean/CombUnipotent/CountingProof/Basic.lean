@@ -115,6 +115,54 @@ def dpartColLensQ_D : DualPart → DualPart
     if r₂ > 1 then (r₂ - 1) / 2 :: dpartColLensQ_D rest
     else dpartColLensQ_D rest
 
+/-! ## C-type column lengths
+
+For C-type dp = [r₁, r₂, ...rest]:
+  P cols = dpartColLensP_D (r₂ :: rest)  (same as D-type of tail)
+  Q cols = [(r₁-1)/2] ++ dpartColLensQ_D (r₂ :: rest)  (prepend one Q column)
+
+The C→D descent preserves P shape and shifts Q: shiftLeft(C-Q) = D-Q. -/
+
+def dpartColLensP_C : DualPart → DualPart
+  | [] => []
+  | [_] => []
+  | _ :: r₂ :: rest => dpartColLensP_D (r₂ :: rest)
+
+def dpartColLensQ_C : DualPart → DualPart
+  | [] => []
+  | [r₁] => if r₁ > 1 then [(r₁ - 1) / 2] else []
+  | r₁ :: r₂ :: rest =>
+    if r₁ > 1 then (r₁ - 1) / 2 :: dpartColLensQ_D (r₂ :: rest)
+    else dpartColLensQ_D (r₂ :: rest)
+
+-- C [3,1]: P = dpartColLensP_D [1] = [1], Q = [(3-1)/2] = [1]
+#eval dpartColLensP_C [3, 1]  -- [1]
+#eval dpartColLensQ_C [3, 1]  -- [1]
+
+-- C [5,3]: P = dpartColLensP_D [3] = [2], Q = [(5-1)/2] = [2]
+#eval dpartColLensP_C [5, 3]  -- [2]
+#eval dpartColLensQ_C [5, 3]  -- [2]
+
+-- C [3,3]: P = [2], Q = [1]
+#eval dpartColLensP_C [3, 3]  -- [2]
+#eval dpartColLensQ_C [3, 3]  -- [1]
+
+-- C [5,3,3]: P = dpartColLensP_D [3,3] = [2], Q = [2] ++ dpartColLensQ_D [3,3] = [2,1]
+#eval dpartColLensP_C [5, 3, 3]  -- [2]
+#eval dpartColLensQ_C [5, 3, 3]  -- [2, 1]
+
+-- C [3,3,3]: P = [2], Q = [1,1]
+#eval dpartColLensP_C [3, 3, 3]  -- [2]
+#eval dpartColLensQ_C [3, 3, 3]  -- [1, 1]
+
+-- C [1]: P = [], Q = [] (r₁=1, (1-1)/2=0, skip)
+#eval dpartColLensP_C [1]  -- []
+#eval dpartColLensQ_C [1]  -- []
+
+-- C [3]: P = [], Q = [1]
+#eval dpartColLensP_C [3]  -- []
+#eval dpartColLensQ_C [3]  -- [1]
+
 /-! ## Key recursion property:
     Dropping 2 orbit rows = removing head from P and Q column lengths. -/
 
