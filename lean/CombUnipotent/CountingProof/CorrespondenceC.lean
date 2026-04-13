@@ -241,7 +241,23 @@ noncomputable def descentCD_PBP {μP μQ : YoungDiagram}
 theorem descentCD_injective {μP μQ : YoungDiagram}
     (h_sub : YoungDiagram.shiftLeft μQ ≤ μP) :
     Function.Injective (descentCD_PBP · h_sub : PBPSet .C μP μQ → _) := by
-  sorry
+  intro τ₁ τ₂ h_eq
+  -- descentCD_PBP τ₁ = descentCD_PBP τ₂ implies their P paints agree:
+  -- descentPaintL_CD τ₁ = descentPaintL_CD τ₂
+  have h_paint : ∀ i j, PBP.descentPaintL_CD τ₁.val i j = PBP.descentPaintL_CD τ₂.val i j := by
+    intro i j
+    have := congrArg (fun σ => σ.val.P.paint i j) h_eq
+    simp [descentCD_PBP] at this
+    exact this
+  -- By descent_inj_CD, the original C-type PBPs are equal
+  have ⟨hP_eq, hQ_eq⟩ := PBP.descent_inj_CD τ₁.val τ₂.val
+    τ₁.prop.1 τ₂.prop.1
+    (τ₁.prop.2.1.trans τ₂.prop.2.1.symm)
+    (τ₁.prop.2.2.trans τ₂.prop.2.2.symm)
+    h_paint
+  exact Subtype.ext (PBP.ext'' (τ₁.prop.1.trans τ₂.prop.1.symm)
+    (PaintedYoungDiagram.ext' (τ₁.prop.2.1.trans τ₂.prop.2.1.symm) (funext fun i => funext fun j => hP_eq i j))
+    (PaintedYoungDiagram.ext' (τ₁.prop.2.2.trans τ₂.prop.2.2.symm) (funext fun i => funext fun j => hQ_eq i j)))
 
 /-! ## Column length lemmas -/
 
