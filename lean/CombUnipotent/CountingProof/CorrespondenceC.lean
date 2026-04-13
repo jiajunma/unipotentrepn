@@ -65,6 +65,18 @@ noncomputable def descentCD_PBP {μP μQ : YoungDiagram}
   have h_col_d : ∀ i j, PBP.descentPaintL_CD τ.val i j = .d → τ.val.P.paint i j = .d := by
     intro i j h; simp only [PBP.descentPaintL_CD] at h
     split_ifs at h with ha hb <;> first | exact absurd h (by decide) | exact h
+  -- dot_match extracted
+  have h_dot_fwd : ∀ i j, (i, j) ∈ μP → PBP.descentPaintL_CD τ.val i j = .dot →
+      (i, j) ∈ YoungDiagram.shiftLeft μQ := by
+    sorry
+  have h_dot_bwd : ∀ i j, (i, j) ∈ YoungDiagram.shiftLeft μQ →
+      (i, j) ∈ μP ∧ PBP.descentPaintL_CD τ.val i j = .dot := by
+    sorry
+  -- row_s: s in descent paint zones
+  -- s in descent paint only from zone 2
+  have h_s_zone : ∀ i j, PBP.descentPaintL_CD τ.val i j = .s →
+      i ≥ τ.val.Q.shape.colLen (j + 1) ∧ i < PBP.dotScolLen τ.val.P j := by
+    sorry
   exact ⟨{
     γ := .D
     P := {
@@ -79,10 +91,25 @@ noncomputable def descentCD_PBP {μP μQ : YoungDiagram}
     }
     sym_P := fun _ _ _ => by simp [DRCSymbol.allowed]
     sym_Q := fun _ _ _ => by simp [DRCSymbol.allowed]
-    dot_match := sorry
+    dot_match := by
+      intro i j; constructor
+      · intro ⟨hmP, hp⟩; exact ⟨h_dot_fwd i j hmP hp, rfl⟩
+      · intro ⟨hmQ, _⟩; exact h_dot_bwd i j hmQ
     mono_P := sorry
     mono_Q := fun _ _ _ _ _ _ _ => by simp [DRCSymbol.layerOrd]
-    row_s := sorry
+    row_s := by
+      intro i s₁ s₂ j₁ j₂ h₁ h₂
+      simp only [paintBySide] at h₁ h₂
+      cases s₁ <;> cases s₂ <;> simp only at h₁ h₂
+      · -- Both L, both .s: zone 2 at j₁ and j₂
+        obtain ⟨hge₁, hlt₁⟩ := h_s_zone i j₁ h₁
+        obtain ⟨hge₂, hlt₂⟩ := h_s_zone i j₂ h₂
+        refine ⟨rfl, ?_⟩
+        -- Anti-monotonicity argument
+        sorry
+      · exact absurd h₂ (by simp)
+      · exact absurd h₁ (by simp)
+      · exact absurd h₁ (by simp)
     row_r := by
       intro i s₁ s₂ j₁ j₂ h₁ h₂
       simp only [paintBySide] at h₁ h₂
