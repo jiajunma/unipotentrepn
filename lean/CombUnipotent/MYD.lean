@@ -771,6 +771,30 @@ theorem AC.base_sign (γ : RootType) :
   intro r hr
   cases γ <;> simp [AC.base, ILS.sign, ILS.signAux, ILS.signRow] at hr ⊢ <;> subst hr <;> simp
 
+/-! ## ACResult sign propagation -/
+
+/-- twistBD on ACResult preserves per-component sign. -/
+theorem ACResult.twistBD_sign (ac : ACResult) (tp tn : ℤ) (sig : ℤ × ℤ)
+    (htp : tp = 1 ∨ tp = -1) (htn : tn = 1 ∨ tn = -1)
+    (h : ∀ r ∈ ac, ILS.sign r.2 = sig) :
+    ∀ r ∈ ac.twistBD tp tn, ILS.sign r.2 = sig := by
+  intro r hr
+  simp only [ACResult.twistBD, List.mem_map] at hr
+  obtain ⟨⟨c, ils⟩, hmem, rfl⟩ := hr
+  simp only; rw [ILS.twistBD_sign ils tp tn htp htn]
+  exact h ⟨c, ils⟩ hmem
+
+/-- thetaLift on ACResult: if every source ILS satisfies a theta-lift sign condition,
+    then every result ILS has the target sign. -/
+theorem ACResult.thetaLift_sign (ac : ACResult) (target : RootType) (p q : ℤ)
+    (h_lift : ∀ (ils : ILS), (∃ c, (c, ils) ∈ ac) →
+      ∀ r ∈ ILS.thetaLift ils target p q, ILS.sign r = (p, q)) :
+    ∀ r ∈ ac.thetaLift target p q, ILS.sign r.2 = (p, q) := by
+  intro r hr
+  simp only [ACResult.thetaLift, List.mem_flatMap, List.mem_map] at hr
+  obtain ⟨⟨c, ils⟩, hmem, lifted, hlift, rfl⟩ := hr
+  exact h_lift ils ⟨c, hmem⟩ lifted hlift
+
 /-! ## AC step signature matching (Theorem 5.1)
 
 The key theorem: every theta lift step preserves the signature.
@@ -782,7 +806,88 @@ At each step of the AC recursion:
 Combined, this gives Sign(AC(τ)) = (p_τ, q_τ) by induction on the descent chain.
 Reference: [BMSZ] Theorem 5.1. -/
 
+/-- AC.step for D type (C→D lift, no split): always produces correct signature.
+    The C→D lift never splits, so no precondition on the source is needed. -/
+theorem AC.step_sign_D (source : ACResult) (p q : ℤ) (ε_τ ε_wp : Fin 2) :
+    ∀ r ∈ AC.step source RootType.D p q ε_τ ε_wp, ILS.sign r.2 = (p, q) := by
+  intro r hr; simp only [AC.step] at hr
+  -- No C/M pre-twist (D is not C or M)
+  simp only [show ¬(RootType.D = RootType.C ∨ RootType.D = RootType.M) from by decide,
+    ite_false] at hr
+  -- The theta-lifted result, possibly post-twisted
+  have h_lift : ∀ r ∈ source.thetaLift RootType.D p q, ILS.sign r.2 = (p, q) :=
+    ACResult.thetaLift_sign source RootType.D p q
+      (fun ils _ => ILS.thetaLift_CD_sign ils p q)
+  split at hr
+  · exact ACResult.twistBD_sign _ 1 (-1) _ (Or.inl rfl) (Or.inr rfl) h_lift r hr
+  · exact h_lift r hr
+
+/-- AC.step for B⁺ type (M→B lift, no split): always produces correct signature. -/
+theorem AC.step_sign_Bplus (source : ACResult) (p q : ℤ) (ε_τ ε_wp : Fin 2) :
+    ∀ r ∈ AC.step source RootType.Bplus p q ε_τ ε_wp, ILS.sign r.2 = (p, q) := by
+  intro r hr; simp only [AC.step] at hr
+  simp only [show ¬(RootType.Bplus = RootType.C ∨ RootType.Bplus = RootType.M) from by decide,
+    ite_false] at hr
+  have h_lift : ∀ r ∈ source.thetaLift RootType.Bplus p q, ILS.sign r.2 = (p, q) :=
+    ACResult.thetaLift_sign source RootType.Bplus p q
+      (fun ils _ => ILS.thetaLift_MB_sign ils p q)
+  split at hr
+  · exact ACResult.twistBD_sign _ 1 (-1) _ (Or.inl rfl) (Or.inr rfl) h_lift r hr
+  · exact h_lift r hr
+
+/-- AC.step for B⁻ type (M→B lift, no split): always produces correct signature. -/
+theorem AC.step_sign_Bminus (source : ACResult) (p q : ℤ) (ε_τ ε_wp : Fin 2) :
+    ∀ r ∈ AC.step source RootType.Bminus p q ε_τ ε_wp, ILS.sign r.2 = (p, q) := by
+  intro r hr; simp only [AC.step] at hr
+  simp only [show ¬(RootType.Bminus = RootType.C ∨ RootType.Bminus = RootType.M) from by decide,
+    ite_false] at hr
+  have h_lift : ∀ r ∈ source.thetaLift RootType.Bminus p q, ILS.sign r.2 = (p, q) :=
+    ACResult.thetaLift_sign source RootType.Bminus p q
+      (fun ils _ => ILS.thetaLift_MB_sign ils p q)
+  split at hr
+  · exact ACResult.twistBD_sign _ 1 (-1) _ (Or.inl rfl) (Or.inr rfl) h_lift r hr
+  · exact h_lift r hr
+
 /-! ## Verification: #eval tests -/
+
+/-- AC.step for C type (D→C lift): produces correct signature.
+    Requires that each source ILS (after possible pre-twist) is in standard or (-1,-1) case. -/
+theorem AC.step_sign_C (source : ACResult) (n : ℤ) (ε_τ ε_wp : Fin 2)
+    (h_lift_ok : ∀ (ils : ILS),
+      (∃ c, (c, ils) ∈ (if ε_wp = 1 then source.twistBD (-1) (-1) else source)) →
+      (n - (ILS.sign ils).1 - (ILS.firstColSign ils).2 ≥ 0 ∧
+       n - (ILS.sign ils).2 - (ILS.firstColSign ils).1 ≥ 0) ∨
+      (n - (ILS.sign ils).1 - (ILS.firstColSign ils).2 = -1 ∧
+       n - (ILS.sign ils).2 - (ILS.firstColSign ils).1 = -1)) :
+    ∀ r ∈ AC.step source RootType.C n n ε_τ ε_wp, ILS.sign r.2 = (n, n) := by
+  intro r hr; simp only [AC.step] at hr
+  simp only [show RootType.C = RootType.C ∨ RootType.C = RootType.M from Or.inl rfl,
+    ite_true, show ¬(RootType.C = RootType.Bplus ∨ RootType.C = RootType.Bminus ∨
+      RootType.C = RootType.D) from by decide, ite_false] at hr
+  set twisted := if ε_wp = 1 then source.twistBD (-1) (-1) else source with h_tw
+  exact ACResult.thetaLift_sign twisted RootType.C n n (fun ils ⟨c, hm⟩ => by
+    rcases h_lift_ok ils ⟨c, hm⟩ with h_std | h_split
+    · exact ILS.thetaLift_DC_sign_std ils n h_std
+    · exact ILS.thetaLift_DC_sign_split ils n h_split.1 h_split.2) r hr
+
+/-- AC.step for M type (B→M lift): produces correct signature. -/
+theorem AC.step_sign_M (source : ACResult) (n : ℤ) (ε_τ ε_wp : Fin 2)
+    (h_lift_ok : ∀ (ils : ILS),
+      (∃ c, (c, ils) ∈ (if ε_wp = 1 then source.twistBD (-1) (-1) else source)) →
+      (n - (ILS.sign ils).1 - (ILS.firstColSign ils).2 ≥ 0 ∧
+       n - (ILS.sign ils).2 - (ILS.firstColSign ils).1 ≥ 0) ∨
+      (n - (ILS.sign ils).1 - (ILS.firstColSign ils).2 = -1 ∧
+       n - (ILS.sign ils).2 - (ILS.firstColSign ils).1 = -1)) :
+    ∀ r ∈ AC.step source RootType.M n n ε_τ ε_wp, ILS.sign r.2 = (n, n) := by
+  intro r hr; simp only [AC.step] at hr
+  simp only [show RootType.M = RootType.C ∨ RootType.M = RootType.M from Or.inr rfl,
+    ite_true, show ¬(RootType.M = RootType.Bplus ∨ RootType.M = RootType.Bminus ∨
+      RootType.M = RootType.D) from by decide, ite_false] at hr
+  set twisted := if ε_wp = 1 then source.twistBD (-1) (-1) else source with h_tw
+  exact ACResult.thetaLift_sign twisted RootType.M n n (fun ils ⟨c, hm⟩ => by
+    rcases h_lift_ok ils ⟨c, hm⟩ with h_std | h_split
+    · exact ILS.thetaLift_BM_sign_std ils n h_std
+    · exact ILS.thetaLift_BM_sign_split ils n h_split.1 h_split.2) r hr
 
 section Tests
 
