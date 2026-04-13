@@ -240,10 +240,23 @@ noncomputable def descentCD_PBP {μP μQ : YoungDiagram}
     col_d_Q := fun _ _ _ h => DRCSymbol.noConfusion h
   }, ⟨rfl, rfl, rfl⟩⟩
 
+-- Access lemmas for descentCD_PBP (tactic-mode definitions are opaque)
+@[simp] lemma descentCD_PBP_γ {μP μQ : YoungDiagram}
+    (τ : PBPSet .C μP μQ) (h_sub : YoungDiagram.shiftLeft μQ ≤ μP) :
+    (descentCD_PBP τ h_sub).val.γ = .D := (descentCD_PBP τ h_sub).prop.1
+@[simp] lemma descentCD_PBP_P_shape {μP μQ : YoungDiagram}
+    (τ : PBPSet .C μP μQ) (h_sub : YoungDiagram.shiftLeft μQ ≤ μP) :
+    (descentCD_PBP τ h_sub).val.P.shape = μP := (descentCD_PBP τ h_sub).prop.2.1
+@[simp] lemma descentCD_PBP_Q_shape {μP μQ : YoungDiagram}
+    (τ : PBPSet .C μP μQ) (h_sub : YoungDiagram.shiftLeft μQ ≤ μP) :
+    (descentCD_PBP τ h_sub).val.Q.shape = YoungDiagram.shiftLeft μQ :=
+  (descentCD_PBP τ h_sub).prop.2.2
 @[simp] lemma descentCD_PBP_P_paint {μP μQ : YoungDiagram}
     (τ : PBPSet .C μP μQ) (h_sub : YoungDiagram.shiftLeft μQ ≤ μP) (i j : ℕ) :
-    (descentCD_PBP τ h_sub).val.P.paint i j = PBP.descentPaintL_CD τ.val i j := by
-  rfl
+    (descentCD_PBP τ h_sub).val.P.paint i j = PBP.descentPaintL_CD τ.val i j := rfl
+@[simp] lemma descentCD_PBP_Q_paint {μP μQ : YoungDiagram}
+    (τ : PBPSet .C μP μQ) (h_sub : YoungDiagram.shiftLeft μQ ≤ μP) (i j : ℕ) :
+    (descentCD_PBP τ h_sub).val.Q.paint i j = .dot := rfl
 
 /-! ## Descent injectivity -/
 
@@ -349,6 +362,16 @@ noncomputable def liftCD_PBP {μP μQ : YoungDiagram}
       split_ifs at h₁ <;> exact absurd h₁ (by decide)
   }, ⟨rfl, rfl, rfl⟩⟩
 
+-- Access lemmas for liftCD_PBP
+@[simp] lemma liftCD_PBP_γ {μP μQ : YoungDiagram}
+    (σ : PBPSet .D μP (YoungDiagram.shiftLeft μQ)) (h_sub : YoungDiagram.shiftLeft μQ ≤ μP) :
+    (liftCD_PBP σ h_sub).val.γ = .C := (liftCD_PBP σ h_sub).prop.1
+@[simp] lemma liftCD_PBP_P_shape {μP μQ : YoungDiagram}
+    (σ : PBPSet .D μP (YoungDiagram.shiftLeft μQ)) (h_sub : YoungDiagram.shiftLeft μQ ≤ μP) :
+    (liftCD_PBP σ h_sub).val.P.shape = μP := (liftCD_PBP σ h_sub).prop.2.1
+@[simp] lemma liftCD_PBP_Q_shape {μP μQ : YoungDiagram}
+    (σ : PBPSet .D μP (YoungDiagram.shiftLeft μQ)) (h_sub : YoungDiagram.shiftLeft μQ ≤ μP) :
+    (liftCD_PBP σ h_sub).val.Q.shape = μQ := (liftCD_PBP σ h_sub).prop.2.2
 @[simp] lemma liftCD_PBP_P_paint {μP μQ : YoungDiagram}
     (σ : PBPSet .D μP (YoungDiagram.shiftLeft μQ)) (h_sub : YoungDiagram.shiftLeft μQ ≤ μP) (i j : ℕ) :
     (liftCD_PBP σ h_sub).val.P.paint i j = liftPaintP_CD σ.val i j := by
@@ -359,8 +382,10 @@ theorem descentCD_liftCD_round_trip {μP μQ : YoungDiagram}
     (h_sub : YoungDiagram.shiftLeft μQ ≤ μP)
     (σ : PBPSet .D μP (YoungDiagram.shiftLeft μQ)) :
     descentCD_PBP (liftCD_PBP σ h_sub) h_sub = σ := by
-  -- Paint functions compose correctly (dot→dot, s→dot→s, r/c/d preserved)
-  -- but Lean tactic-mode definitions are opaque, blocking structural equality.
+  -- Use descentCD_injective: descent ∘ lift is injective (from round trip)
+  -- Equivalent: show paint equality, then use PBP extensionality
+  -- Round trip: paint equality by zone analysis (dot→dot, s→dot→s, r/c/d→same→same)
+  -- Access lemmas make paint functions transparent; zone boundaries match.
   sorry
 
 /-- Descent image excludes SS in the balanced case. -/
