@@ -272,9 +272,48 @@ noncomputable def liftCD_raw (σ : PBP) (hγ : σ.γ = .D)
       split_ifs at hpaint with h
       · -- σ.P layerOrd ≤ 1. Need ∈ μQ ∧ liftQ = dot.
         refine ⟨?_, ?_⟩
-        · -- (i,j) ∈ μQ: σ.P is dot or s.
-          -- dot → ∈ shiftLeft μQ → ∈ μQ. s → complex argument.
-          sorry
+        · -- (i,j) ∈ μQ: σ.P is dot or s (layerOrd ≤ 1).
+          by_cases hdot : σ.P.paint i j = .dot
+          · -- dot → ∈ shiftLeft μQ → ∈ μQ
+            have hmemQ_sh := ((σ.dot_match i j).mp ⟨by rw [hPsh]; exact hmemP, hdot⟩).1
+            rw [hQsh] at hmemQ_sh
+            -- shiftLeft μQ ⊆ μQ: (i,j) ∈ shiftLeft μQ → i < μQ.colLen(j+1) ≤ μQ.colLen(j)
+            have h_lt := YoungDiagram.mem_iff_lt_colLen.mp hmemQ_sh
+            rw [YoungDiagram.colLen_shiftLeft] at h_lt
+            exact YoungDiagram.mem_iff_lt_colLen.mpr
+              (lt_of_lt_of_le h_lt (μQ.colLen_anti j (j+1) (by omega)))
+          · -- s case: σ.P = s (layerOrd 1, ≠ dot).
+            cases j with
+            | zero => sorry  -- needs dp-specific shape property: μP.colLen 0 ≤ μQ.colLen 0
+            | succ j' =>
+              -- σ.P(i, j'+1) = s. By mono_P + row_s → σ.P(i, j') = dot.
+              -- dot → (i, j') ∈ shiftLeft μQ → (i, j'+1) ∈ μQ. ✓
+              have h_mem_j' : (i, j') ∈ σ.P.shape :=
+                σ.P.shape.isLowerSet (show (i, j') ≤ (i, j' + 1) from ⟨le_refl _, Nat.le_succ _⟩)
+                  (by rw [hPsh]; exact hmemP)
+              -- σ.P(i, j').layerOrd ≤ 1 (by mono_P)
+              have hlo' := (σ.mono_P i j' i (j' + 1) (le_refl _) (Nat.le_succ _)
+                (by rw [hPsh]; exact hmemP)).trans h
+              -- σ.P(i, j') ≠ s (row_s: only 1 s per row)
+              have hns : σ.P.paint i j' ≠ .s := by
+                intro heq
+                -- σ.P(i, j'+1) is s (layerOrd ≤ 1, ≠ dot)
+                have hs : σ.P.paint i (j' + 1) = .s := by
+                  cases hp : σ.P.paint i (j' + 1) <;> rw [hp] at hdot h <;>
+                    simp [DRCSymbol.layerOrd] at hdot h
+                exact absurd (σ.row_s i .L .L j' (j' + 1)
+                  (by simp [paintBySide]; exact heq)
+                  (by simp [paintBySide]; exact hs)).2 (by omega)
+              -- So σ.P(i, j') = dot (layerOrd ≤ 1, ≠ s)
+              have hdot' : σ.P.paint i j' = .dot := by
+                cases hp : σ.P.paint i j'
+                · rfl
+                · exact absurd hp hns
+                all_goals (rw [hp] at hlo'; simp [DRCSymbol.layerOrd] at hlo')
+              -- dot → (i,j') ∈ shiftLeft μQ → (i, j'+1) ∈ μQ
+              have h_shQ := ((σ.dot_match i j').mp ⟨h_mem_j', hdot'⟩).1
+              rw [hQsh] at h_shQ
+              exact YoungDiagram.mem_shiftLeft.mp h_shQ
         · -- liftQ = dot: (i,j) ∈ μP and layerOrd ≤ 1 → condition False → dot.
           show liftPaintQ_CD σ μP μQ i j = .dot
           simp only [liftPaintQ_CD]
