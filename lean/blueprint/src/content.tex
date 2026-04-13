@@ -1,0 +1,381 @@
+\section{Associated Cycles: Combinatorial Aspect}
+
+This blueprint covers the formalization of \cite{BMSZ} Section~11.
+Throughout, $\star \in \{B, D\}$ unless stated otherwise.
+
+\subsection{MYD Operations (Section 9.4)}
+
+\begin{definition}[Sign twist]
+  \label{def:twistBD}
+  \lean{ILS.twistBD}
+  \leanok
+  For $\star \in \{B, D\}$ and $(\eps^+, \eps^-) \in \mathbb{Z}/2\mathbb{Z} \times \mathbb{Z}/2\mathbb{Z}$,
+  the sign twist $\mathcal{E} \otimes (\eps^+, \eps^-)$ acts on odd-length rows by
+  multiplying the entries by powers of $(-1)$.
+\end{definition}
+
+\begin{definition}[Character twist $T$]
+  \label{def:charTwistCM}
+  \lean{ILS.charTwistCM}
+  \leanok
+  For $\star \in \{C, \tilde{C}\}$, the involution $T$ negates entries at positions
+  $i \equiv 2 \pmod{4}$.
+\end{definition}
+
+\begin{lemma}[$T^2 = \mathrm{id}$]
+  \label{lem:T_squared}
+  \lean{ILS.charTwistCM_involutive}
+  \leanok
+  \uses{def:charTwistCM}
+  The character twist $T$ is an involution: $T^2 = \mathrm{id}$.
+\end{lemma}
+\begin{proof}
+  \leanok
+  Each entry is either negated (at positions $\equiv 2 \pmod{4}$) or unchanged.
+  Negating twice gives the identity.
+\end{proof}
+
+\begin{definition}[Augmentation]
+  \label{def:augment}
+  \lean{ILS.augment}
+  \leanok
+  The augmentation $\mathcal{E}' \oplus (p_0, q_0)$ prepends $(p_0, q_0)$ at position~1.
+\end{definition}
+
+\begin{definition}[Truncation]
+  \label{def:truncate}
+  \lean{ILS.truncate}
+  \leanok
+  The truncation $\Lambda_{(p_0,q_0)}(\mathcal{E})$ subtracts $(p_0, q_0)$ from the first entry,
+  defined when the containment condition $\mathcal{E} \supseteq (p_0, q_0)$ holds.
+\end{definition}
+
+\begin{definition}[Signature]
+  \label{def:sign}
+  \lean{ILS.sign}
+  \leanok
+  The signature $\Sign(\mathcal{E}) = (p, q)$ of an ILS.
+\end{definition}
+
+\begin{lemma}[Sign twist preserves signature]
+  \label{lem:twistBD_sign}
+  \lean{ILS.twistBD_sign}
+  \leanok
+  \uses{def:twistBD, def:sign}
+  $\Sign(\mathcal{E} \otimes (\eps^+, \eps^-)) = \Sign(\mathcal{E})$.
+\end{lemma}
+\begin{proof} \leanok Twist only changes signs; signature uses absolute values. \end{proof}
+
+\begin{lemma}[Character twist preserves signature]
+  \label{lem:charTwistCM_sign}
+  \lean{ILS.charTwistCM_sign}
+  \leanok
+  \uses{def:charTwistCM, def:sign}
+  $\Sign(T^j(\mathcal{E})) = \Sign(\mathcal{E})$.
+\end{lemma}
+\begin{proof} \leanok Same argument as sign twist. \end{proof}
+
+\begin{lemma}[Augmentation sign formula]
+  \label{lem:sign_cons_nonneg}
+  \lean{ILS.sign_cons_nonneg}
+  \leanok
+  \uses{def:augment, def:sign}
+  For $p_0, q_0 \geq 0$:
+  $\Sign((p_0, q_0) :: E) = (p_0 + \Sign(E).1 + \mathrm{fcSign}(E).2,\; q_0 + \Sign(E).2 + \mathrm{fcSign}(E).1)$.
+\end{lemma}
+\begin{proof} \leanok By the shift identity for signAux. \end{proof}
+
+\subsection{Theta Lift on MYD (Sections 9.5, 11.1--11.4)}
+
+\begin{definition}[Theta lift]
+  \label{def:thetaLift}
+  \lean{ILS.thetaLift}
+  \leanok
+  \uses{def:charTwistCM, def:augment, def:truncate}
+  The theta lift $\hat{\vartheta}^{\mathfrak{s},\mathcal{O}}_{\mathfrak{s}',\mathcal{O}'}$
+  from $\MYD_{\star'}(\mathcal{O}')$ to $\MYD_\star(\mathcal{O})$,
+  defined by formulas (9.29) and (9.30).
+\end{definition}
+
+\begin{theorem}[Theta lift signature, C$\to$D]
+  \label{thm:thetaLift_CD_sign}
+  \lean{ILS.thetaLift_CD_sign}
+  \leanok
+  \uses{def:thetaLift, def:sign, lem:sign_cons_nonneg, lem:charTwistCM_sign}
+  For the C$\to$D lift with target signature $(p, q)$: $\Sign(\hat\vartheta(E')) = (p, q)$.
+\end{theorem}
+\begin{proof} \leanok By augmentation sign formula + charTwistCM preserves sign. \end{proof}
+
+\begin{theorem}[Theta lift signature, D$\to$C standard]
+  \label{thm:thetaLift_DC_sign_std}
+  \lean{ILS.thetaLift_DC_sign_std}
+  \leanok
+  \uses{def:thetaLift, def:sign, lem:sign_cons_nonneg, lem:charTwistCM_sign}
+  Standard case (addp, addn $\geq 0$): $\Sign(\hat\vartheta(E')) = (n, n)$.
+\end{theorem}
+\begin{proof} \leanok Same as C$\to$D. \end{proof}
+
+\begin{theorem}[Theta lift signature, D$\to$C split]
+  \label{thm:thetaLift_DC_sign_split}
+  \lean{ILS.thetaLift_DC_sign_split}
+  \leanok
+  \uses{def:thetaLift, def:sign, lem:sign_cons_nonneg, lem:charTwistCM_sign}
+  Split case (addp = addn = $-1$): both branches have $\Sign = (n, n)$.
+\end{theorem}
+\begin{proof}
+  \leanok
+  \uses{lem:sign_cons_nonneg}
+  By sign\_dec\_fst/snd: decrementing one entry changes sign by $(-1, 0)$ or $(0, -1)$.
+  Combined with augment by $(0, 0)$: net effect restores $(n, n)$.
+\end{proof}
+
+\subsection{AC Recursion (Equation 11.2)}
+
+\begin{definition}[AC base case]
+  \label{def:AC_base}
+  \lean{AC.base}
+  \leanok
+  When $|\check{\mathcal{O}}| = 0$: $\Ltau = (1,0)_\star$ if $B^+$;
+  $(0,-1)_\star$ if $B^-$; $(0,0)_\star$ otherwise.
+\end{definition}
+
+\begin{definition}[AC step]
+  \label{def:AC_step}
+  \lean{AC.step}
+  \leanok
+  \uses{def:thetaLift, def:twistBD}
+  For $\star \in \{B, D\}$: $\Ltau = \hat\vartheta(\Ltau[']) \otimes (0, \eps_\tau)$.
+  For $\star \in \{C, \tilde{C}\}$: $\Ltau = \hat\vartheta(\Ltau['] \otimes (\eps_\wp, \eps_\wp))$.
+\end{definition}
+
+\begin{theorem}[AC step preserves signature, D type]
+  \label{thm:AC_step_sign_D}
+  \lean{AC.step_sign_D}
+  \leanok
+  \uses{def:AC_step, thm:thetaLift_CD_sign, lem:twistBD_sign}
+  AC.step for D type always produces the correct signature.
+\end{theorem}
+\begin{proof} \leanok C$\to$D lift never splits; twist preserves sign. \end{proof}
+
+\subsection{Lemma 11.3: Tail Symbol Properties}
+
+\begin{definition}[Tail signature]
+  \label{def:tailSignature}
+  \lean{PBP.tailSignature_D}
+  \leanok
+  Per-cell contribution sum from tail cells in P's column~0.
+\end{definition}
+
+\begin{definition}[Tail symbol]
+  \label{def:tailSymbol}
+  \lean{PBP.tailSymbol_D}
+  \leanok
+  The symbol $x_\tau$ in the last box of the tail: $x_\tau := \mathcal{P}_{\tau_\mathbf{t}}(k, 1)$.
+\end{definition}
+
+\begin{lemma}[Lemma 11.3(a): $\eps_\tau = 0$ iff $x_\tau = d$]
+  \label{lem:11_3a}
+  \lean{PBP.tailSymbol_d_iff_d_in_col0}
+  \leanok
+  \uses{def:tailSymbol}
+  By layer monotonicity, $d$ (layerOrd~4) can only appear at the bottom of column~0.
+\end{lemma}
+\begin{proof}
+  \leanok
+  If $d$ exists in column~0, monotonicity forces it to the bottom.
+  Conversely, bottom $= d$ witnesses $d$ in column~0.
+\end{proof}
+
+\begin{lemma}[Lemma 11.3(b): $p_{\tau_\mathbf{t}} = 0$ iff $x_\tau = s$]
+  \label{lem:11_3b}
+  \uses{def:tailSymbol, def:tailSignature}
+  ($\Rightarrow$) If $x_\tau = s$ (layerOrd~1), all tail cells have layerOrd~$\leq 1$.
+  Non-dot cells with layerOrd~$\leq 1$ are~$s$. So every tail cell is~$s$,
+  contributing $0$ to~$p$. ($\Leftarrow$) If $x_\tau \neq s$, the bottom cell
+  contributes $\geq 1$ to~$p$.
+\end{lemma}
+\begin{proof}
+  \uses{lem:11_3a}
+  Uses \texttt{tail\_all\_s\_of\_tailSymbol\_s} and \texttt{tailContrib\_fst\_pos\_of\_ne\_s}.
+\end{proof}
+
+\subsection{Proposition 11.4: Signature Decomposition}
+
+\begin{proposition}[Signature decomposition (11.7)]
+  \label{prop:11_4}
+  \uses{def:tailSignature}
+  Suppose $\mathbf{r}_2(\check{\mathcal{O}}) > \mathbf{r}_3(\check{\mathcal{O}})$. Then
+  \[ \Sign(\tau) = (\mathbf{c}_2(\mathcal{O}), \mathbf{c}_2(\mathcal{O})) + \Sign(\nabla(\nabla(\tau))) + \Sign(\tau_\mathbf{t}). \]
+\end{proposition}
+\begin{proof}
+  \uses{lem:11_3a}
+  Decompose PBP.signature into column~0 (below~$Q$ = dots, tail = non-dot)
+  and columns~$\geq 1$ (= double descent). Uses \texttt{countSym\_split},
+  \texttt{col0\_dot\_below\_Q\_D}, \texttt{Q\_countSym\_eq\_zero\_of\_D}.
+\end{proof}
+
+\subsection{Lemma 11.5: Two-Step AC Formula}
+
+\begin{lemma}[Lemma 11.5(a): primitive case]
+  \label{lem:11_5a}
+  \uses{prop:11_4, def:AC_step, def:charTwistCM, def:augment, def:twistBD}
+  If $\mathbf{r}_2 > \mathbf{r}_3$, then
+  \[ \Ltau = T^{\gamma_\tau}\big(\Ltau[''] \otimes (\eps_{\wp'}, \eps_{\wp'}) \oplus (n_0, n_0)\big) \oplus (p_{\tau_\mathbf{t}}, q_{\tau_\mathbf{t}}) \otimes (0, \eps_\tau) \]
+  where $\gamma_\tau$, $n_0$ are as in (11.10), and the operations act as:
+  twist $\to$ augment$(n_0)$ $\to$ $T^\gamma$ $\to$ augment$(p_t, q_t)$ $\to$ twist$(0, \eps)$.
+\end{lemma}
+\begin{proof}
+  \uses{prop:11_4}
+  Apply (11.2) twice and use the signature formula (11.7).
+  Computationally verified for all D-type orbits up to size~18.
+\end{proof}
+
+\begin{lemma}[Lemma 11.5(b): balanced case]
+  \label{lem:11_5b}
+  \uses{prop:11_4, def:AC_step, def:charTwistCM, def:augment, def:twistBD, def:truncate}
+  If $\mathbf{r}_2 = \mathbf{r}_3$, then $\Ltau = \mathcal{L}_{\tau,+} + \mathcal{L}_{\tau,-}$
+  with formulas (11.13)--(11.14).
+\end{lemma}
+
+\subsection{Lemma 11.6: First Entry}
+
+\begin{lemma}[Lemma 11.6(a)]
+  \label{lem:11_6a}
+  \uses{lem:11_5a, def:augment, def:twistBD}
+  If $\mathbf{r}_2 > \mathbf{r}_3$ and $\mathcal{E}$ has nonzero coefficient in~$\Ltau$, then
+  $\mathcal{E}(1) = (p_{\tau_\mathbf{t}}, (-1)^{\eps_\tau} q_{\tau_\mathbf{t}})$.
+\end{lemma}
+\begin{proof}
+  \uses{lem:11_5a}
+  Direct read-off from (11.11): augment places $(p_{\tau_\mathbf{t}}, q_{\tau_\mathbf{t}})$ at position~1;
+  sign twist $\otimes(0, \eps_\tau)$ multiplies $q$ by $(-1)^{\eps_\tau}$.
+\end{proof}
+
+\subsection{Proposition 11.7: Multiplicity Free}
+
+\begin{definition}[Multiplicity free]
+  \label{def:mfree}
+  \lean{ACResult.MultiplicityFree}
+  \leanok
+  An element $\mathcal{A} \in \mathbb{Z}[\MYD_\star]$ is multiplicity free if
+  all MYDs appearing with nonzero coefficient are pairwise distinct.
+\end{definition}
+
+\begin{proposition}[Proposition 11.7]
+  \label{prop:11_7}
+  \uses{lem:11_5a, lem:11_5b, lem:11_6a, def:mfree, lem:T_squared}
+  $\Ltau$ is multiplicity free. When $\mathbf{r}_2 = \mathbf{r}_3$,
+  both $\mathcal{L}_{\tau,+}$ and $\mathcal{L}_{\tau,-}$ are multiplicity free.
+\end{proposition}
+\begin{proof}
+  \uses{lem:11_5a, lem:11_6a}
+  By induction. The four operations (sign twist, $T$, augmentation, truncation)
+  preserve multiplicity free (all are injective or bijective on MYD).
+  Base case: AC.base is a single MYD.
+  For $\mathbf{r}_2 = \mathbf{r}_3$: Lemma~11.6 shows the $+$ and $-$ branches
+  have different first entries, so their supports are disjoint.
+\end{proof}
+
+\subsection{Proposition 11.8: Nonzero and Truncation}
+
+\begin{proposition}[Proposition 11.8]
+  \label{prop:11_8}
+  \uses{lem:11_3a, lem:11_3b, lem:11_6a, prop:11_7}
+  \begin{enumerate}
+    \item[(a)] $\Ltau \neq 0$.
+    \item[(b)] $x_\tau = s \Rightarrow \Ltau^+ = 0$ and $\Ltau^- = 0$.
+    \item[(c)] $x_\tau \in \{r, c\} \Rightarrow \Ltau^+ \neq 0$ and $\Ltau^- = 0$.
+    \item[(d)] $x_\tau = d \Rightarrow \Ltau^+ \neq 0$ and $\Ltau^- \neq 0$.
+  \end{enumerate}
+\end{proposition}
+\begin{proof}
+  \uses{lem:11_3a, lem:11_3b, lem:11_6a}
+  By induction. From Lemma~11.6(a): $\mathcal{E}(1) = (p_{\tau_\mathbf{t}}, (-1)^{\eps_\tau} q_{\tau_\mathbf{t}})$.
+  \begin{itemize}
+    \item $x_\tau = s$: $p_{\tau_\mathbf{t}} = 0$, $\eps_\tau = 1$, $q_{\tau_\mathbf{t}} \geq 2$.
+      Truncation $\Lambda_{(1,0)}$ fails ($|0| < 1$). $\Lambda_{(0,1)}$ fails
+      (containment check: $-q_{\tau_\mathbf{t}} \leq -2$, neither $0 \leq 1 \leq -q$ nor $-q \leq 1 \leq 0$).
+    \item $x_\tau \in \{r, c\}$: $p_{\tau_\mathbf{t}} \geq 1$, $\eps_\tau = 1$.
+      $\Lambda_{(1,0)}$ succeeds. $\Lambda_{(0,1)}$: $q_1 = -q_{\tau_\mathbf{t}} \leq 0$, fails.
+    \item $x_\tau = d$: $p_{\tau_\mathbf{t}} \geq 1$, $q_{\tau_\mathbf{t}} \geq 1$, $\eps_\tau = 0$.
+      Both truncations succeed.
+  \end{itemize}
+\end{proof}
+
+\subsection{Lemmas 11.9--11.11 and Proposition 11.12}
+
+\begin{lemma}[Lemma 11.11: No det twist]
+  \label{lem:11_11}
+  \uses{prop:11_8}
+  There exist no $\tau_1, \tau_2$ with $\Ltau[_1] \otimes (1,1) = \Ltau[_2]$.
+\end{lemma}
+\begin{proof}
+  \uses{prop:11_8}
+  $\otimes(1,1)$ negates the first entry: $(\Ltau[_1] \otimes (1,1))^+ = 0$ always.
+  So $\Ltau[_2]^+ = 0$, forcing $x_{\tau_2} = s$ (Prop~11.8(b)).
+  Similarly $x_{\tau_1} = s$. But then $(\Ltau[_1] \otimes (1,1))^- \neq 0$
+  while $\Ltau[_2]^- = 0$, contradiction.
+\end{proof}
+
+\begin{proposition}[Proposition 11.12: Injectivity modulo twist]
+  \label{prop:11_12}
+  \uses{lem:11_11, prop:11_8}
+  If $\Ltau[_1] \otimes (\eps_1, \eps_1) = \Ltau[_2] \otimes (\eps_2, \eps_2)$,
+  then $\eps_1 = \eps_2$, $\eps_{\tau_1} = \eps_{\tau_2}$, and $\Ltau[_1] = \Ltau[_2]$.
+\end{proposition}
+\begin{proof}
+  \uses{lem:11_11, prop:11_8}
+  $\eps_1 = \eps_2$ from Lemma~11.11 (otherwise get $\otimes(1,1)$).
+  Then $\Ltau[_1] = \Ltau[_2]$, and $\eps_{\tau_1} = \eps_{\tau_2}$ from
+  the truncation pattern (Prop~11.8).
+\end{proof}
+
+\subsection{Proposition 11.15: Main Bijection}
+
+\begin{lemma}[Lemma 11.13: Injectivity for quasi-distinguished]
+  \label{lem:11_13}
+  \uses{prop:11_12, lem:11_5a, prop:11_4}
+  If $\check{\mathcal{O}}$ is quasi-distinguished and $\Ltau[_1] = \Ltau[_2]$, then $\tau_1 = \tau_2$.
+\end{lemma}
+\begin{proof}
+  \uses{prop:11_12, lem:11_5a}
+  By induction. Operations in (11.11) are invertible, so $\Ltau[_1] = \Ltau[_2]$
+  implies $\mathcal{L}_{\tau_1''} = \mathcal{L}_{\tau_2''}$. IH gives $\tau_1'' = \tau_2''$.
+  Descent bijectivity (Prop~11.4) recovers $\tau_1 = \tau_2$.
+\end{proof}
+
+\begin{lemma}[Lemma 11.14: Surjectivity]
+  \label{lem:11_14}
+  \uses{lem:11_5a, prop:11_4}
+  For quasi-distinguished $\check{\mathcal{O}}$: for all $\mathcal{E} \in \MYD_\star(\mathcal{O})$,
+  there exist $\tau$ and $\eps$ with $\Ltau \otimes (\eps, \eps) = \mathcal{E}$.
+\end{lemma}
+\begin{proof}
+  \uses{lem:11_5a, prop:11_4}
+  Invert (11.11) to construct $\tau$ from $\mathcal{E}$.
+\end{proof}
+
+\begin{proposition}[Proposition 11.15]
+  \label{prop:11_15}
+  \uses{prop:11_12, lem:11_13, lem:11_14}
+  The map $(\tau, \eps) \mapsto \Ltau \otimes (\eps, \eps)$ is injective
+  with image $\MYD_\star(\mathcal{O})$.
+\end{proposition}
+\begin{proof}
+  \uses{prop:11_12, lem:11_13, lem:11_14}
+  Injectivity from Prop~11.12 + Lemma~11.13.
+  Surjectivity from Lemma~11.14.
+\end{proof}
+
+\subsection{C/\texorpdfstring{$\tilde{C}$}{C tilde} case (Section 11.5)}
+
+\begin{proposition}[Proposition 11.17]
+  \label{prop:11_17}
+  \uses{prop:11_15, prop:11_12}
+  For $\star \in \{C, \tilde{C}\}$ and quasi-distinguished $\check{\mathcal{O}}$:
+  $\tau \mapsto \Ltau$ is injective with image $\MYD_\star(\mathcal{O})$.
+\end{proposition}
+\begin{proof}
+  \uses{prop:11_15, prop:11_12}
+  Via $\hat\vartheta$ bijectivity (11.30) and the B/D results.
+\end{proof}
