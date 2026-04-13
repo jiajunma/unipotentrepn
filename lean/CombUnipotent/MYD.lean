@@ -1424,6 +1424,68 @@ theorem PBP.signature_snd_decomp_D (τ : PBP) (hγ : τ.γ = .D) :
   rw [dot_col0_below_Q_eq τ hγ, dot_tail_zero τ hγ]
   omega
 
+/-! ## Lemma 11.6: First entry of L_τ
+
+For the outermost AC.step (B/D type, C→D or M→B lift), the theta lift
+augments by (addp, addn) at the front, then sign twist ⊗(0, ε_τ) gives
+first entry (addp, (-1)^{ε_τ} · addn).
+
+The signature decomposition (11.7) tells us addp = p_{τ_t} and addn = q_{τ_t}
+(the tail signature components), because:
+  p_τ = c₂(O) + p_{∇²τ} + p_{τ_t}  and  addp = p_τ - sign(L_{τ'}).1 - fcSign(L_{τ'}).2
+and sign(L_{τ'}) captures c₂(O) + p_{∇²τ} + fcSign contributions.
+
+This means: every MYD in L_τ has first entry (p_{τ_t}, (-1)^{ε_τ} q_{τ_t}). -/
+
+/-- For C→D theta lift (standard case): first entry of result is (addp, addn).
+    This is the augmentation parameter prepended by the lift. -/
+theorem ILS.thetaLift_CD_first_entry (E : ILS) (p q : ℤ)
+    (h_std : p - (sign E).1 - (firstColSign E).2 ≥ 0 ∧
+             q - (sign E).2 - (firstColSign E).1 ≥ 0) :
+    ∀ r ∈ thetaLift_CD E p q,
+      r.head? = some (p - (sign E).1 - (firstColSign E).2,
+                       q - (sign E).2 - (firstColSign E).1) := by
+  intro r hr
+  simp only [thetaLift_CD] at hr
+  rw [if_pos h_std] at hr
+  simp only [List.mem_singleton] at hr; subst hr
+  simp [augment, charTwistCM, List.mapIdx_cons, charTwistCMRow, List.head?,
+    show ¬((1 : ℕ) % 4 = 2) from by omega]
+
+/-- For M→B theta lift (standard case): same first entry property. -/
+theorem ILS.thetaLift_MB_first_entry (E : ILS) (p q : ℤ)
+    (h_std : p - (sign E).1 - (firstColSign E).2 ≥ 0 ∧
+             q - (sign E).2 - (firstColSign E).1 ≥ 0) :
+    ∀ r ∈ thetaLift_MB E p q,
+      r.head? = some (p - (sign E).1 - (firstColSign E).2,
+                       q - (sign E).2 - (firstColSign E).1) := by
+  intro r hr
+  simp only [thetaLift_MB] at hr
+  rw [if_pos h_std] at hr
+  simp only [List.mem_singleton] at hr; subst hr
+  simp [augment, charTwistCM, List.mapIdx_cons, charTwistCMRow, List.head?,
+    show ¬((1 : ℕ) % 4 = 2) from by omega]
+
+/-- Sign twist ⊗(0, ε_τ) on first entry: (a, b) → (a, (-1)^{ε_τ} · b).
+    At index 0 (odd-length row 1): twist(1, -1) gives tpp=1, tnn=-1.
+    So (a, b) → (1·a, (-1)·b) = (a, -b) when ε_τ = 1.
+    When ε_τ = 0: no twist. -/
+theorem ILS.twistBD_first_entry (E : ILS) :
+    (twistBD E 1 (-1)).head? = E.head?.map fun (a, b) => (a, -b) := by
+  cases E with
+  | nil => simp [twistBD]
+  | cons hd tl =>
+    simp only [twistBD, List.mapIdx_cons, twistBDRow, List.head?, Option.map,
+      show ¬((1 : ℕ) % 2 = 0) from by omega]
+    ext <;> simp <;> ring
+
+-- Prop 11.8 truncation properties follow from Lemma 11.6 (first entry)
+-- + Lemma 11.3 (tail symbol ↔ tail signature components).
+-- The key deductions:
+-- x_τ = s: p_t = 0 → first entry p-component = 0 → Λ_{(1,0)} fails
+-- x_τ = d: p_t > 0, q_t > 0, ε_τ = 0 → both Λ succeed
+-- These are case analyses on the first entry, using the proved lemmas above.
+
 section Tests
 
 -- Sign of base cases
