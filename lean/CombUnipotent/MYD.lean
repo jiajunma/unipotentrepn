@@ -376,17 +376,61 @@ theorem twistBDRow_natAbs (i : ℕ) (tp tn : ℤ) (pq : ℤ × ℤ)
     · rw [Int.natAbs_mul, h1 tp tn _ _ htp htn, one_mul]
     · rw [Int.natAbs_mul, h1 tn tp _ _ htn htp, one_mul]
 
+/-- Relates the fold-based `sign` to the recursive `signAux`. -/
+private theorem foldl_zipIdx_eq_signAux (E : ILS) (k : ℕ) (acc : ℤ × ℤ) :
+    (E.zipIdx k).foldl (fun acc ⟨pq, i⟩ =>
+      let s := signRow i pq
+      (acc.1 + s.1, acc.2 + s.2)) acc =
+    (acc.1 + (signAux E k).1, acc.2 + (signAux E k).2) := by
+  induction E generalizing k acc with
+  | nil => simp [signAux, List.zipIdx]
+  | cons hd tl ih =>
+    simp only [List.zipIdx, List.foldl_cons, signAux]
+    rw [ih]
+    ext <;> simp <;> omega
+
+/-- `sign E = signAux E 0`. -/
+private theorem sign_eq_signAux (E : ILS) : sign E = signAux E 0 := by
+  simp only [sign]
+  rw [foldl_zipIdx_eq_signAux]
+  simp
+
+/-- If `f` preserves `natAbs` at every index, then `signAux` over the
+    `mapIdx`-transformed list equals `signAux` over the original list. -/
+private theorem signAux_mapIdx_of_natAbs (E : ILS) (f : ℕ → ℤ × ℤ → ℤ × ℤ) (k : ℕ)
+    (hf : ∀ i pq, (f i pq).1.natAbs = pq.1.natAbs ∧ (f i pq).2.natAbs = pq.2.natAbs) :
+    signAux (E.mapIdx fun i pq => f (k + i) pq) k = signAux E k := by
+  induction E generalizing k with
+  | nil => simp [signAux]
+  | cons hd tl ih =>
+    simp only [List.mapIdx_cons, signAux, Nat.add_zero]
+    have h := hf k hd
+    rw [signRow_natAbs k _ hd h.1 h.2]
+    have key : (fun i pq => f (k + (i + 1)) pq) = (fun i pq => f ((k + 1) + i) pq) := by
+      funext i pq; congr 1; omega
+    rw [key, ih (k + 1)]
+
 /-- charTwistCM preserves the signature.
-    Proof sketch: charTwistCMRow only negates entries, preserving natAbs.
+    charTwistCMRow only negates entries, preserving natAbs.
     signRow depends only on natAbs, so signAux gives the same result. -/
 theorem charTwistCM_sign (E : ILS) (j : ℤ) : sign (charTwistCM E j) = sign E := by
-  sorry  -- natAbs preservation + fold equality
+  rw [sign_eq_signAux, sign_eq_signAux]
+  show signAux (E.mapIdx fun i pq => charTwistCMRow j i pq) 0 = signAux E 0
+  have : (fun i pq => charTwistCMRow j i pq) = (fun i pq => charTwistCMRow j (0 + i) pq) := by
+    simp
+  rw [this]
+  exact signAux_mapIdx_of_natAbs E _ 0 (fun i pq => charTwistCMRow_natAbs j i pq)
 
 /-- twistBD preserves the signature when tp, tn ∈ {1, -1}. -/
 theorem twistBD_sign (E : ILS) (tp tn : ℤ)
     (htp : tp = 1 ∨ tp = -1) (htn : tn = 1 ∨ tn = -1) :
     sign (twistBD E tp tn) = sign E := by
-  sorry  -- natAbs preservation + fold equality
+  rw [sign_eq_signAux, sign_eq_signAux]
+  show signAux (E.mapIdx fun i pq => twistBDRow i tp tn pq) 0 = signAux E 0
+  have : (fun i (pq : ℤ × ℤ) => twistBDRow i tp tn pq) =
+      (fun i pq => (fun j pq => twistBDRow j tp tn pq) (0 + i) pq) := by simp
+  rw [this]
+  exact signAux_mapIdx_of_natAbs E _ 0 (fun i pq => twistBDRow_natAbs i tp tn pq htp htn)
 
 end ILS
 
