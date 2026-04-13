@@ -325,13 +325,55 @@ theorem descentCD_not_SS {μP μQ : YoungDiagram}
     (h_bal : μP.colLen 0 = μQ.colLen 0 + 1)
     (τ : PBPSet .C μP μQ) :
     tailClass_D (descentCD_PBP τ h_sub).val ≠ .SS := by
-  -- Tail class depends on tailLen_D and tailSymbol_D.
-  -- For balanced: P.colLen(0) > Q.colLen(0) (= shiftLeft Q.colLen(0)),
-  -- so tailLen > 0 and tailSymbol determines tail class.
-  -- The tail cell at (P.colLen(0)-1, 0) has C-type P paint ∈ {r,c,d}
-  -- (not dot since outside Q zone, not s since C-type).
-  -- In descent: this paint is preserved (zone 3). So tail ∈ {r,c,d} → DD or RC.
-  sorry
+  -- With transparent fields: tailClass_D unfolds on descentCD_raw directly.
+  simp only [tailClass_D, descentCD_PBP, descentCD_raw, PBP.tailLen_D, PBP.tailSymbol_D]
+  -- tailLen = μP.colLen 0 - (shiftLeft μQ).colLen 0 > 0 (from h_bal)
+  have h_pos : μP.colLen 0 - (YoungDiagram.shiftLeft μQ).colLen 0 ≠ 0 := by
+    -- shiftLeft.colLen 0 = μQ.colLen 1 ≤ μQ.colLen 0 = μP.colLen 0 - 1
+    suffices (YoungDiagram.shiftLeft μQ).colLen 0 < μP.colLen 0 by omega
+    calc (YoungDiagram.shiftLeft μQ).colLen 0
+        ≤ μQ.colLen 0 := by sorry -- shiftLeft.colLen 0 ≤ μQ.colLen 0
+      _ < μP.colLen 0 := by omega
+  rw [if_neg h_pos]
+  -- tailSymbol = descentPaintL_CD τ.val (μP.colLen 0 - 1) 0
+  -- This is in zone 3: the tail cell is outside Q zone, C-P paint ∈ {r,c,d}
+  simp only [PBP.descentPaintL_CD]
+  -- Zone 1 check: μP.colLen 0 - 1 < τ.val.Q.colLen(1)?
+  -- τ.Q.shape = μQ, so Q.colLen(1) ≤ Q.colLen(0) = μP.colLen(0) - 1
+  have h_z1 : ¬(μP.colLen 0 - 1 < τ.val.Q.shape.colLen (0 + 1)) := by
+    rw [τ.prop.2.2]; exact not_lt.mpr (le_trans (μQ.colLen_anti 0 1 (by omega)) (by omega))
+  rw [if_neg h_z1]
+  -- Zone 2 check: μP.colLen 0 - 1 < dotScolLen(τ.P, 0)?
+  -- The tail cell (μP.colLen 0 - 1, 0) ∉ μQ (since μQ.colLen 0 = μP.colLen 0 - 1)
+  -- By C-type dot_match: not in Q → P paint ≠ dot → layerOrd > 1 → not in dotScolLen zone
+  have h_notQ : ¬((μP.colLen 0 - 1, 0) ∈ μQ) := by
+    rw [YoungDiagram.mem_iff_lt_colLen]; omega
+  have h_notdot : τ.val.P.paint (μP.colLen 0 - 1) 0 ≠ .dot := by
+    intro heq
+    have hmem : (μP.colLen 0 - 1, 0) ∈ τ.val.P.shape := by
+      rw [τ.prop.2.1]; exact YoungDiagram.mem_iff_lt_colLen.mpr (by omega)
+    have := (τ.val.dot_match _ _).mp ⟨hmem, heq⟩
+    rw [τ.prop.2.2] at this; exact h_notQ this.1
+  have h_z2 : ¬(μP.colLen 0 - 1 < PBP.dotScolLen τ.val.P 0) := by
+    intro hlt
+    exact h_notdot (by
+      rw [PBP.dotScolLen_eq_dotSdiag_colLen _ τ.val.mono_P] at hlt
+      have hmem := YoungDiagram.mem_iff_lt_colLen.mpr hlt
+      have := (PBP.dotSdiag τ.val.P τ.val.mono_P).isLowerSet
+      simp [PBP.dotSdiag, YoungDiagram.mem_mk, Finset.mem_filter, YoungDiagram.mem_cells] at hmem
+      obtain ⟨hP, hlo⟩ := hmem
+      have hsym := τ.val.sym_P _ _ hP; rw [τ.prop.1] at hsym
+      simp [DRCSymbol.allowed] at hsym
+      rcases hsym with hp | hp | hp | hp <;> rw [hp] at hlo ⊢ <;>
+        simp [DRCSymbol.layerOrd] at hlo ⊢)
+  rw [if_neg h_z2]
+  -- Now: match τ.val.P.paint (μP.colLen 0 - 1) 0 with ... ≠ SS
+  -- C-type P paint ∈ {dot, r, c, d}. Not dot (proved). So ∈ {r, c, d} → DD or RC.
+  have hsym := τ.val.sym_P (μP.colLen 0 - 1) 0
+    (by rw [τ.prop.2.1]; exact YoungDiagram.mem_iff_lt_colLen.mpr (by omega))
+  rw [τ.prop.1] at hsym; simp [DRCSymbol.allowed] at hsym
+  rcases hsym with hp | hp | hp | hp <;> rw [hp] at h_notdot ⊢ <;>
+    simp [DRCSymbol.layerOrd] at h_notdot ⊢ <;> decide
 
 /-! ## Image characterization -/
 
