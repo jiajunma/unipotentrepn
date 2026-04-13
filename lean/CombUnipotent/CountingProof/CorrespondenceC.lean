@@ -40,9 +40,12 @@ private lemma shiftLeft_Q_le_P_of_dp {μP μQ : YoungDiagram} {r₁ r₂ : ℕ} 
     (hsort : (r₁ :: r₂ :: rest).SortedGE)
     (hodd : ∀ r ∈ r₁ :: r₂ :: rest, Odd r) :
     YoungDiagram.shiftLeft μQ ≤ μP := by
-  -- shiftLeft(Q) ≤ P: for all (i,j), (i,j) ∈ shiftLeft Q → (i,j) ∈ P.
-  -- Equiv: ∀ j, Q.colLen(j+1) ≤ P.colLen(j) (from dp structure).
-  -- This is a property of the dp-derived shapes.
+  -- shiftLeft(Q) ≤ P: ∀ (i,j), (i,j) ∈ shiftLeft Q → (i,j) ∈ P.
+  -- shiftLeft Q.colLens = tail(Q.colLens) = dpartColLensQ_D(r₂::rest) (by shiftLeft_Q_eq)
+  -- P.colLens = dpartColLensP_D(r₂::rest)
+  -- Need: D-type Q ≤ D-type P entry-wise.
+  -- For D-type dp, each Q entry (r_even-1)/2 ≤ P entry (r_odd+1)/2 since sorted odd.
+  -- This follows from the D-type structure but requires induction on dp.
   sorry
 
 /-! ## C→D descent PBP construction -/
@@ -593,7 +596,9 @@ theorem card_PBPSet_C_singleton (r₁ : ℕ) {μP μQ : YoungDiagram}
     -- Any two PBPs are equal → card = 1.
     rw [Fintype.card_eq_one_iff]
     -- Show any PBP equals a canonical one
-    have ⟨τ₀⟩ : Nonempty (PBPSet .C ⊥ μQ) := by sorry
+    have ⟨τ₀⟩ : Nonempty (PBPSet .C ⊥ μQ) := by
+      -- For singleton dp: μQ has ≤ 1 column → all constraints trivial
+      sorry
     exact ⟨τ₀, fun τ => by
       apply Subtype.ext; apply PBP.ext'' (τ.prop.1.trans τ₀.prop.1.symm)
       · -- P: both all dot (⊥ has no cells)
