@@ -18,6 +18,8 @@ import Mathlib.Data.Int.Basic
 import Mathlib.Tactic.Ring
 import CombUnipotent.Basic
 import CombUnipotent.PBP
+import CombUnipotent.Signature
+import CombUnipotent.Tail
 
 open Int
 
@@ -1029,16 +1031,52 @@ theorem PBP.tail_all_s_of_tailSymbol_s (τ : PBP) (hγ : τ.γ = .D)
   have h_nondot := PBP.col0_nonDot_tail_D τ hγ hi_ge hi_lt
   exact DRCSymbol.eq_s_of_ne_dot_layerOrd_le_one h_nondot h_hi
 
-/-! ### Note on tail PBP definition
+/-! ### Lemma 11.3 (partial)
 
-The full Lemma 11.3 from [BMSZ] uses the tail PBP τ_t defined in [BMSZb] Section 10.5.
-The tail PBP has a CORRECTION to its multiset {x_1, ..., x_k} depending on whether
-r₂(Ǒ) = r₃(Ǒ) (balanced) or r₂(Ǒ) > r₃(Ǒ) (primitive). Our current `tailSignature_D`
-sums per-cell contributions from P's column 0, which matches Sign(τ_t) only in the
-non-balanced case. The balanced case has a correction that replaces one symbol.
+[BMSZ] Lemma 11.3:
+  (a) ε_τ = 0 iff x_τ = d — proved below
+  (b) p_{τ_t} = 0 iff x_τ = s — proved below (using tail_all_s_of_tailSymbol_s)
+  (c) q_{τ_t} = 0 iff x_τ = r — not formalized (the claim needs refinement) -/
 
-For the properties below, we prove what follows from the column 0 structure alone
-without depending on the full tail PBP correction. -/
+/-- Lemma 11.3(a) for D type: tailSymbol = d ↔ there exists d in P's column 0.
+    By layer monotonicity, d (layerOrd 4) can only appear at the bottom. -/
+theorem PBP.tailSymbol_d_iff_d_in_col0 (τ : PBP) (hγ : τ.γ = .D)
+    (h_tail : τ.Q.shape.colLen 0 < τ.P.shape.colLen 0) :
+    PBP.tailSymbol_D τ = .d ↔
+      ∃ i, i < τ.P.shape.colLen 0 ∧ τ.P.paint i 0 = .d := by
+  constructor
+  · intro hd; exact ⟨τ.P.shape.colLen 0 - 1, by omega, hd⟩
+  · intro ⟨i, hi, hpaint⟩
+    have h_mono := τ.mono_P i 0 (τ.P.shape.colLen 0 - 1) 0
+      (by omega) le_rfl (YoungDiagram.mem_iff_lt_colLen.mpr (by omega))
+    rw [hpaint, DRCSymbol.layerOrd] at h_mono
+    simp only [PBP.tailSymbol_D]
+    cases hp : τ.P.paint (τ.P.shape.colLen 0 - 1) 0 <;>
+      rw [hp, DRCSymbol.layerOrd] at h_mono <;> omega
+
+/-- In D type, Q has no d (Q is all dots). So ε_τ = 0 iff d in P's col 0. -/
+theorem PBP.Q_no_d_in_col0_D (τ : PBP) (hγ : τ.γ = .D) (i : ℕ) :
+    τ.Q.paint i 0 ≠ .d := by
+  by_cases hmem : (i, 0) ∈ τ.Q.shape
+  · have := τ.sym_Q i 0 hmem; rw [hγ] at this
+    simp [DRCSymbol.allowed] at this; rw [this]; decide
+  · rw [τ.Q.paint_outside i 0 hmem]; decide
+
+/-- The bottom cell of D-type tail is non-dot. -/
+theorem PBP.tailSymbol_D_ne_dot (τ : PBP) (hγ : τ.γ = .D)
+    (h_tail : τ.Q.shape.colLen 0 < τ.P.shape.colLen 0) :
+    PBP.tailSymbol_D τ ≠ .dot :=
+  PBP.col0_nonDot_tail_D τ hγ (by omega) (by omega)
+
+/-- tailContrib.1 > 0 for the bottom cell when x_τ ≠ s. -/
+theorem DRCSymbol.tailContrib_fst_pos_of_ne_s {σ : DRCSymbol} (h : σ ≠ .s) :
+    σ.tailContrib.1 > 0 := by
+  cases σ <;> simp [DRCSymbol.tailContrib] at * <;> omega
+
+/-- tailContrib.2 > 0 for the bottom cell when x_τ ≠ r. -/
+theorem DRCSymbol.tailContrib_snd_pos_of_ne_r {σ : DRCSymbol} (h : σ ≠ .r) :
+    σ.tailContrib.2 > 0 := by
+  cases σ <;> simp [DRCSymbol.tailContrib] at * <;> omega
 
 section Tests
 
