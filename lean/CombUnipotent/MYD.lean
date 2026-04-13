@@ -547,6 +547,70 @@ theorem thetaLift_CD_sign (E : ILS) (p q : ℤ) :
     ext <;> simp <;> omega
   · simp at hr
 
+/-- When pp > 0, decrementing pp by 1 decreases sign.1 by 1, sign.2 unchanged. -/
+theorem sign_dec_fst (pp nn : ℤ) (rest : ILS) (hpp : pp > 0) :
+    sign ((pp - 1, nn) :: rest) = ((sign ((pp, nn) :: rest)).1 - 1,
+                                   (sign ((pp, nn) :: rest)).2) := by
+  rw [sign_eq_signAux, sign_eq_signAux]
+  simp only [signAux, signRow]
+  have : (pp - 1).natAbs = pp.natAbs - 1 := by omega
+  ext <;> simp [this] <;> omega
+
+theorem firstColSign_dec_fst (pp nn : ℤ) (rest : ILS) (hpp : pp > 0) :
+    firstColSign ((pp - 1, nn) :: rest) =
+      ((firstColSign ((pp, nn) :: rest)).1 - 1, (firstColSign ((pp, nn) :: rest)).2) := by
+  rw [firstColSign_eq_aux, firstColSign_eq_aux]
+  simp only [firstColSignAux, firstColSignRow]
+  have : (pp - 1).natAbs = pp.natAbs - 1 := by omega
+  ext <;> simp [this] <;> omega
+
+/-- When nn > 0, decrementing nn by 1 decreases sign.2 by 1, sign.1 unchanged. -/
+theorem sign_dec_snd (pp nn : ℤ) (rest : ILS) (hnn : nn > 0) :
+    sign ((pp, nn - 1) :: rest) = ((sign ((pp, nn) :: rest)).1,
+                                   (sign ((pp, nn) :: rest)).2 - 1) := by
+  rw [sign_eq_signAux, sign_eq_signAux]
+  simp only [signAux, signRow]
+  have : (nn - 1).natAbs = nn.natAbs - 1 := by omega
+  ext <;> simp [this] <;> omega
+
+theorem firstColSign_dec_snd (pp nn : ℤ) (rest : ILS) (hnn : nn > 0) :
+    firstColSign ((pp, nn - 1) :: rest) =
+      ((firstColSign ((pp, nn) :: rest)).1, (firstColSign ((pp, nn) :: rest)).2 - 1) := by
+  rw [firstColSign_eq_aux, firstColSign_eq_aux]
+  simp only [firstColSignAux, firstColSignRow]
+  have : (nn - 1).natAbs = nn.natAbs - 1 := by omega
+  ext <;> simp [this] <;> omega
+
+/-- D→C theta lift split case (-1,-1): both branches produce signature (n, n). -/
+theorem thetaLift_DC_sign_split (E : ILS) (n : ℤ)
+    (h_addp : n - (sign E).1 - (firstColSign E).2 = -1)
+    (h_addn : n - (sign E).2 - (firstColSign E).1 = -1) :
+    ∀ r ∈ thetaLift_DC E n, sign r = (n, n) := by
+  intro r hr
+  simp only [thetaLift_DC] at hr
+  have h_not_std : ¬(n - (sign E).1 - (firstColSign E).2 ≥ 0 ∧
+      n - (sign E).2 - (firstColSign E).1 ≥ 0) := by omega
+  rw [if_neg h_not_std] at hr
+  have h_split : (n - (sign E).1 - (firstColSign E).2,
+      n - (sign E).2 - (firstColSign E).1) = (-1, -1) := by ext <;> simp <;> omega
+  rw [if_pos (Or.inl h_split)] at hr
+  match E, hr with
+  | [], hr => simp at hr
+  | (pp0, nn0) :: rest, hr =>
+    -- hr is about membership in (if pp0 > 0 then [...] else []) ++ (if nn0 > 0 then [...] else [])
+    simp only [List.mem_append, List.mem_ite_nil_left, List.mem_ite_nil_right] at hr
+    rcases hr with ⟨hpp, hr⟩ | ⟨hnn, hr⟩
+    · simp only [List.mem_singleton] at hr; subst hr
+      rw [charTwistCM_sign, show augment _ _ = (_, _) :: _ from rfl,
+          sign_cons_nonneg _ _ le_rfl le_rfl,
+          sign_dec_fst pp0 nn0 rest hpp, firstColSign_dec_fst pp0 nn0 rest hpp]
+      ext <;> simp <;> omega
+    · simp only [List.mem_singleton] at hr; subst hr
+      rw [charTwistCM_sign, show augment _ _ = (_, _) :: _ from rfl,
+          sign_cons_nonneg _ _ le_rfl le_rfl,
+          sign_dec_snd pp0 nn0 rest hnn, firstColSign_dec_snd pp0 nn0 rest hnn]
+      ext <;> simp <;> omega
+
 /-- D→C theta lift: **standard case** produces ILS with signature (n, n).
     Note: the split case (addp+addn = -2) does NOT always preserve signature,
     but never arises in actual AC computation (verified computationally for all types ≤ 30). -/
@@ -573,6 +637,35 @@ theorem thetaLift_MB_sign (E : ILS) (p q : ℤ) :
     rw [sign_cons_nonneg _ _ h.1 h.2, charTwistCM_sign, charTwistCM_firstColSign]
     ext <;> simp <;> omega
   · simp at hr
+
+/-- B→M theta lift split case (-1,-1): both branches produce signature (n, n). -/
+theorem thetaLift_BM_sign_split (E : ILS) (n : ℤ)
+    (h_addp : n - (sign E).1 - (firstColSign E).2 = -1)
+    (h_addn : n - (sign E).2 - (firstColSign E).1 = -1) :
+    ∀ r ∈ thetaLift_BM E n, sign r = (n, n) := by
+  intro r hr
+  simp only [thetaLift_BM] at hr
+  have h_not_std : ¬(n - (sign E).1 - (firstColSign E).2 ≥ 0 ∧
+      n - (sign E).2 - (firstColSign E).1 ≥ 0) := by omega
+  rw [if_neg h_not_std] at hr
+  have h_split : (n - (sign E).1 - (firstColSign E).2,
+      n - (sign E).2 - (firstColSign E).1) = (-1, -1) := by ext <;> simp <;> omega
+  rw [if_pos (Or.inl h_split)] at hr
+  match E, hr with
+  | [], hr => simp at hr
+  | (pp0, nn0) :: rest, hr =>
+    simp only [List.mem_append, List.mem_ite_nil_left, List.mem_ite_nil_right] at hr
+    rcases hr with ⟨hpp, hr⟩ | ⟨hnn, hr⟩
+    · simp only [List.mem_singleton] at hr; subst hr
+      rw [charTwistCM_sign, show augment _ _ = (_, _) :: _ from rfl,
+          sign_cons_nonneg _ _ le_rfl le_rfl,
+          sign_dec_fst pp0 nn0 rest hpp, firstColSign_dec_fst pp0 nn0 rest hpp]
+      ext <;> simp <;> omega
+    · simp only [List.mem_singleton] at hr; subst hr
+      rw [charTwistCM_sign, show augment _ _ = (_, _) :: _ from rfl,
+          sign_cons_nonneg _ _ le_rfl le_rfl,
+          sign_dec_snd pp0 nn0 rest hnn, firstColSign_dec_snd pp0 nn0 rest hnn]
+      ext <;> simp <;> omega
 
 /-- B→M theta lift: **standard case** produces ILS with signature (n, n). -/
 theorem thetaLift_BM_sign_std (E : ILS) (n : ℤ)
