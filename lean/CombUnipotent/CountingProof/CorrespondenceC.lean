@@ -254,7 +254,15 @@ noncomputable def liftCD_raw (σ : PBP) (hγ : σ.γ = .D)
     · exact Or.inr rfl
     · exact Or.inl rfl
   dot_match := sorry
-  mono_P := sorry
+  mono_P := by
+    intro i₁ j₁ i₂ j₂ hi hj hmem₂
+    show (liftPaintP_CD σ i₁ j₁).layerOrd ≤ (liftPaintP_CD σ i₂ j₂).layerOrd
+    simp only [liftPaintP_CD]
+    split_ifs with h1 h2
+    · simp [DRCSymbol.layerOrd]
+    · simp [DRCSymbol.layerOrd]
+    · exfalso; exact absurd (σ.mono_P i₁ j₁ i₂ j₂ hi hj (by rw [hPsh]; exact hmem₂)) (by omega)
+    · exact σ.mono_P i₁ j₁ i₂ j₂ hi hj (by rw [hPsh]; exact hmem₂)
   mono_Q := sorry
   row_s := sorry
   row_r := sorry
