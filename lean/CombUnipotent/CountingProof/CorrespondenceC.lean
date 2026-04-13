@@ -51,12 +51,13 @@ noncomputable def descentCD_PBP {μP μQ : YoungDiagram}
     PBPSet .D μP (YoungDiagram.shiftLeft μQ) := by
   have hγ : τ.val.γ = .C := τ.prop.1
   have hPsh : τ.val.P.shape = μP := τ.prop.2.1
+  have hQsh : τ.val.Q.shape = μQ := τ.prop.2.2
   exact ⟨{
     γ := .D
     P := {
       shape := μP
       paint := PBP.descentPaintL_CD τ.val
-      paint_outside := sorry
+      paint_outside := fun i j hmem => descentPaintL_CD_outside hγ (by rw [hPsh]; exact hmem)
     }
     Q := {
       shape := YoungDiagram.shiftLeft μQ
