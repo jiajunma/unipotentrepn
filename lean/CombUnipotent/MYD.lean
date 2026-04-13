@@ -17,6 +17,7 @@ corresponds to row length i+1.
 import Mathlib.Data.Int.Basic
 import Mathlib.Tactic.Ring
 import CombUnipotent.Basic
+import CombUnipotent.PBP
 
 open Int
 
@@ -888,6 +889,156 @@ theorem AC.step_sign_M (source : ACResult) (n : ℤ) (ε_τ ε_wp : Fin 2)
     rcases h_lift_ok ils ⟨c, hm⟩ with h_std | h_split
     · exact ILS.thetaLift_BM_sign_std ils n h_std
     · exact ILS.thetaLift_BM_sign_split ils n h_split.1 h_split.2) r hr
+
+/-! ## Tail signature (Lemma 11.3)
+
+The tail signature (p_τt, q_τt) sums per-cell contributions from the tail τ_t.
+Reference: [BMSZ] Lemma 11.3, Equation (11.10). -/
+
+/-- Per-cell contribution to the tail signature.
+    •→(1,1), r→(2,0), s→(0,2), c→(1,1), d→(1,1). -/
+def DRCSymbol.tailContrib : DRCSymbol → ℤ × ℤ
+  | .dot => (1, 1)
+  | .r => (2, 0)
+  | .s => (0, 2)
+  | .c => (1, 1)
+  | .d => (1, 1)
+
+/-- Tail signature for D type: sum contributions from P's col 0 rows [Q.colLen(0), P.colLen(0)).
+    Reference: [BMSZ] Lemma 11.3. -/
+noncomputable def PBP.tailSignature_D (τ : PBP) : ℤ × ℤ :=
+  let c1P := τ.P.shape.colLen 0
+  let c1Q := τ.Q.shape.colLen 0
+  (Finset.range (c1P - c1Q)).fold (· + ·) (0, 0)
+    fun i => (τ.P.paint (c1Q + i) 0).tailContrib
+
+/-- Tail signature for B type: sum contributions from Q's col 0 rows [P.colLen(0), Q.colLen(0)).
+    Reference: [BMSZ] Lemma 11.3. -/
+noncomputable def PBP.tailSignature_B (τ : PBP) : ℤ × ℤ :=
+  let c1P := τ.P.shape.colLen 0
+  let c1Q := τ.Q.shape.colLen 0
+  (Finset.range (c1Q - c1P)).fold (· + ·) (0, 0)
+    fun i => (τ.Q.paint (c1P + i) 0).tailContrib
+
+/-- γ_τ: the character twist parameter for the theta lift.
+    Reference: [BMSZ] Equation (11.10).
+    γ_τ = (p_τt - q_τt)/2 for D, (p_τt - q_τt)/2 + 1 for B. -/
+noncomputable def PBP.gammaTau (τ : PBP) : ℤ :=
+  match τ.γ with
+  | .D =>
+    let (pt, qt) := τ.tailSignature_D
+    (pt - qt) / 2
+  | .Bplus | .Bminus =>
+    let (pt, qt) := τ.tailSignature_B
+    (pt - qt) / 2 + 1
+  | .C | .M => 0  -- not used for C/M types
+
+/-- Every tail cell contribution sums to 2. -/
+theorem DRCSymbol.tailContrib_sum (σ : DRCSymbol) :
+    σ.tailContrib.1 + σ.tailContrib.2 = 2 := by
+  cases σ <;> simp [DRCSymbol.tailContrib]
+
+/-- tailContrib components are nonneg. -/
+theorem DRCSymbol.tailContrib_nonneg (σ : DRCSymbol) :
+    σ.tailContrib.1 ≥ 0 ∧ σ.tailContrib.2 ≥ 0 := by
+  cases σ <;> simp [DRCSymbol.tailContrib]
+
+/-- ε_τ = 0 iff tail symbol is d. For D type:
+    tailSymbol_D = d iff tailContrib = (1,1) and the symbol is d.
+    Reference: [BMSZ] Equation (3.6). -/
+theorem DRCSymbol.epsilon_iff_not_d (σ : DRCSymbol) :
+    σ = .d ↔ σ.tailContrib = (1, 1) ∧ σ.layerOrd = 4 := by
+  cases σ <;> simp [DRCSymbol.tailContrib, DRCSymbol.layerOrd]
+
+/-! ## Lemma 11.3: tail symbol ↔ tail signature components
+
+Reference: [BMSZ] Lemma 11.3.
+
+For ★ ∈ {B, D}, (★, |Ǒ|) ≠ (D, 0), and τ ∈ PBP_★(Ǒ):
+  • ε_τ = 0 iff x_τ = d
+  • p_{τ_t} = 0 iff x_τ = s
+  • q_{τ_t} = 0 iff x_τ = r
+
+The proof relies on:
+1. tailContrib: each symbol's (p, q) contribution
+2. Layer monotonicity: tail cells are ordered by layerOrd
+3. Non-dot: all tail cells are non-dot (from dot_match) -/
+
+/-- tailContrib p-component: zero iff symbol is s. -/
+theorem DRCSymbol.tailContrib_fst_eq_zero_iff (σ : DRCSymbol) :
+    σ.tailContrib.1 = 0 ↔ σ = .s := by
+  cases σ <;> simp [DRCSymbol.tailContrib]
+
+/-- tailContrib q-component: zero iff symbol is r. -/
+theorem DRCSymbol.tailContrib_snd_eq_zero_iff (σ : DRCSymbol) :
+    σ.tailContrib.2 = 0 ↔ σ = .r := by
+  cases σ <;> simp [DRCSymbol.tailContrib]
+
+/-- tailContrib p-component is positive iff symbol is not s. -/
+theorem DRCSymbol.tailContrib_fst_pos_iff (σ : DRCSymbol) :
+    σ.tailContrib.1 > 0 ↔ σ ≠ .s := by
+  cases σ <;> simp [DRCSymbol.tailContrib]
+
+/-- tailContrib q-component is positive iff symbol is not r. -/
+theorem DRCSymbol.tailContrib_snd_pos_iff (σ : DRCSymbol) :
+    σ.tailContrib.2 > 0 ↔ σ ≠ .r := by
+  cases σ <;> simp [DRCSymbol.tailContrib]
+
+/-- Non-dot symbol has layerOrd ≥ 1. -/
+theorem DRCSymbol.layerOrd_pos_of_ne_dot {σ : DRCSymbol} (h : σ ≠ .dot) :
+    σ.layerOrd ≥ 1 := by
+  cases σ <;> simp [DRCSymbol.layerOrd] at * <;> omega
+
+/-- Symbol with layerOrd ≤ 1 is dot or s. -/
+theorem DRCSymbol.eq_dot_or_s_of_layerOrd_le_one {σ : DRCSymbol} (h : σ.layerOrd ≤ 1) :
+    σ = .dot ∨ σ = .s := by
+  cases σ <;> simp [DRCSymbol.layerOrd] at * <;> omega
+
+/-- Non-dot symbol with layerOrd ≤ 1 is s. -/
+theorem DRCSymbol.eq_s_of_ne_dot_layerOrd_le_one {σ : DRCSymbol}
+    (h_ne : σ ≠ .dot) (h_lo : σ.layerOrd ≤ 1) : σ = .s := by
+  rcases DRCSymbol.eq_dot_or_s_of_layerOrd_le_one h_lo with h | h
+  · exact absurd h h_ne
+  · exact h
+
+/-- Non-dot, non-s, non-r symbol has tailContrib p ≥ 1 and q ≥ 1. -/
+theorem DRCSymbol.tailContrib_both_pos {σ : DRCSymbol}
+    (hs : σ ≠ .s) (hr : σ ≠ .r) :
+    σ.tailContrib.1 ≥ 1 ∧ σ.tailContrib.2 ≥ 1 := by
+  cases σ <;> simp [DRCSymbol.tailContrib] at * <;> omega
+
+/-- In D-type tail, the bottom cell (x_tau) has the highest layerOrd.
+    All tail cells have layerOrd between 1 (non-dot) and layerOrd(x_tau). -/
+theorem PBP.tail_cell_layerOrd_D (τ : PBP) (hγ : τ.γ = .D)
+    {i : ℕ} (hi_ge : τ.Q.shape.colLen 0 ≤ i) (hi_lt : i < τ.P.shape.colLen 0) :
+    1 ≤ (τ.P.paint i 0).layerOrd ∧
+    (τ.P.paint i 0).layerOrd ≤ (PBP.tailSymbol_D τ).layerOrd := by
+  have h_nondot := PBP.col0_nonDot_tail_D τ hγ hi_ge hi_lt
+  constructor
+  · exact DRCSymbol.layerOrd_pos_of_ne_dot h_nondot
+  · exact PBP.col0_layerOrd_mono τ (by omega)
+      (YoungDiagram.mem_iff_lt_colLen.mpr (by omega))
+
+/-- When x_tau = s (layerOrd 1), every tail cell in P's col 0 is s. -/
+theorem PBP.tail_all_s_of_tailSymbol_s (τ : PBP) (hγ : τ.γ = .D)
+    (hx : PBP.tailSymbol_D τ = .s)
+    {i : ℕ} (hi_ge : τ.Q.shape.colLen 0 ≤ i) (hi_lt : i < τ.P.shape.colLen 0) :
+    τ.P.paint i 0 = .s := by
+  have ⟨h_lo, h_hi⟩ := PBP.tail_cell_layerOrd_D τ hγ hi_ge hi_lt
+  rw [hx, DRCSymbol.layerOrd] at h_hi
+  have h_nondot := PBP.col0_nonDot_tail_D τ hγ hi_ge hi_lt
+  exact DRCSymbol.eq_s_of_ne_dot_layerOrd_le_one h_nondot h_hi
+
+/-! ### Note on tail PBP definition
+
+The full Lemma 11.3 from [BMSZ] uses the tail PBP τ_t defined in [BMSZb] Section 10.5.
+The tail PBP has a CORRECTION to its multiset {x_1, ..., x_k} depending on whether
+r₂(Ǒ) = r₃(Ǒ) (balanced) or r₂(Ǒ) > r₃(Ǒ) (primitive). Our current `tailSignature_D`
+sums per-cell contributions from P's column 0, which matches Sign(τ_t) only in the
+non-balanced case. The balanced case has a correction that replaces one symbol.
+
+For the properties below, we prove what follows from the column 0 structure alone
+without depending on the full tail PBP correction. -/
 
 section Tests
 
