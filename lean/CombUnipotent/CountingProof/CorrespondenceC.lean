@@ -40,6 +40,10 @@ private lemma shiftLeft_Q_le_P_of_dp {μP μQ : YoungDiagram} {r₁ r₂ : ℕ} 
     (hsort : (r₁ :: r₂ :: rest).SortedGE)
     (hodd : ∀ r ∈ r₁ :: r₂ :: rest, Odd r) :
     YoungDiagram.shiftLeft μQ ≤ μP := by
+  -- shiftLeft(Q).colLens = dpartColLensQ_D(r₂::rest) (the D-type Q cols)
+  -- P.colLens = dpartColLensP_D(r₂::rest) (the D-type P cols)
+  -- Need: D-type Q ≤ D-type P, i.e., each Q col entry ≤ corresponding P col entry
+  -- For each pair in the D dp: Q entry (r-1)/2 ≤ P entry (r'+1)/2 since r' ≥ r (sorted)
   sorry
 
 /-! ## C→D descent PBP construction -/
