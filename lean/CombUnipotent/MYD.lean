@@ -1062,6 +1062,59 @@ theorem PBP.Q_no_d_in_col0_D (τ : PBP) (hγ : τ.γ = .D) (i : ℕ) :
     simp [DRCSymbol.allowed] at this; rw [this]; decide
   · rw [τ.Q.paint_outside i 0 hmem]; decide
 
+/-! ## One-box truncations and multiplicity free (Section 11.3) -/
+
+/-- One-box truncation A⁺ := Λ_{(1,0)}(A): subtract (1,0) from every ILS's first entry.
+    An ILS component survives iff its first entry satisfies the containment condition. -/
+def ACResult.truncPlus (ac : ACResult) : ACResult :=
+  ac.filterMap fun ⟨c, ils⟩ =>
+    match ils with
+    | [] => none
+    | (p₁, q₁) :: rest =>
+      if (p₁ > 0 ∨ p₁ < 0) then some (c, (p₁ - 1, q₁) :: rest)
+      else if p₁ = 0 then none  -- |p₁| < 1, truncation fails
+      else none
+
+/-- One-box truncation A⁻ := Λ_{(0,1)}(A): subtract (0,1) from every ILS's first entry. -/
+def ACResult.truncMinus (ac : ACResult) : ACResult :=
+  ac.filterMap fun ⟨c, ils⟩ =>
+    match ils with
+    | [] => none
+    | (p₁, q₁) :: rest =>
+      if (q₁ > 0 ∨ q₁ < 0) then some (c, (p₁, q₁ - 1) :: rest)
+      else if q₁ = 0 then none
+      else none
+
+/-- An ACResult is multiplicity free: no two components have the same ILS. -/
+def ACResult.MultiplicityFree (ac : ACResult) : Prop :=
+  ∀ i j (hi : i < ac.length) (hj : j < ac.length), i ≠ j →
+    (ac[i]'hi).2 ≠ (ac[j]'hj).2
+
+/-- An ACResult is nonzero if it has at least one component. -/
+def ACResult.Nonzero (ac : ACResult) : Prop := ac ≠ []
+
+/-- AC base case is multiplicity free. -/
+theorem AC.base_multiplicityFree (γ : RootType) : (AC.base γ).MultiplicityFree := by
+  intro i j hi hj h_ne
+  cases γ <;> simp [AC.base] at hi hj <;> omega
+
+/-- AC base case is nonzero. -/
+theorem AC.base_nonzero (γ : RootType) : (AC.base γ).Nonzero := by
+  cases γ <;> simp [AC.base, ACResult.Nonzero]
+
+/-- Sign twist preserves multiplicity free (since twist is a bijection on ILS). -/
+theorem ACResult.twistBD_multiplicityFree (ac : ACResult) (tp tn : ℤ)
+    (htp : tp = 1 ∨ tp = -1) (htn : tn = 1 ∨ tn = -1)
+    (hmf : ac.MultiplicityFree) :
+    (ac.twistBD tp tn).MultiplicityFree := by
+  intro i j hi hj h_ne
+  simp only [ACResult.twistBD, List.length_map] at hi hj ⊢
+  simp only [List.getElem_map]
+  intro h_eq
+  have h_inv := congrArg (ILS.twistBD · tp tn) h_eq
+  simp only [ILS.twistBD_involutive _ _ _ htp htn] at h_inv
+  exact hmf i j (by simpa using hi) (by simpa using hj) h_ne h_inv
+
 /-- The bottom cell of D-type tail is non-dot. -/
 theorem PBP.tailSymbol_D_ne_dot (τ : PBP) (hγ : τ.γ = .D)
     (h_tail : τ.Q.shape.colLen 0 < τ.P.shape.colLen 0) :
