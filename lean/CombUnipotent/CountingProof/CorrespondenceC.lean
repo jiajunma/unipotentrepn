@@ -130,7 +130,20 @@ noncomputable def descentCD_PBP {μP μQ : YoungDiagram}
         obtain ⟨hge₂, hlt₂⟩ := h_s_zone i j₂ h₂
         refine ⟨rfl, ?_⟩
         -- Anti-monotonicity argument
-        sorry
+        -- Anti-monotonicity: if j₁ < j₂ then Q.colLen(j₁+1) ≥ Q.colLen(j₂) ≥ dotScolLen(P,j₂) > i
+        -- But i ≥ Q.colLen(j₁+1). Contradiction. Similarly j₂ < j₁.
+        by_contra hne
+        have : j₁ < j₂ ∨ j₂ < j₁ := Nat.lt_or_gt_of_ne hne
+        -- C-type: dotScolLen(P,j) ≤ Q.colLen(j) since P dots ⊆ Q
+        have h_ds_le_Q : ∀ k, PBP.dotScolLen τ.val.P k ≤ τ.val.Q.shape.colLen k := by sorry
+        rcases this with h | h
+        · -- j₁ < j₂: dotScolLen(P, j₂) ≤ Q.colLen(j₂) ≤ Q.colLen(j₁+1) ≤ i < dotScolLen(P, j₂)
+          have hQ_anti : τ.val.Q.shape.colLen j₂ ≤ τ.val.Q.shape.colLen (j₁ + 1) := by
+            rw [hQsh]; exact μQ.colLen_anti _ _ (by omega)
+          have := h_ds_le_Q j₂; omega
+        · have hQ_anti : τ.val.Q.shape.colLen j₁ ≤ τ.val.Q.shape.colLen (j₂ + 1) := by
+            rw [hQsh]; exact μQ.colLen_anti _ _ (by omega)
+          have := h_ds_le_Q j₁; omega
       · exact absurd h₂ (by simp)
       · exact absurd h₁ (by simp)
       · exact absurd h₁ (by simp)
