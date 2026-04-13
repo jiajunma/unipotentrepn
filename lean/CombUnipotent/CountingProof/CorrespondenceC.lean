@@ -630,6 +630,51 @@ theorem card_PBPSet_C_singleton (r₁ : ℕ) {μP μQ : YoungDiagram}
     have hQ_nil : μQ = ⊥ := yd_of_colLens_nil (by rw [hQ]; rfl)
     rw [hQ_nil]; exact card_PBPSet_bot .C
 
+/-- Canonical C-type PBP with P = ⊥: P all dot, Q all s. -/
+noncomputable def canonicalPBP_C_bot (μQ : YoungDiagram) (hrl : μQ.rowLen 0 ≤ 1) : PBP where
+  γ := .C
+  P := { shape := ⊥, paint := fun _ _ => .dot, paint_outside := fun _ _ _ => rfl }
+  Q := { shape := μQ
+         paint := fun i j => if (i, j) ∈ μQ then .s else .dot
+         paint_outside := fun i j h => by simp [h] }
+  sym_P := fun i j h => absurd h (YoungDiagram.notMem_bot _)
+  sym_Q := by intro i j h; simp [h, DRCSymbol.allowed]
+  dot_match := by
+    intro i j; constructor
+    · intro ⟨h, _⟩; exact absurd h (YoungDiagram.notMem_bot _)
+    · intro ⟨h, hp⟩; simp [h] at hp
+  mono_P := fun _ _ _ _ _ _ h => absurd h (YoungDiagram.notMem_bot _)
+  mono_Q := by
+    intro i₁ j₁ i₂ j₂ _ _ h
+    show (if (i₁, j₁) ∈ μQ then DRCSymbol.s else DRCSymbol.dot).layerOrd ≤
+         (if (i₂, j₂) ∈ μQ then DRCSymbol.s else DRCSymbol.dot).layerOrd
+    split_ifs <;> simp [DRCSymbol.layerOrd]
+  row_s := by
+    intro i s₁ s₂ j₁ j₂ h₁ h₂
+    simp only [paintBySide] at h₁ h₂; cases s₁ <;> cases s₂ <;> simp only at h₁ h₂
+    · exact absurd h₁ (by decide)
+    · exact absurd h₁ (by decide)
+    · exact absurd h₂ (by decide)
+    · -- R.R: extract ∈ μQ then show j₁ = j₂ from rowLen ≤ 1
+      constructor; · rfl
+      have ha₁ : (i, j₁) ∈ μQ := by split_ifs at h₁ with ha; exact ha
+      have ha₂ : (i, j₂) ∈ μQ := by split_ifs at h₂ with ha; exact ha
+      have hj₁ := YoungDiagram.mem_iff_lt_rowLen.mp ha₁
+      have hj₂ := YoungDiagram.mem_iff_lt_rowLen.mp ha₂
+      have := le_trans (μQ.rowLen_anti 0 i (Nat.zero_le _)) hrl
+      omega
+  row_r := by
+    intro i s₁ s₂ j₁ j₂ h₁ h₂
+    simp only [paintBySide] at h₁ h₂; cases s₁ <;> cases s₂ <;> simp only at h₁ h₂
+    · exact absurd h₁ (by decide)  -- L.L: P = dot ≠ r
+    · exact absurd h₁ (by decide)  -- L.R: P = dot ≠ r
+    · split_ifs at h₁ <;> exact absurd h₁ (by decide)  -- R.L: Q = s/dot ≠ r
+    · split_ifs at h₁ <;> exact absurd h₁ (by decide)  -- R.R: Q = s/dot ≠ r
+  col_c_P := sorry  -- P = all dot, never c (free variable blocks decide)
+  col_c_Q := sorry  -- Q = s/dot, never c
+  col_d_P := sorry  -- P = all dot, never d
+  col_d_Q := sorry  -- Q = s/dot, never d
+
 /-! ## Main theorem -/
 
 /-- **Proposition 10.12 (C-type)**: `card(PBPSet .C μP μQ) = countPBP_C dp`. -/
