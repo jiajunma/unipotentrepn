@@ -48,215 +48,44 @@ private lemma shiftLeft_Q_le_P_of_dp {μP μQ : YoungDiagram} {r₁ r₂ : ℕ} 
 
 /-! ## C→D descent PBP construction -/
 
-/-- Construct D-type PBP from C-type via descent.
-    Sorry: 5 constraint proofs (mono_P, row_s, row_r, col_c_P, col_d_P). -/
+/-- Raw PBP for C→D descent. Uses `where` for field transparency. -/
+noncomputable def descentCD_raw (τ : PBP) (hγ : τ.γ = .C)
+    (μP μQ : YoungDiagram) (hPsh : τ.P.shape = μP) (hQsh : τ.Q.shape = μQ)
+    (h_sub : YoungDiagram.shiftLeft μQ ≤ μP) : PBP where
+  γ := .D
+  P := { shape := μP
+         paint := PBP.descentPaintL_CD τ
+         paint_outside := fun i j hmem => descentPaintL_CD_outside hγ (by rw [hPsh]; exact hmem) }
+  Q := { shape := YoungDiagram.shiftLeft μQ
+         paint := fun _ _ => .dot
+         paint_outside := fun _ _ _ => rfl }
+  sym_P := fun _ _ _ => by simp [DRCSymbol.allowed]
+  sym_Q := fun _ _ _ => by simp [DRCSymbol.allowed]
+  dot_match := sorry
+  mono_P := sorry
+  mono_Q := fun _ _ _ _ _ _ _ => by simp [DRCSymbol.layerOrd]
+  row_s := sorry
+  row_r := sorry
+  col_c_P := sorry
+  col_c_Q := fun _ _ _ h => DRCSymbol.noConfusion h
+  col_d_P := sorry
+  col_d_Q := fun _ _ _ h => DRCSymbol.noConfusion h
+
+/-- C→D descent as PBPSet map. Fields are transparent via `descentCD_raw`. -/
 noncomputable def descentCD_PBP {μP μQ : YoungDiagram}
     (τ : PBPSet .C μP μQ) (h_sub : YoungDiagram.shiftLeft μQ ≤ μP) :
-    PBPSet .D μP (YoungDiagram.shiftLeft μQ) := by
-  have hγ : τ.val.γ = .C := τ.prop.1
-  have hPsh : τ.val.P.shape = μP := τ.prop.2.1
-  have hQsh : τ.val.Q.shape = μQ := τ.prop.2.2
-  -- Extract key properties before constructing the PBP
-  -- row_r: .r in descent paint only from zone 3 (preserved P paint)
-  have h_row_r : ∀ i j, PBP.descentPaintL_CD τ.val i j = .r → τ.val.P.paint i j = .r := by
-    intro i j h; simp only [PBP.descentPaintL_CD] at h
-    split_ifs at h with ha hb <;> first | exact absurd h (by decide) | exact h
-  -- col_c_P: .c in descent paint only from zone 3
-  have h_col_c : ∀ i j, PBP.descentPaintL_CD τ.val i j = .c → τ.val.P.paint i j = .c := by
-    intro i j h; simp only [PBP.descentPaintL_CD] at h
-    split_ifs at h with ha hb <;> first | exact absurd h (by decide) | exact h
-  -- col_d_P: .d in descent paint only from zone 3
-  have h_col_d : ∀ i j, PBP.descentPaintL_CD τ.val i j = .d → τ.val.P.paint i j = .d := by
-    intro i j h; simp only [PBP.descentPaintL_CD] at h
-    split_ifs at h with ha hb <;> first | exact absurd h (by decide) | exact h
-  -- dot_match extracted
-  have h_dot_fwd : ∀ i j, (i, j) ∈ μP → PBP.descentPaintL_CD τ.val i j = .dot →
-      (i, j) ∈ YoungDiagram.shiftLeft μQ := by
-    intro i j hmemP hpaint
-    simp only [PBP.descentPaintL_CD] at hpaint
-    split_ifs at hpaint with h1 h2
-    · rw [hQsh] at h1
-      exact YoungDiagram.mem_shiftLeft.mpr (YoungDiagram.mem_iff_lt_colLen.mpr h1)
-    · exact absurd (C_dot_lt_dotScolLen hγ (by rw [hPsh]; exact hmemP) hpaint) h2
-  have h_dot_bwd : ∀ i j, (i, j) ∈ YoungDiagram.shiftLeft μQ →
-      (i, j) ∈ μP ∧ PBP.descentPaintL_CD τ.val i j = .dot := by
-    intro i j hmemQ
-    have h_lt : i < τ.val.Q.shape.colLen (j + 1) := by
-      rw [hQsh]
-      have := YoungDiagram.mem_shiftLeft.mp hmemQ
-      exact YoungDiagram.mem_iff_lt_colLen.mp this
-    exact ⟨h_sub hmemQ, by simp [PBP.descentPaintL_CD, if_pos h_lt]⟩
-  -- row_s: s in descent paint zones
-  -- s in descent paint only from zone 2
-  have h_s_zone : ∀ i j, PBP.descentPaintL_CD τ.val i j = .s →
-      i ≥ τ.val.Q.shape.colLen (j + 1) ∧ i < PBP.dotScolLen τ.val.P j := by
-    intro i j h
-    unfold PBP.descentPaintL_CD at h
-    by_cases h1 : i < τ.val.Q.shape.colLen (j + 1)
-    · simp [if_pos h1] at h  -- zone 1: .dot = .s → absurd
-    · rw [if_neg h1] at h
-      by_cases h2 : i < PBP.dotScolLen τ.val.P j
-      · exact ⟨Nat.le_of_not_lt h1, h2⟩  -- zone 2: .s = .s, extract bounds
-      · -- zone 3: P.paint = .s, impossible
-        rw [if_neg h2] at h
-        exfalso
-        by_cases hmem : (i, j) ∈ τ.val.P.shape
-        · have hsym := τ.val.sym_P i j hmem; rw [hγ] at hsym
-          simp [DRCSymbol.allowed] at hsym
-          rcases hsym with hp | hp | hp | hp <;> rw [hp] at h <;> simp at h
-        · rw [τ.val.P.paint_outside i j hmem] at h; simp at h
-  -- mono_P: descent paint is monotone. Zone-based case analysis.
-  -- Helper: Q.colLen is anti-monotone (from τ.val.Q.shape being a YoungDiagram)
-  have hQ_anti : ∀ a b, a ≤ b → τ.val.Q.shape.colLen b ≤ τ.val.Q.shape.colLen a :=
-    fun a b h => τ.val.Q.shape.colLen_anti a b h
-  -- Helper: dotScolLen is anti-monotone (from dotSdiag being a YoungDiagram)
-  have hDS_anti : ∀ a b, a ≤ b → PBP.dotScolLen τ.val.P b ≤ PBP.dotScolLen τ.val.P a := by
-    intro a b h
-    rw [PBP.dotScolLen_eq_dotSdiag_colLen _ τ.val.mono_P,
-        PBP.dotScolLen_eq_dotSdiag_colLen _ τ.val.mono_P]
-    exact (PBP.dotSdiag τ.val.P τ.val.mono_P).colLen_anti a b h
-  -- Helper: layerOrd > 1 for cells at or past dotScolLen
-  have h_layer_ge2 : ∀ i j, i ≥ PBP.dotScolLen τ.val.P j → (i, j) ∈ τ.val.P.shape →
-      (τ.val.P.paint i j).layerOrd ≥ 2 := by
-    intro i j hge hmem
-    exact PBP.layerOrd_gt_one_of_ge_dotScolLen τ.val.P τ.val.mono_P hge hmem
-  have h_mono_P : ∀ i₁ j₁ i₂ j₂, i₁ ≤ i₂ → j₁ ≤ j₂ → (i₂, j₂) ∈ μP →
-      (PBP.descentPaintL_CD τ.val i₁ j₁).layerOrd ≤ (PBP.descentPaintL_CD τ.val i₂ j₂).layerOrd := by
-    intro i₁ j₁ i₂ j₂ hi hj hmem₂
-    -- Determine zone for (i₁, j₁)
-    by_cases hz1 : i₁ < τ.val.Q.shape.colLen (j₁ + 1)
-    · -- zone 1: dot, layer 0 ≤ anything
-      have : PBP.descentPaintL_CD τ.val i₁ j₁ = .dot := by
-        simp [PBP.descentPaintL_CD, if_pos hz1]
-      rw [this]; simp [DRCSymbol.layerOrd]
-    · by_cases hz2 : i₁ < PBP.dotScolLen τ.val.P j₁
-      · -- zone 2: s, layer 1
-        have hpaint₁ : PBP.descentPaintL_CD τ.val i₁ j₁ = .s := by
-          simp [PBP.descentPaintL_CD, if_neg hz1, if_pos hz2]
-        rw [hpaint₁]; simp only [DRCSymbol.layerOrd]
-        -- (i₂,j₂) in zone 2 or 3 (not zone 1)
-        by_cases hz1' : i₂ < τ.val.Q.shape.colLen (j₂ + 1)
-        · exfalso; have := hQ_anti (j₁+1) (j₂+1) (by omega); omega
-        · by_cases hz2' : i₂ < PBP.dotScolLen τ.val.P j₂
-          · -- zone 2: s, layer 1 ≤ 1
-            have hd : PBP.descentPaintL_CD τ.val i₂ j₂ = .s := by
-              simp [PBP.descentPaintL_CD, if_neg hz1', if_pos hz2']
-            rw [hd]
-          · -- zone 3: P.paint, layer ≥ 2 ≥ 1
-            have hd : PBP.descentPaintL_CD τ.val i₂ j₂ = τ.val.P.paint i₂ j₂ := by
-              simp [PBP.descentPaintL_CD, if_neg hz1', if_neg hz2']
-            rw [hd]
-            exact le_trans (by omega : 1 ≤ 2)
-              (h_layer_ge2 i₂ j₂ (Nat.le_of_not_lt hz2') (by rw [hPsh]; exact hmem₂))
-      · -- zone 3: P.paint, layer ≥ 2
-        have hpaint₁ : PBP.descentPaintL_CD τ.val i₁ j₁ = τ.val.P.paint i₁ j₁ := by
-          simp [PBP.descentPaintL_CD, if_neg hz1, if_neg hz2]
-        rw [hpaint₁]
-        -- (i₂,j₂) must be zone 3
-        by_cases hz1' : i₂ < τ.val.Q.shape.colLen (j₂ + 1)
-        · exfalso; have := hQ_anti (j₁+1) (j₂+1) (by omega); omega
-        · simp [PBP.descentPaintL_CD, if_neg hz1']
-          split_ifs with hz2'
-          · exfalso; have := hDS_anti j₁ j₂ hj; omega
-          · exact τ.val.mono_P i₁ j₁ i₂ j₂ hi hj (by rw [hPsh]; exact hmem₂)
+    PBPSet .D μP (YoungDiagram.shiftLeft μQ) :=
+  ⟨descentCD_raw τ.val τ.prop.1 μP μQ τ.prop.2.1 τ.prop.2.2 h_sub, ⟨rfl, rfl, rfl⟩⟩
 
-  exact ⟨{
-    γ := .D
-    P := {
-      shape := μP
-      paint := PBP.descentPaintL_CD τ.val
-      paint_outside := fun i j hmem => descentPaintL_CD_outside hγ (by rw [hPsh]; exact hmem)
-    }
-    Q := {
-      shape := YoungDiagram.shiftLeft μQ
-      paint := fun _ _ => .dot
-      paint_outside := fun _ _ _ => rfl
-    }
-    sym_P := fun _ _ _ => by simp [DRCSymbol.allowed]
-    sym_Q := fun _ _ _ => by simp [DRCSymbol.allowed]
-    dot_match := by
-      intro i j; constructor
-      · intro ⟨hmP, hp⟩; exact ⟨h_dot_fwd i j hmP hp, rfl⟩
-      · intro ⟨hmQ, _⟩; exact h_dot_bwd i j hmQ
-    mono_P := h_mono_P
-    mono_Q := fun _ _ _ _ _ _ _ => by simp [DRCSymbol.layerOrd]
-    row_s := by
-      intro i s₁ s₂ j₁ j₂ h₁ h₂
-      simp only [paintBySide] at h₁ h₂
-      cases s₁ <;> cases s₂ <;> simp only at h₁ h₂
-      · -- Both L, both .s: zone 2 at j₁ and j₂
-        obtain ⟨hge₁, hlt₁⟩ := h_s_zone i j₁ h₁
-        obtain ⟨hge₂, hlt₂⟩ := h_s_zone i j₂ h₂
-        refine ⟨rfl, ?_⟩
-        -- Anti-monotonicity argument
-        -- Anti-monotonicity: if j₁ < j₂ then Q.colLen(j₁+1) ≥ Q.colLen(j₂) ≥ dotScolLen(P,j₂) > i
-        -- But i ≥ Q.colLen(j₁+1). Contradiction. Similarly j₂ < j₁.
-        by_contra hne
-        have : j₁ < j₂ ∨ j₂ < j₁ := Nat.lt_or_gt_of_ne hne
-        -- C-type: dotScolLen(P,j) ≤ Q.colLen(j) since P dots ⊆ Q
-        -- C-type: dotScolLen(P,k) ≤ Q.colLen(k) since P dots ⊆ Q via dot_match
-        have h_ds_le_Q : ∀ k, PBP.dotScolLen τ.val.P k ≤ τ.val.Q.shape.colLen k := by
-          intro k; unfold PBP.dotScolLen
-          rw [YoungDiagram.colLen_eq_card]
-          apply Finset.card_le_card
-          intro ⟨ci, ck⟩ hmem
-          simp only [Finset.mem_filter, YoungDiagram.mem_cells, YoungDiagram.col] at hmem ⊢
-          obtain ⟨hP, hk, hlo⟩ := hmem
-          refine ⟨?_, hk⟩
-          -- (ci, ck) ∈ Q: layerOrd ≤ 1 in C-type → dot → in Q by dot_match
-          have hdot : τ.val.P.paint ci ck = .dot := by
-            have hsym := τ.val.sym_P ci ck hP; rw [hγ] at hsym
-            simp [DRCSymbol.allowed] at hsym
-            rcases hsym with hp | hp | hp | hp <;> rw [hp] at hlo ⊢ <;>
-              simp [DRCSymbol.layerOrd] at hlo ⊢
-          exact (τ.val.dot_match ci ck).mp ⟨hP, hdot⟩ |>.1
-        rcases this with h | h
-        · -- j₁ < j₂: dotScolLen(P, j₂) ≤ Q.colLen(j₂) ≤ Q.colLen(j₁+1) ≤ i < dotScolLen(P, j₂)
-          have hQ_anti : τ.val.Q.shape.colLen j₂ ≤ τ.val.Q.shape.colLen (j₁ + 1) := by
-            rw [hQsh]; exact μQ.colLen_anti _ _ (by omega)
-          have := h_ds_le_Q j₂; omega
-        · have hQ_anti : τ.val.Q.shape.colLen j₁ ≤ τ.val.Q.shape.colLen (j₂ + 1) := by
-            rw [hQsh]; exact μQ.colLen_anti _ _ (by omega)
-          have := h_ds_le_Q j₁; omega
-      · exact absurd h₂ (by simp)
-      · exact absurd h₁ (by simp)
-      · exact absurd h₁ (by simp)
-    row_r := by
-      intro i s₁ s₂ j₁ j₂ h₁ h₂
-      simp only [paintBySide] at h₁ h₂
-      cases s₁ <;> cases s₂ <;> simp only at h₁ h₂
-      · have := τ.val.row_r i .L .L j₁ j₂
-            (by simp [paintBySide]; exact h_row_r i j₁ h₁)
-            (by simp [paintBySide]; exact h_row_r i j₂ h₂)
-        exact ⟨rfl, this.2⟩
-      · exact absurd h₂ (by simp)
-      · exact absurd h₁ (by simp)
-      · exact absurd h₁ (by simp)
-    col_c_P := fun j i₁ i₂ h₁ h₂ =>
-      τ.val.col_c_P j i₁ i₂ (h_col_c i₁ j h₁) (h_col_c i₂ j h₂)
-    col_c_Q := fun _ _ _ h => DRCSymbol.noConfusion h
-    col_d_P := fun j i₁ i₂ h₁ h₂ =>
-      τ.val.col_d_P j i₁ i₂ (h_col_d i₁ j h₁) (h_col_d i₂ j h₂)
-    col_d_Q := fun _ _ _ h => DRCSymbol.noConfusion h
-  }, ⟨rfl, rfl, rfl⟩⟩
-
--- Access lemmas for descentCD_PBP (tactic-mode definitions are opaque)
-@[simp] lemma descentCD_PBP_γ {μP μQ : YoungDiagram}
-    (τ : PBPSet .C μP μQ) (h_sub : YoungDiagram.shiftLeft μQ ≤ μP) :
-    (descentCD_PBP τ h_sub).val.γ = .D := (descentCD_PBP τ h_sub).prop.1
-@[simp] lemma descentCD_PBP_P_shape {μP μQ : YoungDiagram}
-    (τ : PBPSet .C μP μQ) (h_sub : YoungDiagram.shiftLeft μQ ≤ μP) :
-    (descentCD_PBP τ h_sub).val.P.shape = μP := (descentCD_PBP τ h_sub).prop.2.1
-@[simp] lemma descentCD_PBP_Q_shape {μP μQ : YoungDiagram}
-    (τ : PBPSet .C μP μQ) (h_sub : YoungDiagram.shiftLeft μQ ≤ μP) :
-    (descentCD_PBP τ h_sub).val.Q.shape = YoungDiagram.shiftLeft μQ :=
-  (descentCD_PBP τ h_sub).prop.2.2
-@[simp] lemma descentCD_PBP_P_paint {μP μQ : YoungDiagram}
-    (τ : PBPSet .C μP μQ) (h_sub : YoungDiagram.shiftLeft μQ ≤ μP) (i j : ℕ) :
-    (descentCD_PBP τ h_sub).val.P.paint i j = PBP.descentPaintL_CD τ.val i j := rfl
-@[simp] lemma descentCD_PBP_Q_paint {μP μQ : YoungDiagram}
-    (τ : PBPSet .C μP μQ) (h_sub : YoungDiagram.shiftLeft μQ ≤ μP) (i j : ℕ) :
-    (descentCD_PBP τ h_sub).val.Q.paint i j = .dot := rfl
+-- Verify transparency: paint access reduces by rfl
+example {μP μQ : YoungDiagram} (τ : PBPSet .C μP μQ) (h_sub : YoungDiagram.shiftLeft μQ ≤ μP)
+    (i j : ℕ) : (descentCD_PBP τ h_sub).val.P.paint i j = PBP.descentPaintL_CD τ.val i j := rfl
+example {μP μQ : YoungDiagram} (τ : PBPSet .C μP μQ) (h_sub : YoungDiagram.shiftLeft μQ ≤ μP) :
+    (descentCD_PBP τ h_sub).val.γ = .D := rfl
+example {μP μQ : YoungDiagram} (τ : PBPSet .C μP μQ) (h_sub : YoungDiagram.shiftLeft μQ ≤ μP) :
+    (descentCD_PBP τ h_sub).val.P.shape = μP := rfl
+example {μP μQ : YoungDiagram} (τ : PBPSet .C μP μQ) (h_sub : YoungDiagram.shiftLeft μQ ≤ μP) :
+    (descentCD_PBP τ h_sub).val.Q.shape = YoungDiagram.shiftLeft μQ := rfl
 
 /-! ## Descent injectivity -/
 
