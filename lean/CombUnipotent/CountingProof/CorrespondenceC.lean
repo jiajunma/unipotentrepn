@@ -40,10 +40,9 @@ private lemma shiftLeft_Q_le_P_of_dp {μP μQ : YoungDiagram} {r₁ r₂ : ℕ} 
     (hsort : (r₁ :: r₂ :: rest).SortedGE)
     (hodd : ∀ r ∈ r₁ :: r₂ :: rest, Odd r) :
     YoungDiagram.shiftLeft μQ ≤ μP := by
-  -- shiftLeft(Q).colLens = dpartColLensQ_D(r₂::rest) (the D-type Q cols)
-  -- P.colLens = dpartColLensP_D(r₂::rest) (the D-type P cols)
-  -- Need: D-type Q ≤ D-type P, i.e., each Q col entry ≤ corresponding P col entry
-  -- For each pair in the D dp: Q entry (r-1)/2 ≤ P entry (r'+1)/2 since r' ≥ r (sorted)
+  -- shiftLeft(Q) ≤ P: for all (i,j), (i,j) ∈ shiftLeft Q → (i,j) ∈ P.
+  -- Equiv: ∀ j, Q.colLen(j+1) ≤ P.colLen(j) (from dp structure).
+  -- This is a property of the dp-derived shapes.
   sorry
 
 /-! ## C→D descent PBP construction -/
@@ -332,7 +331,7 @@ theorem descentCD_not_SS {μP μQ : YoungDiagram}
     -- shiftLeft.colLen 0 = μQ.colLen 1 ≤ μQ.colLen 0 = μP.colLen 0 - 1
     suffices (YoungDiagram.shiftLeft μQ).colLen 0 < μP.colLen 0 by omega
     calc (YoungDiagram.shiftLeft μQ).colLen 0
-        ≤ μQ.colLen 0 := by sorry -- shiftLeft.colLen 0 ≤ μQ.colLen 0
+        ≤ μQ.colLen 0 := by rw [YoungDiagram.colLen_shiftLeft]; exact μQ.colLen_anti 0 1 (by omega)
       _ < μP.colLen 0 := by omega
   rw [if_neg h_pos]
   -- tailSymbol = descentPaintL_CD τ.val (μP.colLen 0 - 1) 0
