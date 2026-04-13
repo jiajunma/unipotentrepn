@@ -270,10 +270,15 @@ noncomputable def liftCD_raw (σ : PBP) (hγ : σ.γ = .D)
       intro ⟨hmemP, hpaint⟩
       simp only [liftPaintP_CD] at hpaint
       split_ifs at hpaint with h
-      · -- σ.P layerOrd ≤ 1. Need ∈ μQ.
-        -- D-type dot_match: P = dot → ∈ shiftLeft μQ. shiftLeft μQ ⊆ μQ.
-        -- For s: use anti-mono argument.
-        sorry
+      · -- σ.P layerOrd ≤ 1. Need ∈ μQ ∧ liftQ = dot.
+        refine ⟨?_, ?_⟩
+        · -- (i,j) ∈ μQ: σ.P is dot or s.
+          -- dot → ∈ shiftLeft μQ → ∈ μQ. s → complex argument.
+          sorry
+        · -- liftQ = dot: (i,j) ∈ μP and layerOrd ≤ 1 → condition False → dot.
+          show liftPaintQ_CD σ μP μQ i j = .dot
+          simp only [liftPaintQ_CD]
+          rw [if_neg]; push_neg; intro _; exact ⟨hmemP, h⟩
       · exfalso; rw [hpaint] at h; simp [DRCSymbol.layerOrd] at h
     · -- Backward: ∈ μQ ∧ liftQ = dot → liftP = dot ∧ ∈ μP
       intro ⟨hmemQ, hpaint⟩
