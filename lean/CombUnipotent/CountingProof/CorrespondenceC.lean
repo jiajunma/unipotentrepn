@@ -233,6 +233,17 @@ private noncomputable def liftPaintP_CD (σ : PBP) : ℕ → ℕ → DRCSymbol :
 private noncomputable def liftPaintQ_CD (σ : PBP) (μQ : YoungDiagram) : ℕ → ℕ → DRCSymbol :=
   fun i j => if (i, j) ∈ μQ ∧ ¬(σ.P.paint i j).layerOrd ≤ 1 then .s else .dot
 
+private lemma liftPaintP_CD_ne_s (σ : PBP) (i j : ℕ) : liftPaintP_CD σ i j ≠ .s := by
+  simp only [liftPaintP_CD]; split_ifs with h
+  · exact (by decide : DRCSymbol.dot ≠ .s)
+  · intro heq; rw [heq] at h; simp [DRCSymbol.layerOrd] at h
+private lemma liftPaintP_CD_r (σ : PBP) (i j : ℕ) (h : liftPaintP_CD σ i j = .r) :
+    σ.P.paint i j = .r := by
+  simp only [liftPaintP_CD] at h; split_ifs at h <;> first | exact absurd h (by decide) | exact h
+private lemma liftPaintQ_CD_ne_r (σ : PBP) (μQ : YoungDiagram) (i j : ℕ) :
+    liftPaintQ_CD σ μQ i j ≠ .r := by
+  simp only [liftPaintQ_CD]; split_ifs <;> decide
+
 /-- Raw PBP for D→C lift. Uses `where` for field transparency. -/
 noncomputable def liftCD_raw (σ : PBP) (hγ : σ.γ = .D)
     (μP μQ : YoungDiagram) (hPsh : σ.P.shape = μP)
@@ -264,8 +275,26 @@ noncomputable def liftCD_raw (σ : PBP) (hγ : σ.γ = .D)
     · exfalso; exact absurd (σ.mono_P i₁ j₁ i₂ j₂ hi hj (by rw [hPsh]; exact hmem₂)) (by omega)
     · exact σ.mono_P i₁ j₁ i₂ j₂ hi hj (by rw [hPsh]; exact hmem₂)
   mono_Q := sorry
-  row_s := sorry
-  row_r := sorry
+  row_s := by
+    intro i s₁ s₂ j₁ j₂ h₁ h₂
+    simp only [paintBySide] at h₁ h₂
+    cases s₁ <;> cases s₂ <;> simp only at h₁ h₂
+    · exact absurd h₁ (liftPaintP_CD_ne_s σ i j₁)
+    · exact absurd h₁ (liftPaintP_CD_ne_s σ i j₁)
+    · exact absurd h₂ (liftPaintP_CD_ne_s σ i j₂)
+    · -- Both R: Q(i,j₁) = s, Q(i,j₂) = s. Need j₁ = j₂.
+      sorry
+  row_r := by
+    intro i s₁ s₂ j₁ j₂ h₁ h₂
+    simp only [paintBySide] at h₁ h₂
+    cases s₁ <;> cases s₂ <;> simp only at h₁ h₂
+    · -- L.L: both r from liftPaintP → from σ.P
+      exact ⟨rfl, (σ.row_r i .L .L j₁ j₂
+        (by simp [paintBySide]; exact liftPaintP_CD_r σ i j₁ h₁)
+        (by simp [paintBySide]; exact liftPaintP_CD_r σ i j₂ h₂)).2⟩
+    · exact absurd h₂ (liftPaintQ_CD_ne_r σ μQ i j₂)
+    · exact absurd h₁ (liftPaintQ_CD_ne_r σ μQ i j₁)
+    · exact absurd h₁ (liftPaintQ_CD_ne_r σ μQ i j₁)
   col_c_P := by
     intro j i₁ i₂ h₁ h₂; simp only [liftPaintP_CD] at h₁ h₂
     split_ifs at h₁ with ha₁ <;> split_ifs at h₂ with ha₂ <;>
