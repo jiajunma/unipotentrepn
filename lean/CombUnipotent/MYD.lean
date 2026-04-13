@@ -364,4 +364,17 @@ section Tests
 -- no post-twist (target is C)
 #eval AC.step [(1, [])] .C 1 1 0 0  -- expect [(1, [(1, 1)])]
 
+-- Cross-validation with Python standalone.py
+#eval ILS.sign [(3, 0), (0, 2), (1, 1)]           -- expect (8, 5)
+#eval ILS.firstColSign [(3, 0), (0, 2), (1, 1)]   -- expect (6, 1)
+#eval ILS.twistBD [(2, 1), (1, 1)] (-1) (-1)      -- expect [(-2, -1), (1, 1)]
+#eval ILS.charTwistCM [(2, 1), (1, 1), (3, 0)] 1  -- expect [(2, 1), (-1, -1), (3, 0)]
+#eval ILS.charTwistCM [(2, 1), (1, 1), (3, 0)] 3  -- expect [(2, 1), (-1, -1), (3, 0)]
+
+-- Theta lifts matching Python
+#eval ILS.thetaLift_DC [(1, 0)] 2                  -- expect [[(1, 1), (1, 0)]]
+#eval ILS.thetaLift_CD [(1, 1)] 3 1                -- expect []
+#eval ILS.thetaLift_BM [(1, 0)] 2                  -- expect [[(1, 1), (1, 0)]]
+#eval ILS.thetaLift_MB [(1, 1)] 3 2                -- expect [[(1, 0), (1, 1)]]
+
 end Tests
