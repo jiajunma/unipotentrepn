@@ -28,10 +28,10 @@ private lemma descentPaintL_CD_outside {τ : PBP} (hγ : τ.γ = .C)
 private lemma C_dot_lt_dotScolLen {τ : PBP} (hγ : τ.γ = .C)
     {i j : ℕ} (hmem : (i, j) ∈ τ.P.shape) (hdot : τ.P.paint i j = .dot) :
     i < PBP.dotScolLen τ.P j := by
-  -- C-type P has no .s, so dot cells have layerOrd 0 ≤ 1.
-  -- By mono_P, all cells above (i,j) also have layerOrd ≤ 1.
-  -- dotScolLen counts exactly these cells.
-  sorry
+  rw [PBP.dotScolLen_eq_dotSdiag_colLen _ τ.mono_P]
+  exact YoungDiagram.mem_iff_lt_colLen.mp (show (i, j) ∈ PBP.dotSdiag τ.P τ.mono_P from by
+    simp [PBP.dotSdiag, YoungDiagram.mem_mk, Finset.mem_filter, YoungDiagram.mem_cells]
+    exact ⟨hmem, by rw [hdot]; decide⟩)
 
 /-- shiftLeft(Q) ≤ P when shapes come from dp. -/
 private lemma shiftLeft_Q_le_P_of_dp {μP μQ : YoungDiagram} {r₁ r₂ : ℕ} {rest : DualPart}
