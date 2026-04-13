@@ -15,6 +15,7 @@ following the Python `standalone.py` convention where index i (0-based)
 corresponds to row length i+1.
 -/
 import Mathlib.Data.Int.Basic
+import Mathlib.Tactic.Ring
 import CombUnipotent.Basic
 
 open Int
@@ -410,6 +411,12 @@ private theorem signAux_mapIdx_of_natAbs (E : ILS) (f : ℕ → ℤ × ℤ → �
       funext i pq; congr 1; omega
     rw [key, ih (k + 1)]
 
+/-- firstColSignRow depends only on natAbs. -/
+theorem firstColSignRow_natAbs (i : ℕ) (pq₁ pq₂ : ℤ × ℤ)
+    (hp : pq₁.1.natAbs = pq₂.1.natAbs) (hq : pq₁.2.natAbs = pq₂.2.natAbs) :
+    firstColSignRow i pq₁ = firstColSignRow i pq₂ := by
+  simp only [firstColSignRow, hp, hq]
+
 /-- charTwistCM preserves the signature.
     charTwistCMRow only negates entries, preserving natAbs.
     signRow depends only on natAbs, so signAux gives the same result. -/
@@ -431,6 +438,169 @@ theorem twistBD_sign (E : ILS) (tp tn : ℤ)
       (fun i pq => (fun j pq => twistBDRow j tp tn pq) (0 + i) pq) := by simp
   rw [this]
   exact signAux_mapIdx_of_natAbs E _ 0 (fun i pq => twistBDRow_natAbs i tp tn pq htp htn)
+
+/-! ## Augmentation sign formula -/
+
+/-- Induction-friendly first-column signature with starting index. -/
+def firstColSignAux : ILS → ℕ → ℤ × ℤ
+  | [], _ => (0, 0)
+  | pq :: rest, k =>
+    let s := firstColSignRow k pq
+    let r := firstColSignAux rest (k + 1)
+    (s.1 + r.1, s.2 + r.2)
+
+private theorem foldl_zipIdx_eq_firstColSignAux (E : ILS) (k : ℕ) (acc : ℤ × ℤ) :
+    (E.zipIdx k).foldl (fun acc ⟨pq, i⟩ =>
+      let s := firstColSignRow i pq
+      (acc.1 + s.1, acc.2 + s.2)) acc =
+    (acc.1 + (firstColSignAux E k).1, acc.2 + (firstColSignAux E k).2) := by
+  induction E generalizing k acc with
+  | nil => simp [firstColSignAux, List.zipIdx]
+  | cons hd tl ih =>
+    simp only [List.zipIdx, List.foldl_cons, firstColSignAux]
+    rw [ih]; ext <;> simp <;> omega
+
+private theorem firstColSign_eq_aux (E : ILS) : firstColSign E = firstColSignAux E 0 := by
+  simp only [firstColSign]; rw [foldl_zipIdx_eq_firstColSignAux]; simp
+
+/-- Row-level shift: signRow(k+1, pq) = signRow(k, pq) + swap(firstColSignRow(k, pq)).
+    This is the key arithmetic identity connecting shifted indices to first-column signature. -/
+theorem signRow_succ (k : ℕ) (pq : ℤ × ℤ) :
+    signRow (k + 1) pq = ((signRow k pq).1 + (firstColSignRow k pq).2,
+                           (signRow k pq).2 + (firstColSignRow k pq).1) := by
+  simp only [signRow, firstColSignRow]
+  set a : ℤ := (pq.1.natAbs : ℤ)
+  set b : ℤ := (pq.2.natAbs : ℤ)
+  by_cases hk : k % 2 = 0
+  · -- k even
+    simp only [hk, ite_true]
+    have h1 : (↑k + 1 : ℤ) / 2 = ↑k / 2 := by omega
+    have h2 : (↑k + 1 : ℤ) % 2 = 1 := by omega
+    have h3 : (↑(k + 1) + 1 : ℤ) / 2 = ↑k / 2 + 1 := by omega
+    have h4 : (↑(k + 1) + 1 : ℤ) % 2 = 0 := by omega
+    simp only [h1, h2, h3, h4]; ext <;> simp <;> ring
+  · -- k odd
+    simp only [show ¬(k % 2 = 0) from hk, ite_false]
+    have h1 : (↑k + 1 : ℤ) / 2 = ↑k / 2 + 1 := by omega
+    have h2 : (↑k + 1 : ℤ) % 2 = 0 := by omega
+    have h3 : (↑(k + 1) + 1 : ℤ) / 2 = ↑k / 2 + 1 := by omega
+    have h4 : (↑(k + 1) + 1 : ℤ) % 2 = 1 := by omega
+    simp only [h1, h2, h3, h4]; ext <;> simp <;> ring
+
+/-- signAux at index k+1 equals signAux at k plus swapped firstColSignAux. -/
+theorem signAux_succ (E : ILS) (k : ℕ) :
+    signAux E (k + 1) = ((signAux E k).1 + (firstColSignAux E k).2,
+                          (signAux E k).2 + (firstColSignAux E k).1) := by
+  induction E generalizing k with
+  | nil => simp [signAux, firstColSignAux]
+  | cons pq rest ih =>
+    simp only [signAux, firstColSignAux]
+    rw [signRow_succ k pq, ih (k + 1)]
+    ext <;> simp <;> omega
+
+/-- **Augmentation sign formula**: the signature of (pq :: E) in terms of sign(E) and firstColSign(E).
+    sign(pq :: E) = (|pq.1| + sign(E).1 + firstColSign(E).2,
+                     |pq.2| + sign(E).2 + firstColSign(E).1)
+    This holds when pq components are nonneg (which is the case in theta lift). -/
+theorem sign_cons_nonneg (pq : ℤ × ℤ) (E : ILS) (hp : pq.1 ≥ 0) (hq : pq.2 ≥ 0) :
+    sign (pq :: E) = (pq.1 + (sign E).1 + (firstColSign E).2,
+                      pq.2 + (sign E).2 + (firstColSign E).1) := by
+  rw [sign_eq_signAux, sign_eq_signAux, firstColSign_eq_aux]
+  simp only [signAux, signRow, Nat.zero_add, Nat.zero_div, Nat.zero_mod]
+  rw [signAux_succ E 0]
+  have hp' : (pq.1.natAbs : ℤ) = pq.1 := Int.natAbs_of_nonneg hp
+  have hq' : (pq.2.natAbs : ℤ) = pq.2 := Int.natAbs_of_nonneg hq
+  ext <;> simp [hp', hq'] <;> ring
+
+/-- charTwistCM preserves firstColSign (same natAbs argument as for sign). -/
+theorem charTwistCM_firstColSign (E : ILS) (j : ℤ) :
+    firstColSign (charTwistCM E j) = firstColSign E := by
+  rw [firstColSign_eq_aux, firstColSign_eq_aux]
+  show firstColSignAux (E.mapIdx fun i pq => charTwistCMRow j i pq) 0 = firstColSignAux E 0
+  suffices h : ∀ k, firstColSignAux (E.mapIdx fun i pq => charTwistCMRow j (k + i) pq) k =
+      firstColSignAux E k by
+    have : (fun i pq => charTwistCMRow j i pq) = (fun i pq => charTwistCMRow j (0 + i) pq) := by simp
+    rw [this]; exact h 0
+  intro k; induction E generalizing k with
+  | nil => simp [firstColSignAux]
+  | cons hd tl ih =>
+    simp only [List.mapIdx_cons, firstColSignAux, Nat.add_zero]
+    have h := charTwistCMRow_natAbs j k hd
+    rw [firstColSignRow_natAbs k _ hd h.1 h.2]
+    have key : (fun i pq => charTwistCMRow j (k + (i + 1)) pq) =
+        (fun i pq => charTwistCMRow j ((k + 1) + i) pq) := by
+      funext i pq; congr 1; omega
+    rw [key, ih (k + 1)]
+
+/-! ## Theta lift signature theorems -/
+
+/-- C→D theta lift: standard case produces ILS with signature (p, q). -/
+theorem thetaLift_CD_sign (E : ILS) (p q : ℤ) :
+    ∀ r ∈ thetaLift_CD E p q, sign r = (p, q) := by
+  intro r hr
+  simp only [thetaLift_CD] at hr
+  split at hr
+  · rename_i h
+    simp at hr; subst hr
+    rw [show augment _ _ = (_, _) :: _ from rfl]
+    rw [sign_cons_nonneg _ _ h.1 h.2, charTwistCM_sign, charTwistCM_firstColSign]
+    ext <;> simp <;> omega
+  · simp at hr
+
+/-- D→C theta lift: standard case produces ILS with signature (n, n). -/
+theorem thetaLift_DC_sign (E : ILS) (n : ℤ) :
+    ∀ r ∈ thetaLift_DC E n, sign r = (n, n) := by
+  intro r hr
+  simp only [thetaLift_DC] at hr
+  split at hr
+  · -- Standard case: addp ≥ 0, addn ≥ 0
+    rename_i h
+    simp at hr; subst hr
+    -- r = charTwistCM((addp, addn) :: E, γ)
+    rw [charTwistCM_sign, show augment _ _ = (_, _) :: _ from rfl,
+        sign_cons_nonneg _ _ h.1 h.2]
+    ext <;> simp <;> omega
+  · -- Split case
+    split at hr
+    · match E, hr with
+      | [], hr => simp at hr
+      | (pp0, nn0) :: rest, hr =>
+        -- Each split branch also has correct signature
+        simp only [List.mem_append, List.mem_ite_nil_left, List.mem_ite_nil_right] at hr
+        sorry  -- split case signature (needs more detailed proof)
+    · simp at hr
+
+/-- M→B theta lift: standard case produces ILS with signature (p, q). -/
+theorem thetaLift_MB_sign (E : ILS) (p q : ℤ) :
+    ∀ r ∈ thetaLift_MB E p q, sign r = (p, q) := by
+  intro r hr
+  simp only [thetaLift_MB] at hr
+  split at hr
+  · rename_i h
+    simp at hr; subst hr
+    rw [show augment _ _ = (_, _) :: _ from rfl]
+    rw [sign_cons_nonneg _ _ h.1 h.2, charTwistCM_sign, charTwistCM_firstColSign]
+    ext <;> simp <;> omega
+  · simp at hr
+
+/-- B→M theta lift: standard case produces ILS with signature (n, n).
+    Note: split case (addp/addn < 0) needs separate treatment. -/
+theorem thetaLift_BM_sign (E : ILS) (n : ℤ) :
+    ∀ r ∈ thetaLift_BM E n, sign r = (n, n) := by
+  intro r hr
+  simp only [thetaLift_BM] at hr
+  split at hr
+  · rename_i h
+    simp at hr; subst hr
+    rw [charTwistCM_sign, show augment _ _ = (_, _) :: _ from rfl,
+        sign_cons_nonneg _ _ h.1 h.2]
+    ext <;> simp <;> omega
+  · split at hr
+    · match E, hr with
+      | [], hr => simp at hr
+      | (pp0, nn0) :: rest, hr =>
+        sorry  -- split case
+    · simp at hr
 
 end ILS
 
