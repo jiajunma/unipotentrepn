@@ -1479,6 +1479,32 @@ theorem ILS.twistBD_first_entry (E : ILS) :
       show ¬((1 : ℕ) % 2 = 0) from by omega]
     ext <;> simp <;> ring
 
+/-! ## Lemma 11.11 and Proposition 11.12
+
+These are abstract results about the AC computation that DON'T need
+the full two-step formula (11.11). They only need:
+1. The first entry of L_τ (from Lemma 11.6)
+2. The truncation behavior (from Prop 11.8)
+3. The twist operations
+
+Since these depend on the full AC recursion applied to a specific PBP
+(not just abstract ACResult operations), they are best stated at the
+PBP level rather than the ACResult level. The key statements are:
+
+Lemma 11.11: ¬∃ τ₁ τ₂, L_{τ₁} ⊗ (1,1) = L_{τ₂}
+  Proof: ⊗(1,1) negates first row → L_{τ₂}^+ = 0 → x_{τ₂} = s
+         → L_{τ₂}^- = 0. But ⊗(1,1) preserves L^- non-emptiness
+         when x_{τ₁} = s has q_{τ_t} ≥ 2 → contradiction.
+
+Proposition 11.12: L_{τ₁} ⊗ (ε₁,ε₁) = L_{τ₂} ⊗ (ε₂,ε₂) →
+  ε₁ = ε₂ ∧ ε_{τ₁} = ε_{τ₂} ∧ L_{τ₁} = L_{τ₂}
+  Proof: ε₁ ≠ ε₂ → L_{τ₁} ⊗ (1,1) = L_{τ₂}, contradicting 11.11.
+         Then L_{τ₁} = L_{τ₂}, and ε_{τ₁} = ε_{τ₂} from truncation pattern.
+
+These require connecting the abstract ILS operations to specific PBP properties,
+which goes through the descent chain. The formalization path is:
+PBP → descent chain → AC.fold → first entry → truncation. -/
+
 -- Prop 11.8 truncation properties follow from Lemma 11.6 (first entry)
 -- + Lemma 11.3 (tail symbol ↔ tail signature components).
 -- The key deductions:
