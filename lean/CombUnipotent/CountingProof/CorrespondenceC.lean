@@ -52,6 +52,19 @@ noncomputable def descentCD_PBP {μP μQ : YoungDiagram}
   have hγ : τ.val.γ = .C := τ.prop.1
   have hPsh : τ.val.P.shape = μP := τ.prop.2.1
   have hQsh : τ.val.Q.shape = μQ := τ.prop.2.2
+  -- Extract key properties before constructing the PBP
+  -- row_r: .r in descent paint only from zone 3 (preserved P paint)
+  have h_row_r : ∀ i j, PBP.descentPaintL_CD τ.val i j = .r → τ.val.P.paint i j = .r := by
+    intro i j h; simp only [PBP.descentPaintL_CD] at h
+    split_ifs at h with ha hb <;> first | exact absurd h (by decide) | exact h
+  -- col_c_P: .c in descent paint only from zone 3
+  have h_col_c : ∀ i j, PBP.descentPaintL_CD τ.val i j = .c → τ.val.P.paint i j = .c := by
+    intro i j h; simp only [PBP.descentPaintL_CD] at h
+    split_ifs at h with ha hb <;> first | exact absurd h (by decide) | exact h
+  -- col_d_P: .d in descent paint only from zone 3
+  have h_col_d : ∀ i j, PBP.descentPaintL_CD τ.val i j = .d → τ.val.P.paint i j = .d := by
+    intro i j h; simp only [PBP.descentPaintL_CD] at h
+    split_ifs at h with ha hb <;> first | exact absurd h (by decide) | exact h
   exact ⟨{
     γ := .D
     P := {
@@ -70,10 +83,22 @@ noncomputable def descentCD_PBP {μP μQ : YoungDiagram}
     mono_P := sorry
     mono_Q := fun _ _ _ _ _ _ _ => by simp [DRCSymbol.layerOrd]
     row_s := sorry
-    row_r := sorry
-    col_c_P := sorry
+    row_r := by
+      intro i s₁ s₂ j₁ j₂ h₁ h₂
+      simp only [paintBySide] at h₁ h₂
+      cases s₁ <;> cases s₂ <;> simp only at h₁ h₂
+      · have := τ.val.row_r i .L .L j₁ j₂
+            (by simp [paintBySide]; exact h_row_r i j₁ h₁)
+            (by simp [paintBySide]; exact h_row_r i j₂ h₂)
+        exact ⟨rfl, this.2⟩
+      · exact absurd h₂ (by simp)
+      · exact absurd h₁ (by simp)
+      · exact absurd h₁ (by simp)
+    col_c_P := fun j i₁ i₂ h₁ h₂ =>
+      τ.val.col_c_P j i₁ i₂ (h_col_c i₁ j h₁) (h_col_c i₂ j h₂)
     col_c_Q := fun _ _ _ h => DRCSymbol.noConfusion h
-    col_d_P := sorry
+    col_d_P := fun j i₁ i₂ h₁ h₂ =>
+      τ.val.col_d_P j i₁ i₂ (h_col_d i₁ j h₁) (h_col_d i₂ j h₂)
     col_d_Q := fun _ _ _ h => DRCSymbol.noConfusion h
   }, ⟨rfl, rfl, rfl⟩⟩
 
