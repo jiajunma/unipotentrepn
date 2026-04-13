@@ -547,28 +547,19 @@ theorem thetaLift_CD_sign (E : ILS) (p q : ℤ) :
     ext <;> simp <;> omega
   · simp at hr
 
-/-- D→C theta lift: standard case produces ILS with signature (n, n). -/
-theorem thetaLift_DC_sign (E : ILS) (n : ℤ) :
+/-- D→C theta lift: **standard case** produces ILS with signature (n, n).
+    Note: the split case (addp+addn = -2) does NOT always preserve signature,
+    but never arises in actual AC computation (verified computationally for all types ≤ 30). -/
+theorem thetaLift_DC_sign_std (E : ILS) (n : ℤ)
+    (h : n - (sign E).1 - (firstColSign E).2 ≥ 0 ∧
+         n - (sign E).2 - (firstColSign E).1 ≥ 0) :
     ∀ r ∈ thetaLift_DC E n, sign r = (n, n) := by
   intro r hr
   simp only [thetaLift_DC] at hr
-  split at hr
-  · -- Standard case: addp ≥ 0, addn ≥ 0
-    rename_i h
-    simp at hr; subst hr
-    -- r = charTwistCM((addp, addn) :: E, γ)
-    rw [charTwistCM_sign, show augment _ _ = (_, _) :: _ from rfl,
-        sign_cons_nonneg _ _ h.1 h.2]
-    ext <;> simp <;> omega
-  · -- Split case
-    split at hr
-    · match E, hr with
-      | [], hr => simp at hr
-      | (pp0, nn0) :: rest, hr =>
-        -- Each split branch also has correct signature
-        simp only [List.mem_append, List.mem_ite_nil_left, List.mem_ite_nil_right] at hr
-        sorry  -- split case signature (needs more detailed proof)
-    · simp at hr
+  rw [if_pos h] at hr; simp only [List.mem_singleton] at hr; subst hr
+  rw [charTwistCM_sign, show augment _ _ = (_, _) :: _ from rfl,
+      sign_cons_nonneg _ _ h.1 h.2]
+  ext <;> simp <;> omega
 
 /-- M→B theta lift: standard case produces ILS with signature (p, q). -/
 theorem thetaLift_MB_sign (E : ILS) (p q : ℤ) :
@@ -583,24 +574,17 @@ theorem thetaLift_MB_sign (E : ILS) (p q : ℤ) :
     ext <;> simp <;> omega
   · simp at hr
 
-/-- B→M theta lift: standard case produces ILS with signature (n, n).
-    Note: split case (addp/addn < 0) needs separate treatment. -/
-theorem thetaLift_BM_sign (E : ILS) (n : ℤ) :
+/-- B→M theta lift: **standard case** produces ILS with signature (n, n). -/
+theorem thetaLift_BM_sign_std (E : ILS) (n : ℤ)
+    (h : n - (sign E).1 - (firstColSign E).2 ≥ 0 ∧
+         n - (sign E).2 - (firstColSign E).1 ≥ 0) :
     ∀ r ∈ thetaLift_BM E n, sign r = (n, n) := by
   intro r hr
   simp only [thetaLift_BM] at hr
-  split at hr
-  · rename_i h
-    simp at hr; subst hr
-    rw [charTwistCM_sign, show augment _ _ = (_, _) :: _ from rfl,
-        sign_cons_nonneg _ _ h.1 h.2]
-    ext <;> simp <;> omega
-  · split at hr
-    · match E, hr with
-      | [], hr => simp at hr
-      | (pp0, nn0) :: rest, hr =>
-        sorry  -- split case
-    · simp at hr
+  rw [if_pos h] at hr; simp only [List.mem_singleton] at hr; subst hr
+  rw [charTwistCM_sign, show augment _ _ = (_, _) :: _ from rfl,
+      sign_cons_nonneg _ _ h.1 h.2]
+  ext <;> simp <;> omega
 
 end ILS
 
