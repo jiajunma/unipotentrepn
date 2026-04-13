@@ -1181,15 +1181,30 @@ Proof by induction on rows of Ǒ, using:
 
 We prove the preservation lemmas above and state the full theorem. -/
 
-/-- Proposition 11.7: L_τ is multiplicity free.
-    The proof requires Lemma 11.5 for the inductive step. -/
+/-- Theta lift on ACResult preserves multiplicity free.
+    Key: the lift is injective on ILS (augment after charTwistCM, both injective).
+    Different source ILS → different lifted ILS (when lift is nonempty). -/
+theorem ACResult.thetaLift_multiplicityFree (ac : ACResult) (target : RootType) (p q : ℤ)
+    (hmf : ac.MultiplicityFree) :
+    (ac.thetaLift target p q).MultiplicityFree := by
+  sorry -- needs injectivity of theta lift on ILS
+
+/-- Proposition 11.7: L_τ is multiplicity free. -/
 theorem AC.step_multiplicityFree_BD (source : ACResult) (p q : ℤ) (ε_τ ε_wp : Fin 2)
     (γ : RootType) (hγ : γ = .Bplus ∨ γ = .Bminus ∨ γ = .D)
     (hmf : source.MultiplicityFree) :
     -- The theta lift + twist preserves multiplicity free
     -- when the lift is in standard case (1-to-1) or (-1,-1) split (produces distinct first entries)
     (AC.step source γ p q ε_τ ε_wp).MultiplicityFree := by
-  sorry -- requires Lemma 11.5 for the inductive step
+  -- For B/D: no pre-twist, lift then optional post-twist
+  simp only [AC.step]
+  have h_not_CM : ¬(γ = .C ∨ γ = .M) := by rcases hγ with rfl | rfl | rfl <;> decide
+  rw [if_neg h_not_CM]
+  -- Post-twist preserves mult-free, so reduce to showing thetaLift preserves it
+  split
+  · exact ACResult.twistBD_multiplicityFree _ _ _ (Or.inl rfl) (Or.inr rfl)
+      (ACResult.thetaLift_multiplicityFree source γ p q hmf)
+  · exact ACResult.thetaLift_multiplicityFree source γ p q hmf
 
 /-! ## Proposition 11.8: Nonzero and truncation properties
 
