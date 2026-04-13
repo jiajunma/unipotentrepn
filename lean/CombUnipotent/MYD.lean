@@ -1505,6 +1505,27 @@ These require connecting the abstract ILS operations to specific PBP properties,
 which goes through the descent chain. The formalization path is:
 PBP → descent chain → AC.fold → first entry → truncation. -/
 
+/-! ## Lemma 11.5: Two-step AC formula (partial)
+
+The full Lemma 11.5 requires showing that AC.step applied twice equals
+formula (11.11). This is a computation involving:
+1. Inner step: AC.step source γ' p' q' 0 ε_wp' (C/C̃ type, theta lift D→C or B→M)
+2. Outer step: AC.step (inner) γ p q ε_τ 0 (B/D type, theta lift C→D or M→B)
+
+The composition simplifies to:
+  T^{γ_τ}(source ⊗ (ε_wp', ε_wp') ⊕ (n₀, n₀)) ⊕ (p_t, q_t) ⊗ (0, ε_τ)
+
+where n₀ and (p_t, q_t) are determined by the signatures via Prop 11.4.
+
+For the standard case (addp, addn ≥ 0 at both steps), this amounts to:
+- Inner lift produces: T^γ'(source ⊗ twist ⊕ (addp_inner, addn_inner))
+- Outer lift augments this by (addp_outer, addn_outer)
+- The inner augmentation parameter (addp_inner, addn_inner) = (n₀, n₀)
+  by the signature relationships
+- The outer augmentation parameter = (p_t, q_t) by signature decomposition
+
+This is verified computationally on all D-type test orbits (see blueprint). -/
+
 -- Prop 11.8 truncation properties follow from Lemma 11.6 (first entry)
 -- + Lemma 11.3 (tail symbol ↔ tail signature components).
 -- The key deductions:
