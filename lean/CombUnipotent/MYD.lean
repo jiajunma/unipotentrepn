@@ -1115,6 +1115,132 @@ theorem ACResult.twistBD_multiplicityFree (ac : ACResult) (tp tn : ℤ)
   simp only [ILS.twistBD_involutive _ _ _ htp htn] at h_inv
   exact hmf i j (by simpa using hi) (by simpa using hj) h_ne h_inv
 
+/-- charTwistCM on ACResult. -/
+def ACResult.charTwistCM (ac : ACResult) (j : ℤ) : ACResult :=
+  ac.map fun ⟨c, ils⟩ => (c, ILS.charTwistCM ils j)
+
+/-- Augmentation on ACResult. -/
+def ACResult.augment (ac : ACResult) (pq : ℤ × ℤ) : ACResult :=
+  ac.map fun ⟨c, ils⟩ => (c, ILS.augment pq ils)
+
+/-- charTwistCM preserves multiplicity free (since charTwistCM is an involution). -/
+theorem ACResult.charTwistCM_multiplicityFree (ac : ACResult) (j : ℤ)
+    (hmf : ac.MultiplicityFree) :
+    (ac.charTwistCM j).MultiplicityFree := by
+  intro i k hi hk h_ne
+  simp only [ACResult.charTwistCM, List.length_map] at hi hk ⊢
+  simp only [List.getElem_map]
+  intro h_eq
+  have h_inv := congrArg (fun e => ILS.charTwistCM e j) h_eq
+  simp only [ILS.charTwistCM_involutive] at h_inv
+  exact hmf i k (by simpa using hi) (by simpa using hk) h_ne h_inv
+
+/-- Augmentation preserves multiplicity free (augment is injective). -/
+theorem ACResult.augment_multiplicityFree (ac : ACResult) (pq : ℤ × ℤ)
+    (hmf : ac.MultiplicityFree) :
+    (ac.augment pq).MultiplicityFree := by
+  intro i k hi hk h_ne
+  simp only [ACResult.augment, List.length_map] at hi hk ⊢
+  simp only [List.getElem_map, ILS.augment]
+  intro h_eq
+  exact hmf i k hi hk h_ne (List.cons_injective h_eq)
+
+/-! ## Lemma 11.1: Base case for small orbits -/
+
+/-- Lemma 11.1(a): When r₁(O) ≤ 1 (base case after iterated descent),
+    L_τ is a single MYD: (p_τ, (-1)^{ε_τ} q_τ)_★.
+    This corresponds to our AC.base. -/
+theorem AC.base_first_entry (γ : RootType) :
+    ∀ r ∈ AC.base γ, match r.2 with
+      | [] => True  -- empty MYD for C/D/M
+      | (p₁, _) :: _ => p₁ ≥ 0  -- first entry p ≥ 0
+    := by
+  intro r hr; cases γ <;> simp [AC.base] at hr <;> subst hr <;> simp
+
+/-! ## Lemma 11.5: Two-step AC recursion formula
+
+This is the key structural lemma. It applies (11.2) twice to express
+L_τ in terms of L_{τ''} (double descent).
+
+The proof requires Prop 11.4 (descent map properties from [BMSZb]).
+We state it here and prove downstream results assuming it. -/
+
+-- Lemma 11.6(a): First entry of L_τ when r₂ > r₃.
+-- E(1) = (p_{τ_t}, (-1)^{ε_τ} q_{τ_t}).
+-- Follows from Lemma 11.5(a): augment puts (p_{τ_t}, q_{τ_t}) at position 1,
+-- sign twist ⊗(0, ε_τ) multiplies q by (-1)^{ε_τ}.
+-- Requires Lemma 11.5 which depends on Prop 11.4 (not yet formalized).
+
+/-! ## Proposition 11.7: Multiplicity free
+
+The key result: L_τ is multiplicity free for ★ ∈ {B, D}.
+Proof by induction on rows of Ǒ, using:
+1. Four operations (sign twist, T, augment, truncation) preserve mult-free
+2. Base case is mult-free (AC.base_multiplicityFree)
+3. Lemma 11.6 shows different branches have different first entries
+
+We prove the preservation lemmas above and state the full theorem. -/
+
+/-- Proposition 11.7: L_τ is multiplicity free.
+    The proof requires Lemma 11.5 for the inductive step. -/
+theorem AC.step_multiplicityFree_BD (source : ACResult) (p q : ℤ) (ε_τ ε_wp : Fin 2)
+    (γ : RootType) (hγ : γ = .Bplus ∨ γ = .Bminus ∨ γ = .D)
+    (hmf : source.MultiplicityFree) :
+    -- The theta lift + twist preserves multiplicity free
+    -- when the lift is in standard case (1-to-1) or (-1,-1) split (produces distinct first entries)
+    (AC.step source γ p q ε_τ ε_wp).MultiplicityFree := by
+  sorry -- requires Lemma 11.5 for the inductive step
+
+/-! ## Proposition 11.8: Nonzero and truncation properties
+
+(a) L_τ ≠ 0
+(b) x_τ = s ⟹ L_τ⁺ = 0, L_τ⁻ = 0
+(c) x_τ ∈ {r, c} ⟹ L_τ⁺ ≠ 0, L_τ⁻ = 0
+(d) x_τ = d ⟹ L_τ⁺ ≠ 0, L_τ⁻ ≠ 0
+
+These follow from Lemma 11.3 and 11.6:
+- First entry E(1) = (p_{τ_t}, (-1)^{ε_τ} q_{τ_t})
+- Truncation Λ_{(1,0)} succeeds iff |E(1).1| ≥ 1 iff p_{τ_t} > 0 iff x_τ ≠ s
+- Truncation Λ_{(0,1)} succeeds iff |E(1).2| ≥ 1 iff (-1)^{ε_τ} q_{τ_t} ≠ 0
+
+The key deductions:
+- x_τ = s: p_{τ_t} = 0 (Lemma 11.3(b)), so L_τ⁺ = 0. Also ε_τ = 1 (x≠d),
+  q_{τ_t} ≥ 2 (since all tail cells are s, each contributing 2 to q), so
+  (-1)^1 q_{τ_t} = -q_{τ_t} < 0. Λ_{(0,1)} needs 0 ≤ 1 ≤ E(1).2 or
+  E(1).2 ≤ 1 ≤ 0. Neither holds. So L_τ⁻ = 0.
+
+- x_τ ∈ {r,c}: p_{τ_t} > 0, so L_τ⁺ ≠ 0. ε_τ = 1 (x≠d),
+  (-1)^1 q_{τ_t} = -q_{τ_t} ≤ 0. Λ_{(0,1)} needs second comp ≥ 1 or ≤ -1.
+  E(1).2 = -q_{τ_t} ≤ 0. If q_{τ_t} > 0 then E(1).2 < 0 and
+  Λ_{(0,1)} subtracts 1: E(1).2 - 1 = -q_{τ_t} - 1. But containment needs
+  E(1).2 ≤ -1 ≤ 0 or 0 ≤ -1: the latter fails. Former: -q_{τ_t} ≤ -1 iff
+  q_{τ_t} ≥ 1, which holds. So Λ_{(0,1)} succeeds only when... wait,
+  (0,1) containment needs: 0 ≤ 1 ≤ q₁ or q₁ ≤ 1 ≤ 0.
+  q₁ = -q_{τ_t} ≤ 0 < 1, so 0 ≤ 1 ≤ q₁ fails.
+  q₁ ≤ 1 ≤ 0 fails since 1 > 0. So L_τ⁻ = 0. ✓
+
+- x_τ = d: p_{τ_t} > 0 (x≠s), so L_τ⁺ ≠ 0. ε_τ = 0 (x=d),
+  (-1)^0 q_{τ_t} = q_{τ_t}. Since x=d, n_d ≥ 1, q_{τ_t} = 2n_s + n_c + n_d ≥ 1.
+  So E(1).2 = q_{τ_t} ≥ 1. Λ_{(0,1)}: 0 ≤ 1 ≤ q_{τ_t}. ✓. So L_τ⁻ ≠ 0. -/
+
+-- Proposition 11.8(a): L_τ ≠ 0.
+-- Requires: at each step, theta lift produces at least one component.
+-- This holds when step data comes from a valid PBP descent chain.
+-- Proof requires descent chain validity (Prop 11.4 from [BMSZb]).
+
+/-! ## Propositions 11.9-11.15: Downstream results
+
+The remaining theorems form a chain:
+  11.9 (no cross-twist) → 11.10 (tail sig determines)
+  → 11.11 (no det twist) → 11.12 (injectivity mod twist)
+  → 11.13 (injectivity for quasi-dist) → 11.14 (surjectivity)
+  → 11.15 (main bijection for B/D)
+  → 11.17 (main result for C/C̃)
+
+All depend on the upstream chain 11.3 → 11.5 → 11.6 → 11.7 → 11.8.
+The key missing piece is Lemma 11.5 which requires Prop 11.4
+(descent map from [BMSZb] Section 10.5). -/
+
 /-- The bottom cell of D-type tail is non-dot. -/
 theorem PBP.tailSymbol_D_ne_dot (τ : PBP) (hγ : τ.γ = .D)
     (h_tail : τ.Q.shape.colLen 0 < τ.P.shape.colLen 0) :
