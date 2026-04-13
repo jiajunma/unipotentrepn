@@ -124,7 +124,17 @@ theorem card_PBPSet_C_singleton (r₁ : ℕ) {μP μQ : YoungDiagram}
     (hQ : μQ.colLens = dpartColLensQ_C [r₁])
     (hodd : Odd r₁) :
     Fintype.card (PBPSet .C μP μQ) = 1 := by
-  sorry
+  have hP_nil : μP = ⊥ := yd_of_colLens_nil (by rw [hP]; rfl)
+  subst hP_nil
+  by_cases hr : r₁ > 1
+  · -- Q has cells, all forced to s. P = ⊥ means all Q cells are non-dot (by dot_match).
+    -- The unique PBP has P = all dot, Q = all s.
+    sorry
+  · -- r₁ = 1, Q = ⊥
+    have : r₁ = 1 := by obtain ⟨m, rfl⟩ := hodd; omega
+    subst this
+    have hQ_nil : μQ = ⊥ := yd_of_colLens_nil (by rw [hQ]; rfl)
+    rw [hQ_nil]; exact card_PBPSet_bot .C
 
 /-! ## Main theorem -/
 
