@@ -332,6 +332,64 @@ structure ACStepData where
 def AC.fold (baseType : RootType) (chain : List ACStepData) : ACResult :=
   chain.foldl (fun ac d => AC.step ac d.γ d.p d.q d.ε_τ d.ε_wp) (AC.base baseType)
 
+/-! ## Signature preservation lemmas -/
+
+namespace ILS
+
+/-- Induction-friendly signature with explicit starting index.
+    `signAux E k` = sum of signRow(k+i, E[i]) for i in range. -/
+def signAux : ILS → ℕ → ℤ × ℤ
+  | [], _ => (0, 0)
+  | pq :: rest, k =>
+    let s := signRow k pq
+    let r := signAux rest (k + 1)
+    (s.1 + r.1, s.2 + r.2)
+
+/-- signRow depends only on natAbs of the pair components. -/
+theorem signRow_natAbs (i : ℕ) (pq₁ pq₂ : ℤ × ℤ)
+    (hp : pq₁.1.natAbs = pq₂.1.natAbs) (hq : pq₁.2.natAbs = pq₂.2.natAbs) :
+    signRow i pq₁ = signRow i pq₂ := by
+  simp only [signRow, hp, hq]
+
+/-- charTwistCMRow preserves natAbs. -/
+theorem charTwistCMRow_natAbs (j : ℤ) (i : ℕ) (pq : ℤ × ℤ) :
+    (charTwistCMRow j i pq).1.natAbs = pq.1.natAbs ∧
+    (charTwistCMRow j i pq).2.natAbs = pq.2.natAbs := by
+  simp only [charTwistCMRow]
+  split
+  · exact ⟨Int.natAbs_neg pq.1, Int.natAbs_neg pq.2⟩
+  · exact ⟨rfl, rfl⟩
+
+/-- twistBDRow preserves natAbs when tp, tn ∈ {1, -1}. -/
+theorem twistBDRow_natAbs (i : ℕ) (tp tn : ℤ) (pq : ℤ × ℤ)
+    (htp : tp = 1 ∨ tp = -1) (htn : tn = 1 ∨ tn = -1) :
+    (twistBDRow i tp tn pq).1.natAbs = pq.1.natAbs ∧
+    (twistBDRow i tp tn pq).2.natAbs = pq.2.natAbs := by
+  simp only [twistBDRow]
+  split
+  · exact ⟨rfl, rfl⟩
+  · have h1 : ∀ (a b : ℤ) (k m : ℕ), (a = 1 ∨ a = -1) → (b = 1 ∨ b = -1) →
+        (a ^ k * b ^ m).natAbs = 1 := by
+      intro a b k m ha hb
+      rcases ha with rfl | rfl <;> rcases hb with rfl | rfl <;> simp [Int.natAbs_mul, Int.natAbs_pow]
+    constructor
+    · rw [Int.natAbs_mul, h1 tp tn _ _ htp htn, one_mul]
+    · rw [Int.natAbs_mul, h1 tn tp _ _ htn htp, one_mul]
+
+/-- charTwistCM preserves the signature.
+    Proof sketch: charTwistCMRow only negates entries, preserving natAbs.
+    signRow depends only on natAbs, so signAux gives the same result. -/
+theorem charTwistCM_sign (E : ILS) (j : ℤ) : sign (charTwistCM E j) = sign E := by
+  sorry  -- natAbs preservation + fold equality
+
+/-- twistBD preserves the signature when tp, tn ∈ {1, -1}. -/
+theorem twistBD_sign (E : ILS) (tp tn : ℤ)
+    (htp : tp = 1 ∨ tp = -1) (htn : tn = 1 ∨ tn = -1) :
+    sign (twistBD E tp tn) = sign E := by
+  sorry  -- natAbs preservation + fold equality
+
+end ILS
+
 /-! ## Key theorem statement: signature matching
 
 The signature of AC(τ) matches the PBP signature (p_τ, q_τ).
