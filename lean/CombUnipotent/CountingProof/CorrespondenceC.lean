@@ -240,6 +240,11 @@ noncomputable def descentCD_PBP {μP μQ : YoungDiagram}
     col_d_Q := fun _ _ _ h => DRCSymbol.noConfusion h
   }, ⟨rfl, rfl, rfl⟩⟩
 
+@[simp] lemma descentCD_PBP_P_paint {μP μQ : YoungDiagram}
+    (τ : PBPSet .C μP μQ) (h_sub : YoungDiagram.shiftLeft μQ ≤ μP) (i j : ℕ) :
+    (descentCD_PBP τ h_sub).val.P.paint i j = PBP.descentPaintL_CD τ.val i j := by
+  rfl
+
 /-! ## Descent injectivity -/
 
 theorem descentCD_injective {μP μQ : YoungDiagram}
@@ -344,11 +349,18 @@ noncomputable def liftCD_PBP {μP μQ : YoungDiagram}
       split_ifs at h₁ <;> exact absurd h₁ (by decide)
   }, ⟨rfl, rfl, rfl⟩⟩
 
+@[simp] lemma liftCD_PBP_P_paint {μP μQ : YoungDiagram}
+    (σ : PBPSet .D μP (YoungDiagram.shiftLeft μQ)) (h_sub : YoungDiagram.shiftLeft μQ ≤ μP) (i j : ℕ) :
+    (liftCD_PBP σ h_sub).val.P.paint i j = liftPaintP_CD σ.val i j := by
+  rfl
+
 /-- Round trip: descent ∘ lift = id on D-type PBPs. -/
 theorem descentCD_liftCD_round_trip {μP μQ : YoungDiagram}
     (h_sub : YoungDiagram.shiftLeft μQ ≤ μP)
     (σ : PBPSet .D μP (YoungDiagram.shiftLeft μQ)) :
     descentCD_PBP (liftCD_PBP σ h_sub) h_sub = σ := by
+  -- Paint functions compose correctly (dot→dot, s→dot→s, r/c/d preserved)
+  -- but Lean tactic-mode definitions are opaque, blocking structural equality.
   sorry
 
 /-- Descent image excludes SS in the balanced case. -/
@@ -357,6 +369,12 @@ theorem descentCD_not_SS {μP μQ : YoungDiagram}
     (h_bal : μP.colLen 0 = μQ.colLen 0 + 1)
     (τ : PBPSet .C μP μQ) :
     tailClass_D (descentCD_PBP τ h_sub).val ≠ .SS := by
+  -- Tail class depends on tailLen_D and tailSymbol_D.
+  -- For balanced: P.colLen(0) > Q.colLen(0) (= shiftLeft Q.colLen(0)),
+  -- so tailLen > 0 and tailSymbol determines tail class.
+  -- The tail cell at (P.colLen(0)-1, 0) has C-type P paint ∈ {r,c,d}
+  -- (not dot since outside Q zone, not s since C-type).
+  -- In descent: this paint is preserved (zone 3). So tail ∈ {r,c,d} → DD or RC.
   sorry
 
 /-! ## Image characterization -/
