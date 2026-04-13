@@ -545,12 +545,36 @@ theorem card_PBPSet_C_singleton (r₁ : ℕ) {μP μQ : YoungDiagram}
   have hP_nil : μP = ⊥ := yd_of_colLens_nil (by rw [hP]; rfl)
   subst hP_nil
   by_cases hr : r₁ > 1
-  · -- P = ⊥. For any C-type PBP:
-    -- P paint = dot everywhere (paint_outside, since ⊥ has no cells)
-    -- For (i,j) ∈ Q: dot_match LHS = False (since (i,j) ∉ ⊥), so RHS = False,
-    --   so Q(i,j) ≠ dot, so Q(i,j) = s (only other C-type Q symbol)
-    -- Q paint is fully determined. Hence card = 1.
-    sorry
+  · -- P = ⊥: P paint = dot everywhere. Q paint fully determined (s inside Q, dot outside).
+    -- Any two PBPs are equal → card = 1.
+    rw [Fintype.card_eq_one_iff]
+    -- Show any PBP equals a canonical one
+    have ⟨τ₀⟩ : Nonempty (PBPSet .C ⊥ μQ) := by sorry
+    exact ⟨τ₀, fun τ => by
+      apply Subtype.ext; apply PBP.ext'' (τ.prop.1.trans τ₀.prop.1.symm)
+      · -- P: both all dot (⊥ has no cells)
+        apply PaintedYoungDiagram.ext' (τ.prop.2.1.trans τ₀.prop.2.1.symm)
+        funext i j; rw [τ.val.P.paint_outside i j (by rw [τ.prop.2.1]; exact YoungDiagram.notMem_bot _),
+                         τ₀.val.P.paint_outside i j (by rw [τ₀.prop.2.1]; exact YoungDiagram.notMem_bot _)]
+      · -- Q: both have same paint (determined by dot_match)
+        apply PaintedYoungDiagram.ext' (τ.prop.2.2.trans τ₀.prop.2.2.symm)
+        funext i j
+        by_cases hmem : (i, j) ∈ μQ
+        · -- (i,j) ∈ Q: Q must be s (dot_match forces ≠ dot)
+          have h_not_dot : ∀ (σ : PBPSet .C ⊥ μQ), σ.val.Q.paint i j ≠ .dot := by
+            intro σ h_eq
+            have := (σ.val.dot_match i j).mpr ⟨by rw [σ.prop.2.2]; exact hmem, h_eq⟩
+            rw [σ.prop.2.1] at this; exact YoungDiagram.notMem_bot _ this.1
+          have h_is_s : ∀ (σ : PBPSet .C ⊥ μQ), σ.val.Q.paint i j = .s := by
+            intro σ
+            have hsym := σ.val.sym_Q i j (by rw [σ.prop.2.2]; exact hmem)
+            rw [σ.prop.1] at hsym; simp [DRCSymbol.allowed] at hsym
+            rcases hsym with h | h
+            · exact absurd h (h_not_dot σ)
+            · exact h
+          rw [h_is_s τ, h_is_s τ₀]
+        · rw [τ.val.Q.paint_outside i j (by rw [τ.prop.2.2]; exact hmem),
+              τ₀.val.Q.paint_outside i j (by rw [τ₀.prop.2.2]; exact hmem)]⟩
   · -- r₁ = 1, Q = ⊥
     have : r₁ = 1 := by obtain ⟨m, rfl⟩ := hodd; omega
     subst this
