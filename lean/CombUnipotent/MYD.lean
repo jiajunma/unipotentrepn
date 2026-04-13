@@ -586,6 +586,85 @@ theorem thetaLift_BM_sign_std (E : ILS) (n : ℤ)
       sign_cons_nonneg _ _ h.1 h.2]
   ext <;> simp <;> omega
 
+/-! ## T² = id and twist algebraic properties -/
+
+private theorem mapIdx_id_ILS (E : ILS) :
+    E.mapIdx (fun _ (pq : ℤ × ℤ) => pq) = E := by
+  induction E with
+  | nil => rfl
+  | cons hd tl ih => simp [List.mapIdx_cons, ih]
+
+/-- charTwistCMRow is an involution: applying it twice gives the identity.
+    Reference: [BMSZ] Equation (9.17): T² = id. -/
+theorem charTwistCMRow_involutive (j : ℤ) (i : ℕ) (pq : ℤ × ℤ) :
+    charTwistCMRow j i (charTwistCMRow j i pq) = pq := by
+  simp only [charTwistCMRow]; split <;> simp [neg_neg]
+
+/-- T² = id: charTwistCM is an involution.
+    Reference: [BMSZ] Equation (9.17). -/
+theorem charTwistCM_involutive (E : ILS) (j : ℤ) :
+    charTwistCM (charTwistCM E j) j = E := by
+  simp only [charTwistCM, List.mapIdx_mapIdx]
+  have : (fun i => (fun pq => charTwistCMRow j i pq) ∘ fun pq => charTwistCMRow j i pq) =
+      fun _ (pq : ℤ × ℤ) => pq := by
+    funext i pq; show charTwistCMRow j i (charTwistCMRow j i pq) = pq
+    exact charTwistCMRow_involutive j i pq
+  rw [this, mapIdx_id_ILS]
+
+/-- twistBDRow is an involution when tp, tn ∈ {1, -1}. -/
+theorem twistBDRow_involutive (i : ℕ) (tp tn : ℤ) (pq : ℤ × ℤ)
+    (htp : tp = 1 ∨ tp = -1) (htn : tn = 1 ∨ tn = -1) :
+    twistBDRow i tp tn (twistBDRow i tp tn pq) = pq := by
+  simp only [twistBDRow]; split
+  · rfl
+  · rename_i h; simp only [h, ite_false]
+    have h1 : ∀ (a b : ℤ) (k m : ℕ), (a = 1 ∨ a = -1) → (b = 1 ∨ b = -1) →
+        (a ^ k * b ^ m) * (a ^ k * b ^ m) = 1 := by
+      intro a b k m ha hb
+      rcases ha with rfl | rfl <;> rcases hb with rfl | rfl <;> simp [← pow_add]
+    ext
+    · show (tp ^ _ * tn ^ _) * ((tp ^ _ * tn ^ _) * pq.1) = pq.1
+      rw [← mul_assoc, h1 tp tn _ _ htp htn, one_mul]
+    · show (tn ^ _ * tp ^ _) * ((tn ^ _ * tp ^ _) * pq.2) = pq.2
+      rw [← mul_assoc, h1 tn tp _ _ htn htp, one_mul]
+
+/-- twistBD is an involution when tp, tn ∈ {1, -1}. -/
+theorem twistBD_involutive (E : ILS) (tp tn : ℤ)
+    (htp : tp = 1 ∨ tp = -1) (htn : tn = 1 ∨ tn = -1) :
+    twistBD (twistBD E tp tn) tp tn = E := by
+  simp only [twistBD, List.mapIdx_mapIdx]
+  have : (fun i => (fun pq => twistBDRow i tp tn pq) ∘ fun pq => twistBDRow i tp tn pq) =
+      fun _ (pq : ℤ × ℤ) => pq := by
+    funext i pq; show twistBDRow i tp tn (twistBDRow i tp tn pq) = pq
+    exact twistBDRow_involutive i tp tn pq htp htn
+  rw [this, mapIdx_id_ILS]
+
+/-- charTwistCM with even j is identity (T⁰ = T² = id).
+    Since T² = id, only the parity of j matters. -/
+theorem charTwistCM_even (E : ILS) (j : ℤ) (hj : j % 2 = 0) :
+    charTwistCM E j = E := by
+  simp only [charTwistCM]
+  have : (fun i (pq : ℤ × ℤ) => charTwistCMRow j i pq) = fun _ pq => pq := by
+    funext i pq; simp only [charTwistCMRow, hj, show ¬(0 : ℤ) = 1 from by omega,
+      false_and, ite_false]
+  rw [this, mapIdx_id_ILS]
+
+/-- charTwistCM depends only on parity of j. -/
+theorem charTwistCM_parity (E : ILS) (j₁ j₂ : ℤ) (h : j₁ % 2 = j₂ % 2) :
+    charTwistCM E j₁ = charTwistCM E j₂ := by
+  simp only [charTwistCM]; congr 1; funext i pq
+  simp only [charTwistCMRow]
+  have : (j₁ % 2 = 1 ∧ (i + 1) % 4 = 2) = (j₂ % 2 = 1 ∧ (i + 1) % 4 = 2) := by rw [h]
+  simp only [this]
+
+/-- Augmentation by (0,0) and sign. -/
+theorem sign_augment_zero (E : ILS) :
+    sign (augment (0, 0) E) = ((firstColSign E).2 + (sign E).1,
+                               (firstColSign E).1 + (sign E).2) := by
+  rw [show augment (0, 0) E = ((0 : ℤ), (0 : ℤ)) :: E from rfl,
+      sign_cons_nonneg _ _ le_rfl le_rfl]
+  ext <;> simp <;> ring
+
 end ILS
 
 /-! ## Key theorem statement: signature matching
