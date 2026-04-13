@@ -190,19 +190,65 @@ theorem card_PBPSet_C_eq_countPBP_C (dp : DualPart) (μP μQ : YoungDiagram)
       fun r hr => hodd r (List.mem_cons_of_mem _ hr)
     have h_sub := shiftLeft_Q_le_P_of_dp hP hQ hsort hodd
     have hQ_D : (YoungDiagram.shiftLeft μQ).colLens = dpartColLensQ_D dp_D := by
-      sorry
+      by_cases hr₁ : r₁ > 1
+      · exact shiftLeft_Q_eq_D_Q hQ hr₁
+      · -- r₁ = 1 → r₂ = 1 (sorted) → all rest ≤ 1 → Q = ⊥
+        have hr₁_eq : r₁ = 1 := by obtain ⟨m, rfl⟩ := hr₁_odd; omega
+        subst hr₁_eq
+        have hr₂_le : r₂ ≤ 1 := hr₁_ge_r₂
+        have hr₂_eq : r₂ = 1 := by obtain ⟨m, rfl⟩ := hr₂_odd; omega
+        subst hr₂_eq
+        have hrest_le := rest_all_one_of_sorted_r2_one 1 rest hsort
+        have hQ_nil : μQ.colLens = [] := by
+          rw [hQ]; simp [dpartColLensQ_C]
+          exact dpartColLensQ_D_eq_nil_of_le_one (1 :: rest) (by
+            intro r hr; rcases List.mem_cons.mp hr with rfl | hr
+            · omega
+            · exact hrest_le r hr)
+        have hμQ := yd_of_colLens_nil hQ_nil
+        rw [hμQ, shiftLeft_bot, colLens_bot]
+        exact (dpartColLensQ_D_eq_nil_of_le_one dp_D (by
+          intro r hr; rcases List.mem_cons.mp hr with rfl | hr
+          · omega
+          · exact hrest_le r hr)).symm
+    -- colLen formulas
+    have hQ_col0 : μQ.colLen 0 = (r₁ - 1) / 2 := by
+      by_cases hr₁ : r₁ > 1
+      · exact colLen_0_eq_of_colLens_cons (by
+          rw [hQ, dpartColLensQ_C_cons₂_pos _ _ _ hr₁])
+      · have : r₁ = 1 := by obtain ⟨m, rfl⟩ := hr₁_odd; omega
+        subst this; simp
+        have hQ_nil : μQ.colLens = [] := by
+          rw [hQ]; simp [dpartColLensQ_C]
+          have hr₂_eq : r₂ = 1 := by obtain ⟨m, rfl⟩ := hr₂_odd; omega
+          subst hr₂_eq
+          exact dpartColLensQ_D_eq_nil_of_le_one (1 :: rest)
+            (by intro r hr; rcases List.mem_cons.mp hr with rfl | hr
+                · omega
+                · exact rest_all_one_of_sorted_r2_one 1 rest hsort r hr)
+        rw [yd_of_colLens_nil hQ_nil, colLen_bot]
+    have hP_col0 : μP.colLen 0 = (r₂ + 1) / 2 := by
+      have hexp : ∃ t, dpartColLensP_D dp_D = (r₂ + 1) / 2 :: t := by
+        show ∃ t, dpartColLensP_D (r₂ :: rest) = _
+        match rest with
+        | [] => exact ⟨[], by simp [dpartColLensP_D]⟩
+        | r₃ :: rest' => exact ⟨dpartColLensP_D rest', by rfl⟩
+      obtain ⟨t, ht⟩ := hexp
+      exact colLen_0_eq_of_colLens_cons (by rw [hP_D, ht])
     show Fintype.card (PBPSet .C μP μQ) = countPBP_C (r₁ :: r₂ :: rest)
     simp only [countPBP_C]
     by_cases h_prim : r₁ > r₂
     · simp only [if_pos h_prim]
-      have h_prim_geo : μQ.colLen 0 ≥ μP.colLen 0 := by sorry
+      have h_prim_geo : μQ.colLen 0 ≥ μP.colLen 0 := by
+        rw [hP_col0, hQ_col0]; obtain ⟨a, rfl⟩ := hr₁_odd; obtain ⟨b, rfl⟩ := hr₂_odd; omega
       rw [card_C_eq_card_D_primitive h_sub h_prim_geo]
       exact card_PBPSet_D_eq_tripleSum_countPBP_D dp_D μP
         (YoungDiagram.shiftLeft μQ) hP_D hQ_D hsort_D hodd_D
     · push_neg at h_prim
       have hr₁_eq : r₁ = r₂ := le_antisymm h_prim hr₁_ge_r₂
       simp only [if_neg (by omega : ¬(r₁ > r₂))]
-      have h_bal_geo : μP.colLen 0 = μQ.colLen 0 + 1 := by sorry
+      have h_bal_geo : μP.colLen 0 = μQ.colLen 0 + 1 := by
+        rw [hP_col0, hQ_col0, hr₁_eq]; obtain ⟨a, rfl⟩ := hr₂_odd; omega
       rw [card_C_eq_DD_plus_RC_balanced h_sub h_bal_geo]
       have hne_D : dp_D ≠ [] := List.cons_ne_nil _ _
       have ⟨h_dd, h_rc⟩ := card_PBPSet_D_per_tc dp_D μP
