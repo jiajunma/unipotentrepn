@@ -135,7 +135,9 @@ noncomputable def descentCD_PBP {μP μQ : YoungDiagram}
         by_contra hne
         have : j₁ < j₂ ∨ j₂ < j₁ := Nat.lt_or_gt_of_ne hne
         -- C-type: dotScolLen(P,j) ≤ Q.colLen(j) since P dots ⊆ Q
-        have h_ds_le_Q : ∀ k, PBP.dotScolLen τ.val.P k ≤ τ.val.Q.shape.colLen k := by sorry
+        -- C-type: dotScolLen(P,k) ≤ Q.colLen(k) since P dots ⊆ Q via dot_match
+        have h_ds_le_Q : ∀ k, PBP.dotScolLen τ.val.P k ≤ τ.val.Q.shape.colLen k := by
+          sorry
         rcases this with h | h
         · -- j₁ < j₂: dotScolLen(P, j₂) ≤ Q.colLen(j₂) ≤ Q.colLen(j₁+1) ≤ i < dotScolLen(P, j₂)
           have hQ_anti : τ.val.Q.shape.colLen j₂ ≤ τ.val.Q.shape.colLen (j₁ + 1) := by
