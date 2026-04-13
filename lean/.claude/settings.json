@@ -1,0 +1,7 @@
+{
+  "enabledPlugins": {
+    "lean4@archon-local": true,
+    "lean4@lean4-skills": true,
+    "lean4-contribute@lean4-skills": true
+  }
+}

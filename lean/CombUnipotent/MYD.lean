@@ -707,6 +707,12 @@ theorem charTwistCM_involutive (E : ILS) (j : ℤ) :
     exact charTwistCMRow_involutive j i pq
   rw [this, mapIdx_id_ILS]
 
+/-- charTwistCM is injective (for a fixed j). Follows from involutivity. -/
+theorem charTwistCM_injective (j : ℤ) : Function.Injective (fun E => charTwistCM E j) := by
+  intro E₁ E₂ h
+  have := congrArg (fun E => charTwistCM E j) h
+  simp [charTwistCM_involutive] at this; exact this
+
 /-- twistBDRow is an involution when tp, tn ∈ {1, -1}. -/
 theorem twistBDRow_involutive (i : ℕ) (tp tn : ℤ) (pq : ℤ × ℤ)
     (htp : tp = 1 ∨ tp = -1) (htn : tn = 1 ∨ tn = -1) :
@@ -1090,6 +1096,17 @@ def ACResult.MultiplicityFree (ac : ACResult) : Prop :=
   ∀ i j (hi : i < ac.length) (hj : j < ac.length), i ≠ j →
     (ac[i]'hi).2 ≠ (ac[j]'hj).2
 
+/-- MultiplicityFree is equivalent to List.Pairwise on .2 components. -/
+theorem ACResult.multiplicityFree_iff_pairwise (ac : ACResult) :
+    ac.MultiplicityFree ↔ List.Pairwise (fun x y => x.2 ≠ y.2) ac := by
+  constructor
+  · intro hmf; rw [List.pairwise_iff_getElem]
+    intro i j hi hj h_lt; exact hmf i j hi hj (Nat.ne_of_lt h_lt)
+  · intro hp i j hi hj h_ne; rw [List.pairwise_iff_getElem] at hp
+    rcases Nat.lt_or_gt_of_ne h_ne with h_lt | h_gt
+    · exact hp i j hi hj h_lt
+    · intro h_eq; exact hp j i hj hi h_gt h_eq.symm
+
 /-- An ACResult is nonzero if it has at least one component. -/
 def ACResult.Nonzero (ac : ACResult) : Prop := ac ≠ []
 
@@ -1181,13 +1198,36 @@ Proof by induction on rows of Ǒ, using:
 
 We prove the preservation lemmas above and state the full theorem. -/
 
-/-- Theta lift on ACResult preserves multiplicity free.
-    Key: the lift is injective on ILS (augment after charTwistCM, both injective).
-    Different source ILS → different lifted ILS (when lift is nonempty). -/
+/-- Theta lift on ACResult preserves multiplicity free for B/D targets.
+    For targets D, Bplus, Bminus, the lift returns at most 1 element per source ILS
+    (thetaLift_CD and thetaLift_MB return [] or [single]), so injectivity follows from
+    charTwistCM being injective (involutive) and augment (cons) being injective.
+
+    Note: the unrestricted statement (for all targets) is FALSE for C and M targets,
+    since thetaLift_DC and thetaLift_BM can produce collisions from different source ILS.
+    Counterexample: thetaLift_DC [(0,0)] 0 = thetaLift_DC [(1,0)] 0 = [[(0,0),(0,0)]]. -/
 theorem ACResult.thetaLift_multiplicityFree (ac : ACResult) (target : RootType) (p q : ℤ)
+    (htarget : target = .D ∨ target = .Bplus ∨ target = .Bminus)
     (hmf : ac.MultiplicityFree) :
     (ac.thetaLift target p q).MultiplicityFree := by
-  sorry -- needs injectivity of theta lift on ILS
+  rw [(ac.thetaLift target p q).multiplicityFree_iff_pairwise]
+  simp only [ACResult.thetaLift]
+  rw [List.pairwise_flatMap]
+  constructor
+  · intro ⟨c, ils⟩ _
+    rcases htarget with rfl | rfl | rfl <;>
+      simp only [ILS.thetaLift, ILS.thetaLift_CD, ILS.thetaLift_MB] <;>
+      (split <;> [exact List.pairwise_singleton _ _; exact List.Pairwise.nil])
+  · rw [ac.multiplicityFree_iff_pairwise] at hmf
+    exact hmf.imp fun {a b} hab x hx y hy => by
+      simp only [List.mem_map] at hx hy
+      obtain ⟨r₁, hr₁, rfl⟩ := hx
+      obtain ⟨r₂, hr₂, rfl⟩ := hy
+      rcases htarget with rfl | rfl | rfl <;>
+        simp only [ILS.thetaLift, ILS.thetaLift_CD, ILS.thetaLift_MB] at hr₁ hr₂ <;>
+        split at hr₁ <;> split at hr₂ <;> simp at hr₁ hr₂ <;> (
+        subst hr₁; subst hr₂; simp only [ILS.augment]
+        intro h; exact hab (ILS.charTwistCM_injective _ (List.tail_eq_of_cons_eq h)))
 
 /-- Proposition 11.7: L_τ is multiplicity free. -/
 theorem AC.step_multiplicityFree_BD (source : ACResult) (p q : ℤ) (ε_τ ε_wp : Fin 2)
@@ -1200,11 +1240,14 @@ theorem AC.step_multiplicityFree_BD (source : ACResult) (p q : ℤ) (ε_τ ε_wp
   simp only [AC.step]
   have h_not_CM : ¬(γ = .C ∨ γ = .M) := by rcases hγ with rfl | rfl | rfl <;> decide
   rw [if_neg h_not_CM]
+  -- Reorder hγ to match thetaLift_multiplicityFree's hypothesis
+  have htarget : γ = .D ∨ γ = .Bplus ∨ γ = .Bminus := by
+    rcases hγ with rfl | rfl | rfl <;> simp
   -- Post-twist preserves mult-free, so reduce to showing thetaLift preserves it
   split
   · exact ACResult.twistBD_multiplicityFree _ _ _ (Or.inl rfl) (Or.inr rfl)
-      (ACResult.thetaLift_multiplicityFree source γ p q hmf)
-  · exact ACResult.thetaLift_multiplicityFree source γ p q hmf
+      (ACResult.thetaLift_multiplicityFree source γ p q htarget hmf)
+  · exact ACResult.thetaLift_multiplicityFree source γ p q htarget hmf
 
 /-! ## Proposition 11.8: Nonzero and truncation properties
 
