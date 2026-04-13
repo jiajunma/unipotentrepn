@@ -68,15 +68,39 @@ noncomputable def descentCD_PBP {μP μQ : YoungDiagram}
   -- dot_match extracted
   have h_dot_fwd : ∀ i j, (i, j) ∈ μP → PBP.descentPaintL_CD τ.val i j = .dot →
       (i, j) ∈ YoungDiagram.shiftLeft μQ := by
-    sorry
+    intro i j hmemP hpaint
+    simp only [PBP.descentPaintL_CD] at hpaint
+    split_ifs at hpaint with h1 h2
+    · rw [hQsh] at h1
+      exact YoungDiagram.mem_shiftLeft.mpr (YoungDiagram.mem_iff_lt_colLen.mpr h1)
+    · exact absurd (C_dot_lt_dotScolLen hγ (by rw [hPsh]; exact hmemP) hpaint) h2
   have h_dot_bwd : ∀ i j, (i, j) ∈ YoungDiagram.shiftLeft μQ →
       (i, j) ∈ μP ∧ PBP.descentPaintL_CD τ.val i j = .dot := by
-    sorry
+    intro i j hmemQ
+    have h_lt : i < τ.val.Q.shape.colLen (j + 1) := by
+      rw [hQsh]
+      have := YoungDiagram.mem_shiftLeft.mp hmemQ
+      exact YoungDiagram.mem_iff_lt_colLen.mp this
+    exact ⟨h_sub hmemQ, by simp [PBP.descentPaintL_CD, if_pos h_lt]⟩
   -- row_s: s in descent paint zones
   -- s in descent paint only from zone 2
   have h_s_zone : ∀ i j, PBP.descentPaintL_CD τ.val i j = .s →
       i ≥ τ.val.Q.shape.colLen (j + 1) ∧ i < PBP.dotScolLen τ.val.P j := by
-    sorry
+    intro i j h
+    unfold PBP.descentPaintL_CD at h
+    by_cases h1 : i < τ.val.Q.shape.colLen (j + 1)
+    · simp [if_pos h1] at h  -- zone 1: .dot = .s → absurd
+    · rw [if_neg h1] at h
+      by_cases h2 : i < PBP.dotScolLen τ.val.P j
+      · exact ⟨Nat.le_of_not_lt h1, h2⟩  -- zone 2: .s = .s, extract bounds
+      · -- zone 3: P.paint = .s, impossible
+        rw [if_neg h2] at h
+        exfalso
+        by_cases hmem : (i, j) ∈ τ.val.P.shape
+        · have hsym := τ.val.sym_P i j hmem; rw [hγ] at hsym
+          simp [DRCSymbol.allowed] at hsym
+          rcases hsym with hp | hp | hp | hp <;> rw [hp] at h <;> simp at h
+        · rw [τ.val.P.paint_outside i j hmem] at h; simp at h
   exact ⟨{
     γ := .D
     P := {
