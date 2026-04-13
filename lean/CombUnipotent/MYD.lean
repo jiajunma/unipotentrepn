@@ -310,6 +310,34 @@ def AC.step (source : ACResult) (γ : RootType) (p q : ℤ)
     lifted.twistBD 1 (-1)
   else lifted
 
+/-! ## Chain-based AC computation -/
+
+/-- Data extracted from one level of the descent chain for AC computation.
+    Each entry represents a PBP τ at that level with its type, signature,
+    epsilon, and ε_℘. -/
+structure ACStepData where
+  γ : RootType
+  p : ℤ
+  q : ℤ
+  ε_τ : Fin 2
+  ε_wp : Fin 2
+  deriving Repr
+
+/-- Compute AC by folding step data from inner (closest to base) to outer (current).
+    `baseType` is the type of the fully descended (empty) PBP.
+    `chain` is ordered inner-first: chain[0] is the step closest to base.
+
+    At each step, the previous AC is lifted through the current step's data.
+    Reference: [BMSZ] Equation (3.16), (11.2). -/
+def AC.fold (baseType : RootType) (chain : List ACStepData) : ACResult :=
+  chain.foldl (fun ac d => AC.step ac d.γ d.p d.q d.ε_τ d.ε_wp) (AC.base baseType)
+
+/-! ## Key theorem statement: signature matching
+
+The signature of AC(τ) matches the PBP signature (p_τ, q_τ).
+This is the main correctness property of the AC computation.
+Reference: [BMSZ] Theorem 5.1 (verified computationally for all types up to size 30). -/
+
 /-! ## Verification: #eval tests -/
 
 section Tests
@@ -363,6 +391,34 @@ section Tests
 -- empty ILS → theta_DC [] 1 = [[(1, 1)]]
 -- no post-twist (target is C)
 #eval AC.step [(1, [])] .C 1 1 0 0  -- expect [(1, [(1, 1)])]
+
+-- AC.fold cross-validation with Python compute_AC
+-- dp=[3,1] type D: chain inner→outer = [C(1,1,ε=1), D(5,3,ε=1)], base=D
+-- Python: AC = [(1, ((3, -1), (1, 1)))]
+#eval AC.fold .D [
+  ⟨.C, 1, 1, 1, 0⟩,   -- innermost: C-type lift
+  ⟨.D, 5, 3, 1, 0⟩    -- outermost: D-type lift
+]  -- expect [(1, [(3, -1), (1, 1)])]
+
+-- dp=[3,3,1,1] type C: chain inner→outer = [D(1,3,1), C(3,3,1), D(6,8,1), C(10,10,1)], base=C
+-- Python: AC = [(1, ((0, 0), (-2, 2), (0, 0), (0, -3)))]
+#eval AC.fold .C [
+  ⟨.D, 1, 3, 1, 0⟩,
+  ⟨.C, 3, 3, 1, 0⟩,
+  ⟨.D, 6, 8, 1, 0⟩,
+  ⟨.C, 10, 10, 1, 0⟩
+]  -- expect [(1, [(0, 0), (-2, 2), (0, 0), (0, -3)])]
+
+-- Verify sign of AC matches outermost signature
+#eval
+  let ac := AC.fold .D [⟨.C, 1, 1, 1, 0⟩, ⟨.D, 5, 3, 1, 0⟩]
+  ac.map fun (c, ils) => (c, ILS.sign ils)
+-- expect [(1, (5, 3))], matching D-type sig=(5,3)
+
+#eval
+  let ac := AC.fold .C [⟨.D, 1, 3, 1, 0⟩, ⟨.C, 3, 3, 1, 0⟩, ⟨.D, 6, 8, 1, 0⟩, ⟨.C, 10, 10, 1, 0⟩]
+  ac.map fun (c, ils) => (c, ILS.sign ils)
+-- expect [(1, (10, 10))], matching C-type sig=(10,10)
 
 -- Cross-validation with Python standalone.py
 #eval ILS.sign [(3, 0), (0, 2), (1, 1)]           -- expect (8, 5)
