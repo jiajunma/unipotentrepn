@@ -137,7 +137,20 @@ noncomputable def descentCD_PBP {μP μQ : YoungDiagram}
         -- C-type: dotScolLen(P,j) ≤ Q.colLen(j) since P dots ⊆ Q
         -- C-type: dotScolLen(P,k) ≤ Q.colLen(k) since P dots ⊆ Q via dot_match
         have h_ds_le_Q : ∀ k, PBP.dotScolLen τ.val.P k ≤ τ.val.Q.shape.colLen k := by
-          sorry
+          intro k; unfold PBP.dotScolLen
+          rw [YoungDiagram.colLen_eq_card]
+          apply Finset.card_le_card
+          intro ⟨ci, ck⟩ hmem
+          simp only [Finset.mem_filter, YoungDiagram.mem_cells, YoungDiagram.col] at hmem ⊢
+          obtain ⟨hP, hk, hlo⟩ := hmem
+          refine ⟨?_, hk⟩
+          -- (ci, ck) ∈ Q: layerOrd ≤ 1 in C-type → dot → in Q by dot_match
+          have hdot : τ.val.P.paint ci ck = .dot := by
+            have hsym := τ.val.sym_P ci ck hP; rw [hγ] at hsym
+            simp [DRCSymbol.allowed] at hsym
+            rcases hsym with hp | hp | hp | hp <;> rw [hp] at hlo ⊢ <;>
+              simp [DRCSymbol.layerOrd] at hlo ⊢
+          exact (τ.val.dot_match ci ck).mp ⟨hP, hdot⟩ |>.1
         rcases this with h | h
         · -- j₁ < j₂: dotScolLen(P, j₂) ≤ Q.colLen(j₂) ≤ Q.colLen(j₁+1) ≤ i < dotScolLen(P, j₂)
           have hQ_anti : τ.val.Q.shape.colLen j₂ ≤ τ.val.Q.shape.colLen (j₁ + 1) := by
@@ -219,8 +232,11 @@ theorem card_PBPSet_C_singleton (r₁ : ℕ) {μP μQ : YoungDiagram}
   have hP_nil : μP = ⊥ := yd_of_colLens_nil (by rw [hP]; rfl)
   subst hP_nil
   by_cases hr : r₁ > 1
-  · -- Q has cells, all forced to s. P = ⊥ means all Q cells are non-dot (by dot_match).
-    -- The unique PBP has P = all dot, Q = all s.
+  · -- P = ⊥. For any C-type PBP:
+    -- P paint = dot everywhere (paint_outside, since ⊥ has no cells)
+    -- For (i,j) ∈ Q: dot_match LHS = False (since (i,j) ∉ ⊥), so RHS = False,
+    --   so Q(i,j) ≠ dot, so Q(i,j) = s (only other C-type Q symbol)
+    -- Q paint is fully determined. Hence card = 1.
     sorry
   · -- r₁ = 1, Q = ⊥
     have : r₁ = 1 := by obtain ⟨m, rfl⟩ := hodd; omega
