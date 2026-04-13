@@ -350,7 +350,26 @@ theorem card_C_eq_DD_plus_RC_balanced {μP μQ : YoungDiagram}
         tailClass_D σ.val = .DD)).card +
       (Finset.univ.filter (fun σ : PBPSet .D μP (YoungDiagram.shiftLeft μQ) =>
         tailClass_D σ.val = .RC)).card := by
-  sorry
+  -- Use: |C| = |image of descent| = |{σ ∈ D | tc ≠ SS}| = |DD| + |RC|
+  -- Forward: descent maps into DD ∪ RC (descentCD_not_SS)
+  -- Backward: DD ∪ RC PBPs have preimages (liftCD_PBP + round trip)
+  -- Total = DD + RC + SS, image = DD + RC
+  have h_total := card_PBPSet_eq_sum_tc μP (YoungDiagram.shiftLeft μQ)
+  -- |C| ≤ |DD| + |RC|: descent is injective and image ⊆ DD ∪ RC
+  have h_le : Fintype.card (PBPSet .C μP μQ) ≤
+      (Finset.univ.filter (fun σ : PBPSet .D μP (YoungDiagram.shiftLeft μQ) =>
+        tailClass_D σ.val = .DD)).card +
+      (Finset.univ.filter (fun σ : PBPSet .D μP (YoungDiagram.shiftLeft μQ) =>
+        tailClass_D σ.val = .RC)).card := by
+    sorry
+  -- |C| ≥ |DD| + |RC|: lift DD∪RC PBPs to C-type
+  have h_ge : Fintype.card (PBPSet .C μP μQ) ≥
+      (Finset.univ.filter (fun σ : PBPSet .D μP (YoungDiagram.shiftLeft μQ) =>
+        tailClass_D σ.val = .DD)).card +
+      (Finset.univ.filter (fun σ : PBPSet .D μP (YoungDiagram.shiftLeft μQ) =>
+        tailClass_D σ.val = .RC)).card := by
+    sorry
+  omega
 
 /-! ## Base case -/
 
