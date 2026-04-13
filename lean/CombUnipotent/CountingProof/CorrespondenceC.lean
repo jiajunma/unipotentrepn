@@ -264,7 +264,26 @@ noncomputable def liftCD_raw (σ : PBP) (hγ : σ.γ = .D)
     intro i j hmem; simp only [liftPaintQ_CD]; split_ifs with h
     · exact Or.inr rfl
     · exact Or.inl rfl
-  dot_match := sorry
+  dot_match := by
+    intro i j; constructor
+    · -- Forward: liftP = dot ∧ ∈ μP → ∈ μQ ∧ liftQ = dot
+      intro ⟨hmemP, hpaint⟩
+      simp only [liftPaintP_CD] at hpaint
+      split_ifs at hpaint with h
+      · -- σ.P layerOrd ≤ 1. Need ∈ μQ.
+        -- D-type dot_match: P = dot → ∈ shiftLeft μQ. shiftLeft μQ ⊆ μQ.
+        -- For s: use anti-mono argument.
+        sorry
+      · exact absurd hpaint (by decide)
+    · -- Backward: ∈ μQ ∧ liftQ = dot → liftP = dot ∧ ∈ μP
+      intro ⟨hmemQ, hpaint⟩
+      simp only [liftPaintQ_CD] at hpaint
+      -- s = dot auto-closes. Remaining: ¬condition → liftQ = dot.
+      split_ifs at hpaint with h
+      -- h: ¬(∈ μQ ∧ (∉ μP ∨ layerOrd > 1)). Since ∈ μQ: ∈ μP ∧ layerOrd ≤ 1.
+      push_neg at h
+      have h' := h hmemQ
+      exact ⟨h'.1, by simp [liftPaintP_CD, h'.2]⟩
   mono_P := by
     intro i₁ j₁ i₂ j₂ hi hj hmem₂
     show (liftPaintP_CD σ i₁ j₁).layerOrd ≤ (liftPaintP_CD σ i₂ j₂).layerOrd
@@ -274,7 +293,25 @@ noncomputable def liftCD_raw (σ : PBP) (hγ : σ.γ = .D)
     · simp [DRCSymbol.layerOrd]
     · exfalso; exact absurd (σ.mono_P i₁ j₁ i₂ j₂ hi hj (by rw [hPsh]; exact hmem₂)) (by omega)
     · exact σ.mono_P i₁ j₁ i₂ j₂ hi hj (by rw [hPsh]; exact hmem₂)
-  mono_Q := sorry
+  mono_Q := by
+    intro i₁ j₁ i₂ j₂ hi hj hmem₂
+    show (liftPaintQ_CD σ μP μQ i₁ j₁).layerOrd ≤ (liftPaintQ_CD σ μP μQ i₂ j₂).layerOrd
+    simp only [liftPaintQ_CD]
+    by_cases h2 : (i₂, j₂) ∈ μQ ∧ ((i₂, j₂) ∉ μP ∨ ¬(σ.P.paint i₂ j₂).layerOrd ≤ 1)
+    · rw [if_pos h2]; split_ifs <;> simp [DRCSymbol.layerOrd]  -- anything ≤ s(1)
+    · rw [if_neg h2]  -- Q(i₂) = dot(0). Need Q(i₁) = dot(0).
+      by_cases h1 : (i₁, j₁) ∈ μQ ∧ ((i₁, j₁) ∉ μP ∨ ¬(σ.P.paint i₁ j₁).layerOrd ≤ 1)
+      · -- Q(i₁) = s but Q(i₂) = dot. Contradiction.
+        exfalso; push_neg at h2
+        obtain ⟨hmQ₁, hcase₁⟩ := h1
+        obtain ⟨hmP₂, hlo₂⟩ := h2 hmem₂
+        rcases hcase₁ with hnoP₁ | hhi₁
+        · exact hnoP₁ (μP.isLowerSet (show (i₁, j₁) ≤ (i₂, j₂) from ⟨hi, hj⟩) hmP₂)
+        · have hmP₁ : (i₁, j₁) ∈ σ.P.shape := by
+            by_contra hout; exact hhi₁ (by rw [σ.P.paint_outside i₁ j₁ hout]; decide)
+          exact absurd (σ.mono_P i₁ j₁ i₂ j₂ hi hj (by rw [hPsh]; exact hmP₂))
+            (by omega)
+      · rw [if_neg h1]  -- dot ≤ dot
   row_s := by
     intro i s₁ s₂ j₁ j₂ h₁ h₂
     simp only [paintBySide] at h₁ h₂
