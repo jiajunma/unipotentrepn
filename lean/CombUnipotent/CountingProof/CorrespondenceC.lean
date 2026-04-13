@@ -293,23 +293,55 @@ noncomputable def liftCD_PBP {μP μQ : YoungDiagram}
     (σ : PBPSet .D μP (YoungDiagram.shiftLeft μQ))
     (h_sub : YoungDiagram.shiftLeft μQ ≤ μP) :
     PBPSet .C μP μQ := by
+  have hγ : σ.val.γ = .D := σ.prop.1
+  have hPsh : σ.val.P.shape = μP := σ.prop.2.1
+  have hQsh : σ.val.Q.shape = YoungDiagram.shiftLeft μQ := σ.prop.2.2
+  -- Extract: r/c/d preserved from D-type
+  have h_rcd : ∀ i j, (σ.val.P.paint i j).layerOrd > 1 →
+      liftPaintP_CD σ.val i j = σ.val.P.paint i j := by
+    intro i j h; simp [liftPaintP_CD, show ¬(σ.val.P.paint i j).layerOrd ≤ 1 by omega]
   exact ⟨{
     γ := .C
     P := { shape := μP, paint := liftPaintP_CD σ.val
-           paint_outside := sorry }
+           paint_outside := fun i j hmem => by
+             simp [liftPaintP_CD, σ.val.P.paint_outside i j (by rw [hPsh]; exact hmem)] }
     Q := { shape := μQ, paint := liftPaintQ_CD σ.val μQ
-           paint_outside := sorry }
-    sym_P := sorry
-    sym_Q := sorry
+           paint_outside := fun i j hmem => by simp [liftPaintQ_CD, hmem] }
+    sym_P := by
+      intro i j hmem; simp only [liftPaintP_CD]
+      split_ifs with h
+      · exact Or.inl rfl  -- dot is allowed for C-L
+      · -- layerOrd > 1: paint ∈ {r,c,d} (D-type allows all, C-L allows dot/r/c/d)
+        have := σ.val.sym_P i j (by rw [hPsh]; exact hmem)
+        -- paint has layerOrd > 1, so ∈ {r, c, d} — all allowed for C-L
+        cases hp : σ.val.P.paint i j <;> (rw [hp] at h; simp [DRCSymbol.layerOrd] at h) <;>
+          simp [DRCSymbol.allowed]
+    sym_Q := by
+      intro i j hmem; simp only [liftPaintQ_CD]
+      split_ifs with h
+      · exact Or.inr rfl  -- s is allowed for C-R
+      · exact Or.inl rfl  -- dot is allowed for C-R
     dot_match := sorry
     mono_P := sorry
     mono_Q := sorry
     row_s := sorry
     row_r := sorry
-    col_c_P := sorry
-    col_c_Q := sorry
-    col_d_P := sorry
-    col_d_Q := sorry
+    col_c_P := by
+      intro j i₁ i₂ h₁ h₂; simp only [liftPaintP_CD] at h₁ h₂
+      split_ifs at h₁ with ha₁ <;> split_ifs at h₂ with ha₂ <;>
+        first | exact absurd h₁ (by decide) | exact absurd h₂ (by decide) |
+          exact σ.val.col_c_P j i₁ i₂ h₁ h₂
+    col_c_Q := by
+      intro j i₁ i₂ h₁ h₂; simp only [liftPaintQ_CD] at h₁ h₂
+      split_ifs at h₁ <;> exact absurd h₁ (by decide)
+    col_d_P := by
+      intro j i₁ i₂ h₁ h₂; simp only [liftPaintP_CD] at h₁ h₂
+      split_ifs at h₁ with ha₁ <;> split_ifs at h₂ with ha₂ <;>
+        first | exact absurd h₁ (by decide) | exact absurd h₂ (by decide) |
+          exact σ.val.col_d_P j i₁ i₂ h₁ h₂
+    col_d_Q := by
+      intro j i₁ i₂ h₁ h₂; simp only [liftPaintQ_CD] at h₁ h₂
+      split_ifs at h₁ <;> exact absurd h₁ (by decide)
   }, ⟨rfl, rfl, rfl⟩⟩
 
 /-- Round trip: descent ∘ lift = id on D-type PBPs. -/
