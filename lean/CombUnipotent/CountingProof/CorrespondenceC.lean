@@ -61,14 +61,113 @@ noncomputable def descentCD_raw (τ : PBP) (hγ : τ.γ = .C)
          paint_outside := fun _ _ _ => rfl }
   sym_P := fun _ _ _ => by simp [DRCSymbol.allowed]
   sym_Q := fun _ _ _ => by simp [DRCSymbol.allowed]
-  dot_match := sorry
-  mono_P := sorry
+  dot_match := by
+    intro i j; constructor
+    · intro ⟨hmemP, hpaint⟩
+      simp only [PBP.descentPaintL_CD] at hpaint
+      split_ifs at hpaint with h1 h2
+      · rw [hQsh] at h1
+        exact ⟨YoungDiagram.mem_shiftLeft.mpr (YoungDiagram.mem_iff_lt_colLen.mpr h1), rfl⟩
+      · exact absurd (C_dot_lt_dotScolLen hγ (by rw [hPsh]; exact hmemP) hpaint) h2
+    · intro ⟨hmemQ, _⟩
+      have h_lt : i < τ.Q.shape.colLen (j + 1) := by
+        rw [hQsh]; exact YoungDiagram.mem_iff_lt_colLen.mp (YoungDiagram.mem_shiftLeft.mp hmemQ)
+      exact ⟨hPsh ▸ (h_sub hmemQ), by simp [PBP.descentPaintL_CD, if_pos h_lt]⟩
+  mono_P := by
+    intro i₁ j₁ i₂ j₂ hi hj hmem₂
+    -- Normalize: {shape, paint, ...}.paint i j = paint i j
+    show (PBP.descentPaintL_CD τ i₁ j₁).layerOrd ≤ (PBP.descentPaintL_CD τ i₂ j₂).layerOrd
+    have hmem₂' : (i₂, j₂) ∈ τ.P.shape := by rw [hPsh]; exact hmem₂
+    have hQ_anti := fun a b (h : a ≤ b) => τ.Q.shape.colLen_anti a b h
+    have hDS_anti : ∀ a b, a ≤ b → PBP.dotScolLen τ.P b ≤ PBP.dotScolLen τ.P a := by
+      intro a b h; rw [PBP.dotScolLen_eq_dotSdiag_colLen _ τ.mono_P,
+        PBP.dotScolLen_eq_dotSdiag_colLen _ τ.mono_P]
+      exact (PBP.dotSdiag τ.P τ.mono_P).colLen_anti a b h
+    by_cases hz1 : i₁ < τ.Q.shape.colLen (j₁ + 1)
+    · simp [PBP.descentPaintL_CD, if_pos hz1, DRCSymbol.layerOrd]
+    · by_cases hz2 : i₁ < PBP.dotScolLen τ.P j₁
+      · simp only [PBP.descentPaintL_CD, if_neg hz1, if_pos hz2, DRCSymbol.layerOrd]
+        by_cases hz1' : i₂ < τ.Q.shape.colLen (j₂ + 1)
+        · exfalso; have := hQ_anti (j₁+1) (j₂+1) (by omega); omega
+        · by_cases hz2' : i₂ < PBP.dotScolLen τ.P j₂
+          · simp [PBP.descentPaintL_CD, if_neg hz1', if_pos hz2', DRCSymbol.layerOrd]
+          · simp only [PBP.descentPaintL_CD, if_neg hz1', if_neg hz2']
+            exact le_trans (by omega : 1 ≤ 2)
+              (PBP.layerOrd_gt_one_of_ge_dotScolLen τ.P τ.mono_P (Nat.le_of_not_lt hz2') hmem₂')
+      · simp only [PBP.descentPaintL_CD, if_neg hz1, if_neg hz2]
+        by_cases hz1' : i₂ < τ.Q.shape.colLen (j₂ + 1)
+        · exfalso; have := hQ_anti (j₁+1) (j₂+1) (by omega); omega
+        · by_cases hz2' : i₂ < PBP.dotScolLen τ.P j₂
+          · exfalso; have := hDS_anti j₁ j₂ hj; omega
+          · simp only [PBP.descentPaintL_CD, if_neg hz1', if_neg hz2']
+            exact τ.mono_P i₁ j₁ i₂ j₂ hi hj hmem₂'
   mono_Q := fun _ _ _ _ _ _ _ => by simp [DRCSymbol.layerOrd]
-  row_s := sorry
-  row_r := sorry
-  col_c_P := sorry
+  row_s := by
+    intro i s₁ s₂ j₁ j₂ h₁ h₂
+    simp only [paintBySide] at h₁ h₂
+    cases s₁ <;> cases s₂ <;> simp only at h₁ h₂
+    · -- s zone analysis
+      have h_s_zone : ∀ i' j', PBP.descentPaintL_CD τ i' j' = .s →
+          i' ≥ τ.Q.shape.colLen (j' + 1) ∧ i' < PBP.dotScolLen τ.P j' := by
+        intro i' j' h; unfold PBP.descentPaintL_CD at h
+        by_cases h1 : i' < τ.Q.shape.colLen (j' + 1)
+        · simp [if_pos h1] at h
+        · rw [if_neg h1] at h; by_cases h2 : i' < PBP.dotScolLen τ.P j'
+          · exact ⟨Nat.le_of_not_lt h1, h2⟩
+          · rw [if_neg h2] at h; exfalso
+            by_cases hmem : (i', j') ∈ τ.P.shape
+            · have hsym := τ.sym_P i' j' hmem; rw [hγ] at hsym
+              simp [DRCSymbol.allowed] at hsym
+              rcases hsym with hp | hp | hp | hp <;> rw [hp] at h <;> simp at h
+            · rw [τ.P.paint_outside i' j' hmem] at h; simp at h
+      obtain ⟨hge₁, hlt₁⟩ := h_s_zone i j₁ h₁
+      obtain ⟨hge₂, hlt₂⟩ := h_s_zone i j₂ h₂
+      refine ⟨rfl, ?_⟩
+      by_contra hne; have : j₁ < j₂ ∨ j₂ < j₁ := Nat.lt_or_gt_of_ne hne
+      have h_ds_le_Q : ∀ k, PBP.dotScolLen τ.P k ≤ τ.Q.shape.colLen k := by
+        intro k; unfold PBP.dotScolLen; rw [YoungDiagram.colLen_eq_card]
+        apply Finset.card_le_card; intro ⟨ci, ck⟩ hmem
+        simp only [Finset.mem_filter, YoungDiagram.mem_cells, YoungDiagram.col] at hmem ⊢
+        obtain ⟨hP, hk, hlo⟩ := hmem; refine ⟨?_, hk⟩
+        have hdot : τ.P.paint ci ck = .dot := by
+          have hsym := τ.sym_P ci ck hP; rw [hγ] at hsym
+          simp [DRCSymbol.allowed] at hsym
+          rcases hsym with hp | hp | hp | hp <;> rw [hp] at hlo ⊢ <;>
+            simp [DRCSymbol.layerOrd] at hlo ⊢
+        exact (τ.dot_match ci ck).mp ⟨hP, hdot⟩ |>.1
+      rcases this with h | h
+      · have hQ_anti := τ.Q.shape.colLen_anti (j₁+1) j₂ (by omega)
+        have := h_ds_le_Q j₂; omega
+      · have hQ_anti := τ.Q.shape.colLen_anti (j₂+1) j₁ (by omega)
+        have := h_ds_le_Q j₁; omega
+    · exact absurd h₂ (by simp)
+    · exact absurd h₁ (by simp)
+    · exact absurd h₁ (by simp)
+  row_r := by
+    intro i s₁ s₂ j₁ j₂ h₁ h₂
+    simp only [paintBySide] at h₁ h₂
+    cases s₁ <;> cases s₂ <;> simp only at h₁ h₂
+    · have hr : ∀ i' j', PBP.descentPaintL_CD τ i' j' = .r → τ.P.paint i' j' = .r := by
+        intro i' j' h; simp only [PBP.descentPaintL_CD] at h
+        split_ifs at h with ha hb <;> first | exact absurd h (by decide) | exact h
+      exact ⟨rfl, (τ.row_r i .L .L j₁ j₂
+        (by simp [paintBySide]; exact hr i j₁ h₁) (by simp [paintBySide]; exact hr i j₂ h₂)).2⟩
+    · exact absurd h₂ (by simp)
+    · exact absurd h₁ (by simp)
+    · exact absurd h₁ (by simp)
+  col_c_P := by
+    intro j i₁ i₂ h₁ h₂
+    have hc : ∀ i' j', PBP.descentPaintL_CD τ i' j' = .c → τ.P.paint i' j' = .c := by
+      intro i' j' h; simp only [PBP.descentPaintL_CD] at h
+      split_ifs at h with ha hb <;> first | exact absurd h (by decide) | exact h
+    exact τ.col_c_P j i₁ i₂ (hc i₁ j h₁) (hc i₂ j h₂)
   col_c_Q := fun _ _ _ h => DRCSymbol.noConfusion h
-  col_d_P := sorry
+  col_d_P := by
+    intro j i₁ i₂ h₁ h₂
+    have hd : ∀ i' j', PBP.descentPaintL_CD τ i' j' = .d → τ.P.paint i' j' = .d := by
+      intro i' j' h; simp only [PBP.descentPaintL_CD] at h
+      split_ifs at h with ha hb <;> first | exact absurd h (by decide) | exact h
+    exact τ.col_d_P j i₁ i₂ (hd i₁ j h₁) (hd i₂ j h₂)
   col_d_Q := fun _ _ _ h => DRCSymbol.noConfusion h
 
 /-- C→D descent as PBPSet map. Fields are transparent via `descentCD_raw`. -/
