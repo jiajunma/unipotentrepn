@@ -1,4 +1,4 @@
-# Detailed Proof: Lemma 11.5
+# Detailed Proof: Lemma 11.5 (REVISED — verified computationally)
 
 ## Setup
 
@@ -169,18 +169,49 @@ The full rigorous proof of Lemma 11.5 requires:
 
 This is fundamentally a computation problem, not a conceptual one. Every ingredient exists in the Lean codebase; the challenge is assembling them correctly.
 
+## VERIFIED operation order (from user clarification + computational verification)
+
+**Key rule: ⊗ (sign twist/tensor) always acts LAST.**
+
+Formula (11.11) operations, in order:
+```
+Input: 𝓛_{τ''}
+
+Step 1:  𝓛_{τ''} ⊗ (ε_{℘'}, ε_{℘'})       — sign twist (for wp=∅: identity)
+Step 2:  · ⊕ (n₀, n₀)                      — augment (prepend (n₀, n₀))
+Step 3:  T^{γ_τ}(·)                         — character twist T on the INNER part
+Step 4:  · ⊕ (p_{τ_t}, q_{τ_t})            — augment (prepend tail signature)
+Step 5:  · ⊗ (0, ε_τ)                      — sign twist (LAST operation)
+
+Output: 𝓛_τ
+```
+
+**n₀ = (c₁(O') - c₂(O'))/2** where O' is the BV dual of Ǒ' (descended orbit).
+Empirically verified:
+- 2-row orbits (r₃ = 0): n₀ = (r₂-1)/2
+- Multi-row orbits (r₃ > 0): n₀ = 0 (because c₁(O') = c₂(O') when r₃ > 0)
+
+**Computationally verified on:**
+(3,1), (5,3), (5,1), (7,3), (7,5), (7,1), (7,5,3,1), (5,3,1), (9,7,5,3,1)
+— ALL D-type orbits match exactly (after stripping trailing (0,0)).
+
+## Proof strategy
+
+The proof has two parts:
+1. **Show the composed two-step theta lift equals (11.11):**
+   Apply (11.2) twice, substitute (9.29) and (9.30), then verify that the
+   composed parameters match (n₀, n₀) and (p_{τ_t}, q_{τ_t}).
+
+2. **Verify the parameter values using (11.7):**
+   The signature decomposition Sign(τ) = (c₂(O), c₂(O)) + Sign(∇²τ) + Sign(τ_t)
+   determines p₀, q₀, δ, γ in the theta lift formulas, which combine to give
+   the simplified form (11.11).
+
+All ingredients exist in the Lean codebase (countSym_split, col0_dot_below_Q_D,
+Q_countSym_eq_zero_of_D, countSymColGe1_eq, ddescent_inj_D).
+
 ## Plan for formalization
 
-Rather than proving Lemma 11.5 abstractly, I propose:
-
-**Option A (structural):** Prove (11.7) as a standalone theorem, then derive (11.11) algebraically.
-
-**Option B (computational):** Define the composed theta lift directly and show by computation that it equals the formula in (11.11) for specific orbit structures.
-
-**Recommendation:** Option A is cleaner and matches the paper's approach. The key missing piece is the standalone signature decomposition theorem (11.7), which assembles from:
-- `countSym_split`
-- `col0_dot_below_Q_D`
-- `Q_countSym_eq_zero_of_D`
-- `countSymColGe1_eq`
-
-After (11.7) is proved, (11.11) follows by substituting into the theta lift composition and simplifying the parameters.
+**Phase 1:** Prove signature decomposition (11.7) as standalone theorem.
+**Phase 2:** Prove that two-step theta lift composition yields (11.11).
+**Phase 3:** Use (11.11) to prove Lemma 11.6, Prop 11.7, Prop 11.8, etc.
