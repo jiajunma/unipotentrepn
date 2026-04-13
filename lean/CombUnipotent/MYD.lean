@@ -760,11 +760,27 @@ theorem sign_augment_zero (E : ILS) :
 
 end ILS
 
-/-! ## Key theorem statement: signature matching
+/-! ## AC base case sign -/
 
-The signature of AC(τ) matches the PBP signature (p_τ, q_τ).
-This is the main correctness property of the AC computation.
-Reference: [BMSZ] Theorem 5.1 (verified computationally for all types up to size 30). -/
+/-- Base case sign: AC.base produces ILS with the correct signature. -/
+theorem AC.base_sign (γ : RootType) :
+    ∀ r ∈ AC.base γ, ILS.sign r.2 = match γ with
+      | .Bplus => (1, 0)
+      | .Bminus => (0, 1)
+      | .C | .D | .M => (0, 0) := by
+  intro r hr
+  cases γ <;> simp [AC.base, ILS.sign, ILS.signAux, ILS.signRow] at hr ⊢ <;> subst hr <;> simp
+
+/-! ## AC step signature matching (Theorem 5.1)
+
+The key theorem: every theta lift step preserves the signature.
+At each step of the AC recursion:
+1. Pre-twist by (ε_℘, ε_℘) for C/M: preserves sign (twistBD_sign)
+2. Theta lift: produces ILS with target signature (thetaLift_*_sign theorems)
+3. Post-twist by (0, ε_τ) for B/D: preserves sign (twistBD_sign)
+
+Combined, this gives Sign(AC(τ)) = (p_τ, q_τ) by induction on the descent chain.
+Reference: [BMSZ] Theorem 5.1. -/
 
 /-! ## Verification: #eval tests -/
 
