@@ -274,7 +274,7 @@ noncomputable def liftCD_raw (σ : PBP) (hγ : σ.γ = .D)
         -- D-type dot_match: P = dot → ∈ shiftLeft μQ. shiftLeft μQ ⊆ μQ.
         -- For s: use anti-mono argument.
         sorry
-      · exact absurd hpaint (by decide)
+      · exfalso; rw [hpaint] at h; simp [DRCSymbol.layerOrd] at h
     · -- Backward: ∈ μQ ∧ liftQ = dot → liftP = dot ∧ ∈ μP
       intro ⟨hmemQ, hpaint⟩
       simp only [liftPaintQ_CD] at hpaint
