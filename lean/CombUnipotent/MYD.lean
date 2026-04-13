@@ -1257,6 +1257,115 @@ theorem DRCSymbol.tailContrib_snd_pos_of_ne_r {σ : DRCSymbol} (h : σ ≠ .r) :
     σ.tailContrib.2 > 0 := by
   cases σ <;> simp [DRCSymbol.tailContrib] at * <;> omega
 
+/-! ## Proposition 11.4: Signature Decomposition (Eq 11.7)
+
+For D-type PBP τ:
+  p_τ = Q.colLen(0) + p_{colGe1} + p_{tail}
+  q_τ = Q.colLen(0) + q_{colGe1} + q_{tail}
+
+where p_{colGe1} is the p-contribution from columns ≥ 1,
+and p_{tail} = 2·rTail + cTail + dTail is the tail weighted sum.
+
+This follows from decomposing P.countSym into col0 + colGe1,
+then splitting col0 into [0, Q.colLen) (all dots) and [Q.colLen, P.colLen) (tail). -/
+
+/-- D-type signature p-component: countSym σ = tail(σ) + colGe1(σ) for σ ≠ dot.
+    For dot: countSym = Q.colLen(0) + colGe1.
+    This is the core decomposition from Tail.lean line 468. -/
+theorem PBP.countSym_decomp_D (τ : PBP) (hγ : τ.γ = .D) (σ : DRCSymbol) (hσ : σ ≠ .dot) :
+    τ.P.countSym σ =
+      PBP.countCol0 τ.P.paint σ (τ.Q.shape.colLen 0) (τ.P.shape.colLen 0 - τ.Q.shape.colLen 0) +
+      PBP.countSymColGe1 τ.P σ := by
+  rw [PBP.countSym_split τ.P σ, PBP.countSymCol0_eq_countCol0]
+  have hle := PBP.Q_colLen0_le_P_colLen0_D τ hγ
+  rw [PBP.countCol0_split _ _ 0 (τ.Q.shape.colLen 0) (τ.P.shape.colLen 0) hle]
+  simp only [Nat.zero_add]
+  rw [PBP.countCol0_eq_zero_of_ne _ _ 0 (τ.Q.shape.colLen 0) (by
+    intro k hk hpaint
+    have hdot := PBP.col0_dot_below_Q_D τ hγ (by omega)
+    simp only [Nat.zero_add] at hpaint
+    exact hσ (hdot ▸ hpaint).symm)]
+  omega
+
+-- Helpers for signature decomposition
+private theorem countCol0_eq_of_all (paint : ℕ → ℕ → DRCSymbol) (σ : DRCSymbol) (a n : ℕ)
+    (h : ∀ k, k < n → paint (a + k) 0 = σ) :
+    PBP.countCol0 paint σ a n = n := by
+  simp only [PBP.countCol0]
+  rw [show (List.range n).filter (fun k => paint (a + k) 0 = σ) = List.range n from by
+    rw [List.filter_eq_self]; intro k hk; rw [List.mem_range] at hk
+    exact decide_eq_true_eq.mpr (h k hk)]
+  exact List.length_range
+
+private theorem dot_col0_below_Q_eq (τ : PBP) (hγ : τ.γ = .D) :
+    PBP.countCol0 τ.P.paint .dot 0 (τ.Q.shape.colLen 0) = τ.Q.shape.colLen 0 :=
+  countCol0_eq_of_all _ _ _ _ fun k hk => PBP.col0_dot_below_Q_D τ hγ (by omega)
+
+/-- Helper: dot count in tail = 0. -/
+private theorem dot_tail_zero (τ : PBP) (hγ : τ.γ = .D) :
+    PBP.countCol0 τ.P.paint .dot (τ.Q.shape.colLen 0)
+      (τ.P.shape.colLen 0 - τ.Q.shape.colLen 0) = 0 :=
+  PBP.countCol0_eq_zero_of_ne _ _ _ _ fun k hk =>
+    PBP.col0_nonDot_tail_D τ hγ (by omega) (by omega)
+
+theorem PBP.signature_fst_decomp_D (τ : PBP) (hγ : τ.γ = .D) :
+    (PBP.signature τ).1 =
+      τ.Q.shape.colLen 0 +
+      (PBP.countSymColGe1 τ.P .dot + τ.Q.countSym .dot +
+       2 * PBP.countSymColGe1 τ.P .r + PBP.countSymColGe1 τ.P .c +
+       PBP.countSymColGe1 τ.P .d) +
+      (2 * PBP.countCol0 τ.P.paint .r (τ.Q.shape.colLen 0)
+           (τ.P.shape.colLen 0 - τ.Q.shape.colLen 0) +
+       PBP.countCol0 τ.P.paint .c (τ.Q.shape.colLen 0)
+           (τ.P.shape.colLen 0 - τ.Q.shape.colLen 0) +
+       PBP.countCol0 τ.P.paint .d (τ.Q.shape.colLen 0)
+           (τ.P.shape.colLen 0 - τ.Q.shape.colLen 0)) := by
+  -- Unfold signature for D type, eliminate Q non-dot counts
+  unfold PBP.signature; simp only [hγ, show ¬(RootType.D = .Bplus) from by decide,
+    show ¬(RootType.D = .Bminus) from by decide, ite_false]
+  -- For p: nR = P.countSym .r + Q.countSym .r; Q parts are 0
+  rw [PBP.Q_countSym_eq_zero_of_D τ hγ .r (by decide),
+      PBP.Q_countSym_eq_zero_of_D τ hγ .c (by decide),
+      PBP.Q_countSym_eq_zero_of_D τ hγ .d (by decide)]
+  -- Decompose P.countSym
+  rw [PBP.countSym_decomp_D τ hγ .r (by decide),
+      PBP.countSym_decomp_D τ hγ .c (by decide),
+      PBP.countSym_decomp_D τ hγ .d (by decide)]
+  rw [PBP.countSym_split τ.P .dot, PBP.countSymCol0_eq_countCol0]
+  rw [PBP.countCol0_split _ _ 0 (τ.Q.shape.colLen 0) (τ.P.shape.colLen 0)
+      (PBP.Q_colLen0_le_P_colLen0_D τ hγ)]
+  simp only [Nat.zero_add]
+  rw [dot_col0_below_Q_eq τ hγ, dot_tail_zero τ hγ]
+  omega
+
+theorem PBP.signature_snd_decomp_D (τ : PBP) (hγ : τ.γ = .D) :
+    (PBP.signature τ).2 =
+      τ.Q.shape.colLen 0 +
+      (PBP.countSymColGe1 τ.P .dot + τ.Q.countSym .dot +
+       2 * PBP.countSymColGe1 τ.P .s + PBP.countSymColGe1 τ.P .c +
+       PBP.countSymColGe1 τ.P .d) +
+      (2 * PBP.countCol0 τ.P.paint .s (τ.Q.shape.colLen 0)
+           (τ.P.shape.colLen 0 - τ.Q.shape.colLen 0) +
+       PBP.countCol0 τ.P.paint .c (τ.Q.shape.colLen 0)
+           (τ.P.shape.colLen 0 - τ.Q.shape.colLen 0) +
+       PBP.countCol0 τ.P.paint .d (τ.Q.shape.colLen 0)
+           (τ.P.shape.colLen 0 - τ.Q.shape.colLen 0)) := by
+  unfold PBP.signature; simp only [hγ, show ¬(RootType.D = .Bplus) from by decide,
+    show ¬(RootType.D = .Bminus) from by decide, ite_false]
+  -- For q: nS = P.countSym .s + Q.countSym .s; Q parts are 0
+  rw [PBP.Q_countSym_eq_zero_of_D τ hγ .s (by decide),
+      PBP.Q_countSym_eq_zero_of_D τ hγ .c (by decide),
+      PBP.Q_countSym_eq_zero_of_D τ hγ .d (by decide)]
+  rw [PBP.countSym_decomp_D τ hγ .s (by decide),
+      PBP.countSym_decomp_D τ hγ .c (by decide),
+      PBP.countSym_decomp_D τ hγ .d (by decide)]
+  rw [PBP.countSym_split τ.P .dot, PBP.countSymCol0_eq_countCol0]
+  rw [PBP.countCol0_split _ _ 0 (τ.Q.shape.colLen 0) (τ.P.shape.colLen 0)
+      (PBP.Q_colLen0_le_P_colLen0_D τ hγ)]
+  simp only [Nat.zero_add]
+  rw [dot_col0_below_Q_eq τ hγ, dot_tail_zero τ hγ]
+  omega
+
 section Tests
 
 -- Sign of base cases
