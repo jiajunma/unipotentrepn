@@ -229,9 +229,9 @@ lemma shiftLeft_Q_eq_D_Q {μQ : YoungDiagram} {r₁ r₂ : ℕ} {rest : DualPart
 private noncomputable def liftPaintP_CD (σ : PBP) : ℕ → ℕ → DRCSymbol :=
   fun i j => if (σ.P.paint i j).layerOrd ≤ 1 then .dot else σ.P.paint i j
 
-/-- The C-type Q paint: s where P is non-dot inside Q shape, dot elsewhere. -/
-private noncomputable def liftPaintQ_CD (σ : PBP) (μQ : YoungDiagram) : ℕ → ℕ → DRCSymbol :=
-  fun i j => if (i, j) ∈ μQ ∧ ¬(σ.P.paint i j).layerOrd ≤ 1 then .s else .dot
+/-- The C-type Q paint: s where Q cell is outside P OR P is non-dot. -/
+private noncomputable def liftPaintQ_CD (σ : PBP) (μP μQ : YoungDiagram) : ℕ → ℕ → DRCSymbol :=
+  fun i j => if (i, j) ∈ μQ ∧ ((i, j) ∉ μP ∨ ¬(σ.P.paint i j).layerOrd ≤ 1) then .s else .dot
 
 private lemma liftPaintP_CD_ne_s (σ : PBP) (i j : ℕ) : liftPaintP_CD σ i j ≠ .s := by
   simp only [liftPaintP_CD]; split_ifs with h
@@ -241,7 +241,7 @@ private lemma liftPaintP_CD_r (σ : PBP) (i j : ℕ) (h : liftPaintP_CD σ i j =
     σ.P.paint i j = .r := by
   simp only [liftPaintP_CD] at h; split_ifs at h <;> first | exact absurd h (by decide) | exact h
 private lemma liftPaintQ_CD_ne_r (σ : PBP) (μQ : YoungDiagram) (i j : ℕ) :
-    liftPaintQ_CD σ μQ i j ≠ .r := by
+    liftPaintQ_CD σ μP μQ i j ≠ .r := by
   simp only [liftPaintQ_CD]; split_ifs <;> decide
 
 /-- Raw PBP for D→C lift. Uses `where` for field transparency. -/
@@ -253,7 +253,7 @@ noncomputable def liftCD_raw (σ : PBP) (hγ : σ.γ = .D)
   P := { shape := μP, paint := liftPaintP_CD σ
          paint_outside := fun i j hmem => by
            simp [liftPaintP_CD, σ.P.paint_outside i j (by rw [hPsh]; exact hmem)] }
-  Q := { shape := μQ, paint := liftPaintQ_CD σ μQ
+  Q := { shape := μQ, paint := liftPaintQ_CD σ μP μQ
          paint_outside := fun i j hmem => by simp [liftPaintQ_CD, hmem] }
   sym_P := by
     intro i j hmem; simp only [liftPaintP_CD]; split_ifs with h
@@ -288,21 +288,22 @@ noncomputable def liftCD_raw (σ : PBP) (hγ : σ.γ = .D)
       -- Q=s at (i,j₂): (i,j₂) ∈ μQ → i < μQ.colLen(j₂)
       -- Anti-mono: j₂ ≥ j₁+1 → μQ.colLen(j₂) ≤ μQ.colLen(j₁+1) → i < i. Contradiction!
       -- Extract Q=s conditions from h₁, h₂
-      have ha₁ : (i, j₁) ∈ μQ ∧ ¬(σ.P.paint i j₁).layerOrd ≤ 1 := by
+      have ha₁ : (i, j₁) ∈ μQ ∧ ((i, j₁) ∉ μP ∨ ¬(σ.P.paint i j₁).layerOrd ≤ 1) := by
         simp only [liftPaintQ_CD] at h₁; split_ifs at h₁ with ha; exact ha
-      have ha₂ : (i, j₂) ∈ μQ ∧ ¬(σ.P.paint i j₂).layerOrd ≤ 1 := by
+      have ha₂ : (i, j₂) ∈ μQ ∧ ((i, j₂) ∉ μP ∨ ¬(σ.P.paint i j₂).layerOrd ≤ 1) := by
         simp only [liftPaintQ_CD] at h₂; split_ifs at h₂ with ha; exact ha
       refine ⟨rfl, ?_⟩
       by_contra hne
-      obtain ⟨hmQ₁, hlo₁⟩ := ha₁; obtain ⟨hmQ₂, hlo₂⟩ := ha₂
-      -- σ.P(i,j₁) not dot → (i,j₁) ∉ D-Q = shiftLeft μQ
-      have hndot₁ : σ.P.paint i j₁ ≠ .dot := by
-        intro heq; rw [heq] at hlo₁; simp [DRCSymbol.layerOrd] at hlo₁
+      obtain ⟨hmQ₁, hcase₁⟩ := ha₁; obtain ⟨hmQ₂, hcase₂⟩ := ha₂
+      -- Either ∉ μP or σ.P layerOrd > 1 → σ.P ≠ dot → ∉ shiftLeft μQ
       have h_notDQ₁ : (i, j₁) ∉ σ.Q.shape := by
         intro hmem
         have hQdot : σ.Q.paint i j₁ = .dot := by
           have := σ.sym_Q i j₁ hmem; rw [hγ] at this; simp [DRCSymbol.allowed] at this; exact this
-        exact hndot₁ ((σ.dot_match i j₁).mpr ⟨hmem, hQdot⟩).2
+        have hPdot := ((σ.dot_match i j₁).mpr ⟨hmem, hQdot⟩).2
+        rcases hcase₁ with hnoP | hhi
+        · exact hnoP (by rw [← hPsh]; exact ((σ.dot_match i j₁).mpr ⟨hmem, hQdot⟩).1)
+        · rw [hPdot] at hhi; simp [DRCSymbol.layerOrd] at hhi
       rw [hQsh] at h_notDQ₁
       -- i ≥ μQ.colLen(j₁+1) from ∉ shiftLeft μQ
       have hge : i ≥ μQ.colLen (j₁ + 1) := by
@@ -313,13 +314,14 @@ noncomputable def liftCD_raw (σ : PBP) (hγ : σ.γ = .D)
       rcases Nat.lt_or_gt_of_ne hne with h | h
       · have := μQ.colLen_anti (j₁+1) j₂ (by omega); omega
       · -- Symmetric: j₂ < j₁
-        have hndot₂ : σ.P.paint i j₂ ≠ .dot := by
-          intro heq; rw [heq] at hlo₂; simp [DRCSymbol.layerOrd] at hlo₂
         have h_notDQ₂ : (i, j₂) ∉ σ.Q.shape := by
           intro hmem
           have hQdot : σ.Q.paint i j₂ = .dot := by
             have := σ.sym_Q i j₂ hmem; rw [hγ] at this; simp [DRCSymbol.allowed] at this; exact this
-          exact hndot₂ ((σ.dot_match i j₂).mpr ⟨hmem, hQdot⟩).2
+          have hPdot := ((σ.dot_match i j₂).mpr ⟨hmem, hQdot⟩).2
+          rcases hcase₂ with hnoP | hhi
+          · exact hnoP (by rw [← hPsh]; exact ((σ.dot_match i j₂).mpr ⟨hmem, hQdot⟩).1)
+          · rw [hPdot] at hhi; simp [DRCSymbol.layerOrd] at hhi
         rw [hQsh] at h_notDQ₂
         have hge₂ : i ≥ μQ.colLen (j₂ + 1) := by
           rwa [YoungDiagram.mem_shiftLeft, YoungDiagram.mem_iff_lt_colLen, not_lt] at h_notDQ₂
