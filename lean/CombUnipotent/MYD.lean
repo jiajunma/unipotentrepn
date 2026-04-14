@@ -1591,6 +1591,49 @@ For now, the downstream theorems (11.6-11.15) are documented with
 their proof structures and the abstract ingredients are all proved.
 The full Lemma 11.5 formalization is left as the remaining gap. -/
 
+/-- **Lemma 11.5 parameter identity:** The outer C→D lift augmentation parameter,
+    when the source is the inner D→C lift result, equals the tail signature.
+
+    Given:
+    - E = source ILS (L_{τ''})
+    - n₀ = inner augmentation parameter
+    - The inner lift gives: inner = charTwistCM(augment(n₀, n₀, E), γ₁)
+    - sign(inner) = sign(augment(n₀, n₀, E)) = (n₀ + ps + fns, n₀ + ns + fps)
+      where (ps, ns) = sign(E), (fps, fns) = firstColSign(E)
+    - firstColSign(inner) = firstColSign(augment(n₀, n₀, E)) = (n₀ + fns, n₀ + fps)
+      (using charTwistCM preserves firstColSign + firstColSign_cons)
+    - Outer addp = p - sign(inner).1 - firstColSign(inner).2
+                 = p - (n₀ + ps + fns) - (n₀ + fps)
+                 = p - 2n₀ - ps - fns - fps
+    - By signature decomposition: this equals p_t (tail signature p-component)
+
+    This is the heart of Lemma 11.5. -/
+theorem ILS.outerLift_addp_eq (E : ILS) (n₀ p_outer : ℤ)
+    (h_n₀ : n₀ ≥ 0) (γ₁ : ℤ) :
+    let inner := charTwistCM (augment (n₀, n₀) E) γ₁
+    p_outer - (sign inner).1 - (firstColSign inner).2 =
+    p_outer - 2 * n₀ - (sign E).1 - (firstColSign E).2 - (firstColSign E).1 := by
+  simp only
+  rw [charTwistCM_sign, charTwistCM_firstColSign]
+  rw [show augment (n₀, n₀) E = (n₀, n₀) :: E from rfl]
+  rw [sign_cons_nonneg (n₀, n₀) E h_n₀ h_n₀]
+  rw [firstColSign_cons (n₀, n₀) E]
+  simp [Int.natAbs_of_nonneg h_n₀]
+  ring
+
+theorem ILS.outerLift_addn_eq (E : ILS) (n₀ q_outer : ℤ)
+    (h_n₀ : n₀ ≥ 0) (γ₁ : ℤ) :
+    let inner := charTwistCM (augment (n₀, n₀) E) γ₁
+    q_outer - (sign inner).2 - (firstColSign inner).1 =
+    q_outer - 2 * n₀ - (sign E).2 - (firstColSign E).1 - (firstColSign E).2 := by
+  simp only
+  rw [charTwistCM_sign, charTwistCM_firstColSign]
+  rw [show augment (n₀, n₀) E = (n₀, n₀) :: E from rfl]
+  rw [sign_cons_nonneg (n₀, n₀) E h_n₀ h_n₀]
+  rw [firstColSign_cons (n₀, n₀) E]
+  simp [Int.natAbs_of_nonneg h_n₀]
+  ring
+
 /-! ### Lemma 11.5 summary
 
 The full Lemma 11.5 requires showing that AC.step applied twice equals
