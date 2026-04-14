@@ -822,6 +822,133 @@ noncomputable def doubleDescent_B_map (μP μQ : YoungDiagram)
       congrArg YoungDiagram.shiftLeft hP,
       congrArg YoungDiagram.shiftLeft hQ⟩
 
+/-! ## Recursive step infrastructure -/
+
+/-- tripleSum(tailCoeffs k).1 = 4k for k ≥ 1. -/
+theorem tripleSum_tailCoeffs_fst_eq (k : ℕ) (hk : k ≥ 1) :
+    tripleSum (tailCoeffs k).1 = 4 * k := by
+  simp only [tripleSum, tailCoeffs, nu]
+  split <;> omega
+
+/-- The restricted double descent map B⁺ → B⁺(shiftLeft). -/
+noncomputable def doubleDescent_Bplus_map (μP μQ : YoungDiagram)
+    (τ : PBPSet .Bplus μP μQ) :
+    PBPSet .Bplus (μP.shiftLeft) (μQ.shiftLeft) :=
+  ⟨doubleDescent_B_PBP τ.val (Or.inl τ.prop.1), rfl,
+   congrArg YoungDiagram.shiftLeft τ.prop.2.1,
+   congrArg YoungDiagram.shiftLeft τ.prop.2.2⟩
+
+/-- Fiber of the B⁺ double descent map. -/
+def doubleDescent_Bplus_fiber {μP μQ : YoungDiagram}
+    (σ : PBPSet .Bplus (μP.shiftLeft) (μQ.shiftLeft)) :=
+  {τ : PBPSet .Bplus μP μQ // doubleDescent_Bplus_map μP μQ τ = σ}
+
+instance {μP μQ : YoungDiagram}
+    (σ : PBPSet .Bplus (μP.shiftLeft) (μQ.shiftLeft)) :
+    Finite (doubleDescent_Bplus_fiber σ) :=
+  Finite.of_injective (fun x => x.val) (fun _ _ h => Subtype.ext h)
+
+noncomputable instance {μP μQ : YoungDiagram}
+    (σ : PBPSet .Bplus (μP.shiftLeft) (μQ.shiftLeft)) :
+    Fintype (doubleDescent_Bplus_fiber σ) :=
+  Fintype.ofFinite _
+
+/-- |PBPSet B⁺| = Σ_σ |fiber(σ)|. -/
+theorem card_PBPSet_Bplus_eq_sum_fiber {μP μQ : YoungDiagram} :
+    Fintype.card (PBPSet .Bplus μP μQ) =
+      Finset.sum Finset.univ (fun σ : PBPSet .Bplus (μP.shiftLeft) (μQ.shiftLeft) =>
+        Fintype.card (doubleDescent_Bplus_fiber σ)) := by
+  rw [← Fintype.card_sigma]
+  exact Fintype.card_congr (Equiv.sigmaFiberEquiv (doubleDescent_Bplus_map μP μQ)).symm
+
+/-! ### Valid column 0 painting for B type
+
+For B type with `r₁ :: r₂ :: rest`:
+- P col 0 (height r₂/2): from {•, c}, monotone, at most 1 c
+  → All dots, or all dots then 1 c at bottom. 2 choices if height > 0.
+- Q col 0 (height r₁/2): from {•, s, r, d}, monotone, at most 1 d
+  → dot_match forces: Q(i) = • iff P(i) = • (for i < P.colLen 0)
+  → For i ≥ P.colLen 0: Q(i) ∈ {s,r,d} (forced non-dot by dot_match)
+
+Decomposition:
+  Case 1 (P all dots): Q tail is DSeq(Q.colLen(0) - P.colLen(0))
+  Case 2 (P has c): Q extended tail is DSeq(Q.colLen(0) - P.colLen(0) + 1)
+
+|ValidCol0_B(hP, hQ)| = |DSeq(hQ-hP)| + |DSeq(hQ-hP+1)| = (2(hQ-hP)+1) + (2(hQ-hP)+3) = 4k
+where k = hQ - hP + 1.
+-/
+
+/-- Valid column 0 paintings for B type.
+    Parameterized by the P and Q column 0 heights.
+    Sum.inl = P all dots, Q tail is DSeq(hQ-hP).
+    Sum.inr = P has c at bottom, Q extended tail is DSeq(hQ-hP+1). -/
+private def ValidCol0_B (hP : ℕ) (hQ : ℕ) :=
+  DSeq (hQ - hP) ⊕ DSeq (hQ - hP + 1)
+
+private noncomputable instance (hP hQ : ℕ) : Fintype (ValidCol0_B hP hQ) := by
+  unfold ValidCol0_B; infer_instance
+
+/-- |ValidCol0_B| = 4k when k = hQ - hP + 1. -/
+private theorem validCol0_B_card (hP hQ : ℕ) (hle : hP ≤ hQ)
+    (k : ℕ) (hk : k = hQ - hP + 1) (hk_pos : k ≥ 1) :
+    Fintype.card (ValidCol0_B hP hQ) = 4 * k := by
+  simp only [ValidCol0_B, Fintype.card_sum, DSeq_card]
+  omega
+
+/-! ### Fiber cardinality for B-type primitive step
+
+In the primitive case, the fiber of each sub-PBP has uniform size 4k.
+The proof uses a sandwich argument:
+  fiber ↪ ValidCol0_B (extraction of col 0 paintings)
+  ValidCol0_B ↪ fiber (lift construction, valid in primitive case)
+
+Both directions require ~100 lines each of PBP constraint verification.
+We state them as lemmas and prove the fiber cardinality from them.
+-/
+
+/-- Upper bound: |fiber| ≤ |ValidCol0_B|.
+    Proof: extract col 0 of P and Q from a fiber element. The extraction map
+    is injective because ∇² determines cols ≥ 1 (ddescent_B_determines_colsGe1)
+    and the ValidCol0_B encoding determines col 0. -/
+private theorem fiber_le_validCol0_B {μP μQ : YoungDiagram}
+    (σ : PBPSet .Bplus (μP.shiftLeft) (μQ.shiftLeft))
+    (hle : μP.colLen 0 ≤ μQ.colLen 0) :
+    Fintype.card (doubleDescent_Bplus_fiber σ) ≤
+    Fintype.card (ValidCol0_B (μP.colLen 0) (μQ.colLen 0)) := by
+  sorry
+
+/-- Lower bound: |ValidCol0_B| ≤ |fiber|.
+    Proof: construct a lift map ValidCol0_B → fiber(σ) by extending σ with
+    the given col 0 painting. The construction builds a valid PBP and is
+    injective since distinct col 0 paintings give distinct PBPs. -/
+private theorem validCol0_B_le_fiber {μP μQ : YoungDiagram}
+    (σ : PBPSet .Bplus (μP.shiftLeft) (μQ.shiftLeft))
+    (hle : μP.colLen 0 ≤ μQ.colLen 0) :
+    Fintype.card (ValidCol0_B (μP.colLen 0) (μQ.colLen 0)) ≤
+    Fintype.card (doubleDescent_Bplus_fiber σ) := by
+  sorry
+
+/-- Key counting lemma (primitive case, B type):
+    Every sub-PBP σ has fiber size = tripleSum(tailCoeffs k).1 = 4k. -/
+private theorem fiber_card_B_primitive {μP μQ : YoungDiagram}
+    (σ : PBPSet .Bplus (μP.shiftLeft) (μQ.shiftLeft))
+    (k : ℕ) (hle : μP.colLen 0 ≤ μQ.colLen 0)
+    (hk : k = μQ.colLen 0 - μP.colLen 0 + 1) (hk_pos : k ≥ 1) :
+    Fintype.card (doubleDescent_Bplus_fiber σ) = tripleSum (tailCoeffs k).1 := by
+  rw [tripleSum_tailCoeffs_fst_eq k hk_pos]
+  have hcard := validCol0_B_card (μP.colLen 0) (μQ.colLen 0) hle k hk hk_pos
+  have h_le := fiber_le_validCol0_B σ hle
+  have h_ge := validCol0_B_le_fiber σ hle
+  omega
+
+/-- r₁ ≥ r₂ from SortedGE. -/
+private theorem sortedGE_head_ge {r₁ r₂ : ℕ} {rest : List ℕ}
+    (h : (r₁ :: r₂ :: rest).SortedGE) : r₁ ≥ r₂ := by
+  have : Antitone (r₁ :: r₂ :: rest).get := h
+  have := @this ⟨0, by simp⟩ ⟨1, by simp⟩ (by simp)
+  simp at this
+  exact this
+
 /-! ## Recursive step -/
 
 /-- Primitive case (r₂ > r₃): fiber is uniform across all tail classes. -/
@@ -836,31 +963,43 @@ theorem card_PBPSet_B_primitive_step (r₁ r₂ : ℕ) (rest : DualPart)
     (Fintype.card (PBPSet .Bplus (μP.shiftLeft) (μQ.shiftLeft)) +
      Fintype.card (PBPSet .Bminus (μP.shiftLeft) (μQ.shiftLeft))) *
     tripleSum (tailCoeffs ((r₁ - r₂) / 2 + 1)).1 := by
-  -- Strategy: use doubleDescent_B_map to project each PBP onto its shiftLeft.
-  -- The map (doubleDescent_B_map, sign) is injective (ddescent_inj_B).
-  -- In the primitive case (r₂ > r₃), every σ in PBPSet(shiftLeft μP, shiftLeft μQ)
-  -- has the same number of preimages, so:
-  --   card(total) = card(sub) × fiber_size
-  --
-  -- The fiber consists of valid paintings of P col 0 and Q col 0:
-  --   P col 0: symbols {•, c}, monotone layerOrd, at most 1 compact symbol
-  --     → tail zone [Q.colLen(0), P.colLen(0)) with GSeq-type count
-  --   Q col 0: symbols {•, s, r, d}, monotone layerOrd, at most 1 discrete symbol
-  --     → tail zone [P.colLen(0), Q.colLen(0)) with GSeq-type count
-  --
-  -- Unlike D-type (where Q is all dots and fiber = |ValidCol0_P| = 4k),
-  -- B-type has BOTH columns contributing, and the joint count equals
-  -- tripleSum(tailCoeffs k).1 where k = (r₁-r₂)/2 + 1.
-  --
-  -- Infrastructure needed (not yet built):
-  --   1. ValidCol0_B_P / ValidCol0_B_Q: valid painting types for B-type columns
-  --   2. fiber_card_B_primitive: |fiber(σ)| = tripleSum(tailCoeffs k).1
-  --   3. Finset.card_biUnion or Fintype.card_sigma to assemble the product
-  --
-  -- This parallels Fiber.lean (fiber_card_primitive) and LiftRC.lean
-  -- (card_PBPSet_D_primitive_step) for D-type, but requires ~300-500 lines
-  -- of new B-type fiber analysis.
-  sorry
+  -- Use B⁺/B⁻ symmetry to reduce to B⁺ only
+  have h_sym := card_Bplus_eq_Bminus μP μQ
+  have h_sym_sh := card_Bplus_eq_Bminus (μP.shiftLeft) (μQ.shiftLeft)
+  -- Suffices to show card(B⁺) = card(B⁺ shift) × tripleSum(tailCoeffs k).1
+  suffices h : Fintype.card (PBPSet .Bplus μP μQ) =
+      Fintype.card (PBPSet .Bplus (μP.shiftLeft) (μQ.shiftLeft)) *
+        tripleSum (tailCoeffs ((r₁ - r₂) / 2 + 1)).1 by
+    rw [← h_sym, h, h_sym_sh, Nat.add_mul]
+  -- Decompose card(B⁺) as sum of fiber sizes
+  rw [card_PBPSet_Bplus_eq_sum_fiber]
+  -- Each fiber has the same size
+  have hk_pos : (r₁ - r₂) / 2 + 1 ≥ 1 := by omega
+  -- Compute column lengths
+  have hP0 : μP.colLen 0 = r₂ / 2 :=
+    colLen_0_eq_of_colLens_cons (by rw [hP, dpartColLensP_B_cons₂])
+  have hQ0 : μQ.colLen 0 = r₁ / 2 :=
+    colLen_0_eq_of_colLens_cons (by rw [hQ, dpartColLensQ_B_cons₂])
+  have h_ge := sortedGE_head_ge hsort
+  have hle : μP.colLen 0 ≤ μQ.colLen 0 := by
+    rw [hP0, hQ0]; exact Nat.div_le_div_right h_ge
+  -- k = Q.colLen(0) - P.colLen(0) + 1 = r₁/2 - r₂/2 + 1
+  have hk_eq : (r₁ - r₂) / 2 + 1 = μQ.colLen 0 - μP.colLen 0 + 1 := by
+    rw [hP0, hQ0]
+    have heven₁ := heven r₁ (by simp)
+    have heven₂ := heven r₂ (by simp)
+    obtain ⟨a, rfl⟩ := heven₁; obtain ⟨b, rfl⟩ := heven₂
+    simp [Nat.mul_div_cancel_left _ (by omega : 0 < 2)]
+    omega
+  have hfiber : ∀ σ : PBPSet .Bplus (μP.shiftLeft) (μQ.shiftLeft),
+      Fintype.card (doubleDescent_Bplus_fiber σ) =
+      tripleSum (tailCoeffs ((r₁ - r₂) / 2 + 1)).1 := by
+    intro σ
+    rw [hk_eq]
+    exact fiber_card_B_primitive σ _ hle rfl (by omega)
+  rw [Finset.sum_congr rfl (fun σ _ => hfiber σ)]
+  rw [Finset.sum_const, Finset.card_univ]
+  rfl
 
 /-- Balanced case (r₂ = r₃): per-tail-class matrix multiply. -/
 theorem card_PBPSet_B_balanced_step (r₁ r₂ : ℕ) (rest : DualPart)
