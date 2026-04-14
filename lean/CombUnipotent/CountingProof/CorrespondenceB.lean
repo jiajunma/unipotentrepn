@@ -106,20 +106,467 @@ theorem card_PBPSet_B_singleton (r₁ : ℕ) (μP μQ : YoungDiagram)
 
 /-! ## Double descent B→M→B -/
 
+/-! ### Helper lemmas for B-type double descent -/
+
+/-- For B⁺/B⁻ type: dotScolLen(P) = dotDiag(P).colLen, since P only has {dot, c}
+    and c has layerOrd = 3 > 1. So dotSdiag(P) = dotDiag(P). -/
+private theorem dotScolLen_P_eq_dotDiag_colLen_B (τ : PBP)
+    (hγ : τ.γ = .Bplus ∨ τ.γ = .Bminus) (j : ℕ) :
+    PBP.dotScolLen τ.P j = (PBP.dotDiag τ.P τ.mono_P).colLen j := by
+  rw [PBP.dotScolLen_eq_dotSdiag_colLen τ.P τ.mono_P]
+  congr 1; ext ⟨i, k⟩
+  simp only [PBP.dotSdiag, PBP.dotDiag, Finset.mem_filter, YoungDiagram.mem_cells]
+  constructor
+  · intro ⟨hmem, hlo⟩
+    by_cases hd : τ.P.paint i k = .dot
+    · exact ⟨hmem, hd⟩
+    · exfalso
+      have := PBP.P_nonDot_eq_c_of_B τ hγ i k hmem hd
+      rw [this, DRCSymbol.layerOrd] at hlo; omega
+  · intro ⟨hmem, hd⟩; exact ⟨hmem, by rw [hd]; decide⟩
+
+/-- For B⁺/B⁻: dotScolLen(P, j) ≤ dotScolLen(Q, j).
+    Because dotScolLen(P) = dotDiag(P).colLen = dotDiag(Q).colLen ≤ dotSdiag(Q).colLen = dotScolLen(Q). -/
+private theorem dotScolLen_P_le_Q_of_B (τ : PBP) (hγ : τ.γ = .Bplus ∨ τ.γ = .Bminus) (j : ℕ) :
+    PBP.dotScolLen τ.P j ≤ PBP.dotScolLen τ.Q j := by
+  rw [dotScolLen_P_eq_dotDiag_colLen_B τ hγ, PBP.dotScolLen_eq_dotSdiag_colLen τ.Q τ.mono_Q]
+  -- dotDiag(P).colLen j ≤ dotSdiag(Q).colLen j because dotDiag(P) ⊆ dotSdiag(Q)
+  by_contra hlt; push_neg at hlt
+  set b := (PBP.dotSdiag τ.Q τ.mono_Q).colLen j
+  have hmem : (b, j) ∈ PBP.dotDiag τ.P τ.mono_P := YoungDiagram.mem_iff_lt_colLen.mpr hlt
+  simp only [PBP.dotDiag, YoungDiagram.mem_mk, Finset.mem_filter, YoungDiagram.mem_cells] at hmem
+  have ⟨hmemP, hpaint⟩ := hmem
+  have ⟨hmemQ, hQpaint⟩ := (τ.dot_match b j).mp ⟨hmemP, hpaint⟩
+  have hmemS : (b, j) ∈ PBP.dotSdiag τ.Q τ.mono_Q := by
+    rw [PBP.dotSdiag, YoungDiagram.mem_mk, Finset.mem_filter, YoungDiagram.mem_cells]
+    exact ⟨hmemQ, by rw [hQpaint]; decide⟩
+  exact absurd (YoungDiagram.mem_iff_lt_colLen.mp hmemS) (by omega)
+
+/-- For B⁺/B⁻: if i < dotScolLen(P, j) then (i,j) ∈ P.shape and P.paint(i,j) = dot. -/
+private theorem P_dot_of_lt_dotScolLen_B (τ : PBP)
+    (hγ : τ.γ = .Bplus ∨ τ.γ = .Bminus) {i j : ℕ}
+    (h : i < PBP.dotScolLen τ.P j) :
+    (i, j) ∈ τ.P.shape ∧ τ.P.paint i j = .dot := by
+  rw [dotScolLen_P_eq_dotDiag_colLen_B τ hγ] at h
+  have hmem : (i, j) ∈ PBP.dotDiag τ.P τ.mono_P := YoungDiagram.mem_iff_lt_colLen.mpr h
+  simp only [PBP.dotDiag, YoungDiagram.mem_mk, Finset.mem_filter, YoungDiagram.mem_cells] at hmem
+  exact hmem
+
+/-- B-type paintL outside P.shape gives dot. -/
+private theorem doubleDescent_B_paintL_dot (τ : PBP)
+    (_hγ : τ.γ = .Bplus ∨ τ.γ = .Bminus)
+    {i j : ℕ} (h_ge : i ≥ τ.P.shape.colLen (j + 1)) :
+    PBP.doubleDescent_B_paintL τ i j = .dot := by
+  simp only [PBP.doubleDescent_B_paintL]
+  have hds := PBP.dotScolLen_le_colLen τ.P τ.mono_P (j + 1)
+  rw [if_neg (by omega)]
+  exact τ.P.paint_outside i (j + 1) (by rw [YoungDiagram.mem_iff_lt_colLen]; omega)
+
+/-- B-type paintR outside Q.shape gives dot. -/
+private theorem doubleDescent_B_paintR_dot (τ : PBP)
+    (hγ : τ.γ = .Bplus ∨ τ.γ = .Bminus)
+    {i j : ℕ} (h_ge : i ≥ τ.Q.shape.colLen (j + 1)) :
+    PBP.doubleDescent_B_paintR τ i j = .dot := by
+  simp only [PBP.doubleDescent_B_paintR]
+  have hdsP := PBP.dotScolLen_le_colLen τ.P τ.mono_P (j + 1)
+  have hdsQ := PBP.dotScolLen_le_colLen τ.Q τ.mono_Q (j + 1)
+  have hPQ := dotScolLen_P_le_Q_of_B τ hγ (j + 1)
+  rw [if_neg (by omega), if_neg (by omega)]
+  exact τ.Q.paint_outside i (j + 1) (by rw [YoungDiagram.mem_iff_lt_colLen]; omega)
+
+/-- The double descent PBP ∇²τ for B type. -/
+noncomputable def doubleDescent_B_PBP (τ : PBP) (hγ : τ.γ = .Bplus ∨ τ.γ = .Bminus) : PBP where
+  γ := .Bplus  -- B⁺/B⁻ have identical allowed symbols; choose B⁺ as default
+  P := {
+    shape := τ.P.shape.shiftLeft
+    paint := PBP.doubleDescent_B_paintL τ
+    paint_outside := fun i j hmem => by
+      rw [YoungDiagram.mem_shiftLeft] at hmem
+      exact doubleDescent_B_paintL_dot τ hγ (by
+        rw [YoungDiagram.mem_iff_lt_colLen] at hmem; omega)
+  }
+  Q := {
+    shape := τ.Q.shape.shiftLeft
+    paint := PBP.doubleDescent_B_paintR τ
+    paint_outside := fun i j hmem => by
+      rw [YoungDiagram.mem_shiftLeft] at hmem
+      exact doubleDescent_B_paintR_dot τ hγ (by
+        rw [YoungDiagram.mem_iff_lt_colLen] at hmem; omega)
+  }
+  sym_P := by
+    intro i j hmem
+    simp only [PBP.doubleDescent_B_paintL, DRCSymbol.allowed]
+    by_cases h : i < PBP.dotScolLen τ.P (j + 1)
+    · simp [if_pos h]
+    · simp only [if_neg h]
+      have hmem' := YoungDiagram.mem_shiftLeft.mp hmem
+      have hds := PBP.dotScolLen_le_colLen τ.P τ.mono_P (j + 1)
+      -- P.paint(i, j+1) ∈ {dot, c} for B type
+      have hP_in_shape : (i, j + 1) ∈ τ.P.shape := hmem'
+      have := τ.sym_P i (j + 1) hP_in_shape
+      rcases hγ with h₁ | h₁ <;> rw [h₁] at this <;> simp [DRCSymbol.allowed] at this ⊢ <;>
+        exact this
+  sym_Q := by
+    intro i j hmem
+    simp only [PBP.doubleDescent_B_paintR, DRCSymbol.allowed]
+    by_cases h₁ : i < PBP.dotScolLen τ.P (j + 1)
+    · simp [if_pos h₁]
+    · simp only [if_neg h₁]
+      by_cases h₂ : i < PBP.dotScolLen τ.Q (j + 1)
+      · simp [if_pos h₂]
+      · simp only [if_neg h₂]
+        have hmem' := YoungDiagram.mem_shiftLeft.mp hmem
+        have := τ.sym_Q i (j + 1) hmem'
+        rcases hγ with h₁ | h₁ <;> rw [h₁] at this <;> simp [DRCSymbol.allowed] at this ⊢ <;>
+          exact this
+  dot_match := by
+    intro i j; constructor
+    · intro ⟨hmemP, hpaint⟩
+      have hmemP' := YoungDiagram.mem_shiftLeft.mp hmemP
+      simp only [PBP.doubleDescent_B_paintL] at hpaint
+      by_cases h : i < PBP.dotScolLen τ.P (j + 1)
+      · -- dot zone: P.paint(i, j+1) = dot → (i,j+1) ∈ Q.shape by dot_match
+        have ⟨_, hpd⟩ := P_dot_of_lt_dotScolLen_B τ hγ h
+        have ⟨hmemQ, _⟩ := (τ.dot_match i (j + 1)).mp ⟨hmemP', hpd⟩
+        refine ⟨YoungDiagram.mem_shiftLeft.mpr hmemQ, ?_⟩
+        simp [PBP.doubleDescent_B_paintR, if_pos h]
+      · -- non-dot zone: P.paint(i, j+1) = dot
+        rw [if_neg h] at hpaint
+        -- P.paint(i, j+1) = dot but i ≥ dotScolLen(P, j+1)
+        -- This means (i, j+1) ∈ P.shape and paint = dot
+        have hmemP2 : (i, j + 1) ∈ τ.P.shape := hmemP'
+        have ⟨hmemQ, _⟩ := (τ.dot_match i (j + 1)).mp ⟨hmemP2, hpaint⟩
+        refine ⟨YoungDiagram.mem_shiftLeft.mpr hmemQ, ?_⟩
+        simp only [PBP.doubleDescent_B_paintR, if_neg h]
+        -- Q.paint(i, j+1) = dot by dot_match
+        have hQd := ((τ.dot_match i (j + 1)).mp ⟨hmemP2, hpaint⟩).2
+        -- need i ≥ dotScolLen(Q, j+1) too, then paintR gives Q.paint = dot
+        -- Actually: if P.paint = dot at i ≥ dotScolLen(P), contradiction with
+        -- the fact that dotScolLen(P) = dotDiag(P).colLen for B type
+        exfalso
+        have := PBP.paint_ne_dot_of_ge_dotScolLen τ.P τ.mono_P (Nat.not_lt.mp h) hmemP2
+        exact this hpaint
+    · intro ⟨hmemQ, hpaint⟩
+      have hmemQ' := YoungDiagram.mem_shiftLeft.mp hmemQ
+      simp only [PBP.doubleDescent_B_paintR] at hpaint
+      by_cases h : i < PBP.dotScolLen τ.P (j + 1)
+      · -- dot zone: Q.paint(i, j+1) = dot → (i,j+1) ∈ P.shape
+        have ⟨_, hpd⟩ := P_dot_of_lt_dotScolLen_B τ hγ h
+        have hmemP := (τ.dot_match i (j + 1)).mpr
+          ⟨hmemQ', ((τ.dot_match i (j + 1)).mp
+            ⟨(P_dot_of_lt_dotScolLen_B τ hγ h).1, hpd⟩).2⟩ |>.1
+        refine ⟨YoungDiagram.mem_shiftLeft.mpr hmemP, ?_⟩
+        simp [PBP.doubleDescent_B_paintL, if_pos h]
+      · rw [if_neg h] at hpaint
+        by_cases h₂ : i < PBP.dotScolLen τ.Q (j + 1)
+        · -- s zone: Q'(i,j) = s ≠ dot, contradiction
+          rw [if_pos h₂] at hpaint; exact absurd hpaint (by decide)
+        · -- pass-through zone: Q.paint(i, j+1) = dot
+          rw [if_neg h₂] at hpaint
+          have ⟨hmemP, hpPd⟩ := (τ.dot_match i (j + 1)).mpr ⟨hmemQ', hpaint⟩
+          -- But i ≥ dotScolLen(P) and P.paint = dot → contradiction
+          exfalso
+          exact PBP.paint_ne_dot_of_ge_dotScolLen τ.P τ.mono_P (Nat.not_lt.mp h) hmemP hpPd
+  mono_P := by
+    intro i₁ j₁ i₂ j₂ hi hj hmem
+    have hmem' := YoungDiagram.mem_shiftLeft.mp hmem
+    simp only [PBP.doubleDescent_B_paintL]
+    by_cases h₁ : i₁ < PBP.dotScolLen τ.P (j₁ + 1)
+    · rw [if_pos h₁]; simp [DRCSymbol.layerOrd]
+    · rw [if_neg h₁]
+      have hds_anti := (PBP.dotSdiag τ.P τ.mono_P).colLen_anti (j₁+1) (j₂+1) (by omega)
+      rw [← PBP.dotScolLen_eq_dotSdiag_colLen _ τ.mono_P,
+          ← PBP.dotScolLen_eq_dotSdiag_colLen _ τ.mono_P] at hds_anti
+      by_cases h₂ : i₂ < PBP.dotScolLen τ.P (j₂ + 1)
+      · -- impossible: i₁ ≥ dotScolLen(j₁+1) ≥ dotScolLen(j₂+1) > i₂ ≥ i₁
+        omega
+      · rw [if_neg h₂]
+        exact τ.mono_P i₁ (j₁+1) i₂ (j₂+1) hi (by omega) hmem'
+  mono_Q := by
+    intro i₁ j₁ i₂ j₂ hi hj hmem
+    have hmem' := YoungDiagram.mem_shiftLeft.mp hmem
+    simp only [PBP.doubleDescent_B_paintR]
+    by_cases h₁ : i₁ < PBP.dotScolLen τ.P (j₁ + 1)
+    · rw [if_pos h₁]; simp [DRCSymbol.layerOrd]
+    · rw [if_neg h₁]
+      by_cases h₂ : i₁ < PBP.dotScolLen τ.Q (j₁ + 1)
+      · rw [if_pos h₂]
+        -- s has layerOrd 1
+        have hdsP_anti := (PBP.dotSdiag τ.P τ.mono_P).colLen_anti (j₁+1) (j₂+1) (by omega)
+        rw [← PBP.dotScolLen_eq_dotSdiag_colLen _ τ.mono_P,
+            ← PBP.dotScolLen_eq_dotSdiag_colLen _ τ.mono_P] at hdsP_anti
+        have hdsQ_anti := (PBP.dotSdiag τ.Q τ.mono_Q).colLen_anti (j₁+1) (j₂+1) (by omega)
+        rw [← PBP.dotScolLen_eq_dotSdiag_colLen _ τ.mono_Q,
+            ← PBP.dotScolLen_eq_dotSdiag_colLen _ τ.mono_Q] at hdsQ_anti
+        -- i₁ ≤ i₂ and dotScolLen(P) is anti-monotone, so i₂ ≥ dotScolLen(P, j₂+1) too
+        -- (since i₁ ≥ dotScolLen(P, j₁+1) ≥ dotScolLen(P, j₂+1))
+        have h₃ : ¬(i₂ < PBP.dotScolLen τ.P (j₂ + 1)) := by omega
+        rw [if_neg h₃]
+        by_cases h₄ : i₂ < PBP.dotScolLen τ.Q (j₂ + 1)
+        · simp [if_pos h₄, DRCSymbol.layerOrd]
+        · rw [if_neg h₄]
+          have hlo := PBP.layerOrd_gt_one_of_ge_dotScolLen τ.Q τ.mono_Q
+            (Nat.not_lt.mp h₄) hmem'
+          simp only [DRCSymbol.layerOrd] at hlo ⊢; omega
+      · rw [if_neg h₂]
+        have hdsP_anti := (PBP.dotSdiag τ.P τ.mono_P).colLen_anti (j₁+1) (j₂+1) (by omega)
+        rw [← PBP.dotScolLen_eq_dotSdiag_colLen _ τ.mono_P,
+            ← PBP.dotScolLen_eq_dotSdiag_colLen _ τ.mono_P] at hdsP_anti
+        have hdsQ_anti := (PBP.dotSdiag τ.Q τ.mono_Q).colLen_anti (j₁+1) (j₂+1) (by omega)
+        rw [← PBP.dotScolLen_eq_dotSdiag_colLen _ τ.mono_Q,
+            ← PBP.dotScolLen_eq_dotSdiag_colLen _ τ.mono_Q] at hdsQ_anti
+        have hPQ := dotScolLen_P_le_Q_of_B τ hγ (j₁ + 1)
+        have h₃ : ¬(i₂ < PBP.dotScolLen τ.P (j₂ + 1)) := by omega
+        rw [if_neg h₃]
+        have h₄ : ¬(i₂ < PBP.dotScolLen τ.Q (j₂ + 1)) := by omega
+        rw [if_neg h₄]
+        exact τ.mono_Q i₁ (j₁+1) i₂ (j₂+1) hi (by omega) hmem'
+  row_s := by
+    intro i s₁ s₂ j₁ j₂ h₁ h₂
+    simp only [paintBySide] at h₁ h₂
+    cases s₁ <;> cases s₂ <;> simp only at h₁ h₂
+    · -- Both L: s in P' = doubleDescent_B_paintL. But B-type P has {dot, c}.
+      -- paintL gives dot or P.paint (∈ {dot, c}). s ∉ {dot, c}.
+      simp only [PBP.doubleDescent_B_paintL] at h₁
+      by_cases ha : i < PBP.dotScolLen τ.P (j₁ + 1)
+      · rw [if_pos ha] at h₁; exact absurd h₁ (by decide)
+      · rw [if_neg ha] at h₁
+        -- P.paint(i, j₁+1) = s, but P ∈ {dot, c} for B type
+        have hmem : (i, j₁ + 1) ∈ τ.P.shape := by
+          by_contra hout; exact absurd (τ.P.paint_outside i (j₁+1) hout) (by rw [h₁]; decide)
+        have := PBP.P_nonDot_eq_c_of_B τ hγ i (j₁+1) hmem (by rw [h₁]; decide)
+        rw [this] at h₁; exact absurd h₁ (by decide)
+    · -- L,R: s in P' impossible (same as above)
+      simp only [PBP.doubleDescent_B_paintL] at h₁
+      by_cases ha : i < PBP.dotScolLen τ.P (j₁ + 1)
+      · rw [if_pos ha] at h₁; exact absurd h₁ (by decide)
+      · rw [if_neg ha] at h₁
+        have hmem : (i, j₁ + 1) ∈ τ.P.shape := by
+          by_contra hout; exact absurd (τ.P.paint_outside i (j₁+1) hout) (by rw [h₁]; decide)
+        have := PBP.P_nonDot_eq_c_of_B τ hγ i (j₁+1) hmem (by rw [h₁]; decide)
+        rw [this] at h₁; exact absurd h₁ (by decide)
+    · -- R,L: s in P' impossible
+      simp only [PBP.doubleDescent_B_paintL] at h₂
+      by_cases ha : i < PBP.dotScolLen τ.P (j₂ + 1)
+      · rw [if_pos ha] at h₂; exact absurd h₂ (by decide)
+      · rw [if_neg ha] at h₂
+        have hmem : (i, j₂ + 1) ∈ τ.P.shape := by
+          by_contra hout; exact absurd (τ.P.paint_outside i (j₂+1) hout) (by rw [h₂]; decide)
+        have := PBP.P_nonDot_eq_c_of_B τ hγ i (j₂+1) hmem (by rw [h₂]; decide)
+        rw [this] at h₂; exact absurd h₂ (by decide)
+    · -- Both R: s in Q' comes from doubleDescent_B_paintR
+      simp only [PBP.doubleDescent_B_paintR] at h₁ h₂
+      -- s comes from zone 2 (dotScolLen(P) ≤ i < dotScolLen(Q)) or zone 3 (Q.paint = s)
+      by_cases ha₁ : i < PBP.dotScolLen τ.P (j₁ + 1)
+      · rw [if_pos ha₁] at h₁; exact absurd h₁ (by decide)
+      · rw [if_neg ha₁] at h₁
+        by_cases ha₂ : i < PBP.dotScolLen τ.P (j₂ + 1)
+        · rw [if_pos ha₂] at h₂; exact absurd h₂ (by decide)
+        · rw [if_neg ha₂] at h₂
+          by_cases hb₁ : i < PBP.dotScolLen τ.Q (j₁ + 1)
+          · rw [if_pos hb₁] at h₁  -- h₁ : s = s
+            by_cases hb₂ : i < PBP.dotScolLen τ.Q (j₂ + 1)
+            · rw [if_pos hb₂] at h₂  -- h₂ : s = s
+              -- Both in zone 2: s came from the middle zone, row_s not constraining
+              -- Actually row_s says: at most one s per row. But both are from zone 2.
+              -- Need to use row_s of τ or argue differently.
+              -- In zone 2: paintR = s (synthetic). The original Q.paint at those positions
+              -- has layerOrd ≤ 1 (below dotScolLen(Q)) and ≥ dotScolLen(P).
+              -- For Q with {dot, s, r, d}: layerOrd ≤ 1 means {dot, s}.
+              -- And i ≥ dotScolLen(P, j+1) means P.paint ≠ dot (for B type, layerOrd > 1).
+              -- By dot_match: P.paint ≠ dot ↔ Q.paint ≠ dot. So Q.paint = s.
+              -- So both Q.paint(i, j₁+1) = s and Q.paint(i, j₂+1) = s.
+              -- By row_s of τ on Q side: j₁+1 = j₂+1.
+              have hQs₁ : τ.Q.paint i (j₁ + 1) = .s := by
+                have hlo := PBP.layerOrd_le_one_of_lt_dotSdiag_colLen τ.Q τ.mono_Q
+                  (by rw [← PBP.dotScolLen_eq_dotSdiag_colLen _ τ.mono_Q]; exact hb₁)
+                have hne : τ.Q.paint i (j₁ + 1) ≠ .dot := by
+                  intro heq
+                  have hmem : (i, j₁+1) ∈ τ.Q.shape := YoungDiagram.mem_iff_lt_colLen.mpr
+                    (Nat.lt_of_lt_of_le hb₁ (PBP.dotScolLen_le_colLen τ.Q τ.mono_Q _))
+                  have ⟨_, hpd⟩ := (τ.dot_match i (j₁+1)).mpr ⟨hmem, heq⟩
+                  exact PBP.paint_ne_dot_of_ge_dotScolLen τ.P τ.mono_P (Nat.not_lt.mp ha₁)
+                    ((τ.dot_match i (j₁+1)).mpr ⟨hmem, heq⟩).1 hpd
+                revert hlo hne; cases τ.Q.paint i (j₁ + 1) <;> simp [DRCSymbol.layerOrd]
+              have hQs₂ : τ.Q.paint i (j₂ + 1) = .s := by
+                have hlo := PBP.layerOrd_le_one_of_lt_dotSdiag_colLen τ.Q τ.mono_Q
+                  (by rw [← PBP.dotScolLen_eq_dotSdiag_colLen _ τ.mono_Q]; exact hb₂)
+                have hne : τ.Q.paint i (j₂ + 1) ≠ .dot := by
+                  intro heq
+                  have hmem : (i, j₂+1) ∈ τ.Q.shape := YoungDiagram.mem_iff_lt_colLen.mpr
+                    (Nat.lt_of_lt_of_le hb₂ (PBP.dotScolLen_le_colLen τ.Q τ.mono_Q _))
+                  have ⟨_, hpd⟩ := (τ.dot_match i (j₂+1)).mpr ⟨hmem, heq⟩
+                  exact PBP.paint_ne_dot_of_ge_dotScolLen τ.P τ.mono_P (Nat.not_lt.mp ha₂)
+                    ((τ.dot_match i (j₂+1)).mpr ⟨hmem, heq⟩).1 hpd
+                revert hlo hne; cases τ.Q.paint i (j₂ + 1) <;> simp [DRCSymbol.layerOrd]
+              have := τ.row_s i .R .R (j₁+1) (j₂+1)
+                (show paintBySide τ.P τ.Q .R i (j₁+1) = .s by simp [paintBySide]; exact hQs₁)
+                (show paintBySide τ.P τ.Q .R i (j₂+1) = .s by simp [paintBySide]; exact hQs₂)
+              exact ⟨rfl, by omega⟩
+            · rw [if_neg hb₂] at h₂
+              -- h₂ : Q.paint(i, j₂+1) = s. Combined with Q zone 2 at j₁.
+              -- Q.paint(i, j₁+1) = s (proved above). Q.paint(i, j₂+1) = s (= h₂).
+              -- Use row_s of τ.
+              have hQs₁ : τ.Q.paint i (j₁ + 1) = .s := by
+                have hlo := PBP.layerOrd_le_one_of_lt_dotSdiag_colLen τ.Q τ.mono_Q
+                  (by rw [← PBP.dotScolLen_eq_dotSdiag_colLen _ τ.mono_Q]; exact hb₁)
+                have hne : τ.Q.paint i (j₁ + 1) ≠ .dot := by
+                  intro heq
+                  have hmem : (i, j₁+1) ∈ τ.Q.shape := YoungDiagram.mem_iff_lt_colLen.mpr
+                    (Nat.lt_of_lt_of_le hb₁ (PBP.dotScolLen_le_colLen τ.Q τ.mono_Q _))
+                  exact PBP.paint_ne_dot_of_ge_dotScolLen τ.P τ.mono_P (Nat.not_lt.mp ha₁)
+                    ((τ.dot_match i (j₁+1)).mpr ⟨hmem, heq⟩).1
+                    ((τ.dot_match i (j₁+1)).mpr ⟨hmem, heq⟩).2
+                revert hlo hne; cases τ.Q.paint i (j₁ + 1) <;> simp [DRCSymbol.layerOrd]
+              have := τ.row_s i .R .R (j₁+1) (j₂+1)
+                (show paintBySide τ.P τ.Q .R i (j₁+1) = .s by simp [paintBySide]; exact hQs₁)
+                (show paintBySide τ.P τ.Q .R i (j₂+1) = .s by simp [paintBySide]; exact h₂)
+              exact ⟨rfl, by omega⟩
+          · rw [if_neg hb₁] at h₁
+            by_cases hb₂ : i < PBP.dotScolLen τ.Q (j₂ + 1)
+            · rw [if_pos hb₂] at h₂
+              -- h₁ : Q.paint(i, j₁+1) = s, zone 2 at j₂.
+              have hQs₂ : τ.Q.paint i (j₂ + 1) = .s := by
+                have hlo := PBP.layerOrd_le_one_of_lt_dotSdiag_colLen τ.Q τ.mono_Q
+                  (by rw [← PBP.dotScolLen_eq_dotSdiag_colLen _ τ.mono_Q]; exact hb₂)
+                have hne : τ.Q.paint i (j₂ + 1) ≠ .dot := by
+                  intro heq
+                  have hmem : (i, j₂+1) ∈ τ.Q.shape := YoungDiagram.mem_iff_lt_colLen.mpr
+                    (Nat.lt_of_lt_of_le hb₂ (PBP.dotScolLen_le_colLen τ.Q τ.mono_Q _))
+                  exact PBP.paint_ne_dot_of_ge_dotScolLen τ.P τ.mono_P (Nat.not_lt.mp ha₂)
+                    ((τ.dot_match i (j₂+1)).mpr ⟨hmem, heq⟩).1
+                    ((τ.dot_match i (j₂+1)).mpr ⟨hmem, heq⟩).2
+                revert hlo hne; cases τ.Q.paint i (j₂ + 1) <;> simp [DRCSymbol.layerOrd]
+              have := τ.row_s i .R .R (j₁+1) (j₂+1)
+                (show paintBySide τ.P τ.Q .R i (j₁+1) = .s by simp [paintBySide]; exact h₁)
+                (show paintBySide τ.P τ.Q .R i (j₂+1) = .s by simp [paintBySide]; exact hQs₂)
+              exact ⟨rfl, by omega⟩
+            · rw [if_neg hb₂] at h₂
+              -- Both in zone 3: Q.paint(i, j₁+1) = s and Q.paint(i, j₂+1) = s
+              have := τ.row_s i .R .R (j₁+1) (j₂+1)
+                (show paintBySide τ.P τ.Q .R i (j₁+1) = .s by simp [paintBySide]; exact h₁)
+                (show paintBySide τ.P τ.Q .R i (j₂+1) = .s by simp [paintBySide]; exact h₂)
+              exact ⟨rfl, by omega⟩
+  row_r := by
+    intro i s₁ s₂ j₁ j₂ h₁ h₂
+    simp only [paintBySide] at h₁ h₂
+    cases s₁ <;> cases s₂ <;> simp only at h₁ h₂
+    · -- Both L: r in P' impossible (P ∈ {dot, c} for B type, paintL gives dot or P.paint)
+      simp only [PBP.doubleDescent_B_paintL] at h₁
+      by_cases ha : i < PBP.dotScolLen τ.P (j₁ + 1)
+      · rw [if_pos ha] at h₁; exact absurd h₁ (by decide)
+      · rw [if_neg ha] at h₁
+        have hmem : (i, j₁ + 1) ∈ τ.P.shape := by
+          by_contra hout; exact absurd (τ.P.paint_outside i (j₁+1) hout) (by rw [h₁]; decide)
+        have := PBP.P_nonDot_eq_c_of_B τ hγ i (j₁+1) hmem (by rw [h₁]; decide)
+        rw [this] at h₁; exact absurd h₁ (by decide)
+    · -- L: r in P' impossible
+      simp only [PBP.doubleDescent_B_paintL] at h₁
+      by_cases ha : i < PBP.dotScolLen τ.P (j₁ + 1)
+      · rw [if_pos ha] at h₁; exact absurd h₁ (by decide)
+      · rw [if_neg ha] at h₁
+        have hmem : (i, j₁ + 1) ∈ τ.P.shape := by
+          by_contra hout; exact absurd (τ.P.paint_outside i (j₁+1) hout) (by rw [h₁]; decide)
+        have := PBP.P_nonDot_eq_c_of_B τ hγ i (j₁+1) hmem (by rw [h₁]; decide)
+        rw [this] at h₁; exact absurd h₁ (by decide)
+    · -- R: r in P' impossible
+      simp only [PBP.doubleDescent_B_paintL] at h₂
+      by_cases ha : i < PBP.dotScolLen τ.P (j₂ + 1)
+      · rw [if_pos ha] at h₂; exact absurd h₂ (by decide)
+      · rw [if_neg ha] at h₂
+        have hmem : (i, j₂ + 1) ∈ τ.P.shape := by
+          by_contra hout; exact absurd (τ.P.paint_outside i (j₂+1) hout) (by rw [h₂]; decide)
+        have := PBP.P_nonDot_eq_c_of_B τ hγ i (j₂+1) hmem (by rw [h₂]; decide)
+        rw [this] at h₂; exact absurd h₂ (by decide)
+    · -- Both R: r in Q' from doubleDescent_B_paintR
+      simp only [PBP.doubleDescent_B_paintR] at h₁ h₂
+      by_cases ha₁ : i < PBP.dotScolLen τ.P (j₁+1)
+      · rw [if_pos ha₁] at h₁; exact absurd h₁ (by decide)
+      · rw [if_neg ha₁] at h₁; by_cases hb₁ : i < PBP.dotScolLen τ.Q (j₁+1)
+        · rw [if_pos hb₁] at h₁; exact absurd h₁ (by decide)
+        · rw [if_neg hb₁] at h₁
+          by_cases ha₂ : i < PBP.dotScolLen τ.P (j₂+1)
+          · rw [if_pos ha₂] at h₂; exact absurd h₂ (by decide)
+          · rw [if_neg ha₂] at h₂; by_cases hb₂ : i < PBP.dotScolLen τ.Q (j₂+1)
+            · rw [if_pos hb₂] at h₂; exact absurd h₂ (by decide)
+            · rw [if_neg hb₂] at h₂
+              have := τ.row_r i .R .R (j₁+1) (j₂+1)
+                (show paintBySide τ.P τ.Q .R i (j₁+1) = .r by simp [paintBySide]; exact h₁)
+                (show paintBySide τ.P τ.Q .R i (j₂+1) = .r by simp [paintBySide]; exact h₂)
+              exact ⟨rfl, by omega⟩
+  col_c_P := by
+    intro j i₁ i₂ h₁ h₂
+    -- c only from the P.paint branch of paintL
+    have hc₁ : τ.P.paint i₁ (j+1) = .c := by
+      simp only [PBP.doubleDescent_B_paintL] at h₁
+      by_cases ha : i₁ < PBP.dotScolLen τ.P (j+1)
+      · rw [if_pos ha] at h₁; exact absurd h₁ (by decide)
+      · rw [if_neg ha] at h₁; exact h₁
+    have hc₂ : τ.P.paint i₂ (j+1) = .c := by
+      simp only [PBP.doubleDescent_B_paintL] at h₂
+      by_cases ha : i₂ < PBP.dotScolLen τ.P (j+1)
+      · rw [if_pos ha] at h₂; exact absurd h₂ (by decide)
+      · rw [if_neg ha] at h₂; exact h₂
+    exact τ.col_c_P (j+1) i₁ i₂ hc₁ hc₂
+  col_c_Q := by
+    intro j i₁ i₂ h₁ h₂
+    -- c in Q' from doubleDescent_B_paintR: can only come from zone 3 (Q.paint)
+    -- But Q has {dot, s, r, d} for B type. c ∉ {dot, s, r, d}.
+    exfalso
+    simp only [PBP.doubleDescent_B_paintR] at h₁
+    by_cases ha : i₁ < PBP.dotScolLen τ.P (j+1)
+    · rw [if_pos ha] at h₁; exact absurd h₁ (by decide)
+    · rw [if_neg ha] at h₁; by_cases hb : i₁ < PBP.dotScolLen τ.Q (j+1)
+      · rw [if_pos hb] at h₁; exact absurd h₁ (by decide)
+      · rw [if_neg hb] at h₁
+        -- h₁ : Q.paint(i₁, j+1) = c. But Q ∈ {dot, s, r, d} for B type.
+        have hmem : (i₁, j + 1) ∈ τ.Q.shape := by
+          by_contra hout; exact absurd (τ.Q.paint_outside i₁ (j+1) hout) (by rw [h₁]; decide)
+        have hsym := τ.sym_Q i₁ (j + 1) hmem
+        rcases hγ with hγ' | hγ' <;> rw [hγ'] at hsym <;> simp [DRCSymbol.allowed] at hsym <;>
+          rcases hsym with h' | h' | h' | h' <;> rw [h'] at h₁ <;> exact absurd h₁ (by decide)
+  col_d_P := by
+    intro j i₁ i₂ h₁ h₂
+    -- d in P' from paintL: P.paint = d. But P ∈ {dot, c} for B type. Impossible.
+    simp only [PBP.doubleDescent_B_paintL] at h₁
+    by_cases ha : i₁ < PBP.dotScolLen τ.P (j+1)
+    · rw [if_pos ha] at h₁; exact absurd h₁ (by decide)
+    · rw [if_neg ha] at h₁
+      have hmem : (i₁, j + 1) ∈ τ.P.shape := by
+        by_contra hout; exact absurd (τ.P.paint_outside i₁ (j+1) hout) (by rw [h₁]; decide)
+      have := PBP.P_nonDot_eq_c_of_B τ hγ i₁ (j+1) hmem (by rw [h₁]; decide)
+      rw [this] at h₁; exact absurd h₁ (by decide)
+  col_d_Q := by
+    intro j i₁ i₂ h₁ h₂
+    -- d from paintR zone 3: Q.paint(i₁, j+1) = d and Q.paint(i₂, j+1) = d
+    have hd₁ : τ.Q.paint i₁ (j+1) = .d := by
+      simp only [PBP.doubleDescent_B_paintR] at h₁
+      by_cases ha : i₁ < PBP.dotScolLen τ.P (j+1)
+      · rw [if_pos ha] at h₁; exact absurd h₁ (by decide)
+      · rw [if_neg ha] at h₁; by_cases hb : i₁ < PBP.dotScolLen τ.Q (j+1)
+        · rw [if_pos hb] at h₁; exact absurd h₁ (by decide)
+        · rw [if_neg hb] at h₁; exact h₁
+    have hd₂ : τ.Q.paint i₂ (j+1) = .d := by
+      simp only [PBP.doubleDescent_B_paintR] at h₂
+      by_cases ha : i₂ < PBP.dotScolLen τ.P (j+1)
+      · rw [if_pos ha] at h₂; exact absurd h₂ (by decide)
+      · rw [if_neg ha] at h₂; by_cases hb : i₂ < PBP.dotScolLen τ.Q (j+1)
+        · rw [if_pos hb] at h₂; exact absurd h₂ (by decide)
+        · rw [if_neg hb] at h₂; exact h₂
+    exact τ.col_d_Q (j+1) i₁ i₂ hd₁ hd₂
+
 /-- Double descent map for B-type: B→M→B on PBPSet. -/
 noncomputable def doubleDescent_B_map (μP μQ : YoungDiagram)
     (τ : PBPSet .Bplus μP μQ ⊕ PBPSet .Bminus μP μQ) :
     PBPSet .Bplus (μP.shiftLeft) (μQ.shiftLeft) ⊕
     PBPSet .Bminus (μP.shiftLeft) (μQ.shiftLeft) := by
-  -- Strategy: compose two single descents B→M→B.
-  -- Step 1 (B→M): remove Q col 0 using descent_B_to_M (strips tail from Q).
-  --   This produces a PBP with γ=M, P shape=μP, Q shape=μQ.shiftLeft.
-  -- Step 2 (M→B): remove P col 0 of the M-type result using descent_M_to_B.
-  --   This produces a PBP with γ∈{B⁺,B⁻}, P shape=μP.shiftLeft, Q shape=μQ.shiftLeft.
-  -- The B⁺/B⁻ tag of the output is determined by the painting of the removed cells.
-  -- Needs: doubleDescent_B_paintL/R from Tail.lean, descent_inj_B infrastructure.
-  -- See doubleDescent_D_map in Descent.lean for the D-type template.
-  sorry
+  rcases τ with ⟨τval, hγ, hP, hQ⟩ | ⟨τval, hγ, hP, hQ⟩
+  · exact Sum.inl ⟨doubleDescent_B_PBP τval (Or.inl hγ), rfl,
+      congrArg YoungDiagram.shiftLeft hP,
+      congrArg YoungDiagram.shiftLeft hQ⟩
+  · exact Sum.inl ⟨doubleDescent_B_PBP τval (Or.inr hγ), rfl,
+      congrArg YoungDiagram.shiftLeft hP,
+      congrArg YoungDiagram.shiftLeft hQ⟩
 
 /-! ## Recursive step -/
 
