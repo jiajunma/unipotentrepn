@@ -83,6 +83,253 @@ theorem card_Bplus_eq_Bminus (μP μQ : YoungDiagram) :
 
 /-! ## Base cases -/
 
+/-! ### Singleton base case infrastructure
+
+For B-type with dp = [r₁], P = ⊥ and Q has one column of height c₁ = r₁/2.
+The PBPs biject with DSeq(c₁) ≃ GSeq(c₁), giving card = 2c₁+1. -/
+
+/-- Sequences from {s,r,d}, monotone (layerOrd), at most one d.
+    B-type Q-column analogue of `GSeq` (which uses {s,r,c}). -/
+private def DSeq (k : ℕ) : Type :=
+  { v : Fin k → DRCSymbol //
+    (∀ i, v i = .s ∨ v i = .r ∨ v i = .d) ∧
+    (∀ i j : Fin k, i.val ≤ j.val → (v i).layerOrd ≤ (v j).layerOrd) ∧
+    (∀ i j : Fin k, v i = .d → v j = .d → i = j) }
+
+private instance (k : ℕ) : Fintype (DSeq k) := by unfold DSeq; infer_instance
+
+/-- Swap c ↔ d preserves the relative order s < r < {c, d}. -/
+private def swapCD : DRCSymbol → DRCSymbol | .c => .d | .d => .c | x => x
+@[simp] private lemma swapCD_invol (x : DRCSymbol) : swapCD (swapCD x) = x := by cases x <;> rfl
+
+private lemma swapCD_mono_srd {a b : DRCSymbol}
+    (ha : a = .s ∨ a = .r ∨ a = .d) (hb : b = .s ∨ b = .r ∨ b = .d)
+    (hle : a.layerOrd ≤ b.layerOrd) :
+    (swapCD a).layerOrd ≤ (swapCD b).layerOrd := by
+  rcases ha with rfl | rfl | rfl <;> rcases hb with rfl | rfl | rfl <;>
+    simp_all [swapCD, DRCSymbol.layerOrd]
+
+private lemma swapCD_mono_src {a b : DRCSymbol}
+    (ha : a = .s ∨ a = .r ∨ a = .c) (hb : b = .s ∨ b = .r ∨ b = .c)
+    (hle : a.layerOrd ≤ b.layerOrd) :
+    (swapCD a).layerOrd ≤ (swapCD b).layerOrd := by
+  rcases ha with rfl | rfl | rfl <;> rcases hb with rfl | rfl | rfl <;>
+    simp_all [swapCD, DRCSymbol.layerOrd]
+
+/-- DSeq(k) ≃ GSeq(k) via swapping c ↔ d. -/
+private noncomputable def DSeq_equiv_GSeq (k : ℕ) : DSeq k ≃ GSeq k where
+  toFun d := ⟨fun i => swapCD (d.val i), by
+    refine ⟨fun i => ?_, fun i j hij => swapCD_mono_srd (d.prop.1 i) (d.prop.1 j) (d.prop.2.1 i j hij),
+      fun i j hi hj => d.prop.2.2 i j ?_ ?_⟩
+    · rcases d.prop.1 i with h | h | h <;> simp [h, swapCD]
+    · rcases d.prop.1 i with h | h | h <;> simp [h, swapCD] at hi ⊢ <;> exact h
+    · rcases d.prop.1 j with h | h | h <;> simp [h, swapCD] at hj ⊢ <;> exact h⟩
+  invFun g := ⟨fun i => swapCD (g.val i), by
+    refine ⟨fun i => ?_, fun i j hij => swapCD_mono_src (g.prop.1 i) (g.prop.1 j) (g.prop.2.1 i j hij),
+      fun i j hi hj => g.prop.2.2 i j ?_ ?_⟩
+    · rcases g.prop.1 i with h | h | h <;> simp [h, swapCD]
+    · rcases g.prop.1 i with h | h | h <;> simp [h, swapCD] at hi ⊢ <;> exact h
+    · rcases g.prop.1 j with h | h | h <;> simp [h, swapCD] at hj ⊢ <;> exact h⟩
+  left_inv d := by apply Subtype.ext; funext i; simp
+  right_inv g := by apply Subtype.ext; funext i; simp
+
+private theorem DSeq_card (k : ℕ) : Fintype.card (DSeq k) = 2 * k + 1 :=
+  (Fintype.card_congr (DSeq_equiv_GSeq k)).trans (GSeq_card k)
+
+/-- Paint Q column 0 from a DSeq, dots elsewhere. -/
+private def mkQpaint (μQ : YoungDiagram) (d : DSeq (μQ.colLen 0)) (i j : ℕ) : DRCSymbol :=
+  if h : j = 0 ∧ i < μQ.colLen 0 then d.val ⟨i, h.2⟩ else .dot
+
+private lemma mkQpaint_nondot_imp {μQ : YoungDiagram} {d : DSeq (μQ.colLen 0)}
+    {i j : ℕ} (h : mkQpaint μQ d i j ≠ .dot) : j = 0 ∧ i < μQ.colLen 0 := by
+  unfold mkQpaint at h; split_ifs at h with hc; exact hc; exact absurd rfl h
+
+@[simp] private lemma mkQpaint_col0 {μQ : YoungDiagram} {d : DSeq (μQ.colLen 0)}
+    {i : ℕ} (hi : i < μQ.colLen 0) : mkQpaint μQ d i 0 = d.val ⟨i, hi⟩ := by
+  simp [mkQpaint, hi]
+
+private lemma singleCol_j0 {μQ : YoungDiagram} (hsc : ∀ j, j ≥ 1 → μQ.colLen j = 0)
+    {i j : ℕ} (hmem : (i, j) ∈ μQ) : j = 0 := by
+  by_contra hj
+  exact absurd (YoungDiagram.mem_iff_lt_colLen.mp hmem) (by rw [hsc j (by omega)]; omega)
+
+/-- Construct PBPSet .Bminus ⊥ μQ from a DSeq, for single-column Q.
+    The Q painting uses mkQpaint; P = emptyPYD.
+    All PBP constraints hold because Q has a single column with non-dot symbols. -/
+private noncomputable def DSeq_to_PBP_Bminus {μQ : YoungDiagram}
+    (hsc : ∀ j, j ≥ 1 → μQ.colLen j = 0) (d : DSeq (μQ.colLen 0)) :
+    PBPSet .Bminus ⊥ μQ := by
+  refine ⟨⟨.Bminus, emptyPYD,
+    ⟨μQ, mkQpaint μQ d, fun i j hmem => ?_⟩,
+    ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩, rfl, rfl, rfl⟩
+  -- paint_outside
+  · unfold mkQpaint; split_ifs with hc
+    · exact absurd (YoungDiagram.mem_iff_lt_colLen.mpr (hc.1 ▸ hc.2)) hmem
+    · rfl
+  -- sym_P
+  · intro _ _ h; exact absurd h (YoungDiagram.notMem_bot _)
+  -- sym_Q
+  · intro i j hmem'; change (i, j) ∈ μQ at hmem'
+    have hj := singleCol_j0 hsc hmem'; subst hj
+    have hi := YoungDiagram.mem_iff_lt_colLen.mp hmem'
+    show DRCSymbol.allowed .Bminus .R (mkQpaint μQ d i 0)
+    rw [mkQpaint_col0 hi]; simp [DRCSymbol.allowed]
+    rcases d.prop.1 ⟨i, hi⟩ with h | h | h <;> simp [h]
+  -- dot_match
+  · intro i' j'; constructor
+    · intro ⟨h, _⟩; exact absurd h (YoungDiagram.notMem_bot _)
+    · intro ⟨hmemQ, hpaint⟩; exfalso
+      change (i', j') ∈ μQ at hmemQ; change mkQpaint μQ d i' j' = .dot at hpaint
+      have hj' := singleCol_j0 hsc hmemQ; subst hj'
+      rw [mkQpaint_col0 (YoungDiagram.mem_iff_lt_colLen.mp hmemQ)] at hpaint
+      rcases d.prop.1 ⟨i', YoungDiagram.mem_iff_lt_colLen.mp hmemQ⟩ with h | h | h <;> simp [h] at hpaint
+  -- mono_P
+  · intro _ _ _ _ _ _ h; exact absurd h (YoungDiagram.notMem_bot _)
+  -- mono_Q
+  · intro i₁ j₁ i₂ j₂ hi hj hmem₂
+    show (mkQpaint μQ d i₁ j₁).layerOrd ≤ (mkQpaint μQ d i₂ j₂).layerOrd
+    change (i₂, j₂) ∈ μQ at hmem₂
+    have hj₂ := singleCol_j0 hsc hmem₂; subst hj₂
+    have hj₁ : j₁ = 0 := by omega
+    subst hj₁
+    have hi₂ := YoungDiagram.mem_iff_lt_colLen.mp hmem₂
+    rw [mkQpaint_col0 (show i₁ < μQ.colLen 0 by omega), mkQpaint_col0 hi₂]
+    exact d.prop.2.1 ⟨i₁, by omega⟩ ⟨i₂, hi₂⟩ hi
+  -- row_s
+  · intro i' s₁ s₂ j₁ j₂ h₁ h₂
+    simp only [paintBySide] at h₁ h₂
+    rcases s₁ with _ | _ <;> rcases s₂ with _ | _ <;> dsimp at h₁ h₂
+    · simp [emptyPYD] at h₁
+    · simp [emptyPYD] at h₁
+    · simp [emptyPYD] at h₂
+    · exact ⟨rfl, by
+        rw [(mkQpaint_nondot_imp (show mkQpaint μQ d i' j₁ ≠ .dot by rw [h₁]; exact DRCSymbol.noConfusion)).1,
+            (mkQpaint_nondot_imp (show mkQpaint μQ d i' j₂ ≠ .dot by rw [h₂]; exact DRCSymbol.noConfusion)).1]⟩
+  -- row_r
+  · intro i' s₁ s₂ j₁ j₂ h₁ h₂
+    simp only [paintBySide] at h₁ h₂
+    rcases s₁ with _ | _ <;> rcases s₂ with _ | _ <;> dsimp at h₁ h₂
+    · simp [emptyPYD] at h₁
+    · simp [emptyPYD] at h₁
+    · simp [emptyPYD] at h₂
+    · exact ⟨rfl, by
+        rw [(mkQpaint_nondot_imp (show mkQpaint μQ d i' j₁ ≠ .dot by rw [h₁]; exact DRCSymbol.noConfusion)).1,
+            (mkQpaint_nondot_imp (show mkQpaint μQ d i' j₂ ≠ .dot by rw [h₂]; exact DRCSymbol.noConfusion)).1]⟩
+  -- col_c_P
+  · intro _ _ _ h; simp [emptyPYD] at h
+  -- col_c_Q
+  · intro j' i₁ _ h₁ _; exfalso
+    change mkQpaint μQ d i₁ j' = .c at h₁
+    have ⟨hj', hi₁⟩ := mkQpaint_nondot_imp (show mkQpaint μQ d i₁ j' ≠ .dot by rw [h₁]; exact DRCSymbol.noConfusion)
+    subst hj'; rw [mkQpaint_col0 hi₁] at h₁
+    rcases d.prop.1 ⟨i₁, hi₁⟩ with h | h | h <;> simp [h] at h₁
+  -- col_d_P
+  · intro _ _ _ h; simp [emptyPYD] at h
+  -- col_d_Q
+  · intro j' i₁ i₂ h₁ h₂
+    change mkQpaint μQ d i₁ j' = .d at h₁
+    change mkQpaint μQ d i₂ j' = .d at h₂
+    have ⟨hj', hi₁⟩ := mkQpaint_nondot_imp (show mkQpaint μQ d i₁ j' ≠ .dot by rw [h₁]; exact DRCSymbol.noConfusion)
+    have ⟨_, hi₂⟩ := mkQpaint_nondot_imp (show mkQpaint μQ d i₂ j' ≠ .dot by rw [h₂]; exact DRCSymbol.noConfusion)
+    subst hj'; rw [mkQpaint_col0 hi₁] at h₁; rw [mkQpaint_col0 hi₂] at h₂
+    exact Fin.val_eq_of_eq (d.prop.2.2 ⟨i₁, hi₁⟩ ⟨i₂, hi₂⟩ h₁ h₂)
+
+/-- Extract Q col 0 as a DSeq from a PBPSet .Bminus ⊥ μQ. -/
+private noncomputable def PBPSet_Bminus_bot_to_DSeq {μQ : YoungDiagram}
+    (τ : PBPSet .Bminus ⊥ μQ) : DSeq (μQ.colLen 0) :=
+  ⟨fun i => τ.val.Q.paint i.val 0, by
+    refine ⟨fun i => ?_, fun i j hij => ?_, fun i j hi hj => ?_⟩
+    · have hmemQ : (i.val, 0) ∈ τ.val.Q.shape := by
+        rw [τ.prop.2.2]; exact YoungDiagram.mem_iff_lt_colLen.mpr i.isLt
+      have hne : τ.val.Q.paint i.val 0 ≠ .dot := by
+        intro hdot
+        have ⟨hmemP, _⟩ := (τ.val.dot_match i.val 0).mpr ⟨hmemQ, hdot⟩
+        rw [τ.prop.2.1] at hmemP; exact absurd hmemP (YoungDiagram.notMem_bot _)
+      have hall := τ.val.sym_Q i.val 0 hmemQ
+      simp [DRCSymbol.allowed, τ.prop.1] at hall
+      rcases hall with h | h | h | h
+      · exact absurd h hne
+      · exact Or.inl h
+      · exact Or.inr (Or.inl h)
+      · exact Or.inr (Or.inr h)
+    · exact τ.val.mono_Q i.val 0 j.val 0 hij (le_refl 0)
+        (by rw [τ.prop.2.2]; exact YoungDiagram.mem_iff_lt_colLen.mpr j.isLt)
+    · exact Fin.ext (τ.val.col_d_Q 0 i.val j.val hi hj)⟩
+
+/-- Round-trip: extract then reconstruct gives the same PBP (single-column Q). -/
+private theorem DSeq_roundtrip_left {μQ : YoungDiagram}
+    (hsc : ∀ j, j ≥ 1 → μQ.colLen j = 0) (τ : PBPSet .Bminus ⊥ μQ) :
+    DSeq_to_PBP_Bminus hsc (PBPSet_Bminus_bot_to_DSeq τ) = τ := by
+  apply Subtype.ext; apply PBP.ext''
+  · -- γ: both .Bminus
+    unfold DSeq_to_PBP_Bminus; dsimp; exact τ.prop.1.symm
+  · -- P: both emptyPYD
+    unfold DSeq_to_PBP_Bminus; dsimp
+    exact (PYD_eq_emptyPYD_of_shape_bot τ.prop.2.1).symm
+  · -- Q: paint agrees
+    apply PaintedYoungDiagram.ext'
+    · unfold DSeq_to_PBP_Bminus; dsimp; exact τ.prop.2.2.symm
+    · ext i j
+      unfold DSeq_to_PBP_Bminus PBPSet_Bminus_bot_to_DSeq; dsimp
+      simp only [mkQpaint]
+      split_ifs with hc
+      · rw [hc.1]
+      · push_neg at hc
+        symm; apply τ.val.Q.paint_outside
+        intro hmem; rw [τ.prop.2.2] at hmem
+        by_cases hj : j = 0
+        · subst hj; exact absurd (YoungDiagram.mem_iff_lt_colLen.mp hmem) (not_lt.mpr (hc rfl))
+        · exact absurd (singleCol_j0 hsc hmem) hj
+
+/-- Round-trip: reconstruct then extract gives the same DSeq. -/
+private theorem DSeq_roundtrip_right {μQ : YoungDiagram}
+    (hsc : ∀ j, j ≥ 1 → μQ.colLen j = 0) (d : DSeq (μQ.colLen 0)) :
+    PBPSet_Bminus_bot_to_DSeq (DSeq_to_PBP_Bminus hsc d) = d := by
+  apply Subtype.ext; funext i
+  simp only [PBPSet_Bminus_bot_to_DSeq, DSeq_to_PBP_Bminus, mkQpaint]
+  dsimp; simp [i.isLt]
+
+/-- PBPSet .Bminus ⊥ μQ ≃ DSeq (μQ.colLen 0) for single-column Q. -/
+private noncomputable def PBPSet_Bminus_bot_equiv_DSeq {μQ : YoungDiagram}
+    (hsc : ∀ j, j ≥ 1 → μQ.colLen j = 0) :
+    PBPSet .Bminus ⊥ μQ ≃ DSeq (μQ.colLen 0) where
+  toFun := PBPSet_Bminus_bot_to_DSeq
+  invFun := DSeq_to_PBP_Bminus hsc
+  left_inv := DSeq_roundtrip_left hsc
+  right_inv := DSeq_roundtrip_right hsc
+
+/-- card(PBPSet .Bminus ⊥ μQ) = 2 * μQ.colLen 0 + 1 for single-column Q. -/
+private theorem card_PBPSet_Bminus_bot_singleCol {μQ : YoungDiagram}
+    (hsc : ∀ j, j ≥ 1 → μQ.colLen j = 0) :
+    Fintype.card (PBPSet .Bminus ⊥ μQ) = 2 * (μQ.colLen 0) + 1 := by
+  rw [Fintype.card_congr (PBPSet_Bminus_bot_equiv_DSeq hsc)]
+  exact DSeq_card _
+
+/-- colLen j = 0 when j ≥ rowLen 0. -/
+private lemma colLen_eq_zero_of_ge_rowLen0 (μ : YoungDiagram) (j : ℕ) (hj : j ≥ μ.rowLen 0) :
+    μ.colLen j = 0 := by
+  by_contra h
+  have hpos : 0 < μ.colLen j := by omega
+  have hmem : (0, j) ∈ μ := YoungDiagram.mem_iff_lt_colLen.mpr hpos
+  exact absurd (YoungDiagram.mem_iff_lt_rowLen.mp hmem) (by omega)
+
+/-- For dpartColLensQ_B [r₁] with r₁ > 0: single column, colLen j = 0 for j ≥ 1. -/
+private lemma dpartColLensQ_B_singleton_singleCol {r₁ : ℕ} {μQ : YoungDiagram}
+    (hQ : μQ.colLens = dpartColLensQ_B [r₁]) (hr : r₁ > 0) :
+    ∀ j, j ≥ 1 → μQ.colLen j = 0 := by
+  intro j hj
+  apply colLen_eq_zero_of_ge_rowLen0
+  have hlen := YoungDiagram.length_colLens μQ
+  have : dpartColLensQ_B [r₁] = [r₁ / 2] := by simp [dpartColLensQ_B, hr]
+  rw [hQ, this] at hlen; simp at hlen; omega
+
+/-- For dpartColLensQ_B [r₁] with r₁ > 0: colLen 0 = r₁/2. -/
+private lemma dpartColLensQ_B_singleton_colLen0 {r₁ : ℕ} {μQ : YoungDiagram}
+    (hQ : μQ.colLens = dpartColLensQ_B [r₁]) (hr : r₁ > 0) :
+    μQ.colLen 0 = r₁ / 2 := by
+  have : dpartColLensQ_B [r₁] = [r₁ / 2] := by simp [dpartColLensQ_B, hr]
+  exact colLen_0_eq_of_colLens_cons (by rw [hQ, this])
+
 /-- Base case: empty orbit → 1 B⁺ PBP and 1 B⁻ PBP. -/
 theorem card_PBPSet_B_empty :
     Fintype.card (PBPSet .Bplus ⊥ ⊥) + Fintype.card (PBPSet .Bminus ⊥ ⊥) =
@@ -96,13 +343,20 @@ theorem card_PBPSet_B_singleton (r₁ : ℕ) (μP μQ : YoungDiagram)
     (heven : Even r₁) (hr : r₁ > 0) :
     Fintype.card (PBPSet .Bplus μP μQ) + Fintype.card (PBPSet .Bminus μP μQ) =
     tripleSum (countPBP_B [r₁]) := by
-  -- Strategy: dpartColLensP_B [r₁] = [] so μP = ⊥ (empty P diagram).
-  -- dpartColLensQ_B [r₁] = [r₁/2] so Q has one column of height r₁/2.
-  -- P is empty, so all PBP constraints reduce to Q-only constraints.
-  -- Q cells in col 0 must be from {•,s,r,d} with layer monotonicity.
-  -- Direct enumeration of valid Q-paintings gives the count.
-  -- Needs: card_PBPSet_bot-like lemma for single-column case.
-  sorry
+  -- P = ⊥ since dpartColLensP_B [r₁] = [].
+  have hP_nil : μP = ⊥ := yd_of_colLens_nil (by rw [hP]; rfl)
+  subst hP_nil
+  -- Use B⁺/B⁻ symmetry: total = 2 × card(B⁻).
+  have h_sym := card_Bplus_eq_Bminus (⊥ : YoungDiagram) μQ
+  rw [h_sym, ← Nat.two_mul]
+  -- Compute the RHS. Since r₁ > 0 and Even r₁, c₁ = r₁/2 ≥ 1.
+  have hc₁ : r₁ / 2 ≥ 1 := by
+    obtain ⟨m, rfl⟩ := heven; omega
+  simp only [countPBP_B, tripleSum, hc₁, ite_true, nu]
+  -- Simplify RHS to 2 * (2 * (r₁/2) + 1)
+  suffices h : Fintype.card (PBPSet RootType.Bminus ⊥ μQ) = 2 * (r₁ / 2) + 1 by omega
+  have hsc := dpartColLensQ_B_singleton_singleCol hQ hr
+  rw [card_PBPSet_Bminus_bot_singleCol hsc, dpartColLensQ_B_singleton_colLen0 hQ hr]
 
 /-! ## Double descent B→M→B -/
 
