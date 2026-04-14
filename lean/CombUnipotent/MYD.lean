@@ -2505,3 +2505,113 @@ theorem prop_11_15_PBP (τ₁ τ₂ : PBP)
   BMSZ.injectivity_mod_twist L₁ L₂ ε₁ ε₂ h_eq h_no_det h_no_det'
 
 end PBPInstantiation
+
+/-! ## Prop 11.8(a): Theta lift nonzero
+
+For B/D targets (thetaLift_CD, thetaLift_MB), the standard case produces
+exactly 1 output when addp ≥ 0 ∧ addn ≥ 0. -/
+
+namespace BMSZ
+
+/-- thetaLift_CD produces exactly one element in standard case. -/
+theorem ILS.thetaLift_CD_nonempty (E : ILS) (p q : ℤ)
+    (h_std : p - (ILS.sign E).1 - (ILS.firstColSign E).2 ≥ 0 ∧
+             q - (ILS.sign E).2 - (ILS.firstColSign E).1 ≥ 0) :
+    ILS.thetaLift_CD E p q ≠ [] := by
+  simp only [ILS.thetaLift_CD]
+  rw [if_pos h_std]
+  exact List.cons_ne_nil _ _
+
+/-- thetaLift_MB produces exactly one element in standard case. -/
+theorem ILS.thetaLift_MB_nonempty (E : ILS) (p q : ℤ)
+    (h_std : p - (ILS.sign E).1 - (ILS.firstColSign E).2 ≥ 0 ∧
+             q - (ILS.sign E).2 - (ILS.firstColSign E).1 ≥ 0) :
+    ILS.thetaLift_MB E p q ≠ [] := by
+  simp only [ILS.thetaLift_MB]
+  rw [if_pos h_std]
+  exact List.cons_ne_nil _ _
+
+/-- ACResult.thetaLift is nonempty when source is nonempty and each component's
+    lift produces at least one output. -/
+theorem ACResult.thetaLift_nonempty (ac : ACResult) (target : RootType) (p q : ℤ)
+    (h_ne : ac ≠ [])
+    (h_lift : ∀ r ∈ ac, ILS.thetaLift r.2 target p q ≠ []) :
+    (ac.thetaLift target p q) ≠ [] := by
+  simp only [ACResult.thetaLift]
+  obtain ⟨r, hr⟩ := List.exists_mem_of_ne_nil ac h_ne
+  intro h_nil
+  rw [List.flatMap_eq_nil_iff] at h_nil
+  have := h_nil r hr
+  simp [List.map_eq_nil_iff] at this
+  exact h_lift r hr this
+
+/-- **Prop 11.8(a) abstract:** AC.step preserves nonzero for B/D targets
+    in the standard case (when the theta lift produces output). -/
+theorem AC.step_nonzero_BD (source : ACResult) (p q : ℤ) (ε_τ ε_wp : Fin 2)
+    (γ : RootType) (hγ : γ = .Bplus ∨ γ = .Bminus ∨ γ = .D)
+    (h_ne : source.Nonzero)
+    (h_lift_ok : ∀ (c : ℤ) (ils : ILS), (c, ils) ∈ source →
+      ILS.thetaLift ils γ p q ≠ []) :
+    (AC.step source γ p q ε_τ ε_wp).Nonzero := by
+  simp only [ACResult.Nonzero, AC.step]
+  have h_not_CM : ¬(γ = .C ∨ γ = .M) := by rcases hγ with rfl | rfl | rfl <;> decide
+  rw [if_neg h_not_CM]
+  -- The lifted result is nonempty because flatMap of nonempty results is nonempty
+  have h_lifted_ne : (source.thetaLift γ p q) ≠ [] := by
+    simp only [ACResult.thetaLift]
+    obtain ⟨r, hr⟩ := List.exists_mem_of_ne_nil source h_ne
+    intro h_nil
+    have : (source.flatMap fun ⟨coeff, ils⟩ =>
+      (ILS.thetaLift ils γ p q).map fun lifted => (coeff, lifted)) = [] := h_nil
+    rw [List.flatMap_eq_nil_iff] at this
+    have := this r hr
+    simp only [List.map_eq_nil_iff] at this
+    exact h_lift_ok r.1 r.2 (by rwa [Prod.mk.eta]) this
+  -- Post-twist preserves nonempty
+  split
+  · simp only [ACResult.twistBD, ne_eq, List.map_eq_nil_iff]
+    exact h_lifted_ne
+  · exact h_lifted_ne
+
+/-! ## Lemma 11.14: Surjectivity (abstract)
+
+The operations in formula (11.11) are all surjective on their images:
+- charTwistCM is involutive ⟹ surjective
+- augment = cons ⟹ surjective onto ILS with length > 0
+- twistBD is involutive ⟹ surjective -/
+
+/-- **Lemma 11.14 (charTwistCM surjectivity):** For any target ILS,
+    there exists a source with charTwistCM(source, j) = target. -/
+theorem ILS.charTwistCM_surjective (j : ℤ) :
+    Function.Surjective (fun E : ILS => ILS.charTwistCM E j) :=
+  fun target => ⟨ILS.charTwistCM target j, ILS.charTwistCM_involutive target j⟩
+
+/-- **Lemma 11.14 (twistBD surjectivity):** For any target ILS,
+    there exists a source with twistBD(source, tp, tn) = target. -/
+theorem ILS.twistBD_surjective (tp tn : ℤ) (htp : tp = 1 ∨ tp = -1) (htn : tn = 1 ∨ tn = -1) :
+    Function.Surjective (fun E : ILS => ILS.twistBD E tp tn) :=
+  fun target => ⟨ILS.twistBD target tp tn, ILS.twistBD_involutive target tp tn htp htn⟩
+
+/-- **Lemma 11.14 (augment preimage):** augment(pq, ·) is surjective onto
+    ILS of the form pq :: rest. -/
+theorem ILS.augment_preimage (pq : ℤ × ℤ) (rest : ILS) :
+    ILS.augment pq rest = pq :: rest := rfl
+
+/-- **Lemma 11.14 (ACResult chain surjectivity):** charTwistCM is surjective on ACResult. -/
+theorem ACResult.charTwistCM_surjective (j : ℤ) :
+    Function.Surjective (fun ac : ACResult => ac.charTwistCM j) := by
+  intro target
+  refine ⟨target.charTwistCM j, ?_⟩
+  simp only [ACResult.charTwistCM, List.map_map, Function.comp_def]
+  simp [ILS.charTwistCM_involutive]
+
+/-- **Lemma 11.14 (ACResult twist surjectivity):** twistBD is surjective on ACResult. -/
+theorem ACResult.twistBD_surjective (tp tn : ℤ)
+    (htp : tp = 1 ∨ tp = -1) (htn : tn = 1 ∨ tn = -1) :
+    Function.Surjective (fun ac : ACResult => ac.twistBD tp tn) := by
+  intro target
+  refine ⟨target.twistBD tp tn, ?_⟩
+  simp only [ACResult.twistBD, List.map_map, Function.comp_def]
+  simp [ILS.twistBD_involutive _ _ _ htp htn]
+
+end BMSZ
