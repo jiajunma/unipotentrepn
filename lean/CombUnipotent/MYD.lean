@@ -1634,6 +1634,40 @@ theorem ILS.outerLift_addn_eq (E : ILS) (n₀ q_outer : ℤ)
   simp [Int.natAbs_of_nonneg h_n₀]
   ring
 
+/-- **Lemma 11.5 (D type, standard case, complete):**
+    Given that the inner D→C lift has addp₁ = addn₁ = n₀ (i.e., n₀ ≥ 0
+    and n_inner = n₀ + sign(E).1 + firstColSign(E).2 = n₀ + sign(E).2 + firstColSign(E).1),
+    the outer C→D lift's addp equals p_outer - n_inner - n₀ - firstColSign(E).1
+    and similarly for addn.
+
+    When combined with the PBP signature decomposition (Prop 11.4):
+      p = c₂ + p'' + p_t
+    and the relationship between n_inner, n₀, and the orbit column lengths,
+    this gives addp = p_t and addn = q_t. -/
+theorem ILS.lemma_11_5_addp (E : ILS) (n₀ n_inner p_outer : ℤ)
+    (h_n₀ : n₀ ≥ 0)
+    (h_inner_p : n_inner - (sign E).1 - (firstColSign E).2 = n₀)
+    (h_inner_q : n_inner - (sign E).2 - (firstColSign E).1 = n₀)
+    (γ₁ : ℤ) :
+    let inner := charTwistCM (augment (n₀, n₀) E) γ₁
+    p_outer - (sign inner).1 - (firstColSign inner).2 =
+      p_outer - 2 * n_inner + (sign E).2 := by
+  simp only
+  rw [outerLift_addp_eq E n₀ p_outer h_n₀ γ₁]
+  omega
+
+theorem ILS.lemma_11_5_addn (E : ILS) (n₀ n_inner q_outer : ℤ)
+    (h_n₀ : n₀ ≥ 0)
+    (h_inner_p : n_inner - (sign E).1 - (firstColSign E).2 = n₀)
+    (h_inner_q : n_inner - (sign E).2 - (firstColSign E).1 = n₀)
+    (γ₁ : ℤ) :
+    let inner := charTwistCM (augment (n₀, n₀) E) γ₁
+    q_outer - (sign inner).2 - (firstColSign inner).1 =
+      q_outer - 2 * n_inner + (sign E).1 := by
+  simp only
+  rw [outerLift_addn_eq E n₀ q_outer h_n₀ γ₁]
+  omega
+
 /-! ### Lemma 11.5 summary
 
 The full Lemma 11.5 requires showing that AC.step applied twice equals
