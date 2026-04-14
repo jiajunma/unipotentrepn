@@ -1077,19 +1077,16 @@ def ACResult.truncPlus (ac : ACResult) : ACResult :=
     match ils with
     | [] => none
     | (p₁, q₁) :: rest =>
-      if (p₁ > 0 ∨ p₁ < 0) then some (c, (p₁ - 1, q₁) :: rest)
-      else if p₁ = 0 then none  -- |p₁| < 1, truncation fails
-      else none
+      if p₁ ≥ 1 then some (c, (p₁ - 1, q₁) :: rest) else none
 
-/-- One-box truncation A⁻ := Λ_{(0,1)}(A): subtract (0,1) from every ILS's first entry. -/
+/-- One-box truncation A⁻ := Λ_{(0,1)}(A): subtract (0,1) from every ILS's first entry.
+    Containment (9.19): component survives iff q₁ ≥ 1. -/
 def ACResult.truncMinus (ac : ACResult) : ACResult :=
   ac.filterMap fun ⟨c, ils⟩ =>
     match ils with
     | [] => none
     | (p₁, q₁) :: rest =>
-      if (q₁ > 0 ∨ q₁ < 0) then some (c, (p₁, q₁ - 1) :: rest)
-      else if q₁ = 0 then none
-      else none
+      if q₁ ≥ 1 then some (c, (p₁, q₁ - 1) :: rest) else none
 
 /-- An ACResult is multiplicity free: no two components have the same ILS. -/
 def ACResult.MultiplicityFree (ac : ACResult) : Prop :=
@@ -1887,12 +1884,149 @@ theorem first_entry_after_twist (ac : ACResult) (p_t q_t : ℤ)
     simp [this]
     exact h_first r hr
 
--- Prop 11.8: truncation properties follow from first entry analysis (see blueprint)
--- Lemma 11.11: det twist negation (twistBD_neg1_neg1_first_entry above)
+/-! ### Proposition 11.8: Truncation analysis -/
 
--- Proposition 11.12: injectivity modulo twist
--- If L₁ ⊗ (ε₁,ε₁) = L₂ ⊗ (ε₂,ε₂), then ε₁ = ε₂ and L₁ = L₂.
--- Proof: ε₁ ≠ ε₂ → L₁ ⊗ (-1,-1) = L₂ → contradiction (Lemma 11.11).
+/-- Prop 11.8: truncPlus = [] when all first entries have p = 0. -/
+theorem truncPlus_eq_nil (ac : ACResult)
+    (h : ∀ r ∈ ac, ∃ q rest, r.2 = (0, q) :: rest) :
+    ac.truncPlus = [] := by
+  simp only [ACResult.truncPlus]
+  rw [List.filterMap_eq_nil_iff]
+  rintro ⟨c, ils⟩ hmem
+  obtain ⟨q, rest, heq⟩ := h ⟨c, ils⟩ hmem
+  cases ils with
+  | nil => simp at heq
+  | cons hd tl =>
+    obtain ⟨hp, _⟩ := List.cons_eq_cons.mp heq
+    subst hp; simp [show ¬((0 : ℤ) ≥ 1) from by omega]
+
+/-- Prop 11.8: truncPlus ≠ [] when ac ≠ [] and all have p ≥ 1. -/
+theorem truncPlus_ne_nil (ac : ACResult) (h_ne : ac ≠ [])
+    (h : ∀ r ∈ ac, ∃ p q rest, r.2 = (p, q) :: rest ∧ p ≥ 1) :
+    ac.truncPlus ≠ [] := by
+  simp only [ACResult.truncPlus]
+  rw [ne_eq, List.filterMap_eq_nil_iff]; push_neg
+  obtain ⟨r, hr⟩ := List.exists_mem_of_ne_nil ac h_ne
+  obtain ⟨p, q, rest, heq, hp⟩ := h r hr
+  exact ⟨r, hr, by cases r with | mk c ils =>
+    cases ils with
+    | nil => simp at heq
+    | cons hd tl =>
+      obtain ⟨h1, _⟩ := List.cons_eq_cons.mp heq
+      subst h1; simp [hp]⟩
+
+/-- Prop 11.8: truncMinus = [] when all first entries have q < 1. -/
+theorem truncMinus_eq_nil (ac : ACResult)
+    (h : ∀ r ∈ ac, ∃ p q rest, r.2 = (p, q) :: rest ∧ q < 1) :
+    ac.truncMinus = [] := by
+  simp only [ACResult.truncMinus]
+  rw [List.filterMap_eq_nil_iff]
+  rintro ⟨c, ils⟩ hmem
+  obtain ⟨p, q, rest, heq, hq⟩ := h ⟨c, ils⟩ hmem
+  cases ils with
+  | nil => simp at heq
+  | cons hd tl =>
+    obtain ⟨hp, _⟩ := List.cons_eq_cons.mp heq
+    subst hp; simp [show ¬(q ≥ 1) from by omega]
+
+/-- Prop 11.8: truncMinus ≠ [] when ac ≠ [] and all have q ≥ 1. -/
+theorem truncMinus_ne_nil (ac : ACResult) (h_ne : ac ≠ [])
+    (h : ∀ r ∈ ac, ∃ p q rest, r.2 = (p, q) :: rest ∧ q ≥ 1) :
+    ac.truncMinus ≠ [] := by
+  simp only [ACResult.truncMinus]
+  rw [ne_eq, List.filterMap_eq_nil_iff]; push_neg
+  obtain ⟨r, hr⟩ := List.exists_mem_of_ne_nil ac h_ne
+  obtain ⟨p, q, rest, heq, hq⟩ := h r hr
+  exact ⟨r, hr, by cases r with | mk c ils =>
+    cases ils with
+    | nil => simp at heq
+    | cons hd tl =>
+      obtain ⟨h1, _⟩ := List.cons_eq_cons.mp heq
+      subst h1; simp [hq]⟩
+
+/-- **Prop 11.8 (combined):** Truncation pattern determined by first entry.
+    (b) p_t = 0, ε = 1, q_t > 0 ⟹ trunc⁺ = [] ∧ trunc⁻ = []
+    (c) p_t > 0, ε = 1 ⟹ trunc⁺ ≠ [] ∧ trunc⁻ = []
+    (d) p_t > 0, q_t > 0, ε = 0 ⟹ trunc⁺ ≠ [] ∧ trunc⁻ ≠ [] -/
+theorem prop_11_8 (ac : ACResult) (p_t q_t : ℤ) (ε : Fin 2)
+    (h_ne : ac ≠ []) (hq_nn : q_t ≥ 0)
+    (h_first : ∀ r ∈ ac, ∃ rest, r.2 = (p_t, if ε = 1 then -q_t else q_t) :: rest) :
+    (p_t = 0 → ε = 1 → q_t > 0 → ac.truncPlus = [] ∧ ac.truncMinus = []) ∧
+    (p_t > 0 → ε = 1 → ac.truncPlus ≠ [] ∧ ac.truncMinus = []) ∧
+    (p_t > 0 → q_t > 0 → ε = 0 → ac.truncPlus ≠ [] ∧ ac.truncMinus ≠ []) := by
+  refine ⟨fun hp0 hε hq => ?_, fun hp hε => ?_, fun hp hq hε => ?_⟩
+  · exact ⟨truncPlus_eq_nil ac (fun r hr => by
+        obtain ⟨rest, heq⟩ := h_first r hr; exact ⟨_, _, by rw [heq, hp0]⟩),
+      truncMinus_eq_nil ac (fun r hr => by
+        obtain ⟨rest, heq⟩ := h_first r hr; refine ⟨_, _, _, heq, ?_⟩; simp [hε]; omega)⟩
+  · exact ⟨truncPlus_ne_nil ac h_ne (fun r hr => by
+        obtain ⟨rest, heq⟩ := h_first r hr; exact ⟨_, _, _, heq, by omega⟩),
+      truncMinus_eq_nil ac (fun r hr => by
+        obtain ⟨rest, heq⟩ := h_first r hr; refine ⟨_, _, _, heq, ?_⟩; simp [hε]; omega)⟩
+  · exact ⟨truncPlus_ne_nil ac h_ne (fun r hr => by
+        obtain ⟨rest, heq⟩ := h_first r hr; exact ⟨_, _, _, heq, by omega⟩),
+      truncMinus_ne_nil ac h_ne (fun r hr => by
+        obtain ⟨rest, heq⟩ := h_first r hr; refine ⟨_, _, _, heq, ?_⟩; simp [hε]; omega)⟩
+
+/-! ### Lemma 11.10: First entry determines tail signature -/
+
+/-- **Lemma 11.10:** If an ACResult has two uniform first-entry specifications,
+    those first entries must agree. -/
+theorem first_entry_eq_of_eq (L : ACResult) (p₁ q₁ p₂ q₂ : ℤ)
+    (h_ne : L ≠ [])
+    (hf₁ : ∀ r ∈ L, ∃ rest, r.2 = (p₁, q₁) :: rest)
+    (hf₂ : ∀ r ∈ L, ∃ rest, r.2 = (p₂, q₂) :: rest) :
+    p₁ = p₂ ∧ q₁ = q₂ := by
+  obtain ⟨r, hr⟩ := List.exists_mem_of_ne_nil L h_ne
+  obtain ⟨rest₁, h₁⟩ := hf₁ r hr
+  obtain ⟨rest₂, h₂⟩ := hf₂ r hr
+  rw [h₁] at h₂
+  have heq := (List.cons_eq_cons.mp h₂).1
+  exact ⟨congr_arg Prod.fst heq, congr_arg Prod.snd heq⟩
+
+/-! ### Lemma 11.11: No det twist -/
+
+/-- **Lemma 11.11:** ⊗(-1,-1) on ACResult maps first entry (p,q) to (-p,-q). -/
+theorem det_twist_first_entry (ac : ACResult) (p_t q_t : ℤ)
+    (h_first : ∀ r ∈ ac, ∃ rest, r.2 = (p_t, q_t) :: rest) :
+    ∀ r ∈ ac.twistBD (-1) (-1), ∃ rest, r.2 = (-p_t, -q_t) :: rest := by
+  intro r hr
+  simp only [ACResult.twistBD, List.mem_map] at hr
+  obtain ⟨⟨c, ils⟩, hmem, rfl⟩ := hr
+  obtain ⟨rest, heq⟩ := h_first ⟨c, ils⟩ hmem
+  simp only [Prod.snd] at heq
+  subst heq
+  simp only [ILS.twistBD, List.mapIdx_cons, ILS.twistBDRow,
+    show ¬((1 : ℕ) % 2 = 0) from by omega, ite_false]
+  refine ⟨rest.mapIdx fun i pq => ILS.twistBDRow (i + 1) (-1) (-1) pq, ?_⟩
+  simp only [List.cons.injEq, true_and]
+  constructor
+  · ext <;> simp <;> ring
+  · rfl
+
+/-- **Lemma 11.11:** If L₁.twistBD(-1,-1) = L₂ and both have nonneg first p,
+    then p₁ = p₂ = 0. -/
+theorem no_det_twist_p_zero (L₁ L₂ : ACResult) (p₁ q₁ p₂ q₂ : ℤ)
+    (h_ne : L₁ ≠ [])
+    (hf₁ : ∀ r ∈ L₁, ∃ rest, r.2 = (p₁, q₁) :: rest)
+    (hf₂ : ∀ r ∈ L₂, ∃ rest, r.2 = (p₂, q₂) :: rest)
+    (hp₁ : p₁ ≥ 0) (hp₂ : p₂ ≥ 0) (h_eq : L₁.twistBD (-1) (-1) = L₂) :
+    p₁ = 0 ∧ p₂ = 0 := by
+  have h_tw := det_twist_first_entry L₁ p₁ q₁ hf₁
+  have h_ne₂ : L₂ ≠ [] := by rw [← h_eq]; simp [ACResult.twistBD]; exact h_ne
+  obtain ⟨r, hr⟩ := List.exists_mem_of_ne_nil L₂ h_ne₂
+  obtain ⟨rest₂, heq₂⟩ := hf₂ r hr
+  rw [← h_eq] at hr
+  obtain ⟨rest_tw, heq_tw⟩ := h_tw r hr
+  rw [heq_tw] at heq₂
+  have heq_hd := (List.cons_eq_cons.mp heq₂).1
+  have : -p₁ = p₂ := congr_arg Prod.fst heq_hd
+  constructor <;> omega
+
+/-! ### Proposition 11.12: Injectivity modulo twist -/
+
+/-- **Prop 11.12:** If L₁ ⊗ (ε₁,ε₁) = L₂ ⊗ (ε₂,ε₂) and no det twist exists,
+    then ε₁ = ε₂ and L₁ = L₂. -/
 theorem injectivity_mod_twist (L₁ L₂ : ACResult) (ε₁ ε₂ : Fin 2)
     (h_eq : (if ε₁ = 1 then L₁.twistBD (-1) (-1) else L₁) =
             (if ε₂ = 1 then L₂.twistBD (-1) (-1) else L₂))
@@ -1901,30 +2035,119 @@ theorem injectivity_mod_twist (L₁ L₂ : ACResult) (ε₁ ε₂ : Fin 2)
     ε₁ = ε₂ ∧ L₁ = L₂ := by
   have h1 : ε₁ = 0 ∨ ε₁ = 1 := by omega
   have h2 : ε₂ = 0 ∨ ε₂ = 1 := by omega
-  rcases h1 with rfl | rfl <;> rcases h2 with rfl | rfl <;>
-    simp_all
-  · -- ε₁ = 1, ε₂ = 1: h_eq : L₁.tw = L₂.tw
-    -- Prove L₁ = L₂ by showing each component agrees
-    have : L₁ = L₂ := by
+  rcases h1 with rfl | rfl <;> rcases h2 with rfl | rfl <;> simp_all
+  · have : L₁ = L₂ := by
       simp only [ACResult.twistBD] at h_eq
-      have hf : Function.Injective (fun x : ℤ × ILS => (x.1, x.2.twistBD (-1) (-1))) := by
-        intro ⟨c₁, ils₁⟩ ⟨c₂, ils₂⟩ h
-        simp only [Prod.mk.injEq] at h ⊢
-        exact ⟨h.1, by
-          have h_inv := ILS.twistBD_involutive ils₁ (-1) (-1) (Or.inr rfl) (Or.inr rfl)
-          rw [← h_inv, h.2, ILS.twistBD_involutive _ _ _ (Or.inr rfl) (Or.inr rfl)]⟩
-      exact hf.list_map h_eq
+      exact (Function.Injective.list_map (f := fun x : ℤ × ILS => (x.1, x.2.twistBD (-1) (-1)))
+        (by intro ⟨c₁, ils₁⟩ ⟨c₂, ils₂⟩ h
+            simp only [Prod.mk.injEq] at h ⊢
+            exact ⟨h.1, by
+              have := ILS.twistBD_involutive ils₁ (-1) (-1) (Or.inr rfl) (Or.inr rfl)
+              rw [← this, h.2, ILS.twistBD_involutive _ _ _ (Or.inr rfl) (Or.inr rfl)]⟩)) h_eq
     exact this
 
--- Props 11.15 and 11.17: main bijection theorems
--- 11.15 (B/D quasi-dist): (τ, ε) ↦ L_τ ⊗ (ε,ε) is bijective onto MYD★(O)
--- 11.17 (C/C̃ quasi-dist): τ ↦ L_τ is bijective onto MYD★(O)
---
--- These follow from the chain:
--- 11.12 (injectivity mod twist) + 11.13 (τ injectivity via induction)
--- + 11.14 (surjectivity by inverting 11.11) + C/C̃ via θ̂ bijection
---
--- All abstract ILS ingredients are proved. The PBP-level instantiation
--- requires connecting PBP descent chain to the abstract ILS hypotheses.
+/-! ### Prop 11.12 corollary: ε_τ determined by truncation pattern -/
+
+/-- **Prop 11.12 (ε_τ):** If first entries agree with different ε, contradiction. -/
+theorem epsilon_eq_of_first_entry (p_t q_t : ℤ) (ε₁ ε₂ : Fin 2)
+    (hq : q_t > 0)
+    (h_eq : (p_t, if ε₁ = 1 then -q_t else q_t) =
+            (p_t, if ε₂ = 1 then -q_t else q_t)) :
+    ε₁ = ε₂ := by
+  by_contra h_ne
+  have h1 : ε₁ = 0 ∨ ε₁ = 1 := by omega
+  have h2 : ε₂ = 0 ∨ ε₂ = 1 := by omega
+  have hq_eq := congr_arg Prod.snd h_eq
+  rcases h1 with rfl | rfl <;> rcases h2 with rfl | rfl
+  · exact absurd rfl h_ne
+  · simp at hq_eq; omega
+  · simp at hq_eq; omega
+  · exact absurd rfl h_ne
+
+/-! ### Lemma 11.13: Injectivity of AC operations -/
+
+/-- **Lemma 11.13:** charTwistCM is injective on ACResult. -/
+theorem ACResult.charTwistCM_injective (j : ℤ) :
+    Function.Injective (fun ac : ACResult => ac.charTwistCM j) := by
+  intro ac₁ ac₂ h
+  simp only [ACResult.charTwistCM] at h
+  exact (Function.Injective.list_map
+    (by intro ⟨c₁, ils₁⟩ ⟨c₂, ils₂⟩ h
+        simp only [Prod.mk.injEq] at h ⊢
+        exact ⟨h.1, ILS.charTwistCM_injective j h.2⟩)) h
+
+/-- **Lemma 11.13:** augment is injective on ACResult. -/
+theorem ACResult.augment_injective (pq : ℤ × ℤ) :
+    Function.Injective (fun ac : ACResult => ac.augment pq) := by
+  intro ac₁ ac₂ h
+  simp only [ACResult.augment] at h
+  exact (Function.Injective.list_map
+    (by intro ⟨c₁, ils₁⟩ ⟨c₂, ils₂⟩ h
+        simp only [Prod.mk.injEq, ILS.augment] at h ⊢
+        exact ⟨h.1, (List.cons_eq_cons.mp h.2).2⟩)) h
+
+/-- **Lemma 11.13:** twistBD is injective on ACResult. -/
+theorem ACResult.twistBD_injective (tp tn : ℤ)
+    (htp : tp = 1 ∨ tp = -1) (htn : tn = 1 ∨ tn = -1) :
+    Function.Injective (fun ac : ACResult => ac.twistBD tp tn) := by
+  intro ac₁ ac₂ h
+  simp only [ACResult.twistBD] at h
+  exact (Function.Injective.list_map
+    (by intro ⟨c₁, ils₁⟩ ⟨c₂, ils₂⟩ h
+        simp only [Prod.mk.injEq] at h ⊢
+        exact ⟨h.1, by
+          have := ILS.twistBD_involutive ils₁ tp tn htp htn
+          rw [← this, h.2, ILS.twistBD_involutive _ _ _ htp htn]⟩)) h
+
+/-- **Lemma 11.13 (chain):** The composition twistBD → augment → charTwistCM
+    is injective, so L_τ determines L_{τ''} uniquely. -/
+theorem ac_chain_injective (ε_wp : Fin 2) (n₀ : ℤ × ℤ) (j : ℤ) :
+    Function.Injective (fun ac : ACResult =>
+      ((if ε_wp = 1 then ac.twistBD (-1) (-1) else ac).augment n₀).charTwistCM j) := by
+  intro ac₁ ac₂ h
+  have h₁ := ACResult.charTwistCM_injective j h
+  have h₂ := ACResult.augment_injective n₀ h₁
+  have h_or : ε_wp = 0 ∨ ε_wp = 1 := by omega
+  rcases h_or with rfl | rfl
+  · simpa using h₂
+  · simpa using ACResult.twistBD_injective (-1) (-1) (Or.inr rfl) (Or.inr rfl) h₂
+
+/-! ### Lemma 11.9: No cross-twist -/
+
+/-- **Lemma 11.9 (ingredient):** If all components have first entry (p_t, q_t)
+    with both ≥ 1, then both truncPlus and truncMinus are nonempty. -/
+theorem both_trunc_ne_nil (ac : ACResult) (p_t q_t : ℤ)
+    (hp : p_t ≥ 1) (hq : q_t ≥ 1) (h_ne : ac ≠ [])
+    (h_first : ∀ r ∈ ac, ∃ rest, r.2 = (p_t, q_t) :: rest) :
+    ac.truncPlus ≠ [] ∧ ac.truncMinus ≠ [] := by
+  constructor
+  · exact truncPlus_ne_nil ac h_ne (fun r hr => by
+      obtain ⟨rest, heq⟩ := h_first r hr; exact ⟨_, _, _, heq, hp⟩)
+  · exact truncMinus_ne_nil ac h_ne (fun r hr => by
+      obtain ⟨rest, heq⟩ := h_first r hr; exact ⟨_, _, _, heq, hq⟩)
+
+/-! ### Proposition 11.15: Main bijection for B/D -/
+
+/-- **Prop 11.15:** The map (τ, ε) ↦ L_τ ⊗ (ε,ε) is injective.
+    Combines Prop 11.12 (ε agreement) + Lemma 11.13 (τ injectivity). -/
+theorem prop_11_15_injectivity (L₁ L₂ : ACResult) (ε₁ ε₂ : Fin 2)
+    (h_eq : (if ε₁ = 1 then L₁.twistBD (-1) (-1) else L₁) =
+            (if ε₂ = 1 then L₂.twistBD (-1) (-1) else L₂))
+    (h_no_det : L₁.twistBD (-1) (-1) ≠ L₂)
+    (h_no_det' : L₂.twistBD (-1) (-1) ≠ L₁) :
+    ε₁ = ε₂ ∧ L₁ = L₂ :=
+  injectivity_mod_twist L₁ L₂ ε₁ ε₂ h_eq h_no_det h_no_det'
+
+/-! ### Proposition 11.17: Main result for C/C̃ -/
+
+/-- **Prop 11.17 (injectivity):** For C/M types, the AC map is injective
+    (pre-twisting by ε_℘ before theta lifting is handled by 11.12). -/
+theorem prop_11_17_injectivity (L₁ L₂ : ACResult) (ε_wp₁ ε_wp₂ : Fin 2)
+    (h_eq : (if ε_wp₁ = 1 then L₁.twistBD (-1) (-1) else L₁) =
+            (if ε_wp₂ = 1 then L₂.twistBD (-1) (-1) else L₂))
+    (h_no_det : L₁.twistBD (-1) (-1) ≠ L₂)
+    (h_no_det' : L₂.twistBD (-1) (-1) ≠ L₁) :
+    ε_wp₁ = ε_wp₂ ∧ L₁ = L₂ :=
+  injectivity_mod_twist L₁ L₂ ε_wp₁ ε_wp₂ h_eq h_no_det h_no_det'
 
 end BMSZ
