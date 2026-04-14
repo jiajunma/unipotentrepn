@@ -34,10 +34,52 @@ theorem dpartColLensQ_B_tail (r₁ r₂ : ℕ) (rest : DualPart) :
 
 /-! ## B⁺/B⁻ symmetry -/
 
-/-- B⁺ and B⁻ have the same cardinality (via P↔Q swap involution). -/
+/-- PBP equality follows from equality of the three data fields (γ, P, Q);
+    proof fields are irrelevant by proof irrelevance. -/
+private theorem PBP_eq_of_data (τ₁ τ₂ : PBP)
+    (h1 : τ₁.γ = τ₂.γ) (h2 : τ₁.P = τ₂.P) (h3 : τ₁.Q = τ₂.Q) : τ₁ = τ₂ := by
+  cases τ₁; cases τ₂; simp at h1 h2 h3; subst h1; subst h2; subst h3; rfl
+
+/-- Swap B⁺ ↔ B⁻ in a PBP, preserving all constraints.
+    This works because `DRCSymbol.allowed .Bplus s σ ↔ DRCSymbol.allowed .Bminus s σ`
+    for all sides `s` and symbols `σ` (both have P∈{•,c}, Q∈{•,s,r,d}). -/
+def PBP.swapBplusBminus (τ : PBP) (hγ : τ.γ = .Bplus ∨ τ.γ = .Bminus) : PBP where
+  γ := if τ.γ = .Bplus then .Bminus else .Bplus
+  P := τ.P
+  Q := τ.Q
+  sym_P := by
+    intro i j hmem; have := τ.sym_P i j hmem
+    rcases hγ with h | h <;> simp [h, DRCSymbol.allowed] at this ⊢ <;> exact this
+  sym_Q := by
+    intro i j hmem; have := τ.sym_Q i j hmem
+    rcases hγ with h | h <;> simp [h, DRCSymbol.allowed] at this ⊢ <;> exact this
+  dot_match := τ.dot_match
+  mono_P := τ.mono_P
+  mono_Q := τ.mono_Q
+  row_s := τ.row_s
+  row_r := τ.row_r
+  col_c_P := τ.col_c_P
+  col_c_Q := τ.col_c_Q
+  col_d_P := τ.col_d_P
+  col_d_Q := τ.col_d_Q
+
+/-- B⁺ and B⁻ have the same cardinality: the allowed symbol sets are identical,
+    so swapping the γ tag gives a bijection PBPSet .Bplus μP μQ ≃ PBPSet .Bminus μP μQ. -/
 theorem card_Bplus_eq_Bminus (μP μQ : YoungDiagram) :
     Fintype.card (PBPSet .Bplus μP μQ) = Fintype.card (PBPSet .Bminus μP μQ) := by
-  sorry
+  apply Fintype.card_congr
+  refine {
+    toFun := fun ⟨τ, hγ, hP, hQ⟩ =>
+      ⟨τ.swapBplusBminus (Or.inl hγ), by simp [PBP.swapBplusBminus, hγ], hP, hQ⟩
+    invFun := fun ⟨τ, hγ, hP, hQ⟩ =>
+      ⟨τ.swapBplusBminus (Or.inr hγ), by simp [PBP.swapBplusBminus, hγ], hP, hQ⟩
+    left_inv := fun ⟨τ, hγ, hP, hQ⟩ => by
+      simp only; congr 1
+      exact PBP_eq_of_data _ _ (by simp [PBP.swapBplusBminus, hγ]) rfl rfl
+    right_inv := fun ⟨τ, hγ, hP, hQ⟩ => by
+      simp only; congr 1
+      exact PBP_eq_of_data _ _ (by simp [PBP.swapBplusBminus, hγ]) rfl rfl
+  }
 
 /-! ## Base cases -/
 
@@ -54,6 +96,12 @@ theorem card_PBPSet_B_singleton (r₁ : ℕ) (μP μQ : YoungDiagram)
     (heven : Even r₁) (hr : r₁ > 0) :
     Fintype.card (PBPSet .Bplus μP μQ) + Fintype.card (PBPSet .Bminus μP μQ) =
     tripleSum (countPBP_B [r₁]) := by
+  -- Strategy: dpartColLensP_B [r₁] = [] so μP = ⊥ (empty P diagram).
+  -- dpartColLensQ_B [r₁] = [r₁/2] so Q has one column of height r₁/2.
+  -- P is empty, so all PBP constraints reduce to Q-only constraints.
+  -- Q cells in col 0 must be from {•,s,r,d} with layer monotonicity.
+  -- Direct enumeration of valid Q-paintings gives the count.
+  -- Needs: card_PBPSet_bot-like lemma for single-column case.
   sorry
 
 /-! ## Double descent B→M→B -/
@@ -63,6 +111,14 @@ noncomputable def doubleDescent_B_map (μP μQ : YoungDiagram)
     (τ : PBPSet .Bplus μP μQ ⊕ PBPSet .Bminus μP μQ) :
     PBPSet .Bplus (μP.shiftLeft) (μQ.shiftLeft) ⊕
     PBPSet .Bminus (μP.shiftLeft) (μQ.shiftLeft) := by
+  -- Strategy: compose two single descents B→M→B.
+  -- Step 1 (B→M): remove Q col 0 using descent_B_to_M (strips tail from Q).
+  --   This produces a PBP with γ=M, P shape=μP, Q shape=μQ.shiftLeft.
+  -- Step 2 (M→B): remove P col 0 of the M-type result using descent_M_to_B.
+  --   This produces a PBP with γ∈{B⁺,B⁻}, P shape=μP.shiftLeft, Q shape=μQ.shiftLeft.
+  -- The B⁺/B⁻ tag of the output is determined by the painting of the removed cells.
+  -- Needs: doubleDescent_B_paintL/R from Tail.lean, descent_inj_B infrastructure.
+  -- See doubleDescent_D_map in Descent.lean for the D-type template.
   sorry
 
 /-! ## Recursive step -/
@@ -79,6 +135,12 @@ theorem card_PBPSet_B_primitive_step (r₁ r₂ : ℕ) (rest : DualPart)
     (Fintype.card (PBPSet .Bplus (μP.shiftLeft) (μQ.shiftLeft)) +
      Fintype.card (PBPSet .Bminus (μP.shiftLeft) (μQ.shiftLeft))) *
     tripleSum (tailCoeffs ((r₁ - r₂) / 2 + 1)).1 := by
+  -- Strategy: use doubleDescent_B_map + ddescent_inj_B to show the map is injective.
+  -- In the primitive case (r₂ > r₃), the fiber over each image element has uniform
+  -- cardinality = tripleSum(tailCoeffs k).1 where k = (r₁-r₂)/2 + 1.
+  -- This is because the tail painting choices (in Q col 0 and P col 0) are
+  -- independent of the base painting when the gap is strict.
+  -- Needs: doubleDescent_B_map, fiber cardinality analysis from Fiber.lean.
   sorry
 
 /-- Balanced case (r₂ = r₃): per-tail-class matrix multiply. -/
@@ -105,6 +167,13 @@ theorem card_PBPSet_B_eq_tripleSum_countPBP_B (dp : DualPart) (μP μQ : YoungDi
     (hpos : ∀ r ∈ dp, 0 < r) :
     Fintype.card (PBPSet .Bplus μP μQ) + Fintype.card (PBPSet .Bminus μP μQ) =
     tripleSum (countPBP_B dp) := by
+  -- Strategy: induction on dp (list of even parts).
+  -- Base cases: dp = [] → card_PBPSet_B_empty; dp = [r₁] → card_PBPSet_B_singleton.
+  -- Inductive step dp = r₁ :: r₂ :: rest:
+  --   Branch on primitive (r₂ > rest.head?.getD 0) vs balanced.
+  --   Primitive: apply card_PBPSet_B_primitive_step + IH on rest.
+  --   Balanced: apply card_PBPSet_B_balanced_step + IH on rest.
+  -- Needs: all the above lemmas proved first.
   sorry
 
 /-- Corollary: each of B⁺ and B⁻ has half the total. -/
