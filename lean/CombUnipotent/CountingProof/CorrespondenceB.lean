@@ -836,12 +836,30 @@ theorem card_PBPSet_B_primitive_step (r₁ r₂ : ℕ) (rest : DualPart)
     (Fintype.card (PBPSet .Bplus (μP.shiftLeft) (μQ.shiftLeft)) +
      Fintype.card (PBPSet .Bminus (μP.shiftLeft) (μQ.shiftLeft))) *
     tripleSum (tailCoeffs ((r₁ - r₂) / 2 + 1)).1 := by
-  -- Strategy: use doubleDescent_B_map + ddescent_inj_B to show the map is injective.
-  -- In the primitive case (r₂ > r₃), the fiber over each image element has uniform
-  -- cardinality = tripleSum(tailCoeffs k).1 where k = (r₁-r₂)/2 + 1.
-  -- This is because the tail painting choices (in Q col 0 and P col 0) are
-  -- independent of the base painting when the gap is strict.
-  -- Needs: doubleDescent_B_map, fiber cardinality analysis from Fiber.lean.
+  -- Strategy: use doubleDescent_B_map to project each PBP onto its shiftLeft.
+  -- The map (doubleDescent_B_map, sign) is injective (ddescent_inj_B).
+  -- In the primitive case (r₂ > r₃), every σ in PBPSet(shiftLeft μP, shiftLeft μQ)
+  -- has the same number of preimages, so:
+  --   card(total) = card(sub) × fiber_size
+  --
+  -- The fiber consists of valid paintings of P col 0 and Q col 0:
+  --   P col 0: symbols {•, c}, monotone layerOrd, at most 1 compact symbol
+  --     → tail zone [Q.colLen(0), P.colLen(0)) with GSeq-type count
+  --   Q col 0: symbols {•, s, r, d}, monotone layerOrd, at most 1 discrete symbol
+  --     → tail zone [P.colLen(0), Q.colLen(0)) with GSeq-type count
+  --
+  -- Unlike D-type (where Q is all dots and fiber = |ValidCol0_P| = 4k),
+  -- B-type has BOTH columns contributing, and the joint count equals
+  -- tripleSum(tailCoeffs k).1 where k = (r₁-r₂)/2 + 1.
+  --
+  -- Infrastructure needed (not yet built):
+  --   1. ValidCol0_B_P / ValidCol0_B_Q: valid painting types for B-type columns
+  --   2. fiber_card_B_primitive: |fiber(σ)| = tripleSum(tailCoeffs k).1
+  --   3. Finset.card_biUnion or Fintype.card_sigma to assemble the product
+  --
+  -- This parallels Fiber.lean (fiber_card_primitive) and LiftRC.lean
+  -- (card_PBPSet_D_primitive_step) for D-type, but requires ~300-500 lines
+  -- of new B-type fiber analysis.
   sorry
 
 /-- Balanced case (r₂ = r₃): per-tail-class matrix multiply. -/
@@ -899,7 +917,24 @@ theorem card_PBPSet_B_eq_tripleSum_countPBP_B (dp : DualPart) (μP μQ : YoungDi
       simp only [countPBP_B, h_prim, ite_true, tripleSum]
       ring
     · -- Balanced case: per-tail-class matrix multiply
-      -- Needs: card_PBPSet_B_balanced_step with per-tc counts
+      -- When r₂ = r₃ (balanced), the fiber size depends on the tail class of σ:
+      --   DD fibers have size tDD, RC fibers have size tRC, SS fibers have size tSS
+      -- where (tDD, tRC, tSS) = (tailCoeffs k).1 and k = (r₁-r₂)/2 + 1.
+      --
+      -- The balanced formula is:
+      --   card(total) = dd' × tDD + rc' × scDD
+      --               + dd' × tRC + rc' × scRC
+      --               + dd' × tSS + rc' × scSS
+      -- where (dd', rc', ss') = countPBP_B rest and (scDD, scRC, scSS) = (tailCoeffs k).2.
+      --
+      -- This requires:
+      --   1. card_PBPSet_B_balanced_step: decomposition by tail class with per-class
+      --      fiber sizes, analogous to card_PBPSet_D_balanced_step in LiftRC.lean
+      --   2. B-type tail class classification (DD/RC/SS for combined P+Q columns)
+      --   3. Per-tail-class fiber cardinality lemmas
+      --
+      -- The D-type balanced step (LiftRC.lean:1317) is ~250 lines. The B-type
+      -- version needs similar infrastructure adapted for the two-column fiber.
       simp only [countPBP_B, h_prim, ite_false, tripleSum]
       sorry
 
