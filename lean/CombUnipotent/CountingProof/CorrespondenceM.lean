@@ -87,7 +87,7 @@ theorem card_PBPSet_M_singleton (r₁ : ℕ) (μP μQ : YoungDiagram)
 /-- Base case: empty orbit for M type. -/
 theorem card_PBPSet_M_empty :
     Fintype.card (PBPSet .M ⊥ ⊥) = countPBP_M [] := by
-  sorry
+  simp [countPBP_M, card_PBPSet_bot]
 
 /-! ## Main theorem -/
 
@@ -108,18 +108,36 @@ theorem card_PBPSet_M_eq_countPBP_M (dp : DualPart) (μP μQ : YoungDiagram)
 
 /-! ## Structural theorems -/
 
+/-- Filter by positivity is identity on lists of positive naturals. -/
+private lemma filter_pos_of_all_pos (l : List ℕ) (h : ∀ x ∈ l, 0 < x) :
+    l.filter (fun x => decide (x > 0)) = l := by
+  induction l with
+  | nil => simp
+  | cons a t ih =>
+    simp only [List.filter]
+    have ha := h a (List.mem_cons.mpr (Or.inl rfl))
+    simp [ha, ih (fun x hx => h x (List.mem_cons.mpr (Or.inr hx)))]
+
 theorem countPBP_M_primitive {r₁ r₂ : ℕ} {rest : DualPart}
-    (h : r₁ > r₂) (hne : r₁ :: r₂ :: rest ≠ []) :
+    (h : r₁ > r₂) (hpos : ∀ x ∈ r₁ :: r₂ :: rest, 0 < x) :
     countPBP_M (r₁ :: r₂ :: rest) =
       let (dd, rc, ss) := countPBP_B (r₂ :: rest)
       dd + rc + ss := by
-  simp only [countPBP_M, List.filter, h, ite_true]
-  sorry
+  have hr1 : r₁ > 0 := hpos r₁ (by simp)
+  have hr2 : r₂ > 0 := hpos r₂ (by simp)
+  have hrest : ∀ x ∈ rest, 0 < x := fun x hx => hpos x (by simp [hx])
+  simp only [countPBP_M, List.filter, hr1, hr2, decide_true, h, ite_true, List.tail_cons]
+  congr 1; congr 1
+  all_goals (congr 1; rw [filter_pos_of_all_pos rest hrest])
 
 theorem countPBP_M_balanced {r₁ r₂ : ℕ} {rest : DualPart}
-    (h : ¬(r₁ > r₂)) (hpos₁ : r₁ > 0) (hpos₂ : r₂ > 0) :
+    (h : ¬(r₁ > r₂)) (hpos : ∀ x ∈ r₁ :: r₂ :: rest, 0 < x) :
     countPBP_M (r₁ :: r₂ :: rest) =
       let (dd, rc, _) := countPBP_B (r₂ :: rest)
       dd + rc := by
-  simp only [countPBP_M, List.filter]
-  sorry
+  have hr1 : r₁ > 0 := hpos r₁ (by simp)
+  have hr2 : r₂ > 0 := hpos r₂ (by simp)
+  have hrest : ∀ x ∈ rest, 0 < x := fun x hx => hpos x (by simp [hx])
+  simp only [countPBP_M, List.filter, hr1, hr2, decide_true, h, ite_false, List.tail_cons]
+  congr 1
+  all_goals (congr 1; rw [filter_pos_of_all_pos rest hrest])

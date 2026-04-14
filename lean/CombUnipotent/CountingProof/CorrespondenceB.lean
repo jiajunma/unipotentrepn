@@ -15,31 +15,10 @@ Proof strategy (mirrors Correspondence.lean for D-type):
 import CombUnipotent.CountingProof.Basic
 import CombUnipotent.CountingProof.Fiber
 import CombUnipotent.CountingProof.LiftRC
+import CombUnipotent.CountingProof.Correspondence
+import Mathlib.Algebra.Ring.Parity
 
 open Classical
-
-/-! ## B-type shape properties -/
-
-/-- B-type P column lengths are non-increasing. -/
-theorem dpartColLensP_B_sorted {dp : DualPart} (h : dp.SortedGE) :
-    (dpartColLensP_B dp).SortedGE := by
-  sorry
-
-/-- B-type Q column lengths are non-increasing. -/
-theorem dpartColLensQ_B_sorted {dp : DualPart} (h : dp.SortedGE) :
-    (dpartColLensQ_B dp).SortedGE := by
-  sorry
-
-/-- B-type P column lengths are positive. -/
-theorem dpartColLensP_B_pos {dp : DualPart} (h : ∀ r ∈ dp, 0 < r)
-    (hsort : dp.SortedGE) :
-    ∀ x ∈ dpartColLensP_B dp, 0 < x := by
-  sorry
-
-/-- B-type Q column lengths are positive. -/
-theorem dpartColLensQ_B_pos {dp : DualPart} (h : ∀ r ∈ dp, 0 < r) :
-    ∀ x ∈ dpartColLensQ_B dp, 0 < x := by
-  sorry
 
 /-! ## B-type recursion: dropping 2 rows = shiftLeft -/
 
@@ -66,7 +45,7 @@ theorem card_Bplus_eq_Bminus (μP μQ : YoungDiagram) :
 theorem card_PBPSet_B_empty :
     Fintype.card (PBPSet .Bplus ⊥ ⊥) + Fintype.card (PBPSet .Bminus ⊥ ⊥) =
     tripleSum (countPBP_B []) := by
-  sorry
+  simp [card_PBPSet_bot, tripleSum, countPBP_B]
 
 /-- Single row base case. -/
 theorem card_PBPSet_B_singleton (r₁ : ℕ) (μP μQ : YoungDiagram)
