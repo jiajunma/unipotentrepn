@@ -2151,3 +2151,357 @@ theorem prop_11_17_injectivity (L₁ L₂ : ACResult) (ε_wp₁ ε_wp₂ : Fin 2
   injectivity_mod_twist L₁ L₂ ε_wp₁ ε_wp₂ h_eq h_no_det h_no_det'
 
 end BMSZ
+
+/-! ## Fold helpers for ℤ × ℤ
+
+Lemmas about `Finset.fold HAdd.hAdd (0, 0) f s` on `ℤ × ℤ`,
+used to connect `tailSignature_D` (a fold of `tailContrib`) to
+properties of individual tail cells. -/
+
+private theorem fold_add_pair_fst_nonneg :
+    ∀ (s : Finset ℕ) (f : ℕ → ℤ × ℤ),
+    (∀ i ∈ s, (f i).1 ≥ 0) →
+    (s.fold HAdd.hAdd (0, 0) f).1 ≥ 0 := by
+  intro s
+  refine Finset.cons_induction ?_ ?_ (s := s)
+  · intro f _; simp
+  · intro a s ha ih f hf
+    rw [Finset.fold_cons ha]; simp only [Prod.fst_add]
+    exact add_nonneg (hf a (Finset.mem_cons_self a s))
+      (ih f (fun i hi => hf i (Finset.mem_cons_of_mem hi)))
+
+private theorem fold_add_pair_snd_nonneg :
+    ∀ (s : Finset ℕ) (f : ℕ → ℤ × ℤ),
+    (∀ i ∈ s, (f i).2 ≥ 0) →
+    (s.fold HAdd.hAdd (0, 0) f).2 ≥ 0 := by
+  intro s
+  refine Finset.cons_induction ?_ ?_ (s := s)
+  · intro f _; simp
+  · intro a s ha ih f hf
+    rw [Finset.fold_cons ha]; simp only [Prod.snd_add]
+    exact add_nonneg (hf a (Finset.mem_cons_self a s))
+      (ih f (fun i hi => hf i (Finset.mem_cons_of_mem hi)))
+
+/-- If the fold of nonneg fst-components is zero, each component is zero. -/
+private theorem fold_fst_eq_zero_all :
+    ∀ (s : Finset ℕ) (f : ℕ → ℤ × ℤ),
+    (∀ i ∈ s, (f i).1 ≥ 0) →
+    (s.fold HAdd.hAdd (0, 0) f).1 = 0 →
+    ∀ i ∈ s, (f i).1 = 0 := by
+  intro s
+  refine Finset.cons_induction ?_ ?_ (s := s)
+  · intro f _ _ i hi; simp at hi
+  · intro a s ha ih f hf h0 i hi
+    rw [Finset.fold_cons ha] at h0; simp only [Prod.fst_add] at h0
+    have ha_nn := hf a (Finset.mem_cons_self a s)
+    have hs_nn := fold_add_pair_fst_nonneg s f
+      (fun j hj => hf j (Finset.mem_cons_of_mem hj))
+    rcases Finset.mem_cons.mp hi with rfl | hi'
+    · omega
+    · exact ih f (fun j hj => hf j (Finset.mem_cons_of_mem hj)) (by omega) i hi'
+
+/-- If the fold of nonneg snd-components is zero, each component is zero. -/
+private theorem fold_snd_eq_zero_all :
+    ∀ (s : Finset ℕ) (f : ℕ → ℤ × ℤ),
+    (∀ i ∈ s, (f i).2 ≥ 0) →
+    (s.fold HAdd.hAdd (0, 0) f).2 = 0 →
+    ∀ i ∈ s, (f i).2 = 0 := by
+  intro s
+  refine Finset.cons_induction ?_ ?_ (s := s)
+  · intro f _ _ i hi; simp at hi
+  · intro a s ha ih f hf h0 i hi
+    rw [Finset.fold_cons ha] at h0; simp only [Prod.snd_add] at h0
+    have ha_nn := hf a (Finset.mem_cons_self a s)
+    have hs_nn := fold_add_pair_snd_nonneg s f
+      (fun j hj => hf j (Finset.mem_cons_of_mem hj))
+    rcases Finset.mem_cons.mp hi with rfl | hi'
+    · omega
+    · exact ih f (fun j hj => hf j (Finset.mem_cons_of_mem hj)) (by omega) i hi'
+
+/-! ## PBP-level instantiation
+
+Connect abstract BMSZ theorems to concrete PBP data.
+Reference: [BMSZ] Section 11.1–11.5; [BMSZb] Section 10. -/
+
+namespace PBPInstantiation
+open DRCSymbol
+
+/-- Extract ACStepData from a D-type PBP. -/
+noncomputable def toACStepData_D (τ : PBP) (hγ : τ.γ = .D) : ACStepData where
+  γ := .D
+  p := (PBP.signature τ).1
+  q := (PBP.signature τ).2
+  ε_τ := PBP.epsilon τ
+  ε_wp := 0  -- D type has no pre-twist
+
+/-- Extract ACStepData from a B⁺-type PBP. -/
+noncomputable def toACStepData_Bplus (τ : PBP) (hγ : τ.γ = .Bplus) : ACStepData where
+  γ := .Bplus
+  p := (PBP.signature τ).1
+  q := (PBP.signature τ).2
+  ε_τ := PBP.epsilon τ
+  ε_wp := 0
+
+/-- Extract ACStepData from a C-type PBP with primitive pair set. -/
+noncomputable def toACStepData_C (τ : PBP) (hγ : τ.γ = .C) (wp : PPSet) : ACStepData where
+  γ := .C
+  p := (PBP.signature τ).1
+  q := (PBP.signature τ).2
+  ε_τ := PBP.epsilon τ
+  ε_wp := wp.epsilon
+
+/-! ### Lemma 11.3 at PBP level -/
+
+/-- **Lemma 11.3(a) at PBP level:** ε_τ = 0 iff tailSymbol = d.
+    Connects PBP.epsilon to PBP.tailSymbol_D. -/
+theorem epsilon_zero_iff_tailSymbol_d (τ : PBP) (hγ : τ.γ = .D)
+    (h_tail : τ.Q.shape.colLen 0 < τ.P.shape.colLen 0) :
+    PBP.epsilon τ = 0 ↔ PBP.tailSymbol_D τ = .d := by
+  constructor
+  · intro hε
+    simp only [PBP.epsilon] at hε
+    split_ifs at hε with h
+    · -- hasDInCol0 P || hasDInCol0 Q = true → ∃ d in col 0 of P
+      -- Q has no d in col 0, so the d must be in P
+      have hP_or_Q : τ.P.hasDInCol0 = true ∨ τ.Q.hasDInCol0 = true := by
+        rcases Bool.or_eq_true_iff.mp h with h | h <;> [left; right] <;> exact h
+      have hP : τ.P.hasDInCol0 = true := by
+        rcases hP_or_Q with hP | hQ
+        · exact hP
+        · exfalso
+          simp only [PaintedYoungDiagram.hasDInCol0, decide_eq_true_eq,
+            Finset.Nonempty] at hQ
+          obtain ⟨⟨r, c⟩, hrc⟩ := hQ
+          simp only [Finset.mem_filter, YoungDiagram.mem_cells] at hrc
+          rw [hrc.2.1] at hrc
+          exact PBP.Q_no_d_in_col0_D τ hγ r hrc.2.2
+      simp only [PaintedYoungDiagram.hasDInCol0, decide_eq_true_eq,
+        Finset.Nonempty] at hP
+      obtain ⟨⟨r, c⟩, hrc⟩ := hP
+      simp only [Finset.mem_filter, YoungDiagram.mem_cells] at hrc
+      rw [hrc.2.1] at hrc
+      exact (PBP.tailSymbol_d_iff_d_in_col0 τ hγ h_tail).mpr
+        ⟨r, YoungDiagram.mem_iff_lt_colLen.mp hrc.1, hrc.2.2⟩
+    · simp at hε
+  · intro hx
+    simp only [PBP.epsilon]
+    have ⟨i, hi_lt, hi_d⟩ := (PBP.tailSymbol_d_iff_d_in_col0 τ hγ h_tail).mp hx
+    have : τ.P.hasDInCol0 = true := by
+      simp only [PaintedYoungDiagram.hasDInCol0, decide_eq_true_eq, Finset.Nonempty]
+      exact ⟨(i, 0), Finset.mem_filter.mpr
+        ⟨YoungDiagram.mem_iff_lt_colLen.mpr hi_lt, rfl, hi_d⟩⟩
+    simp [this]
+
+/-- **Lemma 11.3(b) at PBP level:** tailSignature p = 0 iff tailSymbol = s. -/
+theorem tailSig_fst_zero_iff_tailSymbol_s (τ : PBP) (hγ : τ.γ = .D)
+    (h_tail : τ.Q.shape.colLen 0 < τ.P.shape.colLen 0) :
+    (PBP.tailSignature_D τ).1 = 0 ↔ PBP.tailSymbol_D τ = .s := by
+  constructor
+  · -- p_t = 0 means all tail cells have tailContrib.1 = 0, i.e., all are s
+    intro h0
+    simp only [PBP.tailSignature_D] at h0
+    -- The bottom cell index in the fold is (c1P - c1Q - 1)
+    set n := τ.P.shape.colLen 0 - τ.Q.shape.colLen 0 with hn_def
+    set f := fun i => (τ.P.paint (τ.Q.shape.colLen 0 + i) 0).tailContrib with hf_def
+    have h_all_zero := fold_fst_eq_zero_all (Finset.range n) f
+      (fun i _ => (DRCSymbol.tailContrib_nonneg _).1) h0
+    -- The bottom cell is at index n - 1 in the fold
+    have h_bot : n - 1 ∈ Finset.range n := Finset.mem_range.mpr (by omega)
+    have h_fst_zero := h_all_zero (n - 1) h_bot
+    simp only [hf_def] at h_fst_zero
+    rw [show τ.Q.shape.colLen 0 + (n - 1) = τ.P.shape.colLen 0 - 1 from by omega] at h_fst_zero
+    exact (DRCSymbol.tailContrib_fst_eq_zero_iff _).mp h_fst_zero
+  · -- tailSymbol = s means all tail cells are s, so all tailContrib.1 = 0
+    intro hx
+    simp only [PBP.tailSignature_D]
+    set n := τ.P.shape.colLen 0 - τ.Q.shape.colLen 0
+    set f := fun i => (τ.P.paint (τ.Q.shape.colLen 0 + i) 0).tailContrib
+    -- Each tail cell is s, so tailContrib.1 = 0
+    have h_all : ∀ i ∈ Finset.range n, (f i).1 = 0 := by
+      intro i hi; rw [Finset.mem_range] at hi
+      show (τ.P.paint (τ.Q.shape.colLen 0 + i) 0).tailContrib.1 = 0
+      rw [PBP.tail_all_s_of_tailSymbol_s τ hγ hx (by omega) (by omega)]
+      rfl
+    -- Fold of zeros = 0: use induction
+    have : ∀ (s : Finset ℕ) (g : ℕ → ℤ × ℤ),
+        (∀ i ∈ s, (g i).1 = 0) → (s.fold HAdd.hAdd (0, 0) g).1 = 0 := by
+      intro s
+      refine Finset.cons_induction ?_ ?_ (s := s)
+      · intro g _; simp
+      · intro a s' ha ih g hg
+        rw [Finset.fold_cons ha]; simp only [Prod.fst_add]
+        rw [hg a (Finset.mem_cons_self a s'),
+            ih g (fun j hj => hg j (Finset.mem_cons_of_mem hj))]; ring
+    exact this _ f h_all
+
+/-- **Tail signature components are nonneg.** -/
+theorem tailSig_nonneg_D (τ : PBP) (hγ : τ.γ = .D) :
+    (PBP.tailSignature_D τ).1 ≥ 0 ∧ (PBP.tailSignature_D τ).2 ≥ 0 := by
+  simp only [PBP.tailSignature_D]
+  constructor
+  · exact fold_add_pair_fst_nonneg _ _ fun i _ => (DRCSymbol.tailContrib_nonneg _).1
+  · exact fold_add_pair_snd_nonneg _ _ fun i _ => (DRCSymbol.tailContrib_nonneg _).2
+
+/-! ### Prop 11.8 at PBP level -/
+
+/-- **Prop 11.8 at PBP level:** Truncation pattern of L_τ is determined
+    by x_τ = PBP.tailSymbol_D τ.
+
+    Given an AC result L_τ with uniform first entry
+    (p_t, (-1)^ε · q_t) where (p_t, q_t) = tailSignature_D(τ):
+    - x_τ = s ⟹ L_τ⁺ = [] ∧ L_τ⁻ = []
+    - x_τ ∈ {r, c} ⟹ L_τ⁺ ≠ [] ∧ L_τ⁻ = []
+    - x_τ = d ⟹ L_τ⁺ ≠ [] ∧ L_τ⁻ ≠ [] -/
+theorem prop_11_8_PBP (τ : PBP) (hγ : τ.γ = .D)
+    (h_tail : τ.Q.shape.colLen 0 < τ.P.shape.colLen 0)
+    (ac : ACResult) (h_ne : ac ≠ [])
+    (h_first : ∀ r ∈ ac, ∃ rest,
+      r.2 = ((PBP.tailSignature_D τ).1,
+             if PBP.epsilon τ = 1 then -(PBP.tailSignature_D τ).2
+             else (PBP.tailSignature_D τ).2) :: rest) :
+    let x := PBP.tailSymbol_D τ
+    let p_t := (PBP.tailSignature_D τ).1
+    let q_t := (PBP.tailSignature_D τ).2
+    -- (b) x = s
+    (x = .s → ac.truncPlus = [] ∧ ac.truncMinus = []) ∧
+    -- (c) x ∈ {r, c}
+    (x ≠ .s → x ≠ .d → ac.truncPlus ≠ []) ∧
+    -- (d) x = d
+    (x = .d → ac.truncPlus ≠ [] ∧ ac.truncMinus ≠ []) := by
+  have hnn := tailSig_nonneg_D τ hγ
+  have h_ne_dot := PBP.tailSymbol_D_ne_dot τ hγ h_tail
+  set p_t := (PBP.tailSignature_D τ).1
+  set q_t := (PBP.tailSignature_D τ).2
+  set ε := PBP.epsilon τ
+  have h_prop := BMSZ.prop_11_8 ac p_t q_t ε h_ne hnn.2 h_first
+  refine ⟨fun hx_s => ?_, fun hx_ns hx_nd => ?_, fun hx_d => ?_⟩
+  · -- x = s: p_t = 0, ε = 1 (x≠d), q_t > 0
+    have hp0 : p_t = 0 := (tailSig_fst_zero_iff_tailSymbol_s τ hγ h_tail).mpr hx_s
+    have hε1 : ε = 1 := by
+      rw [show ε = PBP.epsilon τ from rfl]
+      by_contra hε
+      have : ε = 0 := by omega
+      have := (epsilon_zero_iff_tailSymbol_d τ hγ h_tail).mp this
+      rw [hx_s] at this; exact DRCSymbol.noConfusion this
+    have hq_pos : q_t > 0 := by
+      -- tailSymbol = s gives tailContrib.2 = 2 > 0 for the bottom cell
+      by_contra h_le; push_neg at h_le
+      have h0 : q_t = 0 := by omega
+      set n := τ.P.shape.colLen 0 - τ.Q.shape.colLen 0
+      set f := fun i => (τ.P.paint (τ.Q.shape.colLen 0 + i) 0).tailContrib
+      have := fold_snd_eq_zero_all (Finset.range n) f
+        (fun i _ => (DRCSymbol.tailContrib_nonneg _).2) h0
+        (n - 1) (Finset.mem_range.mpr (by omega))
+      show False
+      have : (τ.P.paint (τ.Q.shape.colLen 0 + (n - 1)) 0).tailContrib.2 = 0 := this
+      rw [show τ.Q.shape.colLen 0 + (n - 1) = τ.P.shape.colLen 0 - 1 from by omega] at this
+      change (PBP.tailSymbol_D τ).tailContrib.2 = 0 at this
+      rw [hx_s] at this; simp [DRCSymbol.tailContrib] at this
+    exact h_prop.1 hp0 hε1 hq_pos
+  · -- x ∈ {r, c}: p_t > 0, ε = 1
+    have hp_pos : p_t > 0 := by
+      by_contra h_le; push_neg at h_le
+      have h0 : p_t = 0 := by omega
+      set n := τ.P.shape.colLen 0 - τ.Q.shape.colLen 0
+      set f := fun i => (τ.P.paint (τ.Q.shape.colLen 0 + i) 0).tailContrib
+      have hbot := fold_fst_eq_zero_all (Finset.range n) f
+        (fun i _ => (DRCSymbol.tailContrib_nonneg _).1) h0
+        (n - 1) (Finset.mem_range.mpr (by omega))
+      simp only [f] at hbot
+      rw [show τ.Q.shape.colLen 0 + (n - 1) = τ.P.shape.colLen 0 - 1 from by omega] at hbot
+      change (PBP.tailSymbol_D τ).tailContrib.1 = 0 at hbot
+      exact absurd ((DRCSymbol.tailContrib_fst_eq_zero_iff _).mp hbot) hx_ns
+    have hε1 : ε = 1 := by
+      by_contra hε
+      have : ε = 0 := by omega
+      have := (epsilon_zero_iff_tailSymbol_d τ hγ h_tail).mp this
+      exact hx_nd this
+    exact (h_prop.2.1 hp_pos hε1).1
+  · -- x = d: p_t > 0, q_t > 0, ε = 0
+    have hp_pos : p_t > 0 := by
+      by_contra h_le; push_neg at h_le
+      have h0 : p_t = 0 := by omega
+      set n := τ.P.shape.colLen 0 - τ.Q.shape.colLen 0
+      set f := fun i => (τ.P.paint (τ.Q.shape.colLen 0 + i) 0).tailContrib
+      have hbot := fold_fst_eq_zero_all (Finset.range n) f
+        (fun i _ => (DRCSymbol.tailContrib_nonneg _).1) h0
+        (n - 1) (Finset.mem_range.mpr (by omega))
+      simp only [f] at hbot
+      rw [show τ.Q.shape.colLen 0 + (n - 1) = τ.P.shape.colLen 0 - 1 from by omega] at hbot
+      change (PBP.tailSymbol_D τ).tailContrib.1 = 0 at hbot
+      rw [hx_d] at hbot; simp [DRCSymbol.tailContrib] at hbot
+    have hq_pos : q_t > 0 := by
+      by_contra h_le; push_neg at h_le
+      have h0 : q_t = 0 := by omega
+      set n := τ.P.shape.colLen 0 - τ.Q.shape.colLen 0
+      set f := fun i => (τ.P.paint (τ.Q.shape.colLen 0 + i) 0).tailContrib
+      have hbot := fold_snd_eq_zero_all (Finset.range n) f
+        (fun i _ => (DRCSymbol.tailContrib_nonneg _).2) h0
+        (n - 1) (Finset.mem_range.mpr (by omega))
+      simp only [f] at hbot
+      rw [show τ.Q.shape.colLen 0 + (n - 1) = τ.P.shape.colLen 0 - 1 from by omega] at hbot
+      change (PBP.tailSymbol_D τ).tailContrib.2 = 0 at hbot
+      rw [hx_d] at hbot; simp [DRCSymbol.tailContrib] at hbot
+    have hε0 : ε = 0 := (epsilon_zero_iff_tailSymbol_d τ hγ h_tail).mpr hx_d
+    exact h_prop.2.2 hp_pos hq_pos hε0
+
+/-! ### Prop 11.12 + 11.13 at PBP level -/
+
+/-- **Prop 11.12 at PBP level:** If L_{τ₁} ⊗ (ε₁,ε₁) = L_{τ₂} ⊗ (ε₂,ε₂),
+    and both L_{τᵢ} have the Lemma 11.11 "no det twist" property,
+    then ε₁ = ε₂ and L_{τ₁} = L_{τ₂}. -/
+theorem prop_11_12_PBP (τ₁ τ₂ : PBP) (hγ₁ : τ₁.γ = .D) (hγ₂ : τ₂.γ = .D)
+    (L₁ L₂ : ACResult) (ε₁ ε₂ : Fin 2)
+    (h_eq : (if ε₁ = 1 then L₁.twistBD (-1) (-1) else L₁) =
+            (if ε₂ = 1 then L₂.twistBD (-1) (-1) else L₂))
+    (h_no_det : L₁.twistBD (-1) (-1) ≠ L₂)
+    (h_no_det' : L₂.twistBD (-1) (-1) ≠ L₁) :
+    ε₁ = ε₂ ∧ L₁ = L₂ :=
+  BMSZ.injectivity_mod_twist L₁ L₂ ε₁ ε₂ h_eq h_no_det h_no_det'
+
+/-- **Lemma 11.13 at PBP level:** The chain of operations in formula (11.11)
+    is injective, so L_τ determines L_{τ''} uniquely.
+    Uses: charTwistCM, augment, twistBD are all injective. -/
+theorem lemma_11_13_PBP (ε_wp : Fin 2) (n₀ : ℤ × ℤ) (j : ℤ)
+    (L₁ L₂ : ACResult)
+    (h_eq : ((if ε_wp = 1 then L₁.twistBD (-1) (-1) else L₁).augment n₀).charTwistCM j =
+            ((if ε_wp = 1 then L₂.twistBD (-1) (-1) else L₂).augment n₀).charTwistCM j) :
+    L₁ = L₂ :=
+  BMSZ.ac_chain_injective ε_wp n₀ j h_eq
+
+/-! ### Prop 11.15 at PBP level (Main bijection for B/D) -/
+
+/-- **Prop 11.15 at PBP level:** For quasi-distinguished Ǒ of type D,
+    the map (τ, ε) ↦ L_τ ⊗ (ε,ε) from PBP_D(Ǒ) × ℤ/2ℤ to ℤ[MYD_D(O)]
+    is injective.
+
+    The injectivity decomposes into:
+    1. ε₁ = ε₂ and L₁ = L₂ (from Prop 11.12 + Lemma 11.11)
+    2. ε_{τ₁} = ε_{τ₂} (from truncation pattern, Prop 11.8)
+    3. (p_{t₁}, q_{t₁}) = (p_{t₂}, q_{t₂}) (from Lemma 11.10)
+    4. L_{τ₁''} = L_{τ₂''} (from chain invertibility, Lemma 11.13)
+    5. τ₁ = τ₂ (from ddescent_inj_D + tail sig agreement) -/
+theorem prop_11_15_PBP (τ₁ τ₂ : PBP)
+    (hγ₁ : τ₁.γ = .D) (hγ₂ : τ₂.γ = .D)
+    (hshapeP : τ₁.P.shape = τ₂.P.shape)
+    (hshapeQ : τ₁.Q.shape = τ₂.Q.shape)
+    (L₁ L₂ : ACResult) (ε₁ ε₂ : Fin 2)
+    -- Main hypothesis: twisted AC results agree
+    (h_eq : (if ε₁ = 1 then L₁.twistBD (-1) (-1) else L₁) =
+            (if ε₂ = 1 then L₂.twistBD (-1) (-1) else L₂))
+    -- No det twist (from Lemma 11.11)
+    (h_no_det : L₁.twistBD (-1) (-1) ≠ L₂)
+    (h_no_det' : L₂.twistBD (-1) (-1) ≠ L₁)
+    -- First entry agreement (from Lemma 11.6)
+    (h_first₁ : ∀ r ∈ L₁, ∃ rest,
+      r.2 = ((PBP.tailSignature_D τ₁).1,
+             if PBP.epsilon τ₁ = 1 then -(PBP.tailSignature_D τ₁).2
+             else (PBP.tailSignature_D τ₁).2) :: rest)
+    (h_first₂ : ∀ r ∈ L₂, ∃ rest,
+      r.2 = ((PBP.tailSignature_D τ₂).1,
+             if PBP.epsilon τ₂ = 1 then -(PBP.tailSignature_D τ₂).2
+             else (PBP.tailSignature_D τ₂).2) :: rest) :
+    ε₁ = ε₂ ∧ L₁ = L₂ :=
+  BMSZ.injectivity_mod_twist L₁ L₂ ε₁ ε₂ h_eq h_no_det h_no_det'
+
+end PBPInstantiation
