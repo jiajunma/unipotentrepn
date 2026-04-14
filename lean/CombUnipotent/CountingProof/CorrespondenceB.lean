@@ -167,14 +167,40 @@ theorem card_PBPSet_B_eq_tripleSum_countPBP_B (dp : DualPart) (μP μQ : YoungDi
     (hpos : ∀ r ∈ dp, 0 < r) :
     Fintype.card (PBPSet .Bplus μP μQ) + Fintype.card (PBPSet .Bminus μP μQ) =
     tripleSum (countPBP_B dp) := by
-  -- Strategy: induction on dp (list of even parts).
-  -- Base cases: dp = [] → card_PBPSet_B_empty; dp = [r₁] → card_PBPSet_B_singleton.
-  -- Inductive step dp = r₁ :: r₂ :: rest:
-  --   Branch on primitive (r₂ > rest.head?.getD 0) vs balanced.
-  --   Primitive: apply card_PBPSet_B_primitive_step + IH on rest.
-  --   Balanced: apply card_PBPSet_B_balanced_step + IH on rest.
-  -- Needs: all the above lemmas proved first.
-  sorry
+  -- Induction on dp (list of even parts).
+  match dp, hP, hQ, hsort, heven, hpos with
+  | [], hP, hQ, _, _, _ =>
+    -- Base case: empty orbit
+    have h1 := yd_of_colLens_nil (by rw [hP]; rfl)
+    have h2 := yd_of_colLens_nil (by rw [hQ]; rfl)
+    subst h1; subst h2
+    simp [card_PBPSet_bot, tripleSum, countPBP_B]
+  | [r₁], hP, hQ, _, heven, hpos =>
+    -- Base case: single row
+    exact card_PBPSet_B_singleton r₁ μP μQ hP hQ (heven r₁ (by simp)) (hpos r₁ (by simp))
+  | r₁ :: r₂ :: rest, hP, hQ, hsort, heven, hpos =>
+    -- Inductive step: set up IH on rest
+    have hP_sh : μP.shiftLeft.colLens = dpartColLensP_B rest := by
+      rw [YoungDiagram.colLens_shiftLeft, hP]; simp [dpartColLensP_B]
+    have hQ_sh : μQ.shiftLeft.colLens = dpartColLensQ_B rest := by
+      rw [YoungDiagram.colLens_shiftLeft, hQ]; simp [dpartColLensQ_B]
+    have hsort' := sorted_tail₂ hsort
+    have heven' : ∀ r ∈ rest, Even r :=
+      fun r hr => heven r (List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hr))
+    have hpos' : ∀ r ∈ rest, 0 < r :=
+      fun r hr => hpos r (List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hr))
+    have h_ih := card_PBPSet_B_eq_tripleSum_countPBP_B rest
+      μP.shiftLeft μQ.shiftLeft hP_sh hQ_sh hsort' heven' hpos'
+    by_cases h_prim : r₂ > rest.head?.getD 0
+    · -- Primitive case: uniform fiber
+      have := card_PBPSet_B_primitive_step r₁ r₂ rest μP μQ hP hQ hsort heven h_prim
+      rw [this, h_ih]
+      simp only [countPBP_B, h_prim, ite_true, tripleSum]
+      ring
+    · -- Balanced case: per-tail-class matrix multiply
+      -- Needs: card_PBPSet_B_balanced_step with per-tc counts
+      simp only [countPBP_B, h_prim, ite_false, tripleSum]
+      sorry
 
 /-- Corollary: each of B⁺ and B⁻ has half the total. -/
 theorem card_PBPSet_Bplus_eq (dp : DualPart) (μP μQ : YoungDiagram)
