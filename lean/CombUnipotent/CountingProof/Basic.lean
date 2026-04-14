@@ -341,5 +341,104 @@ Proof structure for D type:
         - Balanced (r₂ = r₃): fiber depends on TC(σ) via matrix multiply
      d. tailCoeffs k gives the coefficients
   4. C type: descent C→D is injective, image = all of D (primitive) or DD∪RC (balanced)
-  5. M type: similar via B→M descent
+  5. M type: similar via M→B descent
 -/
+
+/-! ## B-type column lengths
+
+For B-type dp = [r₁, r₂, ...] (all even parts, total even):
+  P cols from even-indexed rows (shorter diagram): r₂, r₄, ...
+  Q cols from odd-indexed rows (longer diagram): r₁, r₃, ...
+
+  P.colLens[k] = r_{2k+2} / 2
+  Q.colLens[k] = (r_{2k+1} + 1) / 2  (actually r_{2k+1}/2 since r is even)
+
+Note: B-type orbits have all-even rows in the dual partition.
+The formula simplifies: for even r, (r+1)/2 = r/2 and (r-1)/2 = r/2 - 1 (when r > 0).
+
+Key recursion: dropping 2 orbit rows corresponds to shiftLeft of both P and Q. -/
+
+/-- Extract P column lengths from orbit partition for B type.
+    P is the shorter diagram. Takes r₂, r₄, r₆, ... and divides by 2.
+    For B: P contains only {•, c} symbols. -/
+def dpartColLensP_B : DualPart → DualPart
+  | [] => []
+  | [_] => []
+  | _ :: r₂ :: rest => r₂ / 2 :: dpartColLensP_B rest
+
+/-- Extract Q column lengths from orbit partition for B type.
+    Q is the longer diagram. Takes r₁, r₃, r₅, ... and applies (r+1)/2.
+    For B: Q contains {•, s, r, d} symbols. -/
+def dpartColLensQ_B : DualPart → DualPart
+  | [] => []
+  | [r₁] => if r₁ > 0 then [r₁ / 2] else []
+  | r₁ :: _ :: rest => r₁ / 2 :: dpartColLensQ_B rest
+
+-- B [4, 2]: P = [2/2] = [1], Q = [4/2] = [2]
+#eval dpartColLensP_B [4, 2]  -- [1]
+#eval dpartColLensQ_B [4, 2]  -- [2]
+
+-- B [6, 4, 2]: P = [4/2, 0] = [2], Q = [6/2, 2/2] = [3, 1]
+#eval dpartColLensP_B [6, 4, 2]  -- [2]
+#eval dpartColLensQ_B [6, 4, 2]  -- [3, 1]
+
+-- B [2]: P = [], Q = [1]
+#eval dpartColLensP_B [2]  -- []
+#eval dpartColLensQ_B [2]  -- [1]
+
+-- B []: P = [], Q = []
+#eval dpartColLensP_B []  -- []
+#eval dpartColLensQ_B []  -- []
+
+-- B [4, 4]: P = [2], Q = [2]
+#eval dpartColLensP_B [4, 4]  -- [2]
+#eval dpartColLensQ_B [4, 4]  -- [2]
+
+theorem dpartColLensP_B_cons₂ (r₁ r₂ : ℕ) (rest : DualPart) :
+    dpartColLensP_B (r₁ :: r₂ :: rest) = r₂ / 2 :: dpartColLensP_B rest :=
+  rfl
+
+theorem dpartColLensQ_B_cons₂ (r₁ r₂ : ℕ) (rest : DualPart) :
+    dpartColLensQ_B (r₁ :: r₂ :: rest) = r₁ / 2 :: dpartColLensQ_B rest :=
+  rfl
+
+/-! ## M-type column lengths
+
+For M (= C̃) type: M→B descent. Analogous to C→D.
+  P cols = dpartColLensP_B (r₂ :: rest)
+  Q cols = [r₁/2] ++ dpartColLensQ_B (r₂ :: rest)
+-/
+
+def dpartColLensP_M : DualPart → DualPart
+  | [] => []
+  | [_] => []
+  | _ :: r₂ :: rest => dpartColLensP_B (r₂ :: rest)
+
+def dpartColLensQ_M : DualPart → DualPart
+  | [] => []
+  | [r₁] => if r₁ > 0 then [r₁ / 2] else []
+  | r₁ :: r₂ :: rest =>
+    if r₁ > 0 then r₁ / 2 :: dpartColLensQ_B (r₂ :: rest)
+    else dpartColLensQ_B (r₂ :: rest)
+
+-- M [2]: P = dpartColLensP_B [] = [], Q = [2/2] = [1]
+#eval dpartColLensP_M [2]  -- []
+#eval dpartColLensQ_M [2]  -- [1]
+
+-- M [2, 2]: P = dpartColLensP_B [2] = [], Q = [1] ++ dpartColLensQ_B [2] = [1, 1]
+#eval dpartColLensP_M [2, 2]  -- []
+#eval dpartColLensQ_M [2, 2]  -- [1, 1]
+
+-- M [4, 2]: P = dpartColLensP_B [2] = [], Q = [2] ++ dpartColLensQ_B [2] = [2, 1]
+#eval dpartColLensP_M [4, 2]  -- []
+#eval dpartColLensQ_M [4, 2]  -- [2, 1]
+
+/-! ## Tail class for B type -/
+
+/-- Tail class of a B-type PBP. The tail is Q's column 0 below P boundary. -/
+noncomputable def tailClass_B (τ : PBP) : TailClass :=
+  if PBP.tailLen_B τ = 0 then .SS
+  else match PBP.tailSymbol_B τ with
+    | .d => .DD
+    | .r | .c => .RC
+    | .s | .dot => .SS
