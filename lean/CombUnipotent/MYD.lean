@@ -1735,6 +1735,33 @@ This is verified computationally on all D-type test orbits (see blueprint). -/
 -- x_τ = d: p_t > 0, q_t > 0, ε_τ = 0 → both Λ succeed
 -- These are case analyses on the first entry, using the proved lemmas above.
 
+/-! ## Lemma 11.11: No det twist
+
+⊗(1,1) negates first entry. If L_{τ₁} ⊗ (1,1) = L_{τ₂}, then
+(L_{τ₂})^+ = 0 (since first entry p < 0 after negation).
+This forces x_{τ₂} = s, hence L_{τ₂}^- = 0.
+But (L_{τ₁} ⊗ (1,1))^- ≠ 0 when x_{τ₁} = s (since negation
+turns -q into q > 0). Contradiction.
+
+We prove the abstract version: ⊗(1,1) makes first entry negative. -/
+
+/-- Sign twist ⊗(1,1) negates the first entry of an ILS.
+    At index 0 (odd-length row): tpp = (-1)^1 · 1^0 = -1, tnn = 1^1 · (-1)^0 = 1.
+    Wait, for twist (tp, tn) = (1, -1) at index 0: tpp = 1, tnn = -1.
+    For twist (-1, -1): tpp = -1, tnn = -1. Both negate.
+    For twist (1, 1): tpp = 1, tnn = 1. Identity!
+
+    Actually ⊗(1,1) in the paper means (ε⁺, ε⁻) = (1, 1) in Z/2Z,
+    which corresponds to twistBD with (tp, tn) = (-1, -1). -/
+theorem ILS.twistBD_neg1_neg1_first_entry (E : ILS) :
+    (twistBD E (-1) (-1)).head? = E.head?.map fun (a, b) => (-a, -b) := by
+  cases E with
+  | nil => simp [twistBD]
+  | cons hd tl =>
+    simp only [twistBD, List.mapIdx_cons, twistBDRow, List.head?, Option.map,
+      show ¬((1 : ℕ) % 2 = 0) from by omega]
+    ext <;> simp <;> ring
+
 section Tests
 
 -- Sign of base cases
