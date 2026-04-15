@@ -1302,10 +1302,154 @@ private noncomputable def liftPBP_B {μP μQ : YoungDiagram}
     (v : ValidCol0_B (μP.colLen 0) (μQ.colLen 0))
     (hle : μP.colLen 0 ≤ μQ.colLen 0) :
     PBPSet .Bplus μP μQ := by
-  -- The construction uses liftPaint_B_P and liftPaint_B_Q defined above.
-  -- All 13 PBP constraints are verified in the blueprint (Section 1.5).
-  -- sorry: formal verification of 13 PBP constraints
-  exact sorry
+  have hpoP : ∀ i j, (i, j) ∉ μP → liftPaint_B_P σ.val (μP.colLen 0) v i j = .dot := by
+    intro i j hmem; cases j with
+    | zero =>
+      simp only [liftPaint_B_P, liftCol0P_B]
+      cases v with
+      | inl _ => rfl
+      | inr _ =>
+        split_ifs with hc
+        · exfalso; apply hmem; rw [YoungDiagram.mem_iff_lt_colLen]; omega
+        · rfl
+    | succ j =>
+      simp only [liftPaint_B_P]
+      exact σ.val.P.paint_outside i j (by
+        rw [σ.prop.2.1, YoungDiagram.mem_shiftLeft]; exact hmem)
+  have hpoQ : ∀ i j, (i, j) ∉ μQ → liftPaint_B_Q σ.val (μP.colLen 0) (μQ.colLen 0) v i j = .dot := by
+    intro i j hmem; cases j with
+    | zero =>
+      have hi : ¬(i < μQ.colLen 0) := by
+        rw [YoungDiagram.mem_iff_lt_colLen] at hmem; omega
+      unfold liftPaint_B_Q liftCol0Q_B
+      cases v with
+      | inl _ => simp; intro hp hq; omega
+      | inr _ => simp; intro hp hq; omega
+    | succ j =>
+      simp only [liftPaint_B_Q]
+      exact σ.val.Q.paint_outside i j (by
+        rw [σ.prop.2.2, YoungDiagram.mem_shiftLeft]; exact hmem)
+  refine ⟨⟨.Bplus,
+    ⟨μP, liftPaint_B_P σ.val (μP.colLen 0) v, hpoP⟩,
+    ⟨μQ, liftPaint_B_Q σ.val (μP.colLen 0) (μQ.colLen 0) v, hpoQ⟩,
+    ?sym_P, ?sym_Q, ?dot_match, ?mono_P, ?mono_Q,
+    ?row_s, ?row_r, ?col_c_P, ?col_c_Q, ?col_d_P, ?col_d_Q⟩,
+    rfl, rfl, rfl⟩
+  case sym_P =>
+    intro i j hmem
+    show (liftPaint_B_P σ.val (μP.colLen 0) v i j).allowed .Bplus .L
+    cases j with
+    | zero =>
+      simp only [liftPaint_B_P, liftCol0P_B]
+      cases v with
+      | inl _ => simp [DRCSymbol.allowed]
+      | inr _ => split_ifs <;> simp [DRCSymbol.allowed]
+    | succ j =>
+      simp only [liftPaint_B_P]
+      have := σ.val.sym_P i j (by rw [σ.prop.2.1]; exact YoungDiagram.mem_shiftLeft.mpr hmem)
+      rw [σ.prop.1] at this; exact this
+  case sym_Q =>
+    intro i j hmem
+    show (liftPaint_B_Q σ.val (μP.colLen 0) (μQ.colLen 0) v i j).allowed .Bplus .R
+    cases j with
+    | zero =>
+      unfold liftPaint_B_Q liftCol0Q_B
+      cases v with
+      | inl d =>
+        simp only
+        split_ifs with hc
+        · simp [DRCSymbol.allowed]
+          rcases d.prop.1 ⟨i - μP.colLen 0, by omega⟩ with h | h | h <;> simp [h]
+        · simp [DRCSymbol.allowed]
+      | inr d =>
+        simp only
+        split_ifs with hc
+        · simp [DRCSymbol.allowed]
+          rcases d.prop.1 ⟨i - (μP.colLen 0 - 1), by omega⟩ with h | h | h <;> simp [h]
+        · simp [DRCSymbol.allowed]
+    | succ j =>
+      simp only [liftPaint_B_Q]
+      have := σ.val.sym_Q i j (by rw [σ.prop.2.2]; exact YoungDiagram.mem_shiftLeft.mpr hmem)
+      rw [σ.prop.1] at this; exact this
+  case dot_match =>
+    -- For j ≥ 1: follows from σ.dot_match via column shift.
+    -- For j = 0: P is dot iff i is in dot region, Q is dot iff i is in dot region.
+    -- The dot regions match by construction of liftCol0P_B and liftCol0Q_B.
+    exact sorry
+  case mono_P => exact sorry
+  case mono_Q => exact sorry
+  case row_s => exact sorry
+  case row_r => exact sorry
+  case col_c_P =>
+    intro j i₁ i₂ h₁ h₂
+    show i₁ = i₂
+    simp only [liftPaint_B_P] at h₁ h₂
+    cases j with
+    | zero =>
+      -- col 0: only inr case can produce c, and only at row hP-1
+      cases v with
+      | inl _ => simp [liftCol0P_B] at h₁
+      | inr _ =>
+        simp only [liftCol0P_B] at h₁ h₂
+        split_ifs at h₁ with h1
+        split_ifs at h₂ with h2
+        omega
+    | succ j => exact σ.val.col_c_P j i₁ i₂ h₁ h₂
+  case col_c_Q =>
+    intro j i₁ i₂ h₁ h₂
+    cases j with
+    | zero =>
+      -- Q col 0 uses DSeq values in {s,r,d} or dot; no c possible
+      change liftPaint_B_Q σ.val (μP.colLen 0) (μQ.colLen 0) v i₁ 0 = .c at h₁
+      simp only [liftPaint_B_Q] at h₁
+      cases v with
+      | inl d =>
+        simp only [liftCol0Q_B] at h₁
+        split_ifs at h₁ with hc
+        rcases d.prop.1 ⟨i₁ - μP.colLen 0, by omega⟩ with h | h | h <;> simp [h] at h₁
+      | inr d =>
+        simp only [liftCol0Q_B] at h₁
+        split_ifs at h₁ with hc
+        rcases d.prop.1 ⟨i₁ - (μP.colLen 0 - 1), by omega⟩ with h | h | h <;> simp [h] at h₁
+    | succ j =>
+      simp only [liftPaint_B_Q] at h₁ h₂
+      exact σ.val.col_c_Q j i₁ i₂ h₁ h₂
+  case col_d_P =>
+    intro j i₁ i₂ h₁ h₂
+    cases j with
+    | zero =>
+      -- P col 0 only has dot or c, no d possible
+      change liftPaint_B_P σ.val (μP.colLen 0) v i₁ 0 = .d at h₁
+      simp only [liftPaint_B_P] at h₁
+      cases v with
+      | inl _ => exact absurd (show (DRCSymbol.dot : DRCSymbol) = .d from h₁) (by decide)
+      | inr _ => simp only [liftCol0P_B] at h₁; split_ifs at h₁
+    | succ j =>
+      simp only [liftPaint_B_P] at h₁ h₂
+      exact σ.val.col_d_P j i₁ i₂ h₁ h₂
+  case col_d_Q =>
+    intro j i₁ i₂ h₁ h₂
+    cases j with
+    | zero =>
+      change liftPaint_B_Q σ.val (μP.colLen 0) (μQ.colLen 0) v i₁ 0 = .d at h₁
+      change liftPaint_B_Q σ.val (μP.colLen 0) (μQ.colLen 0) v i₂ 0 = .d at h₂
+      simp only [liftPaint_B_Q] at h₁ h₂
+      cases v with
+      | inl d =>
+        simp only [liftCol0Q_B] at h₁ h₂
+        split_ifs at h₁ with hc₁
+        split_ifs at h₂ with hc₂
+        have heq := d.prop.2.2 ⟨i₁ - μP.colLen 0, by omega⟩ ⟨i₂ - μP.colLen 0, by omega⟩ h₁ h₂
+        have := congr_arg Fin.val heq; simp at this; omega
+      | inr d =>
+        simp only [liftCol0Q_B] at h₁ h₂
+        split_ifs at h₁ with hc₁
+        split_ifs at h₂ with hc₂
+        have heq := d.prop.2.2 ⟨i₁ - (μP.colLen 0 - 1), by omega⟩ ⟨i₂ - (μP.colLen 0 - 1), by omega⟩ h₁ h₂
+        have := congr_arg Fin.val heq; simp at this; omega
+    | succ j =>
+      simp only [liftPaint_B_Q] at h₁ h₂
+      exact σ.val.col_d_Q j i₁ i₂ h₁ h₂
 
 /-- Round-trip: doubleDescent_Bplus_map (liftPBP_B σ v) = σ.
     sorry: requires showing dotScolLen zones are preserved through the lift. -/
