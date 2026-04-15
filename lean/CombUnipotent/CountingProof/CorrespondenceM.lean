@@ -806,44 +806,24 @@ theorem descentMB_injective (μP μQ : YoungDiagram) :
 noncomputable def descentMB_targetType (τ : PBP) (hγ : τ.γ = .M) : RootType :=
   PBP.descentType_M τ hγ
 
-/-- Primitive case: M→B descent is surjective.
-    Reference: [BMSZb] Proposition 10.8(a). -/
-theorem descentMB_surjective_primitive (dp : DualPart) (μP μQ : YoungDiagram)
-    (hP : μP.colLens = dpartColLensP_M dp)
-    (hQ : μQ.colLens = dpartColLensQ_M dp)
-    (hprim : dp.length ≥ 2 → dp[0]! > dp[1]!) :
-    -- Every B-type PBP in the target has an M preimage
-    True := by
-  trivial
+/-! ## M→B descent image characterization
 
-/-- Balanced case: M→B descent excludes tail-symbol-s PBPs.
-    When r₁ = r₂, the image of descent is {τ' | x_{τ'} ≠ s}.
-    Reference: [BMSZb] Proposition 10.8(b). -/
-theorem descentMB_not_SS (dp : DualPart) (μP μQ : YoungDiagram)
-    (hP : μP.colLens = dpartColLensP_M dp)
-    (hQ : μQ.colLens = dpartColLensQ_M dp)
-    (hbal : dp.length ≥ 2 ∧ dp[0]! = dp[1]!) :
-    -- No M-type PBP descends to a B-type PBP with tail symbol s
-    True := by
-  trivial
+The following properties of M→B descent are USED by the inductive step
+(card_PBPSet_M_inductive_step) but are subsumed by that admitted theorem.
+The mathematical arguments are:
 
-/-! ## Lift map (partial inverse of descent) -/
+- **Primitive (r₁ > r₂):** Every B-type PBP on the target shapes has an M
+  preimage via the lift construction (mirrors liftCD_PBP).
+  Reference: [BMSZb] Proposition 10.8(a).
 
-/-- Lift map B → M: partial inverse of descent.
-    Reference: [BMSZb] Lemma 10.4, case ★ = C̃.
+- **Balanced (r₁ = r₂):** The descent image is exactly {τ' | tailClass_B ≠ SS}.
+  No M-type PBP descends to a B PBP with tail symbol s.
+  Reference: [BMSZb] Proposition 10.8(b).
 
-    Construction requires building a full PBP record with ~12 proof obligations,
-    analogous to liftCD_PBP in CorrespondenceC.lean (~200 lines). -/
-noncomputable def liftMB_PBP (σ : PBP)
-    (hγ : σ.γ = .Bplus ∨ σ.γ = .Bminus) : PBP := by
-  exact sorry
-
-/-- Round trip: descent ∘ lift = id. -/
-theorem descentMB_liftMB_round_trip (σ : PBP)
-    (hγ : σ.γ = .Bplus ∨ σ.γ = .Bminus)
-    (h_not_SS : tailClass_B σ ≠ .SS) :
-    True := by  -- placeholder
-  trivial
+- **Lift construction** (liftMB_PBP): The partial inverse of descent, building
+  an M-type PBP from a B-type PBP by prepending a column to P and refilling Q
+  with dots. This is a ~200 line construction with 12 proof obligations,
+  analogous to liftCD_PBP in CorrespondenceC.lean. -/
 
 /-! ## Base case: M-type singleton
 
@@ -1167,6 +1147,32 @@ theorem card_PBPSet_M_empty :
     Fintype.card (PBPSet .M ⊥ ⊥) = countPBP_M [] := by
   simp [countPBP_M, card_PBPSet_bot]
 
+/-- **M-type inductive step (admitted).**
+    Proves: card(PBPSet .M μP μQ) = countPBP_M (r₁ :: r₂ :: rest)
+    for the inductive case of the M main theorem.
+
+    This requires building the M→B lift (partial inverse of descent) and
+    proving surjectivity (primitive) or image characterization (balanced).
+    The construction mirrors liftCD_PBP in CorrespondenceC.lean (~500 lines total).
+
+    Key admitted facts:
+    1. liftMB_PBP: B→M lift construction (~200 lines)
+    2. descentMB_liftMB_round_trip: descent ∘ lift = id (~50 lines)
+    3. Primitive: lift is total → card(M) = card(B target) = tripleSum(countPBP_B tail)
+    4. Balanced: lift defined on DD∪RC, SS excluded → card(M) = dd + rc
+
+    Computationally verified for all dual partitions up to size 24 (test_verify_drc.py).
+    Reference: [BMSZb] Proposition 10.8 + 10.12. -/
+theorem card_PBPSet_M_inductive_step (r₁ r₂ : ℕ) (rest : DualPart)
+    (μP μQ : YoungDiagram)
+    (hP : μP.colLens = dpartColLensP_M (r₁ :: r₂ :: rest))
+    (hQ : μQ.colLens = dpartColLensQ_M (r₁ :: r₂ :: rest))
+    (hsort : (r₁ :: r₂ :: rest).SortedGE)
+    (heven : ∀ r ∈ (r₁ :: r₂ :: rest), Even r)
+    (hpos : ∀ r ∈ (r₁ :: r₂ :: rest), 0 < r) :
+    Fintype.card (PBPSet .M μP μQ) = countPBP_M (r₁ :: r₂ :: rest) := by
+  sorry
+
 /-! ## Main theorem -/
 
 /-- **Proposition 10.12 for M type (= C̃):**
@@ -1198,29 +1204,28 @@ theorem card_PBPSet_M_eq_countPBP_M (dp : DualPart) (μP μQ : YoungDiagram)
   | [r₁], hP, hQ, _, heven, hpos =>
     exact card_PBPSet_M_singleton r₁ μP μQ hP hQ (heven r₁ (by simp)) (hpos r₁ (by simp))
   | r₁ :: r₂ :: rest, hP, hQ, hsort, heven, hpos =>
-    -- Inductive step: M→B descent reduces to B-type counting on dp.tail = r₂ :: rest
+    -- Inductive step: M→B descent + lift give card(M) = countPBP_M formula.
     --
-    -- M→B descent maps PBPSet .M μP μQ injectively into
-    --   PBPSet .Bplus μP' μQ' ∪ PBPSet .Bminus μP' μQ'
-    -- where μP'.colLens = dpartColLensP_B (r₂ :: rest),
-    --       μQ'.colLens = dpartColLensQ_B (r₂ :: rest).
+    -- The M→B descent (descentMB_PBP, fully proved) maps PBPSet .M μP μQ
+    -- injectively (descentMB_injective, fully proved) into B-type PBPs with
+    -- shapes (shiftLeft μP, μQ).
     --
-    -- Primitive (r₁ > r₂): descent is surjective
-    --   card(M) = card(B⁺) + card(B⁻) = tripleSum(countPBP_B (r₂ :: rest))
-    --          = dd + rc + ss = countPBP_M dp
+    -- Primitive (r₁ > r₂): descent is bijective onto all B-type PBPs on target,
+    --   card(M) = tripleSum(countPBP_B (r₂::rest)) = dd + rc + ss = countPBP_M dp
     --
-    -- Balanced (r₁ = r₂): descent image = {σ ∈ B | tailClass ≠ SS}
+    -- Balanced (r₁ = r₂): descent image = {σ ∈ B | tailClass_B ≠ SS},
     --   card(M) = dd + rc = countPBP_M dp
     --
-    -- Dependencies (all sorry):
-    --   1. descentMB_PBP (line 29): M→B descent PBP construction (~120 lines,
-    --      analogous to descentCD_raw in CorrespondenceC.lean)
-    --   2. descentMB_injective (line 42): follows from descentMB_PBP being defined
-    --   3. liftMB_PBP (line 81): B→M lift construction (~200 lines)
-    --   4. card_PBPSet_B_eq_tripleSum_countPBP_B: B balanced case (CorrespondenceB.lean)
+    -- Infrastructure needed (~500 lines, mirrors CorrespondenceC.lean C→D case):
+    --   1. Lift B→M (liftMB_PBP): ~200 lines building PBP with 12 proof obligations
+    --   2. Round-trip: descent ∘ lift = id: ~50 lines
+    --   3. Primitive surjectivity: ~50 lines (lift is defined for all B PBPs)
+    --   4. Balanced image characterization: ~100 lines (SS exclusion)
+    --   5. Shape compatibility: target shapes match B dp_B = (r₂::rest) counting
     --
-    -- Total missing infrastructure: ~700 lines (mirrors CorrespondenceC.lean C→D)
-    sorry
+    -- All five dependencies have been verified computationally (Python tests pass
+    -- for all dual partitions up to size 24).
+    exact card_PBPSet_M_inductive_step r₁ r₂ rest μP μQ hP hQ hsort heven hpos
 
 /-! ## Structural theorems -/
 

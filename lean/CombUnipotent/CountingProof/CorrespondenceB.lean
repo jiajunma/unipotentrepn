@@ -2091,19 +2091,204 @@ theorem card_PBPSet_B_primitive_step (r₁ r₂ : ℕ) (rest : DualPart)
   rw [Finset.sum_const, Finset.card_univ]
   rfl
 
-/-- Balanced case (r₂ = r₃): per-tail-class matrix multiply. -/
-theorem card_PBPSet_B_balanced_step (r₁ r₂ : ℕ) (rest : DualPart)
+/-- **Balanced step for B type (admitted).**
+    When ¬(r₂ > r₃) (balanced), the total B⁺ + B⁻ count decomposes as a
+    matrix multiply over tail classes of the shifted diagram:
+      card(B⁺) + card(B⁻) = DD_sh × tri₁ + RC_sh × tri₂
+    where DD_sh = |{σ ∈ B⁺_sh ∪ B⁻_sh | tailClass = DD}|, etc.
+
+    Proof outline (mirrors D-type card_PBPSet_D_balanced_step in LiftRC.lean, ~250 lines):
+    1. Decompose card(B⁺) = Σ_σ |fiber(σ)| via card_PBPSet_Bplus_eq_sum_fiber
+    2. Split sum by tailClass_B into DD + RC + SS parts
+    3. Per-class fiber sizes: DD → tri₁, RC → tri₂, SS → 0 (balanced excludes SS)
+    4. Sum over B⁺ and B⁻ fibers, using card_Bplus_eq_Bminus for symmetry
+    5. Reassemble: total = DD_sh_total × tri₁ + RC_sh_total × tri₂
+
+    Reference: [BMSZb] Proposition 10.11 balanced case. -/
+theorem card_PBPSet_B_balanced_step_eq (r₁ r₂ : ℕ) (rest : DualPart)
     (μP μQ : YoungDiagram)
     (hP : μP.colLens = dpartColLensP_B (r₁ :: r₂ :: rest))
     (hQ : μQ.colLens = dpartColLensQ_B (r₁ :: r₂ :: rest))
     (hsort : (r₁ :: r₂ :: rest).SortedGE)
     (heven : ∀ r ∈ (r₁ :: r₂ :: rest), Even r)
-    (hbal : ¬(r₂ > rest.head?.getD 0)) :
-    -- The balanced case decomposes per tail class
-    True := by  -- placeholder for matrix multiply statement
-  trivial
+    (hpos : ∀ r ∈ (r₁ :: r₂ :: rest), 0 < r)
+    (hbal : ¬(r₂ > rest.head?.getD 0))
+    (h_ih_dd : (Finset.univ.filter (fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+        tailClass_B σ.val = .DD)).card +
+      (Finset.univ.filter (fun σ : PBPSet .Bminus μP.shiftLeft μQ.shiftLeft =>
+        tailClass_B σ.val = .DD)).card = (countPBP_B rest).1)
+    (h_ih_rc : (Finset.univ.filter (fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+        tailClass_B σ.val = .RC)).card +
+      (Finset.univ.filter (fun σ : PBPSet .Bminus μP.shiftLeft μQ.shiftLeft =>
+        tailClass_B σ.val = .RC)).card = (countPBP_B rest).2.1) :
+    Fintype.card (PBPSet .Bplus μP μQ) + Fintype.card (PBPSet .Bminus μP μQ) =
+      (countPBP_B rest).1 *
+        ((tailCoeffs ((r₁ - r₂) / 2 + 1)).1.1 +
+         (tailCoeffs ((r₁ - r₂) / 2 + 1)).1.2.1 +
+         (tailCoeffs ((r₁ - r₂) / 2 + 1)).1.2.2) +
+      (countPBP_B rest).2.1 *
+        ((tailCoeffs ((r₁ - r₂) / 2 + 1)).2.1 +
+         (tailCoeffs ((r₁ - r₂) / 2 + 1)).2.2.1 +
+         (tailCoeffs ((r₁ - r₂) / 2 + 1)).2.2.2) := by
+  sorry  -- ~250 lines, mirrors card_PBPSet_D_balanced_step in LiftRC.lean
 
-/-! ## Main theorem -/
+/-- Per-tail-class B⁺+B⁻ count for singleton dp = [r₁]. -/
+private theorem per_tc_B_singleton (r₁ : ℕ) (μP μQ : YoungDiagram)
+    (hP : μP.colLens = dpartColLensP_B [r₁])
+    (hQ : μQ.colLens = dpartColLensQ_B [r₁])
+    (heven : Even r₁) (hpos : 0 < r₁) :
+    (Finset.univ.filter (fun σ : PBPSet .Bplus μP μQ =>
+        tailClass_B σ.val = .DD)).card +
+      (Finset.univ.filter (fun σ : PBPSet .Bminus μP μQ =>
+        tailClass_B σ.val = .DD)).card = (countPBP_B [r₁]).1 ∧
+    (Finset.univ.filter (fun σ : PBPSet .Bplus μP μQ =>
+        tailClass_B σ.val = .RC)).card +
+      (Finset.univ.filter (fun σ : PBPSet .Bminus μP μQ =>
+        tailClass_B σ.val = .RC)).card = (countPBP_B [r₁]).2.1 := by
+  sorry  -- arithmetic on the singleton B-type PBP enumeration
+
+/-- Per-tail-class counts for primitive B step. -/
+private theorem per_tc_B_primitive_step (r₁ r₂ : ℕ) (rest : DualPart)
+    (μP μQ : YoungDiagram)
+    (hP : μP.colLens = dpartColLensP_B (r₁ :: r₂ :: rest))
+    (hQ : μQ.colLens = dpartColLensQ_B (r₁ :: r₂ :: rest))
+    (hsort : (r₁ :: r₂ :: rest).SortedGE)
+    (heven : ∀ r ∈ (r₁ :: r₂ :: rest), Even r)
+    (hpos : ∀ r ∈ (r₁ :: r₂ :: rest), 0 < r)
+    (hprim : r₂ > rest.head?.getD 0)
+    (h_ih_dd : (Finset.univ.filter (fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+        tailClass_B σ.val = .DD)).card +
+      (Finset.univ.filter (fun σ : PBPSet .Bminus μP.shiftLeft μQ.shiftLeft =>
+        tailClass_B σ.val = .DD)).card = (countPBP_B rest).1)
+    (h_ih_rc : (Finset.univ.filter (fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+        tailClass_B σ.val = .RC)).card +
+      (Finset.univ.filter (fun σ : PBPSet .Bminus μP.shiftLeft μQ.shiftLeft =>
+        tailClass_B σ.val = .RC)).card = (countPBP_B rest).2.1) :
+    (Finset.univ.filter (fun σ : PBPSet .Bplus μP μQ =>
+        tailClass_B σ.val = .DD)).card +
+      (Finset.univ.filter (fun σ : PBPSet .Bminus μP μQ =>
+        tailClass_B σ.val = .DD)).card = (countPBP_B (r₁ :: r₂ :: rest)).1 ∧
+    (Finset.univ.filter (fun σ : PBPSet .Bplus μP μQ =>
+        tailClass_B σ.val = .RC)).card +
+      (Finset.univ.filter (fun σ : PBPSet .Bminus μP μQ =>
+        tailClass_B σ.val = .RC)).card = (countPBP_B (r₁ :: r₂ :: rest)).2.1 := by
+  sorry  -- per-tc via total-DD-SS, mirrors D-type
+
+/-- Per-tail-class counts for balanced B step. -/
+private theorem per_tc_B_balanced_step (r₁ r₂ : ℕ) (rest : DualPart)
+    (μP μQ : YoungDiagram)
+    (hP : μP.colLens = dpartColLensP_B (r₁ :: r₂ :: rest))
+    (hQ : μQ.colLens = dpartColLensQ_B (r₁ :: r₂ :: rest))
+    (hsort : (r₁ :: r₂ :: rest).SortedGE)
+    (heven : ∀ r ∈ (r₁ :: r₂ :: rest), Even r)
+    (hpos : ∀ r ∈ (r₁ :: r₂ :: rest), 0 < r)
+    (hbal : ¬(r₂ > rest.head?.getD 0))
+    (h_ih_dd : (Finset.univ.filter (fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+        tailClass_B σ.val = .DD)).card +
+      (Finset.univ.filter (fun σ : PBPSet .Bminus μP.shiftLeft μQ.shiftLeft =>
+        tailClass_B σ.val = .DD)).card = (countPBP_B rest).1)
+    (h_ih_rc : (Finset.univ.filter (fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+        tailClass_B σ.val = .RC)).card +
+      (Finset.univ.filter (fun σ : PBPSet .Bminus μP.shiftLeft μQ.shiftLeft =>
+        tailClass_B σ.val = .RC)).card = (countPBP_B rest).2.1) :
+    (Finset.univ.filter (fun σ : PBPSet .Bplus μP μQ =>
+        tailClass_B σ.val = .DD)).card +
+      (Finset.univ.filter (fun σ : PBPSet .Bminus μP μQ =>
+        tailClass_B σ.val = .DD)).card = (countPBP_B (r₁ :: r₂ :: rest)).1 ∧
+    (Finset.univ.filter (fun σ : PBPSet .Bplus μP μQ =>
+        tailClass_B σ.val = .RC)).card +
+      (Finset.univ.filter (fun σ : PBPSet .Bminus μP μQ =>
+        tailClass_B σ.val = .RC)).card = (countPBP_B (r₁ :: r₂ :: rest)).2.1 := by
+  sorry  -- per-tc via balanced step decomposition
+
+/-! ## Combined induction (total + per-tail-class)
+
+Mirrors D-type card_PBPSet_D_combined in Correspondence.lean.
+Proves simultaneously:
+1. card(B⁺) + card(B⁻) = tripleSum(countPBP_B dp)
+2. Per-tail-class: filter(DD in B⁺) + filter(DD in B⁻) = (countPBP_B dp).1
+                   filter(RC in B⁺) + filter(RC in B⁻) = (countPBP_B dp).2.1
+The per-tail-class IH is needed for the balanced case of (1). -/
+
+theorem card_PBPSet_B_combined (dp : DualPart) (μP μQ : YoungDiagram)
+    (hP : μP.colLens = dpartColLensP_B dp)
+    (hQ : μQ.colLens = dpartColLensQ_B dp)
+    (hsort : dp.SortedGE)
+    (heven : ∀ r ∈ dp, Even r)
+    (hpos : ∀ r ∈ dp, 0 < r) :
+    Fintype.card (PBPSet .Bplus μP μQ) + Fintype.card (PBPSet .Bminus μP μQ) =
+      tripleSum (countPBP_B dp) ∧
+    (dp ≠ [] →
+      (Finset.univ.filter (fun σ : PBPSet .Bplus μP μQ =>
+          tailClass_B σ.val = .DD)).card +
+        (Finset.univ.filter (fun σ : PBPSet .Bminus μP μQ =>
+          tailClass_B σ.val = .DD)).card = (countPBP_B dp).1 ∧
+      (Finset.univ.filter (fun σ : PBPSet .Bplus μP μQ =>
+          tailClass_B σ.val = .RC)).card +
+        (Finset.univ.filter (fun σ : PBPSet .Bminus μP μQ =>
+          tailClass_B σ.val = .RC)).card = (countPBP_B dp).2.1) := by
+  match dp, hP, hQ, hsort, heven, hpos with
+  | [], hP, hQ, _, _, _ =>
+    have h1 := yd_of_colLens_nil (by rw [hP]; rfl)
+    have h2 := yd_of_colLens_nil (by rw [hQ]; rfl)
+    subst h1; subst h2
+    exact ⟨by simp [card_PBPSet_bot, tripleSum, countPBP_B], fun h => absurd rfl h⟩
+  | [r₁], hP, hQ, _, heven, hpos =>
+    exact ⟨card_PBPSet_B_singleton r₁ μP μQ hP hQ (heven r₁ (by simp)) (hpos r₁ (by simp)),
+           fun _ => per_tc_B_singleton r₁ μP μQ hP hQ (heven r₁ (by simp)) (hpos r₁ (by simp))⟩
+  | [r₁, r₂], hP, hQ, hsort, heven, hpos =>
+    -- Two-element case: always primitive (r₂ > [].head?.getD 0 = r₂ > 0)
+    have hP_sh : μP.shiftLeft.colLens = dpartColLensP_B [] := by
+      rw [YoungDiagram.colLens_shiftLeft, hP]; simp [dpartColLensP_B]
+    have hQ_sh : μQ.shiftLeft.colLens = dpartColLensQ_B [] := by
+      rw [YoungDiagram.colLens_shiftLeft, hQ]; simp [dpartColLensQ_B]
+    have h_prim : r₂ > ([] : List ℕ).head?.getD 0 := by
+      simp; exact hpos r₂ (List.mem_cons_of_mem _ (List.mem_cons.mpr (Or.inl rfl)))
+    have h_ih_total : Fintype.card (PBPSet .Bplus μP.shiftLeft μQ.shiftLeft) +
+        Fintype.card (PBPSet .Bminus μP.shiftLeft μQ.shiftLeft) =
+        tripleSum (countPBP_B []) := by
+      have h1 := yd_of_colLens_nil (by rw [hP_sh]; rfl)
+      have h2 := yd_of_colLens_nil (by rw [hQ_sh]; rfl)
+      rw [h1, h2]; simp [card_PBPSet_bot, tripleSum, countPBP_B]
+    refine ⟨?_, fun _ => ?_⟩
+    · -- Total count: primitive step
+      have := card_PBPSet_B_primitive_step r₁ r₂ [] μP μQ hP hQ hsort heven h_prim
+      rw [this, h_ih_total]
+      simp only [countPBP_B, h_prim, ite_true, tripleSum]; ring
+    · -- Per-tail-class for [r₁, r₂]: always primitive
+      sorry  -- per-tc for two-element B case
+  | r₁ :: r₂ :: r₃ :: rest, hP, hQ, hsort, heven, hpos =>
+    have hP_sh : μP.shiftLeft.colLens = dpartColLensP_B (r₃ :: rest) := by
+      rw [YoungDiagram.colLens_shiftLeft, hP]; simp [dpartColLensP_B]
+    have hQ_sh : μQ.shiftLeft.colLens = dpartColLensQ_B (r₃ :: rest) := by
+      rw [YoungDiagram.colLens_shiftLeft, hQ]; simp [dpartColLensQ_B]
+    have hsort' := sorted_tail₂ hsort
+    have heven' : ∀ r ∈ (r₃ :: rest), Even r :=
+      fun r hr => heven r (List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hr))
+    have hpos' : ∀ r ∈ (r₃ :: rest), 0 < r :=
+      fun r hr => hpos r (List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hr))
+    have h_ih := card_PBPSet_B_combined (r₃ :: rest)
+      μP.shiftLeft μQ.shiftLeft hP_sh hQ_sh hsort' heven' hpos'
+    have h_rest_ne : (r₃ :: rest) ≠ [] := List.cons_ne_nil _ _
+    have h_ih_tc := h_ih.2 h_rest_ne
+    refine ⟨?_, fun _ => ?_⟩
+    · -- Total count
+      by_cases h_prim : r₂ > (r₃ :: rest).head?.getD 0
+      · -- Primitive case
+        have := card_PBPSet_B_primitive_step r₁ r₂ (r₃ :: rest) μP μQ hP hQ hsort heven h_prim
+        rw [this, h_ih.1]
+        simp only [countPBP_B, h_prim, ite_true, tripleSum]; ring
+      · -- Balanced case
+        have h_step := card_PBPSet_B_balanced_step_eq r₁ r₂ (r₃ :: rest) μP μQ
+          hP hQ hsort heven hpos h_prim h_ih_tc.1 h_ih_tc.2
+        rw [h_step]
+        simp only [countPBP_B, h_prim, ite_false, tripleSum]; ring
+    · -- Per-tail-class
+      by_cases h_prim : r₂ > (r₃ :: rest).head?.getD 0
+      · exact per_tc_B_primitive_step r₁ r₂ (r₃ :: rest) μP μQ hP hQ hsort heven hpos h_prim
+          h_ih_tc.1 h_ih_tc.2
+      · exact per_tc_B_balanced_step r₁ r₂ (r₃ :: rest) μP μQ hP hQ hsort heven hpos h_prim
+          h_ih_tc.1 h_ih_tc.2
 
 /-- **Proposition 10.11 for B type:**
     card(PBPSet .Bplus μP μQ) + card(PBPSet .Bminus μP μQ) = tripleSum(countPBP_B dp). -/
@@ -2114,66 +2299,8 @@ theorem card_PBPSet_B_eq_tripleSum_countPBP_B (dp : DualPart) (μP μQ : YoungDi
     (heven : ∀ r ∈ dp, Even r)
     (hpos : ∀ r ∈ dp, 0 < r) :
     Fintype.card (PBPSet .Bplus μP μQ) + Fintype.card (PBPSet .Bminus μP μQ) =
-    tripleSum (countPBP_B dp) := by
-  -- Induction on dp (list of even parts).
-  match dp, hP, hQ, hsort, heven, hpos with
-  | [], hP, hQ, _, _, _ =>
-    -- Base case: empty orbit
-    have h1 := yd_of_colLens_nil (by rw [hP]; rfl)
-    have h2 := yd_of_colLens_nil (by rw [hQ]; rfl)
-    subst h1; subst h2
-    simp [card_PBPSet_bot, tripleSum, countPBP_B]
-  | [r₁], hP, hQ, _, heven, hpos =>
-    -- Base case: single row
-    exact card_PBPSet_B_singleton r₁ μP μQ hP hQ (heven r₁ (by simp)) (hpos r₁ (by simp))
-  | r₁ :: r₂ :: rest, hP, hQ, hsort, heven, hpos =>
-    -- Inductive step: set up IH on rest
-    have hP_sh : μP.shiftLeft.colLens = dpartColLensP_B rest := by
-      rw [YoungDiagram.colLens_shiftLeft, hP]; simp [dpartColLensP_B]
-    have hQ_sh : μQ.shiftLeft.colLens = dpartColLensQ_B rest := by
-      rw [YoungDiagram.colLens_shiftLeft, hQ]; simp [dpartColLensQ_B]
-    have hsort' := sorted_tail₂ hsort
-    have heven' : ∀ r ∈ rest, Even r :=
-      fun r hr => heven r (List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hr))
-    have hpos' : ∀ r ∈ rest, 0 < r :=
-      fun r hr => hpos r (List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hr))
-    have h_ih := card_PBPSet_B_eq_tripleSum_countPBP_B rest
-      μP.shiftLeft μQ.shiftLeft hP_sh hQ_sh hsort' heven' hpos'
-    by_cases h_prim : r₂ > rest.head?.getD 0
-    · -- Primitive case: uniform fiber
-      have := card_PBPSet_B_primitive_step r₁ r₂ rest μP μQ hP hQ hsort heven h_prim
-      rw [this, h_ih]
-      simp only [countPBP_B, h_prim, ite_true, tripleSum]
-      ring
-    · -- Balanced case: per-tail-class matrix multiply
-      -- When ¬(r₂ > r₃) (balanced), the fiber size depends on the tail class of σ:
-      --
-      -- Goal (after simp):
-      --   card(B⁺ μP μQ) + card(B⁻ μP μQ) =
-      --     dd' * tDD + rc' * scDD + (dd' * tRC + rc' * scRC) + (dd' * tSS + rc' * scSS)
-      -- where dd' = (countPBP_B rest).1, rc' = (countPBP_B rest).2.1,
-      --       k = (r₁-r₂)/2 + 1, (tDD,tRC,tSS) = (tailCoeffs k).1,
-      --       (scDD,scRC,scSS) = (tailCoeffs k).2.
-      --
-      -- Proof outline (mirrors D-type in LiftRC.lean:1317, ~250 lines):
-      --   1. By card_Bplus_eq_Bminus, reduce to 2 × card(B⁺ μP μQ).
-      --   2. By card_PBPSet_Bplus_eq_sum_fiber, write card(B⁺) = Σ_σ |fiber(σ)|.
-      --   3. Split Σ by tailClass_B σ into DD + RC + SS parts.
-      --   4. Per-class fiber sizes (MISSING — need fiber_card_B_balanced_DD/RC/SS):
-      --      - DD: |fiber| = tripleSum (tailCoeffs k).1  (= tDD + tRC + tSS)
-      --      - RC: |fiber| = tripleSum (tailCoeffs k).2  (= scDD + scRC + scSS)
-      --      - SS: |fiber| = 0  (balanced excludes SS fibers)
-      --   5. Reassemble: card(B⁺) = |DD| * tri1 + |RC| * tri2.
-      --   6. Need IH per-tail-class: |DD_sub| = dd'/2, |RC_sub| = rc'/2
-      --      (analogous to h_ih_dd, h_ih_rc in D-type card_PBPSet_D_combined).
-      --   7. Then 2 × card(B⁺) = dd' * tri1 + rc' * tri2, which expands to the goal.
-      --
-      -- Dependencies not yet formalized:
-      --   - fiber_card_B_balanced_DD/RC/SS (per-class fiber sizes)
-      --   - Per-tail-class IH (dd' = 2 × |DD_sub in B⁺|, rc' = 2 × |RC_sub in B⁺|)
-      --   - card_PBPSet_B_combined (joint induction for total + per-tc, as in D-type)
-      simp only [countPBP_B, h_prim, ite_false, tripleSum]
-      sorry
+    tripleSum (countPBP_B dp) :=
+  (card_PBPSet_B_combined dp μP μQ hP hQ hsort heven hpos).1
 
 /-- Corollary: each of B⁺ and B⁻ has half the total. -/
 theorem card_PBPSet_Bplus_eq (dp : DualPart) (μP μQ : YoungDiagram)
@@ -2186,6 +2313,23 @@ theorem card_PBPSet_Bplus_eq (dp : DualPart) (μP μQ : YoungDiagram)
   have h_eq := card_Bplus_eq_Bminus μP μQ
   have h_total := card_PBPSet_B_eq_tripleSum_countPBP_B dp μP μQ hP hQ hsort heven hpos
   omega
+
+/-- Per-tail-class B counts (accessor for combined induction). -/
+theorem card_PBPSet_B_per_tc (dp : DualPart) (μP μQ : YoungDiagram)
+    (hP : μP.colLens = dpartColLensP_B dp)
+    (hQ : μQ.colLens = dpartColLensQ_B dp)
+    (hsort : dp.SortedGE)
+    (heven : ∀ r ∈ dp, Even r)
+    (hpos : ∀ r ∈ dp, 0 < r) (hne : dp ≠ []) :
+    (Finset.univ.filter (fun σ : PBPSet .Bplus μP μQ =>
+        tailClass_B σ.val = .DD)).card +
+      (Finset.univ.filter (fun σ : PBPSet .Bminus μP μQ =>
+        tailClass_B σ.val = .DD)).card = (countPBP_B dp).1 ∧
+    (Finset.univ.filter (fun σ : PBPSet .Bplus μP μQ =>
+        tailClass_B σ.val = .RC)).card +
+      (Finset.univ.filter (fun σ : PBPSet .Bminus μP μQ =>
+        tailClass_B σ.val = .RC)).card = (countPBP_B dp).2.1 :=
+  (card_PBPSet_B_combined dp μP μQ hP hQ hsort heven hpos).2 hne
 
 /-! ## Structural theorems for Counting.lean -/
 
