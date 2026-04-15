@@ -196,6 +196,165 @@ private theorem MSeq_card_pos (k : ℕ) (hk : k > 0) : Fintype.card (MSeq k) = 2
       | zero => simp
       | succ n => simp [Ne.symm (MSeq_allr_ne_lastd k hk)]; omega }⟩
 
+private lemma singleCol_j0_M {μQ : YoungDiagram} (hsc : ∀ j, j ≥ 1 → μQ.colLen j = 0)
+    {i j : ℕ} (hmem : (i, j) ∈ μQ) : j = 0 := by
+  by_contra hj
+  exact absurd (YoungDiagram.mem_iff_lt_colLen.mp hmem) (by rw [hsc j (by omega)]; omega)
+
+/-- Paint Q column 0 from an MSeq, dots elsewhere. -/
+private def mkQpaint_M (μQ : YoungDiagram) (m : MSeq (μQ.colLen 0)) (i j : ℕ) : DRCSymbol :=
+  if h : j = 0 ∧ i < μQ.colLen 0 then m.val ⟨i, h.2⟩ else .dot
+
+private lemma mkQpaint_M_nondot_imp {μQ : YoungDiagram} {m : MSeq (μQ.colLen 0)}
+    {i j : ℕ} (h : mkQpaint_M μQ m i j ≠ .dot) : j = 0 ∧ i < μQ.colLen 0 := by
+  unfold mkQpaint_M at h; split_ifs at h with hc; exact hc; exact absurd rfl h
+
+@[simp] private lemma mkQpaint_M_col0 {μQ : YoungDiagram} {m : MSeq (μQ.colLen 0)}
+    {i : ℕ} (hi : i < μQ.colLen 0) : mkQpaint_M μQ m i 0 = m.val ⟨i, hi⟩ := by
+  simp [mkQpaint_M, hi]
+
+/-- Construct PBPSet .M ⊥ μQ from an MSeq, for single-column Q. -/
+private noncomputable def MSeq_to_PBP_M {μQ : YoungDiagram}
+    (hsc : ∀ j, j ≥ 1 → μQ.colLen j = 0) (m : MSeq (μQ.colLen 0)) :
+    PBPSet .M ⊥ μQ := by
+  refine ⟨⟨.M, emptyPYD,
+    ⟨μQ, mkQpaint_M μQ m, fun i j hmem => ?_⟩,
+    ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩, rfl, rfl, rfl⟩
+  -- paint_outside
+  · unfold mkQpaint_M; split_ifs with hc
+    · exact absurd (YoungDiagram.mem_iff_lt_colLen.mpr (hc.1 ▸ hc.2)) hmem
+    · rfl
+  -- sym_P
+  · intro _ _ h; exact absurd h (YoungDiagram.notMem_bot _)
+  -- sym_Q
+  · intro i j hmem'; change (i, j) ∈ μQ at hmem'
+    have hj := singleCol_j0_M hsc hmem'; subst hj
+    have hi := YoungDiagram.mem_iff_lt_colLen.mp hmem'
+    show DRCSymbol.allowed .M .R (mkQpaint_M μQ m i 0)
+    rw [mkQpaint_M_col0 hi]; simp [DRCSymbol.allowed]
+    rcases m.prop.1 ⟨i, hi⟩ with h | h <;> simp [h]
+  -- dot_match
+  · intro i' j'; constructor
+    · intro ⟨h, _⟩; exact absurd h (YoungDiagram.notMem_bot _)
+    · intro ⟨hmemQ, hpaint⟩; exfalso
+      change (i', j') ∈ μQ at hmemQ; change mkQpaint_M μQ m i' j' = .dot at hpaint
+      have hj' := singleCol_j0_M hsc hmemQ; subst hj'
+      rw [mkQpaint_M_col0 (YoungDiagram.mem_iff_lt_colLen.mp hmemQ)] at hpaint
+      rcases m.prop.1 ⟨i', YoungDiagram.mem_iff_lt_colLen.mp hmemQ⟩ with h | h <;> simp [h] at hpaint
+  -- mono_P
+  · intro _ _ _ _ _ _ h; exact absurd h (YoungDiagram.notMem_bot _)
+  -- mono_Q
+  · intro i₁ j₁ i₂ j₂ hi hj hmem₂
+    show (mkQpaint_M μQ m i₁ j₁).layerOrd ≤ (mkQpaint_M μQ m i₂ j₂).layerOrd
+    change (i₂, j₂) ∈ μQ at hmem₂
+    have hj₂ := singleCol_j0_M hsc hmem₂; subst hj₂
+    have hj₁ : j₁ = 0 := by omega
+    subst hj₁
+    have hi₂ := YoungDiagram.mem_iff_lt_colLen.mp hmem₂
+    rw [mkQpaint_M_col0 (show i₁ < μQ.colLen 0 by omega), mkQpaint_M_col0 hi₂]
+    exact m.prop.2.1 ⟨i₁, by omega⟩ ⟨i₂, hi₂⟩ hi
+  -- row_s
+  · intro i' s₁ s₂ j₁ j₂ h₁ h₂
+    simp only [paintBySide] at h₁ h₂
+    rcases s₁ with _ | _ <;> rcases s₂ with _ | _ <;> dsimp at h₁ h₂
+    · simp [emptyPYD] at h₁
+    · simp [emptyPYD] at h₁
+    · simp [emptyPYD] at h₂
+    · exact ⟨rfl, by
+        rw [(mkQpaint_M_nondot_imp (show mkQpaint_M μQ m i' j₁ ≠ .dot by rw [h₁]; exact DRCSymbol.noConfusion)).1,
+            (mkQpaint_M_nondot_imp (show mkQpaint_M μQ m i' j₂ ≠ .dot by rw [h₂]; exact DRCSymbol.noConfusion)).1]⟩
+  -- row_r
+  · intro i' s₁ s₂ j₁ j₂ h₁ h₂
+    simp only [paintBySide] at h₁ h₂
+    rcases s₁ with _ | _ <;> rcases s₂ with _ | _ <;> dsimp at h₁ h₂
+    · simp [emptyPYD] at h₁
+    · simp [emptyPYD] at h₁
+    · simp [emptyPYD] at h₂
+    · exact ⟨rfl, by
+        rw [(mkQpaint_M_nondot_imp (show mkQpaint_M μQ m i' j₁ ≠ .dot by rw [h₁]; exact DRCSymbol.noConfusion)).1,
+            (mkQpaint_M_nondot_imp (show mkQpaint_M μQ m i' j₂ ≠ .dot by rw [h₂]; exact DRCSymbol.noConfusion)).1]⟩
+  -- col_c_P
+  · intro _ _ _ h; simp [emptyPYD] at h
+  -- col_c_Q
+  · intro j' i₁ _ h₁ _; exfalso
+    change mkQpaint_M μQ m i₁ j' = .c at h₁
+    have ⟨hj', hi₁⟩ := mkQpaint_M_nondot_imp (show mkQpaint_M μQ m i₁ j' ≠ .dot by rw [h₁]; exact DRCSymbol.noConfusion)
+    subst hj'; rw [mkQpaint_M_col0 hi₁] at h₁
+    rcases m.prop.1 ⟨i₁, hi₁⟩ with h | h <;> simp [h] at h₁
+  -- col_d_P
+  · intro _ _ _ h; simp [emptyPYD] at h
+  -- col_d_Q
+  · intro j' i₁ i₂ h₁ h₂
+    change mkQpaint_M μQ m i₁ j' = .d at h₁
+    change mkQpaint_M μQ m i₂ j' = .d at h₂
+    have ⟨hj', hi₁⟩ := mkQpaint_M_nondot_imp (show mkQpaint_M μQ m i₁ j' ≠ .dot by rw [h₁]; exact DRCSymbol.noConfusion)
+    have ⟨_, hi₂⟩ := mkQpaint_M_nondot_imp (show mkQpaint_M μQ m i₂ j' ≠ .dot by rw [h₂]; exact DRCSymbol.noConfusion)
+    subst hj'; rw [mkQpaint_M_col0 hi₁] at h₁; rw [mkQpaint_M_col0 hi₂] at h₂
+    exact Fin.val_eq_of_eq (m.prop.2.2 ⟨i₁, hi₁⟩ ⟨i₂, hi₂⟩ h₁ h₂)
+
+/-- Extract Q col 0 as an MSeq from a PBPSet .M ⊥ μQ. -/
+private noncomputable def PBPSet_M_bot_to_MSeq {μQ : YoungDiagram}
+    (τ : PBPSet .M ⊥ μQ) : MSeq (μQ.colLen 0) :=
+  ⟨fun i => τ.val.Q.paint i.val 0, by
+    refine ⟨fun i => ?_, fun i j hij => ?_, fun i j hi hj => ?_⟩
+    · have hmemQ : (i.val, 0) ∈ τ.val.Q.shape := by
+        rw [τ.prop.2.2]; exact YoungDiagram.mem_iff_lt_colLen.mpr i.isLt
+      have hne : τ.val.Q.paint i.val 0 ≠ .dot := by
+        intro hdot
+        have ⟨hmemP, _⟩ := (τ.val.dot_match i.val 0).mpr ⟨hmemQ, hdot⟩
+        rw [τ.prop.2.1] at hmemP; exact absurd hmemP (YoungDiagram.notMem_bot _)
+      have hall := τ.val.sym_Q i.val 0 hmemQ
+      simp [DRCSymbol.allowed, τ.prop.1] at hall
+      rcases hall with h | h | h
+      · exact absurd h hne
+      · exact Or.inl h
+      · exact Or.inr h
+    · exact τ.val.mono_Q i.val 0 j.val 0 hij (le_refl 0)
+        (by rw [τ.prop.2.2]; exact YoungDiagram.mem_iff_lt_colLen.mpr j.isLt)
+    · exact Fin.ext (τ.val.col_d_Q 0 i.val j.val hi hj)⟩
+
+/-- Round-trip: extract then reconstruct gives the same PBP (single-column Q, M-type). -/
+private theorem MSeq_roundtrip_left {μQ : YoungDiagram}
+    (hsc : ∀ j, j ≥ 1 → μQ.colLen j = 0) (τ : PBPSet .M ⊥ μQ) :
+    MSeq_to_PBP_M hsc (PBPSet_M_bot_to_MSeq τ) = τ := by
+  apply Subtype.ext; apply PBP.ext''
+  · -- γ: both .M
+    unfold MSeq_to_PBP_M; dsimp; exact τ.prop.1.symm
+  · -- P: both emptyPYD
+    unfold MSeq_to_PBP_M; dsimp
+    exact (PYD_eq_emptyPYD_of_shape_bot τ.prop.2.1).symm
+  · -- Q: paint agrees
+    apply PaintedYoungDiagram.ext'
+    · unfold MSeq_to_PBP_M; dsimp; exact τ.prop.2.2.symm
+    · ext i j
+      unfold MSeq_to_PBP_M PBPSet_M_bot_to_MSeq; dsimp
+      simp only [mkQpaint_M]
+      split_ifs with hc
+      · rw [hc.1]
+      · push_neg at hc
+        symm; apply τ.val.Q.paint_outside
+        intro hmem; rw [τ.prop.2.2] at hmem
+        by_cases hj : j = 0
+        · subst hj; exact absurd (YoungDiagram.mem_iff_lt_colLen.mp hmem) (not_lt.mpr (hc rfl))
+        · exact absurd (singleCol_j0_M hsc hmem) hj
+
+/-- Round-trip: reconstruct then extract gives the same MSeq. -/
+private theorem MSeq_roundtrip_right {μQ : YoungDiagram}
+    (hsc : ∀ j, j ≥ 1 → μQ.colLen j = 0) (m : MSeq (μQ.colLen 0)) :
+    PBPSet_M_bot_to_MSeq (MSeq_to_PBP_M hsc m) = m := by
+  apply Subtype.ext; funext i
+  simp only [PBPSet_M_bot_to_MSeq, MSeq_to_PBP_M, mkQpaint_M]
+  dsimp; simp [i.isLt]
+
+/-- PBPSet .M ⊥ μQ ≃ MSeq (μQ.colLen 0) for single-column Q. -/
+private noncomputable def PBPSet_M_bot_equiv_MSeq {μQ : YoungDiagram}
+    (hsc : ∀ j, j ≥ 1 → μQ.colLen j = 0) :
+    PBPSet .M ⊥ μQ ≃ MSeq (μQ.colLen 0) where
+  toFun := PBPSet_M_bot_to_MSeq
+  invFun := MSeq_to_PBP_M hsc
+  left_inv := MSeq_roundtrip_left hsc
+  right_inv := MSeq_roundtrip_right hsc
+
 /-- card(PBPSet .M ⊥ μQ) = 2 for single-column Q with positive height.
     Proof via PBPSet .M ⊥ μQ ≃ MSeq (μQ.colLen 0).
 
@@ -209,7 +368,8 @@ private theorem MSeq_card_pos (k : ℕ) (hk : k > 0) : Fintype.card (MSeq k) = 2
 private theorem card_PBPSet_M_bot_singleCol (μQ : YoungDiagram)
     (hsc : ∀ j, j ≥ 1 → μQ.colLen j = 0) (hpos : μQ.colLen 0 > 0) :
     Fintype.card (PBPSet .M ⊥ μQ) = 2 := by
-  sorry
+  rw [Fintype.card_congr (PBPSet_M_bot_equiv_MSeq hsc)]
+  exact MSeq_card_pos _ hpos
 
 /-- Base case: M with single even row [r₁].
     By (1,2) always primitive: count = total B count of []. -/
