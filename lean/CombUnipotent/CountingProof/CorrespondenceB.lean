@@ -895,15 +895,332 @@ private theorem validCol0_B_card (hP hQ : ℕ) (hle : hP ≤ hQ)
   simp only [ValidCol0_B, Fintype.card_sum, DSeq_card]
   omega
 
+/-! ### Extraction map: fiber → ValidCol0_B
+
+For each fiber element τ, extract:
+- Whether P col 0 is all dots or has c at bottom (2 choices)
+- The Q col 0 tail as a DSeq
+
+Case 1 (P all dots): Q(i,0) = dot for i < hP (by dot_match), non-dot for i ≥ hP.
+  The tail Q(hP), Q(hP+1), ..., Q(hQ-1) is a DSeq(hQ - hP).
+Case 2 (P has c at bottom): Q(i,0) = dot for i < hP-1, non-dot for i ≥ hP-1.
+  The extended tail Q(hP-1), Q(hP), ..., Q(hQ-1) is a DSeq(hQ - hP + 1).
+-/
+
+/-- Whether P column 0 has a c at the bottom (true) or is all dots (false). -/
+private noncomputable def P_col0_has_c {μP μQ : YoungDiagram}
+    (τ : PBPSet .Bplus μP μQ) : Prop :=
+  μP.colLen 0 > 0 ∧ τ.val.P.paint (μP.colLen 0 - 1) 0 = .c
+
+private noncomputable instance {μP μQ : YoungDiagram} (τ : PBPSet .Bplus μP μQ) :
+    Decidable (P_col0_has_c τ) := by
+  unfold P_col0_has_c; exact inferInstance
+
+/-- The starting row of the Q col 0 tail (= first non-dot row in Q col 0). -/
+private noncomputable def Q_tail_start {μP μQ : YoungDiagram}
+    (τ : PBPSet .Bplus μP μQ) : ℕ :=
+  if P_col0_has_c τ then μP.colLen 0 - 1 else μP.colLen 0
+
+/-- The length of the Q col 0 tail. -/
+private noncomputable def Q_tail_len {μP μQ : YoungDiagram}
+    (τ : PBPSet .Bplus μP μQ) (hle : μP.colLen 0 ≤ μQ.colLen 0) : ℕ :=
+  if P_col0_has_c τ then μQ.colLen 0 - μP.colLen 0 + 1
+  else μQ.colLen 0 - μP.colLen 0
+
+/-- P col 0 has only dots and c's, with at most one c at the bottom. -/
+private theorem P_col0_dot_below_c {μP μQ : YoungDiagram}
+    (τ : PBPSet .Bplus μP μQ) (i : ℕ) (hi : i < μP.colLen 0)
+    (hnotc : ¬P_col0_has_c τ ∨ i < μP.colLen 0 - 1) :
+    τ.val.P.paint i 0 = .dot := by
+  by_contra hne
+  have hmem : (i, 0) ∈ τ.val.P.shape := by
+    rw [τ.prop.2.1]; exact YoungDiagram.mem_iff_lt_colLen.mpr hi
+  have hc := PBP.P_nonDot_eq_c_of_B τ.val (Or.inl τ.prop.1) i 0 hmem hne
+  rcases hnotc with hnotc | hnotc
+  · -- ¬P_col0_has_c: P.paint(hP-1,0) ≠ c, but P.paint(i,0) = c
+    simp only [P_col0_has_c, not_and_or, not_lt] at hnotc
+    rcases hnotc with hnotc | hnotc
+    · omega
+    · -- P(hP-1,0) ≠ c but P(i,0) = c
+      have hmem' : (μP.colLen 0 - 1, 0) ∈ τ.val.P.shape := by
+        rw [τ.prop.2.1]; exact YoungDiagram.mem_iff_lt_colLen.mpr (by omega)
+      have hmono := τ.val.mono_P i 0 (μP.colLen 0 - 1) 0 (by omega) le_rfl hmem'
+      rw [hc] at hmono; simp [DRCSymbol.layerOrd] at hmono
+      have : τ.val.P.paint (μP.colLen 0 - 1) 0 = .dot ∨
+             τ.val.P.paint (μP.colLen 0 - 1) 0 = .c := by
+        have hsym := τ.val.sym_P _ _ hmem'
+        rw [τ.prop.1] at hsym; simp [DRCSymbol.allowed] at hsym; exact hsym
+      rcases this with h | h
+      · simp [h, DRCSymbol.layerOrd] at hmono
+      · exact hnotc h
+  · -- i < hP - 1: c at (i,0) contradicts col_c_P with c at bottom
+    have hmem' : (μP.colLen 0 - 1, 0) ∈ τ.val.P.shape := by
+      rw [τ.prop.2.1]; exact YoungDiagram.mem_iff_lt_colLen.mpr (by omega)
+    have hmono := τ.val.mono_P i 0 (μP.colLen 0 - 1) 0 (by omega) le_rfl hmem'
+    rw [hc] at hmono; simp [DRCSymbol.layerOrd] at hmono
+    have : τ.val.P.paint (μP.colLen 0 - 1) 0 = .dot ∨
+           τ.val.P.paint (μP.colLen 0 - 1) 0 = .c := by
+      have hsym := τ.val.sym_P _ _ hmem'
+      rw [τ.prop.1] at hsym; simp [DRCSymbol.allowed] at hsym; exact hsym
+    rcases this with h | h
+    · simp [h, DRCSymbol.layerOrd] at hmono
+    · exact absurd (τ.val.col_c_P 0 i (μP.colLen 0 - 1) hc h) (by omega)
+
+/-- Q col 0 is dot for rows below the tail start. -/
+private theorem Q_col0_dot_below_tail {μP μQ : YoungDiagram}
+    (τ : PBPSet .Bplus μP μQ) (i : ℕ) (hi : i < Q_tail_start τ) :
+    τ.val.Q.paint i 0 = .dot := by
+  unfold Q_tail_start at hi
+  split_ifs at hi with hc
+  · -- P has c: tail starts at hP - 1, so i < hP - 1
+    have hdot := P_col0_dot_below_c τ i (by omega) (Or.inr hi)
+    have hmemP : (i, 0) ∈ τ.val.P.shape := by
+      rw [τ.prop.2.1]; exact YoungDiagram.mem_iff_lt_colLen.mpr (by omega)
+    exact ((τ.val.dot_match i 0).mp ⟨hmemP, hdot⟩).2
+  · -- P all dots: tail starts at hP
+    have hdot := P_col0_dot_below_c τ i hi (Or.inl hc)
+    have hmemP : (i, 0) ∈ τ.val.P.shape := by
+      rw [τ.prop.2.1]; exact YoungDiagram.mem_iff_lt_colLen.mpr hi
+    exact ((τ.val.dot_match i 0).mp ⟨hmemP, hdot⟩).2
+
+/-- Q col 0 is non-dot for rows in the tail. -/
+private theorem Q_col0_nondot_in_tail {μP μQ : YoungDiagram}
+    (τ : PBPSet .Bplus μP μQ) (hle : μP.colLen 0 ≤ μQ.colLen 0)
+    (i : ℕ) (hi1 : Q_tail_start τ ≤ i) (hi2 : i < μQ.colLen 0) :
+    τ.val.Q.paint i 0 ≠ .dot := by
+  intro hdot
+  have hmemQ : (i, 0) ∈ τ.val.Q.shape := by
+    rw [τ.prop.2.2]; exact YoungDiagram.mem_iff_lt_colLen.mpr hi2
+  have ⟨hmemP, _⟩ := (τ.val.dot_match i 0).mpr ⟨hmemQ, hdot⟩
+  rw [τ.prop.2.1, YoungDiagram.mem_iff_lt_colLen] at hmemP
+  unfold Q_tail_start at hi1
+  split_ifs at hi1 with hc
+  · -- P has c at bottom: tail starts at hP - 1
+    have ⟨hpos, hpc⟩ := hc
+    have hi_eq : i = μP.colLen 0 - 1 := by omega
+    have hpdot := ((τ.val.dot_match i 0).mpr ⟨hmemQ, hdot⟩).2
+    rw [hi_eq, hpc] at hpdot; exact DRCSymbol.noConfusion hpdot
+  · -- P all dots: tail starts at hP, i ≥ hP, but (i,0) ∈ P.shape → i < hP
+    omega
+
+/-- Q col 0 tail symbols are in {s, r, d}. -/
+private theorem Q_col0_tail_srd {μP μQ : YoungDiagram}
+    (τ : PBPSet .Bplus μP μQ) (hle : μP.colLen 0 ≤ μQ.colLen 0)
+    (i : ℕ) (hi1 : Q_tail_start τ ≤ i) (hi2 : i < μQ.colLen 0) :
+    τ.val.Q.paint i 0 = .s ∨ τ.val.Q.paint i 0 = .r ∨ τ.val.Q.paint i 0 = .d := by
+  have hmemQ : (i, 0) ∈ τ.val.Q.shape := by
+    rw [τ.prop.2.2]; exact YoungDiagram.mem_iff_lt_colLen.mpr hi2
+  have hsym := τ.val.sym_Q i 0 hmemQ
+  rw [τ.prop.1] at hsym; simp [DRCSymbol.allowed] at hsym
+  have hne := Q_col0_nondot_in_tail τ hle i hi1 hi2
+  tauto
+
+/-- Extract the Q col 0 tail as a DSeq from a fiber element.
+    The tail length depends on whether P col 0 has c. -/
+private noncomputable def extractQtail_B {μP μQ : YoungDiagram}
+    (τ : PBPSet .Bplus μP μQ) (hle : μP.colLen 0 ≤ μQ.colLen 0)
+    (n : ℕ) (hn : n = Q_tail_len τ hle) : DSeq n := by
+  have h_start_bound : Q_tail_start τ + n = μQ.colLen 0 := by
+    rw [hn]; unfold Q_tail_len Q_tail_start
+    split_ifs with hc
+    · have := hc.1; omega
+    · have := hle; omega
+  refine ⟨fun ⟨k, hk⟩ => τ.val.Q.paint (Q_tail_start τ + k) 0, ?_, ?_, ?_⟩
+  · intro ⟨k, hk⟩; exact Q_col0_tail_srd τ hle _ (by omega) (by omega)
+  · intro ⟨k₁, hk₁⟩ ⟨k₂, hk₂⟩ (hle' : k₁ ≤ k₂)
+    have hmem : (Q_tail_start τ + k₂, 0) ∈ τ.val.Q.shape := by
+      rw [τ.prop.2.2, YoungDiagram.mem_iff_lt_colLen]
+      exact by omega
+    exact τ.val.mono_Q _ 0 _ 0 (by omega : Q_tail_start τ + k₁ ≤ Q_tail_start τ + k₂) le_rfl hmem
+  · intro ⟨k₁, hk₁⟩ ⟨k₂, hk₂⟩ hd₁ hd₂
+    have h_eq := τ.val.col_d_Q 0 (Q_tail_start τ + k₁) (Q_tail_start τ + k₂) hd₁ hd₂
+    exact Fin.ext (show k₁ = k₂ by omega)
+
+/-- Extract column 0 data from a B⁺-fiber element as a ValidCol0_B. -/
+private noncomputable def extractCol0_B {μP μQ : YoungDiagram}
+    (τ : PBPSet .Bplus μP μQ) (hle : μP.colLen 0 ≤ μQ.colLen 0) :
+    ValidCol0_B (μP.colLen 0) (μQ.colLen 0) :=
+  if hc : P_col0_has_c τ then
+    Sum.inr (extractQtail_B τ hle _ (by simp [Q_tail_len, if_pos hc]))
+  else
+    Sum.inl (extractQtail_B τ hle _ (by simp [Q_tail_len, if_neg hc]))
+
+/-- extractCol0_B is injective on the fiber over σ.
+
+    Proof outline:
+    1. From fiber membership: both τ₁, τ₂ map to σ under doubleDescent_Bplus_map.
+    2. By ddescent_B_determines_colsGe1: P and Q agree on columns ≥ 1.
+    3. From extractCol0_B equality:
+       - Same Sum branch → same P_col0_has_c → same P col 0 painting.
+       - Same DSeq → same Q col 0 tail painting.
+       - Below-tail Q rows are forced to dots by dot_match.
+    4. Assemble: P and Q agree everywhere → τ₁ = τ₂.
+
+    The proof is structurally identical to extractCol0_D_injective_on_fiber
+    in Fiber.lean, adapted for B-type's two-column extraction. -/
+private theorem extractCol0_B_injective_on_fiber {μP μQ : YoungDiagram}
+    (σ : PBPSet .Bplus (μP.shiftLeft) (μQ.shiftLeft))
+    (hle : μP.colLen 0 ≤ μQ.colLen 0) :
+    Function.Injective (fun τ : doubleDescent_Bplus_fiber σ =>
+      extractCol0_B τ.val hle) := by
+  intro ⟨τ₁, hτ₁⟩ ⟨τ₂, hτ₂⟩ h
+  have hshapeP : τ₁.val.P.shape = τ₂.val.P.shape := by
+    rw [τ₁.prop.2.1, τ₂.prop.2.1]
+  have hshapeQ : τ₁.val.Q.shape = τ₂.val.Q.shape := by
+    rw [τ₁.prop.2.2, τ₂.prop.2.2]
+  have hdd_eq : doubleDescent_B_PBP τ₁.val (Or.inl τ₁.prop.1) =
+                doubleDescent_B_PBP τ₂.val (Or.inl τ₂.prop.1) :=
+    congrArg Subtype.val (hτ₁.trans hτ₂.symm)
+  have hddL : ∀ i j, PBP.doubleDescent_B_paintL τ₁.val i j =
+                      PBP.doubleDescent_B_paintL τ₂.val i j := by
+    intro i j; exact congr_fun (congr_fun (congrArg (fun d => d.P.paint) hdd_eq) i) j
+  have hddR : ∀ i j, PBP.doubleDescent_B_paintR τ₁.val i j =
+                      PBP.doubleDescent_B_paintR τ₂.val i j := by
+    intro i j; exact congr_fun (congr_fun (congrArg (fun d => d.Q.paint) hdd_eq) i) j
+  have ⟨hP_ge1, hQ_ge1⟩ := PBP.ddescent_B_determines_colsGe1 τ₁.val τ₂.val
+    (Or.inl τ₁.prop.1) (Or.inl τ₂.prop.1) hshapeP hshapeQ hddL hddR
+  -- extractCol0_B encodes: (a) P col 0 c-status via Sum branch, (b) Q col 0 tail via DSeq.
+  -- Same extractCol0_B → same (a) and (b) → same col 0 paint.
+  -- P col 0: either all dot or dots+c, determined by the Sum branch.
+  -- Q col 0: below tail = dot (by dot_match), tail = DSeq data.
+  -- Assemble full paint equality → Subtype.ext.
+  have hP0 : ∀ i, τ₁.val.P.paint i 0 = τ₂.val.P.paint i 0 := by
+    intro i
+    by_cases hi : i < μP.colLen 0
+    · -- P col 0 agreement via extractCol0_B → same Sum branch → same c-status
+      -- First establish same P_col0_has_c
+      have hP_c_eq : P_col0_has_c τ₁ ↔ P_col0_has_c τ₂ := by
+        simp only [extractCol0_B] at h
+        constructor
+        · intro hc₁; by_contra hc₂
+          simp [dif_pos hc₁, dif_neg hc₂] at h
+        · intro hc₂; by_contra hc₁
+          simp [dif_neg hc₁, dif_pos hc₂] at h
+      -- Case: i is the bottom row and P has c
+      by_cases hbot : i = μP.colLen 0 - 1 ∧ μP.colLen 0 > 0
+      · rcases hbot with ⟨rfl, hpos⟩
+        -- Both have {dot, c} here. Same P_col0_has_c → same paint.
+        have hmem₁ : (μP.colLen 0 - 1, 0) ∈ τ₁.val.P.shape := by
+          rw [τ₁.prop.2.1]; exact YoungDiagram.mem_iff_lt_colLen.mpr (by omega)
+        have hmem₂ : (μP.colLen 0 - 1, 0) ∈ τ₂.val.P.shape := by
+          rw [τ₂.prop.2.1]; exact YoungDiagram.mem_iff_lt_colLen.mpr (by omega)
+        have hsym₁ := τ₁.val.sym_P _ _ hmem₁
+        rw [τ₁.prop.1] at hsym₁; simp [DRCSymbol.allowed] at hsym₁
+        have hsym₂ := τ₂.val.sym_P _ _ hmem₂
+        rw [τ₂.prop.1] at hsym₂; simp [DRCSymbol.allowed] at hsym₂
+        rcases hsym₁ with h₁ | h₁ <;> rcases hsym₂ with h₂ | h₂
+        · rw [h₁, h₂]
+        · exfalso; exact (hP_c_eq.not.mp (by simp [P_col0_has_c, h₁, hpos]))
+            ⟨hpos, h₂⟩
+        · exfalso; exact (hP_c_eq.mp ⟨hpos, h₁⟩ |>.2 |> fun hc₂ => by
+            rw [h₂] at hc₂; exact DRCSymbol.noConfusion hc₂)
+        · rw [h₁, h₂]
+      · -- Not bottom row (or hP = 0): both are dots
+        have not_bottom : ∀ (τ' : PBPSet .Bplus μP μQ),
+            ¬P_col0_has_c τ' ∨ i < μP.colLen 0 - 1 := by
+          intro τ'; push_neg at hbot
+          by_cases hc : P_col0_has_c τ'
+          · exact Or.inr (by rcases hc with ⟨hpos, _⟩; omega)
+          · exact Or.inl hc
+        rw [P_col0_dot_below_c τ₁ i hi (not_bottom τ₁),
+            P_col0_dot_below_c τ₂ i hi (not_bottom τ₂)]
+    · -- Outside P shape
+      rw [τ₁.val.P.paint_outside i 0 (by rw [τ₁.prop.2.1, YoungDiagram.mem_iff_lt_colLen]; omega),
+          τ₂.val.P.paint_outside i 0 (by rw [τ₂.prop.2.1, YoungDiagram.mem_iff_lt_colLen]; omega)]
+  have hQ0 : ∀ i, τ₁.val.Q.paint i 0 = τ₂.val.Q.paint i 0 := by
+    intro i
+    by_cases hi : i < μQ.colLen 0
+    · -- Q col 0 agreement: below tail = both dot, in tail = same DSeq data
+      -- First, same P_col0_has_c → same Q_tail_start
+      have hP_c_eq : P_col0_has_c τ₁ ↔ P_col0_has_c τ₂ := by
+        simp only [extractCol0_B] at h
+        constructor
+        · intro hc₁; by_contra hc₂; simp [dif_pos hc₁, dif_neg hc₂] at h
+        · intro hc₂; by_contra hc₁; simp [dif_neg hc₁, dif_pos hc₂] at h
+      have hts_eq : Q_tail_start τ₁ = Q_tail_start τ₂ := by
+        unfold Q_tail_start
+        split_ifs with h₁ h₂ h₂ <;> try rfl
+        · exact absurd (hP_c_eq.mp h₁) h₂
+        · exact absurd (hP_c_eq.mpr h₂) h₁
+      by_cases htail : Q_tail_start τ₁ ≤ i
+      · -- In the tail: same DSeq → same paint
+        -- Extract DSeq equality from h
+        have h_start_bound₁ : Q_tail_start τ₁ + Q_tail_len τ₁ hle = μQ.colLen 0 := by
+          unfold Q_tail_len Q_tail_start
+          split_ifs with hc
+          · have := hc.1; omega
+          · omega
+        have hfin : i - Q_tail_start τ₁ < Q_tail_len τ₁ hle := by omega
+        -- Extract that the DSeq values agree
+        -- Extract DSeq function equality from extractCol0_B equality
+        -- Same P_col0_has_c → same Sum branch → same DSeq → same Q.paint on tail
+        simp only [extractCol0_B] at h
+        -- Split on P_col0_has_c for both τ₁ and τ₂
+        -- extractQtail_B stores Q.paint(tail_start + k) for each k.
+        -- Same extractCol0_B → same DSeq → function values agree at each index.
+        -- At index (i - tail_start), both sides give Q.paint(i, 0).
+        by_cases hc₁ : P_col0_has_c τ₁
+        · have hc₂ := hP_c_eq.mp hc₁
+          rw [dif_pos hc₁, dif_pos hc₂] at h
+          have hds := Sum.inr.inj h
+          have hv := congrArg Subtype.val hds
+          have hfin' : i - Q_tail_start τ₁ < μQ.colLen 0 - μP.colLen 0 + 1 := by
+            unfold Q_tail_start; rw [if_pos hc₁]; have := hc₁.1; omega
+          -- extractQtail_B with subst: the Subtype val is (fun k => Q.paint(start + k))
+          -- but wrapped in a `subst` transport. Use `show` to unwrap.
+          have key₁ : (extractQtail_B τ₁ hle _ (by simp [Q_tail_len, if_pos hc₁])).val
+              ⟨i - Q_tail_start τ₁, hfin'⟩ =
+              τ₁.val.Q.paint i 0 := by
+            show τ₁.val.Q.paint (Q_tail_start τ₁ + (i - Q_tail_start τ₁)) 0 = _
+            congr 1; omega
+          have key₂ : (extractQtail_B τ₂ hle _ (by simp [Q_tail_len, if_pos hc₂])).val
+              ⟨i - Q_tail_start τ₁, hfin'⟩ =
+              τ₂.val.Q.paint i 0 := by
+            show τ₂.val.Q.paint (Q_tail_start τ₂ + (i - Q_tail_start τ₁)) 0 = _
+            congr 1; omega
+          rw [← key₁, ← key₂]
+          exact congr_fun hv ⟨i - Q_tail_start τ₁, hfin'⟩
+        · have hc₂ : ¬P_col0_has_c τ₂ := fun h₂ => hc₁ (hP_c_eq.mpr h₂)
+          rw [dif_neg hc₁, dif_neg hc₂] at h
+          have hds := Sum.inl.inj h
+          have hv := congrArg Subtype.val hds
+          have hfin' : i - Q_tail_start τ₁ < μQ.colLen 0 - μP.colLen 0 := by
+            unfold Q_tail_start at htail ⊢; rw [if_neg hc₁] at htail ⊢; omega
+          have key₁ : (extractQtail_B τ₁ hle _ (by simp [Q_tail_len, if_neg hc₁])).val
+              ⟨i - Q_tail_start τ₁, hfin'⟩ =
+              τ₁.val.Q.paint i 0 := by
+            show τ₁.val.Q.paint (Q_tail_start τ₁ + (i - Q_tail_start τ₁)) 0 = _
+            congr 1; omega
+          have key₂ : (extractQtail_B τ₂ hle _ (by simp [Q_tail_len, if_neg hc₂])).val
+              ⟨i - Q_tail_start τ₁, hfin'⟩ =
+              τ₂.val.Q.paint i 0 := by
+            show τ₂.val.Q.paint (Q_tail_start τ₂ + (i - Q_tail_start τ₁)) 0 = _
+            congr 1; omega
+          rw [← key₁, ← key₂]
+          exact congr_fun hv ⟨i - Q_tail_start τ₁, hfin'⟩
+      · -- Below tail: both are dots
+        push_neg at htail
+        rw [Q_col0_dot_below_tail τ₁ i htail,
+            Q_col0_dot_below_tail τ₂ i (by omega)]
+    · -- Outside Q shape
+      rw [τ₁.val.Q.paint_outside i 0 (by rw [τ₁.prop.2.2, YoungDiagram.mem_iff_lt_colLen]; omega),
+          τ₂.val.Q.paint_outside i 0 (by rw [τ₂.prop.2.2, YoungDiagram.mem_iff_lt_colLen]; omega)]
+  have hPeq : τ₁.val.P = τ₂.val.P := PaintedYoungDiagram.ext' hshapeP (by
+    ext i j; cases j with
+    | zero => exact hP0 i
+    | succ j => exact hP_ge1 i (j + 1) (by omega))
+  have hQeq : τ₁.val.Q = τ₂.val.Q := PaintedYoungDiagram.ext' hshapeQ (by
+    ext i j; cases j with
+    | zero => exact hQ0 i
+    | succ j => exact hQ_ge1 i (j + 1) (by omega))
+  exact Subtype.ext (Subtype.ext (PBP.ext'' (by rw [τ₁.prop.1, τ₂.prop.1]) hPeq hQeq))
+
 /-! ### Fiber cardinality for B-type primitive step
 
 In the primitive case, the fiber of each sub-PBP has uniform size 4k.
 The proof uses a sandwich argument:
   fiber ↪ ValidCol0_B (extraction of col 0 paintings)
   ValidCol0_B ↪ fiber (lift construction, valid in primitive case)
-
-Both directions require ~100 lines each of PBP constraint verification.
-We state them as lemmas and prove the fiber cardinality from them.
 -/
 
 /-- Upper bound: |fiber| ≤ |ValidCol0_B|.
@@ -915,18 +1232,28 @@ private theorem fiber_le_validCol0_B {μP μQ : YoungDiagram}
     (hle : μP.colLen 0 ≤ μQ.colLen 0) :
     Fintype.card (doubleDescent_Bplus_fiber σ) ≤
     Fintype.card (ValidCol0_B (μP.colLen 0) (μQ.colLen 0)) := by
+  exact Fintype.card_le_of_injective _ (extractCol0_B_injective_on_fiber σ hle)
+
+/-- Surjectivity of extractCol0_B on fiber: every ValidCol0_B element
+    can be lifted to a fiber element.
+    Proof: construct a PBP from (σ, col0_data) by:
+    - P(i, j+1) = σ.P.paint(i, j), P(i, 0) = dots or (dots+c at bottom)
+    - Q(i, j+1) = σ.Q.paint(i, j), Q(i, 0) = dots + DSeq tail
+    Then verify doubleDescent_B_PBP of the result equals σ.
+    Analogous to liftPBP_to_fiber in Fiber.lean for D-type. -/
+private theorem extractCol0_B_surjective_on_fiber {μP μQ : YoungDiagram}
+    (σ : PBPSet .Bplus (μP.shiftLeft) (μQ.shiftLeft))
+    (hle : μP.colLen 0 ≤ μQ.colLen 0) :
+    Function.Surjective (fun τ : doubleDescent_Bplus_fiber σ =>
+      extractCol0_B τ.val hle) := by
   sorry
 
-/-- Lower bound: |ValidCol0_B| ≤ |fiber|.
-    Proof: construct a lift map ValidCol0_B → fiber(σ) by extending σ with
-    the given col 0 painting. The construction builds a valid PBP and is
-    injective since distinct col 0 paintings give distinct PBPs. -/
 private theorem validCol0_B_le_fiber {μP μQ : YoungDiagram}
     (σ : PBPSet .Bplus (μP.shiftLeft) (μQ.shiftLeft))
     (hle : μP.colLen 0 ≤ μQ.colLen 0) :
     Fintype.card (ValidCol0_B (μP.colLen 0) (μQ.colLen 0)) ≤
-    Fintype.card (doubleDescent_Bplus_fiber σ) := by
-  sorry
+    Fintype.card (doubleDescent_Bplus_fiber σ) :=
+  Fintype.card_le_of_surjective _ (extractCol0_B_surjective_on_fiber σ hle)
 
 /-- Key counting lemma (primitive case, B type):
     Every sub-PBP σ has fiber size = tripleSum(tailCoeffs k).1 = 4k. -/
