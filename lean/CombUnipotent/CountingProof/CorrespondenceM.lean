@@ -456,8 +456,14 @@ theorem card_PBPSet_M_eq_countPBP_M (dp : DualPart) (μP μQ : YoungDiagram)
     -- Balanced (r₁ = r₂): descent image = {σ ∈ B | tailClass ≠ SS}
     --   card(M) = dd + rc = countPBP_M dp
     --
-    -- Requires: descentMB_PBP construction + injectivity + lift + round-trip
-    -- (mirrors ~700 lines of C→D infrastructure in CorrespondenceC.lean)
+    -- Dependencies (all sorry):
+    --   1. descentMB_PBP (line 29): M→B descent PBP construction (~120 lines,
+    --      analogous to descentCD_raw in CorrespondenceC.lean)
+    --   2. descentMB_injective (line 42): follows from descentMB_PBP being defined
+    --   3. liftMB_PBP (line 81): B→M lift construction (~200 lines)
+    --   4. card_PBPSet_B_eq_tripleSum_countPBP_B: B balanced case (CorrespondenceB.lean)
+    --
+    -- Total missing infrastructure: ~700 lines (mirrors CorrespondenceC.lean C→D)
     sorry
 
 /-! ## Structural theorems -/

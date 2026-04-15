@@ -2146,24 +2146,32 @@ theorem card_PBPSet_B_eq_tripleSum_countPBP_B (dp : DualPart) (μP μQ : YoungDi
       simp only [countPBP_B, h_prim, ite_true, tripleSum]
       ring
     · -- Balanced case: per-tail-class matrix multiply
-      -- When r₂ = r₃ (balanced), the fiber size depends on the tail class of σ:
-      --   DD fibers have size tDD, RC fibers have size tRC, SS fibers have size tSS
-      -- where (tDD, tRC, tSS) = (tailCoeffs k).1 and k = (r₁-r₂)/2 + 1.
+      -- When ¬(r₂ > r₃) (balanced), the fiber size depends on the tail class of σ:
       --
-      -- The balanced formula is:
-      --   card(total) = dd' × tDD + rc' × scDD
-      --               + dd' × tRC + rc' × scRC
-      --               + dd' × tSS + rc' × scSS
-      -- where (dd', rc', ss') = countPBP_B rest and (scDD, scRC, scSS) = (tailCoeffs k).2.
+      -- Goal (after simp):
+      --   card(B⁺ μP μQ) + card(B⁻ μP μQ) =
+      --     dd' * tDD + rc' * scDD + (dd' * tRC + rc' * scRC) + (dd' * tSS + rc' * scSS)
+      -- where dd' = (countPBP_B rest).1, rc' = (countPBP_B rest).2.1,
+      --       k = (r₁-r₂)/2 + 1, (tDD,tRC,tSS) = (tailCoeffs k).1,
+      --       (scDD,scRC,scSS) = (tailCoeffs k).2.
       --
-      -- This requires:
-      --   1. card_PBPSet_B_balanced_step: decomposition by tail class with per-class
-      --      fiber sizes, analogous to card_PBPSet_D_balanced_step in LiftRC.lean
-      --   2. B-type tail class classification (DD/RC/SS for combined P+Q columns)
-      --   3. Per-tail-class fiber cardinality lemmas
+      -- Proof outline (mirrors D-type in LiftRC.lean:1317, ~250 lines):
+      --   1. By card_Bplus_eq_Bminus, reduce to 2 × card(B⁺ μP μQ).
+      --   2. By card_PBPSet_Bplus_eq_sum_fiber, write card(B⁺) = Σ_σ |fiber(σ)|.
+      --   3. Split Σ by tailClass_B σ into DD + RC + SS parts.
+      --   4. Per-class fiber sizes (MISSING — need fiber_card_B_balanced_DD/RC/SS):
+      --      - DD: |fiber| = tripleSum (tailCoeffs k).1  (= tDD + tRC + tSS)
+      --      - RC: |fiber| = tripleSum (tailCoeffs k).2  (= scDD + scRC + scSS)
+      --      - SS: |fiber| = 0  (balanced excludes SS fibers)
+      --   5. Reassemble: card(B⁺) = |DD| * tri1 + |RC| * tri2.
+      --   6. Need IH per-tail-class: |DD_sub| = dd'/2, |RC_sub| = rc'/2
+      --      (analogous to h_ih_dd, h_ih_rc in D-type card_PBPSet_D_combined).
+      --   7. Then 2 × card(B⁺) = dd' * tri1 + rc' * tri2, which expands to the goal.
       --
-      -- The D-type balanced step (LiftRC.lean:1317) is ~250 lines. The B-type
-      -- version needs similar infrastructure adapted for the two-column fiber.
+      -- Dependencies not yet formalized:
+      --   - fiber_card_B_balanced_DD/RC/SS (per-class fiber sizes)
+      --   - Per-tail-class IH (dd' = 2 × |DD_sub in B⁺|, rc' = 2 × |RC_sub in B⁺|)
+      --   - card_PBPSet_B_combined (joint induction for total + per-tc, as in D-type)
       simp only [countPBP_B, h_prim, ite_false, tripleSum]
       sorry
 
