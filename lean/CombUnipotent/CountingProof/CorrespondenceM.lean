@@ -1992,6 +1992,143 @@ noncomputable def liftMB_PBP {μP μQ : YoungDiagram}
       (fun _ hpos => h_Bm_bottom σ' hσ'.1 hσ'.2.1 hσ'.2.2 hpos),
       rfl, rfl, rfl⟩
 
+/-- Helper: descentType_M of a liftMB_raw PBP recovers σ.γ.
+    For B⁺: P col 0 has no c → descentType_M gives Bplus.
+    For B⁻: P col 0 has c at bottom → descentType_M gives Bminus. -/
+private lemma descentType_M_liftMB {μP μQ : YoungDiagram}
+    (σ : PBP) (hγ : σ.γ = .Bplus ∨ σ.γ = .Bminus)
+    (hPsh : σ.P.shape = μP.shiftLeft) (hQsh : σ.Q.shape = μQ)
+    (h_sub : μP.shiftLeft ≤ μQ) (h_P_le_Q : μP ≤ μQ)
+    (h_s_cross : ∀ i j, (i, j) ∈ σ.Q.shape → σ.Q.paint i j = .s →
+        (i, j) ∈ μP ∧ (∀ j', j = j' + 1 → σ.P.paint i j' = .dot))
+    (h_dot_cross : ∀ i j, (i, j) ∈ σ.P.shape → σ.P.paint i j = .dot →
+        (i, j + 1) ∈ σ.Q.shape → (σ.Q.paint i (j + 1)).layerOrd ≤ 1)
+    (h_Bm_bottom : σ.γ = .Bminus → μP.colLen 0 > 0 →
+        (μP.colLen 0 - 1, 0) ∉ μQ ∨ ¬(σ.Q.paint (μP.colLen 0 - 1) 0).layerOrd ≤ 1)
+    (h_Bm_pos : σ.γ = .Bminus → μP.colLen 0 > 0) :
+    PBP.descentType_M
+      (liftMB_raw σ hγ μP μQ hPsh hQsh h_sub h_P_le_Q h_s_cross h_dot_cross h_Bm_bottom)
+      (by rfl) = σ.γ := by
+  simp only [PBP.descentType_M, liftMB_raw]
+  rcases hγ with hγ' | hγ'
+  · -- B⁺: no c in P col 0 → Bplus
+    simp only [hγ']
+    rw [if_neg]
+    intro ⟨⟨i, j⟩, hmem⟩
+    simp only [Finset.mem_filter, YoungDiagram.mem_cells] at hmem
+    obtain ⟨hmem', hj, hpaint⟩ := hmem; subst hj
+    simp only [liftPaintP_BM, hγ'] at hpaint
+    split_ifs at hpaint <;> simp_all
+  · -- B⁻: c at bottom of P col 0 → Bminus
+    simp only [hγ']
+    rw [if_pos]
+    have hpos := h_Bm_pos hγ'
+    refine ⟨⟨μP.colLen 0 - 1, 0⟩, ?_⟩
+    simp only [Finset.mem_filter, YoungDiagram.mem_cells, liftPaintP_BM, hγ', true_and]
+    refine ⟨YoungDiagram.mem_iff_lt_colLen.mpr (by omega), ?_⟩
+    rw [if_neg (by push_neg; exact YoungDiagram.mem_iff_lt_colLen.mpr (by omega)), if_pos trivial]
+
+/-- Helper: P component of descentMB(liftMB(σ)) = σ.P.
+    P of lift is shifted right; descent shifts left, recovering original. -/
+private lemma descentPaintL_liftMB {μP μQ : YoungDiagram}
+    (σ : PBP) (hγ : σ.γ = .Bplus ∨ σ.γ = .Bminus)
+    (hPsh : σ.P.shape = μP.shiftLeft) (hQsh : σ.Q.shape = μQ)
+    (h_sub : μP.shiftLeft ≤ μQ) (h_P_le_Q : μP ≤ μQ)
+    (h_s_cross : ∀ i j, (i, j) ∈ σ.Q.shape → σ.Q.paint i j = .s →
+        (i, j) ∈ μP ∧ (∀ j', j = j' + 1 → σ.P.paint i j' = .dot))
+    (h_dot_cross : ∀ i j, (i, j) ∈ σ.P.shape → σ.P.paint i j = .dot →
+        (i, j + 1) ∈ σ.Q.shape → (σ.Q.paint i (j + 1)).layerOrd ≤ 1)
+    (h_Bm_bottom : σ.γ = .Bminus → μP.colLen 0 > 0 →
+        (μP.colLen 0 - 1, 0) ∉ μQ ∨ ¬(σ.Q.paint (μP.colLen 0 - 1) 0).layerOrd ≤ 1) :
+    (descentMB_PBP
+      (liftMB_raw σ hγ μP μQ hPsh hQsh h_sub h_P_le_Q h_s_cross h_dot_cross h_Bm_bottom)
+      (by rfl)).P = σ.P := by
+  apply PaintedYoungDiagram.ext' (by simp [descentMB_PBP, liftMB_raw, hPsh])
+  funext i j
+  simp only [descentMB_PBP, PBP.descentPaintL_MB, liftMB_raw, liftPaintP_BM_succ]
+  split_ifs with h
+  · -- i < dotScolLen(lift.P, j+1) → σ.P.paint i j = dot
+    set τ := liftMB_raw σ hγ μP μQ hPsh hQsh h_sub h_P_le_Q h_s_cross h_dot_cross h_Bm_bottom with hτ
+    have hlo := PBP.layerOrd_le_one_of_lt_dotSdiag_colLen τ.P τ.mono_P
+      (by rw [← PBP.dotScolLen_eq_dotSdiag_colLen _ τ.mono_P]; exact h)
+    simp only [hτ, liftMB_raw, liftPaintP_BM_succ] at hlo
+    by_cases hmem : (i, j) ∈ σ.P.shape
+    · have hsym := σ.sym_P i j hmem
+      rcases hγ with hγ' | hγ' <;> rw [hγ'] at hsym <;> simp [DRCSymbol.allowed] at hsym <;>
+        (revert hlo; rcases hsym with hh | hh <;> rw [hh] <;> simp [DRCSymbol.layerOrd])
+    · rw [σ.P.paint_outside i j hmem]
+  · rfl
+
+/-- Helper: Q component of descentMB(liftMB(σ)) = σ.Q.
+    Q of lift has dots collapsed; descent refills dots/s, recovering original. -/
+private lemma descentPaintR_liftMB {μP μQ : YoungDiagram}
+    (σ : PBP) (hγ : σ.γ = .Bplus ∨ σ.γ = .Bminus)
+    (hPsh : σ.P.shape = μP.shiftLeft) (hQsh : σ.Q.shape = μQ)
+    (h_sub : μP.shiftLeft ≤ μQ) (h_P_le_Q : μP ≤ μQ)
+    (h_s_cross : ∀ i j, (i, j) ∈ σ.Q.shape → σ.Q.paint i j = .s →
+        (i, j) ∈ μP ∧ (∀ j', j = j' + 1 → σ.P.paint i j' = .dot))
+    (h_dot_cross : ∀ i j, (i, j) ∈ σ.P.shape → σ.P.paint i j = .dot →
+        (i, j + 1) ∈ σ.Q.shape → (σ.Q.paint i (j + 1)).layerOrd ≤ 1)
+    (h_Bm_bottom : σ.γ = .Bminus → μP.colLen 0 > 0 →
+        (μP.colLen 0 - 1, 0) ∉ μQ ∨ ¬(σ.Q.paint (μP.colLen 0 - 1) 0).layerOrd ≤ 1) :
+    (descentMB_PBP
+      (liftMB_raw σ hγ μP μQ hPsh hQsh h_sub h_P_le_Q h_s_cross h_dot_cross h_Bm_bottom)
+      (by rfl)).Q = σ.Q := by
+  apply PaintedYoungDiagram.ext' (by simp [descentMB_PBP, liftMB_raw, hQsh])
+  funext i j
+  set τ := liftMB_raw σ hγ μP μQ hPsh hQsh h_sub h_P_le_Q h_s_cross h_dot_cross h_Bm_bottom with hτ
+  simp only [descentMB_PBP, PBP.descentPaintR_MB]
+  split_ifs with h1 h2
+  · -- Zone 1: i < dotScolLen(τ.P, j+1) → dot = σ.Q.paint i j
+    have hlo := PBP.layerOrd_le_one_of_lt_dotSdiag_colLen τ.P τ.mono_P
+      (by rw [← PBP.dotScolLen_eq_dotSdiag_colLen _ τ.mono_P]; exact h1)
+    simp only [hτ, liftMB_raw, liftPaintP_BM_succ] at hlo
+    have hds_le := PBP.dotScolLen_le_colLen τ.P τ.mono_P (j + 1)
+    have hmemP_j1 : (i, j + 1) ∈ τ.P.shape :=
+      YoungDiagram.mem_iff_lt_colLen.mpr (lt_of_lt_of_le h1 hds_le)
+    have hmem : (i, j) ∈ σ.P.shape := by
+      rw [hPsh]; exact YoungDiagram.mem_shiftLeft.mpr (by simp [hτ, liftMB_raw] at hmemP_j1; exact hmemP_j1)
+    have hdot : σ.P.paint i j = .dot := by
+      have hsym := σ.sym_P i j hmem
+      rcases hγ with hγ' | hγ' <;> rw [hγ'] at hsym <;> simp [DRCSymbol.allowed] at hsym <;>
+        (revert hlo; rcases hsym with hh | hh <;> rw [hh] <;> simp [DRCSymbol.layerOrd])
+    exact ((σ.dot_match i j).mp ⟨hmem, hdot⟩).2.symm
+  · -- Zone 2: ¬dotScolLen(τ.P, j+1) but < dotScolLen(τ.Q, j) → s = σ.Q.paint i j
+    have hloQ := PBP.layerOrd_le_one_of_lt_dotSdiag_colLen τ.Q τ.mono_Q
+      (by rw [← PBP.dotScolLen_eq_dotSdiag_colLen _ τ.mono_Q]; exact h2)
+    simp only [hτ, liftMB_raw, liftPaintQ_BM] at hloQ
+    split_ifs at hloQ with hloQ_cond
+    · have hds_le_Q := PBP.dotScolLen_le_colLen τ.Q τ.mono_Q j
+      have hmemQ : (i, j) ∈ σ.Q.shape := by
+        rw [hQsh]; exact YoungDiagram.mem_iff_lt_colLen.mpr (lt_of_lt_of_le h2 hds_le_Q)
+      have hnotdot : σ.Q.paint i j ≠ .dot := by
+        intro heq
+        have ⟨hmemP, hPdot⟩ := (σ.dot_match i j).mpr ⟨hmemQ, heq⟩
+        apply h1
+        rw [PBP.dotScolLen_eq_dotSdiag_colLen _ τ.mono_P, YoungDiagram.mem_iff_lt_colLen.symm]
+        simp only [PBP.dotSdiag, YoungDiagram.mem_mk, Finset.mem_filter, YoungDiagram.mem_cells]
+        exact ⟨by simp [hτ, liftMB_raw]; rw [hPsh] at hmemP; exact YoungDiagram.mem_shiftLeft.mp hmemP,
+               by simp [hτ, liftMB_raw, liftPaintP_BM_succ, hPdot, DRCSymbol.layerOrd]⟩
+      have hsym := σ.sym_Q i j hmemQ
+      rcases hγ with hγ' | hγ' <;> rw [hγ'] at hsym <;> simp [DRCSymbol.allowed] at hsym <;>
+        (revert hnotdot hloQ_cond; rcases hsym with hh | hh | hh | hh <;> rw [hh] <;> simp [DRCSymbol.layerOrd])
+    · exact absurd hloQ (by omega)
+  · -- Zone 3: i ≥ dotScolLen(τ.Q, j) → liftPaintQ_BM σ i j = σ.Q.paint i j
+    show liftPaintQ_BM σ i j = σ.Q.paint i j
+    simp only [liftPaintQ_BM]
+    split_ifs with h3
+    · -- σ.Q(i,j).layerOrd ≤ 1 but i ≥ dotScolLen(τ.Q, j)
+      by_cases hmemQ : (i, j) ∈ σ.Q.shape
+      · exfalso; apply h2
+        rw [PBP.dotScolLen_eq_dotSdiag_colLen _ τ.mono_Q, YoungDiagram.mem_iff_lt_colLen.symm]
+        simp only [PBP.dotSdiag, YoungDiagram.mem_mk, Finset.mem_filter, YoungDiagram.mem_cells]
+        refine ⟨?_, ?_⟩
+        · change (i, j) ∈ τ.Q.shape; simp [hτ, liftMB_raw]; rw [hQsh] at hmemQ; exact hmemQ
+        · change (liftPaintQ_BM σ i j).layerOrd ≤ 1
+          rw [liftPaintQ_BM, if_pos h3]; simp [DRCSymbol.layerOrd]
+      · rw [σ.Q.paint_outside i j hmemQ]
+    · rfl
+
 /-- The M→B descent of a lifted PBP recovers the original PBP.
     Key identity: descentPaintL_MB(liftMB_raw σ) reduces to σ.P.paint
     and descentPaintR_MB(liftMB_raw σ) reduces to σ.Q.paint.
@@ -2012,12 +2149,10 @@ private theorem descentMB_liftMB_round_trip {μP μQ : YoungDiagram}
     (h_Bm_pos : σ.γ = .Bminus → μP.colLen 0 > 0) :
     descentMB_PBP (liftMB_raw σ hγ μP μQ hPsh hQsh h_sub h_P_le_Q h_s_cross h_dot_cross h_Bm_bottom)
       (by rfl : (liftMB_raw σ hγ μP μQ hPsh hQsh h_sub h_P_le_Q h_s_cross h_dot_cross h_Bm_bottom).γ = .M) = σ := by
-  -- Round-trip: descent(lift(σ)) = σ.
-  -- Computationally verified for dual partitions up to size 24.
-  -- Proof sketch: γ from descentType_M (B⁺→no c, B⁻→c at bottom via h_Bm_pos),
-  -- P via descentPaintL_MB ∘ liftPaintP_BM = id (shift right then left),
-  -- Q via descentPaintR_MB ∘ liftPaintQ_BM = id (dot/s refill reversed).
-  sorry
+  exact PBP.ext''
+    (descentType_M_liftMB σ hγ hPsh hQsh h_sub h_P_le_Q h_s_cross h_dot_cross h_Bm_bottom h_Bm_pos)
+    (descentPaintL_liftMB σ hγ hPsh hQsh h_sub h_P_le_Q h_s_cross h_dot_cross h_Bm_bottom)
+    (descentPaintR_liftMB σ hγ hPsh hQsh h_sub h_P_le_Q h_s_cross h_dot_cross h_Bm_bottom)
 
 /-! ## M-type inductive step: primitive and balanced cases
 
