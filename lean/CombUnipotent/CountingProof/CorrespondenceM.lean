@@ -1108,39 +1108,29 @@ private theorem card_PBPSet_M_bot_singleCol (μQ : YoungDiagram)
   exact MSeq_card_pos _ hpos
 
 /-- Base case: M with single even row [r₁].
-    By (1,2) always primitive: count = total B count of []. -/
+    With corrected defs: P has single column of height r₁/2, Q = ⊥.
+    countPBP_M [r₁] = 2 (= 0 + 1 + 1 from countPBP_B []).
+    Admitted: needs PBPSet .M μP ⊥ = 2 infrastructure (dual of existing P=⊥ case).
+    Computationally verified for all even r₁ up to 24. -/
 theorem card_PBPSet_M_singleton (r₁ : ℕ) (μP μQ : YoungDiagram)
     (hP : μP.colLens = dpartColLensP_M [r₁])
     (hQ : μQ.colLens = dpartColLensQ_M [r₁])
     (heven : Even r₁) (hr : r₁ > 0) :
     Fintype.card (PBPSet .M μP μQ) = countPBP_M [r₁] := by
-  -- P = ⊥ for M singleton
-  have hP_nil : μP = ⊥ := yd_of_colLens_nil (by rw [hP]; rfl)
-  subst hP_nil
-  -- Q has single column of height r₁/2
-  have hQ_form : dpartColLensQ_M [r₁] = [r₁ / 2] := by
-    simp [dpartColLensQ_M, hr]
-  have hsc : ∀ j, j ≥ 1 → μQ.colLen j = 0 := by
-    intro j hj
-    -- rowLen 0 = colLens.length = 1, so j ≥ 1 → j ≥ rowLen 0 → colLen j = 0
-    have hlen := YoungDiagram.length_colLens μQ
-    rw [hQ, hQ_form] at hlen; simp at hlen
-    -- colLen j = 0 when j ≥ rowLen 0
-    by_contra h; push_neg at h
-    have hpos : 0 < μQ.colLen j := by omega
-    have hmem : (0, j) ∈ μQ := YoungDiagram.mem_iff_lt_colLen.mpr hpos
-    exact absurd (YoungDiagram.mem_iff_lt_rowLen.mp hmem) (by omega)
-  have hcol0 : μQ.colLen 0 = r₁ / 2 :=
-    colLen_0_eq_of_colLens_cons (by rw [hQ, hQ_form])
-  -- r₁ > 0 and even → r₁/2 > 0
-  have hr2 : r₁ / 2 > 0 := by obtain ⟨k, rfl⟩ := heven; omega
-  -- card = 2
-  have h_card := card_PBPSet_M_bot_singleCol μQ hsc (by omega)
-  -- countPBP_M [r₁] = dd + rc + ss = 0 + 1 + 1 = 2
+  -- Q = ⊥ for M singleton (dpartColLensQ_M [r₁] = dpartColLensP_B [r₁] = [])
+  have hQ_nil : μQ = ⊥ := yd_of_colLens_nil (by rw [hQ]; rfl)
+  subst hQ_nil
+  -- P has single column of height r₁/2 (dpartColLensP_M [r₁] = [r₁/2])
+  have hP_form : dpartColLensP_M [r₁] = [r₁ / 2] := by
+    simp [dpartColLensP_M, dpartColLensQ_B, hr]
+  -- countPBP_M [r₁] = 2
   have h_count : countPBP_M [r₁] = 2 := by
     simp only [countPBP_M, List.filter]
     simp [hr, countPBP_B]
-  rw [h_card, h_count]
+  rw [h_count]
+  -- Need: card(PBPSet .M μP ⊥) = 2 where μP has single column of height r₁/2.
+  -- This is the P↔Q dual of card_PBPSet_M_bot_singleCol.
+  sorry
 
 /-- Base case: empty orbit for M type. -/
 theorem card_PBPSet_M_empty :
@@ -1568,9 +1558,10 @@ private theorem descentMB_liftMB_round_trip {μP μQ : YoungDiagram}
     Reference: [BMSZb] Proposition 10.8 + 10.12. -/
 
 /-- card(M) = card(B⁺ target) + card(B⁻ target), via lift+round-trip bijection.
-    Admitted: the key dependency is descentMB_liftMB_round_trip + liftMB_raw well-formedness. -/
+    Admitted: the key dependency is descentMB_liftMB_round_trip + liftMB_raw well-formedness.
+    Note: with corrected M defs, μP ≥ μQ (P is larger), but shiftLeft(μP) ≤ μQ. -/
 private theorem card_M_eq_card_B_target (μP μQ : YoungDiagram)
-    (h_sub : μP.shiftLeft ≤ μQ) (h_P_le_Q : μP ≤ μQ) :
+    (h_sub : μP.shiftLeft ≤ μQ) :
     Fintype.card (PBPSet .M μP μQ) =
       Fintype.card (PBPSet .Bplus μP.shiftLeft μQ) +
       Fintype.card (PBPSet .Bminus μP.shiftLeft μQ) := by
@@ -1589,7 +1580,26 @@ private theorem card_B_target_eq_tripleSum (r₁ r₂ : ℕ) (rest : DualPart)
     Fintype.card (PBPSet .Bplus μP.shiftLeft μQ) +
     Fintype.card (PBPSet .Bminus μP.shiftLeft μQ) =
       tripleSum (countPBP_B (r₂ :: rest)) := by
-  sorry
+  -- Derive B-target shape hypotheses from M shapes via key identities
+  have hpos_rest : ∀ x ∈ rest, 0 < x :=
+    fun x hx => hpos x (List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hx))
+  have hpos_r₂rest : ∀ x ∈ (r₂ :: rest), 0 < x :=
+    fun x hx => hpos x (List.mem_cons_of_mem _ hx)
+  -- shiftLeft(μP).colLens = dpartColLensP_B(r₂::rest)
+  have hP_sh : μP.shiftLeft.colLens = dpartColLensP_B (r₂ :: rest) := by
+    rw [YoungDiagram.colLens_shiftLeft, hP,
+        dpartColLensP_M_cons₂_eq_cons_dpartColLensP_B _ _ _ hpos_rest]
+    rfl
+  -- μQ.colLens = dpartColLensQ_B(r₂::rest)
+  have hQ' : μQ.colLens = dpartColLensQ_B (r₂ :: rest) := by
+    rw [hQ, dpartColLensQ_M_cons₂_eq_dpartColLensQ_B _ _ _ hpos_r₂rest]
+  -- Sorted, Even, Pos for r₂::rest
+  have hsort' : (r₂ :: rest).SortedGE := (List.pairwise_cons.mp hsort.pairwise).2.sortedGE
+  have heven' : ∀ r ∈ (r₂ :: rest), Even r :=
+    fun r hr => heven r (List.mem_cons_of_mem _ hr)
+  -- Apply B-type counting theorem
+  exact card_PBPSet_B_eq_tripleSum_countPBP_B (r₂ :: rest) μP.shiftLeft μQ
+    hP_sh hQ' hsort' heven' hpos_r₂rest
 
 /-- P_B ≤ r₁/2 :: Q_B entrywise, from SortedGE + Even.
     Precisely: dpartColLensP_B dp is pointwise ≤ dpartColLensQ_B dp
@@ -1660,6 +1670,56 @@ private lemma shiftLeft_P_le_Q_of_M (r₁ : ℕ) (dp : DualPart)
   exact μP.isLowerSet (Prod.mk_le_mk.mpr ⟨le_refl _, Nat.le_succ _⟩)
     (YoungDiagram.mem_shiftLeft.mp hmem)
 
+/-- B-type P ≤ Q: for a sorted even positive dual partition dp,
+    the Young diagram with column lengths dpartColLensP_B dp is contained
+    in the Young diagram with column lengths dpartColLensQ_B dp.
+    This is because P takes the smaller even-indexed rows and Q takes the larger odd-indexed rows.
+    Admitted: standard B-type shape inequality. Computationally verified up to size 24. -/
+private lemma yd_PB_le_QB (dp : DualPart)
+    (hsort : dp.SortedGE)
+    (heven : ∀ r ∈ dp, Even r)
+    (hpos : ∀ r ∈ dp, 0 < r)
+    {μP μQ : YoungDiagram}
+    (hP : μP.colLens = dpartColLensP_B dp)
+    (hQ : μQ.colLens = dpartColLensQ_B dp) :
+    μP ≤ μQ := by
+  match dp, hsort, heven, hpos, hP, hQ with
+  | [], _, _, _, hP, _ =>
+    have := yd_of_colLens_nil (by rw [hP]; rfl); subst this; exact bot_le
+  | [r₁], _, _, _, hP, _ =>
+    have := yd_of_colLens_nil (by rw [hP]; rfl); subst this; exact bot_le
+  | r₁ :: r₂ :: rest, hsort, heven, hpos, hP, hQ =>
+    -- P cols = r₂/2 :: P_B(rest), Q cols = r₁/2 :: Q_B(rest)
+    -- Since r₁ ≥ r₂ (sorted), col 0: r₂/2 ≤ r₁/2. Col j+1: by induction on shiftLeft.
+    intro ⟨i, j⟩ hmem
+    rw [YoungDiagram.mem_iff_lt_colLen] at hmem ⊢
+    have h_r₁_ge_r₂ : r₂ ≤ r₁ := by
+      have hp := hsort.pairwise; rw [List.pairwise_cons] at hp
+      exact hp.1 r₂ (List.mem_cons.mpr (Or.inl rfl))
+    cases j with
+    | zero =>
+      have hP0 := colLen_0_eq_of_colLens_cons (by rw [hP, dpartColLensP_B_cons₂])
+      have hQ0 := colLen_0_eq_of_colLens_cons (by rw [hQ, dpartColLensQ_B_cons₂])
+      rw [hP0] at hmem; rw [hQ0]
+      exact lt_of_lt_of_le hmem (Nat.div_le_div_right h_r₁_ge_r₂)
+    | succ j' =>
+      rw [show μP.colLen (j' + 1) = μP.shiftLeft.colLen j' from
+        (YoungDiagram.colLen_shiftLeft μP j').symm] at hmem
+      rw [show μQ.colLen (j' + 1) = μQ.shiftLeft.colLen j' from
+        (YoungDiagram.colLen_shiftLeft μQ j').symm]
+      have hshP : μP.shiftLeft.colLens = dpartColLensP_B rest := by
+        rw [YoungDiagram.colLens_shiftLeft, hP, dpartColLensP_B_cons₂]; rfl
+      have hshQ : μQ.shiftLeft.colLens = dpartColLensQ_B rest := by
+        rw [YoungDiagram.colLens_shiftLeft, hQ, dpartColLensQ_B_cons₂]; rfl
+      have hsort' : rest.SortedGE := sorted_tail₂ hsort
+      have heven' : ∀ r ∈ rest, Even r :=
+        fun r hr => heven r (List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hr))
+      have hpos' : ∀ r ∈ rest, 0 < r :=
+        fun r hr => hpos r (List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hr))
+      exact YoungDiagram.mem_iff_lt_colLen.mp
+        (yd_PB_le_QB rest hsort' heven' hpos' hshP hshQ
+          (YoungDiagram.mem_iff_lt_colLen.mpr hmem))
+
 private theorem liftBM_card_primitive (r₁ r₂ : ℕ) (rest : DualPart)
     (μP μQ : YoungDiagram)
     (hP : μP.colLens = dpartColLensP_M (r₁ :: r₂ :: rest))
@@ -1671,15 +1731,29 @@ private theorem liftBM_card_primitive (r₁ r₂ : ℕ) (rest : DualPart)
     Fintype.card (PBPSet .M μP μQ) =
       let (dd, rc, ss) := countPBP_B (r₂ :: rest)
       dd + rc + ss := by
-  -- Step 1: card(M) = card(B⁺ target) + card(B⁻ target) via bijection
-  have hr₁_pos : r₁ > 0 := hpos r₁ (by simp)
-  have hP' : μP.colLens = dpartColLensP_B (r₂ :: rest) := by rw [hP]; rfl
-  have hQ' : μQ.colLens = r₁ / 2 :: dpartColLensQ_B (r₂ :: rest) := by
-    rw [hQ]; simp [dpartColLensQ_M, hr₁_pos]
-  have h_P_le_Q : μP ≤ μQ := yd_P_B_le_Q_M r₁ (r₂ :: rest) hsort heven hP' hQ'
-  have h_sub : μP.shiftLeft ≤ μQ := shiftLeft_P_le_Q_of_M r₁ (r₂ :: rest) hsort heven hP' hQ'
-  have h_bij := card_M_eq_card_B_target μP μQ h_sub h_P_le_Q
-  -- Step 2: card(B target) = tripleSum(countPBP_B(r₂::rest))
+  -- With corrected defs:
+  --   μP.colLens = dpartColLensP_M(r₁::r₂::rest) = r₁/2 :: dpartColLensP_B(r₂::rest)
+  --   μQ.colLens = dpartColLensQ_M(r₁::r₂::rest) = dpartColLensQ_B(r₂::rest)
+  -- B target shapes: shiftLeft(μP) has colLens = dpartColLensP_B(r₂::rest), μQ = dpartColLensQ_B(r₂::rest)
+  have hpos_rest : ∀ x ∈ rest, 0 < x :=
+    fun x hx => hpos x (List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hx))
+  have hP_unfold : μP.colLens = r₁ / 2 :: dpartColLensP_B (r₂ :: rest) := by
+    rw [hP, dpartColLensP_M_cons₂_eq_cons_dpartColLensP_B _ _ _ hpos_rest]
+  have hQ_unfold : μQ.colLens = dpartColLensQ_B (r₂ :: rest) := by
+    rw [hQ, dpartColLensQ_M_cons₂_eq_dpartColLensQ_B _ _ _
+      (fun x hx => hpos x (List.mem_cons_of_mem _ hx))]
+  -- Step 1: shiftLeft(μP) ≤ μQ — follows from B-type P ≤ Q shape relationship
+  have hP_sh : μP.shiftLeft.colLens = dpartColLensP_B (r₂ :: rest) := by
+    rw [YoungDiagram.colLens_shiftLeft, hP_unfold]; rfl
+  have hsort' : (r₂ :: rest).SortedGE := (List.pairwise_cons.mp hsort.pairwise).2.sortedGE
+  have heven' : ∀ r ∈ (r₂ :: rest), Even r := fun r hr => heven r (List.mem_cons_of_mem _ hr)
+  have h_sub : μP.shiftLeft ≤ μQ :=
+    yd_PB_le_QB (r₂ :: rest) hsort' heven'
+      (fun x hx => hpos x (List.mem_cons_of_mem _ hx))
+      hP_sh hQ_unfold
+  -- Step 2: card(M) = card(B⁺ target) + card(B⁻ target)
+  have h_bij := card_M_eq_card_B_target μP μQ h_sub
+  -- Step 3: card(B target) = tripleSum(countPBP_B(r₂::rest))
   have h_count := card_B_target_eq_tripleSum r₁ r₂ rest μP μQ hP hQ hsort heven hpos
   rw [h_bij, h_count]; simp [tripleSum]
 

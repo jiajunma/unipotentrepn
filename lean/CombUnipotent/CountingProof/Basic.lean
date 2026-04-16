@@ -404,34 +404,85 @@ theorem dpartColLensQ_B_cons₂ (r₁ r₂ : ℕ) (rest : DualPart) :
 
 /-! ## M-type column lengths
 
-For M (= C̃) type: M→B descent. Analogous to C→D.
-  P cols = dpartColLensP_B (r₂ :: rest)
-  Q cols = [r₁/2] ++ dpartColLensQ_B (r₂ :: rest)
+For M (= C̃) type: M→B descent. M and B swap P↔Q roles on the same dp.
+  M P cols = B Q cols = dpartColLensQ_B dp   (even-indexed rows / 2: r₁, r₃, ...)
+  M Q cols = B P cols = dpartColLensP_B dp   (odd-indexed rows / 2: r₂, r₄, ...)
+Reference: [BMSZb] equation (2.7), case ★ = C̃.
 -/
 
-def dpartColLensP_M : DualPart → DualPart
-  | [] => []
-  | [_] => []
-  | _ :: r₂ :: rest => dpartColLensP_B (r₂ :: rest)
+/-- M-type P column lengths = B-type Q column lengths (swap P↔Q). -/
+def dpartColLensP_M : DualPart → DualPart := dpartColLensQ_B
 
-def dpartColLensQ_M : DualPart → DualPart
-  | [] => []
-  | [r₁] => if r₁ > 0 then [r₁ / 2] else []
-  | r₁ :: r₂ :: rest =>
-    if r₁ > 0 then r₁ / 2 :: dpartColLensQ_B (r₂ :: rest)
-    else dpartColLensQ_B (r₂ :: rest)
+/-- M-type Q column lengths = B-type P column lengths (swap P↔Q). -/
+def dpartColLensQ_M : DualPart → DualPart := dpartColLensP_B
 
--- M [2]: P = dpartColLensP_B [] = [], Q = [2/2] = [1]
-#eval dpartColLensP_M [2]  -- []
-#eval dpartColLensQ_M [2]  -- [1]
+-- M [2]: P = dpartColLensQ_B [2] = [1], Q = dpartColLensP_B [2] = []
+#eval dpartColLensP_M [2]  -- [1]
+#eval dpartColLensQ_M [2]  -- []
 
--- M [2, 2]: P = dpartColLensP_B [2] = [], Q = [1] ++ dpartColLensQ_B [2] = [1, 1]
-#eval dpartColLensP_M [2, 2]  -- []
-#eval dpartColLensQ_M [2, 2]  -- [1, 1]
+-- M [2, 2]: P = dpartColLensQ_B [2, 2] = [1], Q = dpartColLensP_B [2, 2] = [1]
+#eval dpartColLensP_M [2, 2]  -- [1]
+#eval dpartColLensQ_M [2, 2]  -- [1]
 
--- M [4, 2]: P = dpartColLensP_B [2] = [], Q = [2] ++ dpartColLensQ_B [2] = [2, 1]
-#eval dpartColLensP_M [4, 2]  -- []
-#eval dpartColLensQ_M [4, 2]  -- [2, 1]
+-- M [4, 2]: P = dpartColLensQ_B [4, 2] = [2], Q = dpartColLensP_B [4, 2] = [1]
+#eval dpartColLensP_M [4, 2]  -- [2]
+#eval dpartColLensQ_M [4, 2]  -- [1]
+
+@[simp] theorem dpartColLensP_M_eq (dp : DualPart) :
+    dpartColLensP_M dp = dpartColLensQ_B dp := rfl
+
+@[simp] theorem dpartColLensQ_M_eq (dp : DualPart) :
+    dpartColLensQ_M dp = dpartColLensP_B dp := rfl
+
+theorem dpartColLensP_M_nil : dpartColLensP_M [] = [] := rfl
+
+theorem dpartColLensP_M_singleton (r₁ : ℕ) :
+    dpartColLensP_M [r₁] = if r₁ > 0 then [r₁ / 2] else [] := rfl
+
+theorem dpartColLensP_M_cons₂ (r₁ r₂ : ℕ) (rest : DualPart) :
+    dpartColLensP_M (r₁ :: r₂ :: rest) = r₁ / 2 :: dpartColLensP_M rest := rfl
+
+theorem dpartColLensQ_M_nil : dpartColLensQ_M [] = [] := rfl
+
+theorem dpartColLensQ_M_singleton (r₁ : ℕ) :
+    dpartColLensQ_M [r₁] = [] := rfl
+
+theorem dpartColLensQ_M_cons₂ (r₁ r₂ : ℕ) (rest : DualPart) :
+    dpartColLensQ_M (r₁ :: r₂ :: rest) = r₂ / 2 :: dpartColLensQ_M rest := rfl
+
+/-- Key identity: dpartColLensQ_B dp = dpartColLensP_B (r :: dp) when all elements
+    of dp are positive. This connects M shapes to B shapes in the M→B descent. -/
+theorem dpartColLensQ_B_eq_dpartColLensP_B_cons (r : ℕ) :
+    ∀ (dp : DualPart), (∀ x ∈ dp, 0 < x) → dpartColLensQ_B dp = dpartColLensP_B (r :: dp)
+  | [], _ => rfl
+  | [a], hpos => by
+    simp [dpartColLensQ_B, dpartColLensP_B]
+    exact Nat.pos_iff_ne_zero.mp (hpos a (.head []))
+  | a :: b :: rest, hpos => by
+    simp only [dpartColLensQ_B, dpartColLensP_B]
+    congr 1
+    exact dpartColLensQ_B_eq_dpartColLensP_B_cons b rest
+      (fun x hx => hpos x (List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hx)))
+
+/-- The M→B shape connection: dpartColLensP_M unfolds to B-compatible form.
+    shiftLeft(μP).colLens = dpartColLensP_B(r₂::rest) when
+    μP.colLens = dpartColLensP_M(r₁::r₂::rest). -/
+theorem dpartColLensP_M_cons₂_eq_cons_dpartColLensP_B (r₁ r₂ : ℕ) (rest : DualPart)
+    (hpos : ∀ x ∈ rest, 0 < x) :
+    dpartColLensP_M (r₁ :: r₂ :: rest) = r₁ / 2 :: dpartColLensP_B (r₂ :: rest) := by
+  simp only [dpartColLensP_M_eq, dpartColLensQ_B_cons₂]
+  congr 1
+  exact dpartColLensQ_B_eq_dpartColLensP_B_cons r₂ rest hpos
+
+/-- The M→B shape connection for Q: dpartColLensQ_M unfolds to B-compatible form. -/
+theorem dpartColLensQ_M_cons₂_eq_dpartColLensQ_B (r₁ r₂ : ℕ) (rest : DualPart)
+    (hpos : ∀ x ∈ (r₂ :: rest), 0 < x) :
+    dpartColLensQ_M (r₁ :: r₂ :: rest) = dpartColLensQ_B (r₂ :: rest) := by
+  -- dpartColLensQ_M = dpartColLensP_B, so LHS = dpartColLensP_B (r₁::r₂::rest) = r₂/2 :: dpartColLensP_B rest
+  -- dpartColLensQ_B (r₂::rest) = dpartColLensP_B (_::r₂::rest) = r₂/2 :: dpartColLensP_B rest
+  have h := dpartColLensQ_B_eq_dpartColLensP_B_cons r₁ (r₂ :: rest) hpos
+  simp only [dpartColLensQ_M_eq]
+  exact h.symm
 
 /-! ## Tail class for B type -/
 
