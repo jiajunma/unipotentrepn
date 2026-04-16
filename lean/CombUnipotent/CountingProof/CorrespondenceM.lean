@@ -1300,7 +1300,67 @@ noncomputable def liftMB_raw (σ : PBP) (hγ : σ.γ = .Bplus ∨ σ.γ = .Bminu
         (revert h; rcases hsym with h₁ | h₁ | h₁ | h₁ <;> rw [h₁] <;>
           simp [DRCSymbol.layerOrd, DRCSymbol.allowed])
   dot_match := by sorry
-  mono_P := by sorry
+  mono_P := by
+    intro i₁ j₁ i₂ j₂ hi hj hmem₂
+    show (liftPaintP_BM σ μP μQ i₁ j₁).layerOrd ≤ (liftPaintP_BM σ μP μQ i₂ j₂).layerOrd
+    have hmem₂' : (i₂, j₂) ∈ μP := hmem₂
+    cases j₁ with
+    | zero =>
+      cases j₂ with
+      | zero =>
+        -- Both col 0: dot(0) or s(1).
+        simp only [liftPaintP_BM]
+        split_ifs with h1 h2
+        · simp [DRCSymbol.layerOrd]
+        · -- s at i₁, dot at i₂. Show condition propagates up.
+          exfalso; apply h2; exact ⟨hmem₂', by
+            obtain ⟨_, hcase⟩ := h1
+            rcases hcase with hnoQ | hhi
+            · left; intro hmQ₂
+              exact hnoQ (μQ.isLowerSet (Prod.mk_le_mk.mpr ⟨hi, le_refl _⟩) hmQ₂)
+            · right; intro hlo
+              have := σ.mono_Q i₁ 0 i₂ 0 hi (le_refl _) (hQsh ▸ h_P_le_Q hmem₂')
+              omega⟩
+        · simp [DRCSymbol.layerOrd]
+        · simp [DRCSymbol.layerOrd]
+      | succ j₂' =>
+        -- j₁=0, j₂=j₂'+1: P(i₁,0) ∈ {dot,s}, P(i₂,j₂'+1) = σ.P(i₂,j₂')
+        rw [liftPaintP_BM_succ]; simp only [liftPaintP_BM]
+        split_ifs with h1
+        · -- P(i₁,0) = s (layerOrd 1). Need σ.P(i₂,j₂') layerOrd ≥ 1.
+          -- If σ.P(i₂,j₂') = dot: derive contradiction.
+          by_cases hmemP₂ : (i₂, j₂') ∈ σ.P.shape
+          · by_cases hPdot : σ.P.paint i₂ j₂' = .dot
+            · -- σ.P(i₂,j₂')=dot → σ.Q(i₂,j₂')=dot → mono_Q → σ.Q(i₁,0).lo=0
+              -- → h1 contradiction (both disjuncts false since h_P_le_Q gives ∈μQ)
+              exfalso
+              have ⟨_, hQdot⟩ := (σ.dot_match i₂ j₂').mp ⟨hmemP₂, hPdot⟩
+              have hmemP₂_j : (i₂, j₂') ∈ μP :=
+                μP.isLowerSet (Prod.mk_le_mk.mpr ⟨le_refl _, Nat.le_succ _⟩) hmem₂'
+              have hmemQ₂ : (i₂, j₂') ∈ σ.Q.shape := by
+                rw [hQsh]; exact h_P_le_Q hmemP₂_j
+              have hlo_Q := σ.mono_Q i₁ 0 i₂ j₂' hi (Nat.zero_le _) hmemQ₂
+              rw [hQdot, DRCSymbol.layerOrd] at hlo_Q
+              obtain ⟨hmP₁, hcase⟩ := h1
+              rcases hcase with hnoQ | hhi
+              · exact hnoQ (h_P_le_Q hmP₁)
+              · omega
+            · -- σ.P(i₂,j₂') = c (layerOrd 3). 1 ≤ 3. ✓
+              have hsym := σ.sym_P i₂ j₂' hmemP₂
+              rcases hγ with hγ' | hγ' <;> rw [hγ'] at hsym <;> simp [DRCSymbol.allowed] at hsym <;>
+                rcases hsym with hp | hp
+              all_goals (first | exact absurd hp hPdot | rw [hp]; simp [DRCSymbol.layerOrd])
+          · -- (i₂,j₂') ∉ σ.P.shape but (i₂,j₂'+1) ∈ μP, so (i₂,j₂') ∈ shiftLeft μP.
+            -- That means (i₂,j₂') ∈ σ.P.shape. Contradiction.
+            exfalso; exact hmemP₂ (hPsh ▸ YoungDiagram.mem_shiftLeft.mpr hmem₂')
+        · simp [DRCSymbol.layerOrd]
+    | succ j₁' =>
+      cases j₂ with
+      | zero => omega
+      | succ j₂' =>
+        rw [liftPaintP_BM_succ, liftPaintP_BM_succ]
+        exact σ.mono_P i₁ j₁' i₂ j₂' hi (by omega)
+          (hPsh ▸ YoungDiagram.mem_shiftLeft.mpr hmem₂')
   mono_Q := by
     intro i₁ j₁ i₂ j₂ hi hj hmem₂
     show (liftPaintQ_BM σ i₁ j₁).layerOrd ≤ (liftPaintQ_BM σ i₂ j₂).layerOrd
@@ -1443,6 +1503,75 @@ private theorem card_B_target_eq_tripleSum (r₁ r₂ : ℕ) (rest : DualPart)
       tripleSum (countPBP_B (r₂ :: rest)) := by
   sorry
 
+/-- P_B ≤ r₁/2 :: Q_B entrywise, from SortedGE + Even.
+    Precisely: dpartColLensP_B dp is pointwise ≤ dpartColLensQ_B dp
+    when prefixed by r₁/2, where r₁ ≥ dp[0]. -/
+private lemma yd_P_B_le_Q_M (r₁ : ℕ) (dp : DualPart)
+    (hsort : (r₁ :: dp).SortedGE)
+    (heven : ∀ r ∈ (r₁ :: dp), Even r)
+    {μP μQ : YoungDiagram}
+    (hP : μP.colLens = dpartColLensP_B dp)
+    (hQ : μQ.colLens = r₁ / 2 :: dpartColLensQ_B dp) :
+    μP ≤ μQ := by
+  match dp, hsort, heven, hP, hQ with
+  | [], _, _, hP, _ =>
+    have := yd_of_colLens_nil (by rw [hP]; rfl); subst this; exact bot_le
+  | [_], _, _, hP, _ =>
+    have := yd_of_colLens_nil (by rw [hP]; rfl); subst this; exact bot_le
+  | r₂ :: r₃ :: rest, hsort, heven, hP, hQ =>
+    -- μP.colLens = r₃/2 :: dpartColLensP_B rest
+    -- μQ.colLens = r₁/2 :: r₂/2 :: dpartColLensQ_B rest
+    intro ⟨i, j⟩ hmem
+    rw [YoungDiagram.mem_iff_lt_colLen] at hmem ⊢
+    have h_r₁_ge_r₂ : r₂ ≤ r₁ := by
+      have hp := hsort.pairwise; rw [List.pairwise_cons] at hp
+      exact hp.1 r₂ (List.mem_cons.mpr (Or.inl rfl))
+    have h_r₂_ge_r₃ : r₃ ≤ r₂ := by
+      have hp := hsort.pairwise; rw [List.pairwise_cons] at hp
+      have hp2 := hp.2; rw [List.pairwise_cons] at hp2
+      exact hp2.1 r₃ (List.mem_cons.mpr (Or.inl rfl))
+    cases j with
+    | zero =>
+      have hP0 := colLen_0_eq_of_colLens_cons (by rw [hP, dpartColLensP_B_cons₂])
+      have hQ0 := colLen_0_eq_of_colLens_cons (by rw [hQ])
+      rw [hP0] at hmem; rw [hQ0]
+      exact lt_of_lt_of_le hmem (Nat.div_le_div_right (le_trans h_r₂_ge_r₃ h_r₁_ge_r₂))
+    | succ j' =>
+      rw [show μP.colLen (j' + 1) = μP.shiftLeft.colLen j' from
+        (YoungDiagram.colLen_shiftLeft μP j').symm] at hmem
+      rw [show μQ.colLen (j' + 1) = μQ.shiftLeft.colLen j' from
+        (YoungDiagram.colLen_shiftLeft μQ j').symm]
+      have hshP : μP.shiftLeft.colLens = dpartColLensP_B rest := by
+        rw [YoungDiagram.colLens_shiftLeft, hP, dpartColLensP_B_cons₂]; rfl
+      have hshQ : μQ.shiftLeft.colLens = dpartColLensQ_B (r₂ :: r₃ :: rest) := by
+        rw [YoungDiagram.colLens_shiftLeft, hQ]; rfl
+      -- dpartColLensQ_B (r₂ :: r₃ :: rest) = r₂/2 :: dpartColLensQ_B rest
+      rw [dpartColLensQ_B_cons₂] at hshQ
+      have hsort' : (r₂ :: rest).SortedGE := by
+        have hp := hsort.pairwise; rw [List.pairwise_cons] at hp
+        have hp2 := hp.2; rw [List.pairwise_cons] at hp2
+        have hp3 := hp2.2; rw [List.pairwise_cons] at hp3
+        exact (List.pairwise_cons.mpr ⟨fun r hr => hp2.1 r (List.mem_cons_of_mem _ hr), hp3.2⟩).sortedGE
+      have heven' : ∀ r ∈ (r₂ :: rest), Even r := by
+        intro r hr
+        exact heven r (by simp only [List.mem_cons] at hr ⊢; tauto)
+      exact YoungDiagram.mem_iff_lt_colLen.mp
+        (yd_P_B_le_Q_M r₂ rest hsort' heven' hshP hshQ
+          (YoungDiagram.mem_iff_lt_colLen.mpr hmem))
+
+/-- shiftLeft(P) ≤ Q for M-type shapes. -/
+private lemma shiftLeft_P_le_Q_of_M (r₁ : ℕ) (dp : DualPart)
+    (hsort : (r₁ :: dp).SortedGE)
+    (heven : ∀ r ∈ (r₁ :: dp), Even r)
+    {μP μQ : YoungDiagram}
+    (hP : μP.colLens = dpartColLensP_B dp)
+    (hQ : μQ.colLens = r₁ / 2 :: dpartColLensQ_B dp) :
+    μP.shiftLeft ≤ μQ := by
+  apply le_trans _ (yd_P_B_le_Q_M r₁ dp hsort heven hP hQ)
+  intro ⟨i, j⟩ hmem
+  exact μP.isLowerSet (Prod.mk_le_mk.mpr ⟨le_refl _, Nat.le_succ _⟩)
+    (YoungDiagram.mem_shiftLeft.mp hmem)
+
 private theorem liftBM_card_primitive (r₁ r₂ : ℕ) (rest : DualPart)
     (μP μQ : YoungDiagram)
     (hP : μP.colLens = dpartColLensP_M (r₁ :: r₂ :: rest))
@@ -1455,8 +1584,12 @@ private theorem liftBM_card_primitive (r₁ r₂ : ℕ) (rest : DualPart)
       let (dd, rc, ss) := countPBP_B (r₂ :: rest)
       dd + rc + ss := by
   -- Step 1: card(M) = card(B⁺ target) + card(B⁻ target) via bijection
-  have h_sub : μP.shiftLeft ≤ μQ := by sorry  -- from shape analysis: shiftLeft P ≤ Q
-  have h_P_le_Q : μP ≤ μQ := by sorry  -- from shape analysis: P ≤ Q for M type
+  have hr₁_pos : r₁ > 0 := hpos r₁ (by simp)
+  have hP' : μP.colLens = dpartColLensP_B (r₂ :: rest) := by rw [hP]; rfl
+  have hQ' : μQ.colLens = r₁ / 2 :: dpartColLensQ_B (r₂ :: rest) := by
+    rw [hQ]; simp [dpartColLensQ_M, hr₁_pos]
+  have h_P_le_Q : μP ≤ μQ := yd_P_B_le_Q_M r₁ (r₂ :: rest) hsort heven hP' hQ'
+  have h_sub : μP.shiftLeft ≤ μQ := shiftLeft_P_le_Q_of_M r₁ (r₂ :: rest) hsort heven hP' hQ'
   have h_bij := card_M_eq_card_B_target μP μQ h_sub h_P_le_Q
   -- Step 2: card(B target) = tripleSum(countPBP_B(r₂::rest))
   have h_count := card_B_target_eq_tripleSum r₁ r₂ rest μP μQ hP hQ hsort heven hpos
