@@ -1621,14 +1621,260 @@ noncomputable def liftMB_raw (σ : PBP) (hγ : σ.γ = .Bplus ∨ σ.γ = .Bminu
         by_cases hmemQ' : (i, j' + 1) ∈ σ.Q.shape
         · exact h_dot_cross i j' hmemPσ hpaint hmemQ'
         · rw [σ.Q.paint_outside _ _ hmemQ']; simp [DRCSymbol.layerOrd]
-    · -- Backward: computationally verified. The B⁻ bottom case uses h_Bm_bottom.
-      sorry
+    · -- Backward: Q(i,j)=dot ∧ (i,j)∈μQ → P(i,j)=dot ∧ (i,j)∈μP
+      intro ⟨hmemQ, hpaint⟩
+      change liftPaintQ_BM σ i j = .dot at hpaint
+      simp only [liftPaintQ_BM] at hpaint
+      split_ifs at hpaint with hlo
+      · -- σ.Q(i,j).layerOrd ≤ 1
+        cases j with
+        | zero =>
+          -- j = 0: Need P(i,0) = dot, i.e., liftPaintP_BM at (i,0) = dot.
+          -- liftPaintP_BM branches: dot if ∉μP, c if B⁻∧bottom, s if Q.lo>1, dot otherwise
+          -- Since σ.Q(i,0).lo ≤ 1, the s branch is blocked. B⁻ bottom: h_Bm_bottom contradicts.
+          -- Membership: (i,0) ∈ μQ. Need (i,0) ∈ μP. From σ.Q(i,0) ∈ {dot,s}:
+          have hmemQσ : (i, 0) ∈ σ.Q.shape := hQsh ▸ hmemQ
+          have hmemP : (i, 0) ∈ μP := by
+            rcases (by
+              have hsym := σ.sym_Q i 0 hmemQσ
+              rcases hγ with hγ' | hγ' <;> rw [hγ'] at hsym <;> simp [DRCSymbol.allowed] at hsym <;>
+                (revert hlo; rcases hsym with h | h | h | h <;> rw [h] <;>
+                  simp [DRCSymbol.layerOrd] <;> exact Or.inl rfl)
+              : σ.Q.paint i 0 = .dot ∨ σ.Q.paint i 0 = .s) with hQd | hQs
+            · exact μP.isLowerSet (Prod.mk_le_mk.mpr ⟨le_refl _, Nat.zero_le _⟩)
+                (YoungDiagram.mem_shiftLeft.mp (hPsh ▸ ((σ.dot_match i 0).mpr ⟨hmemQσ, hQd⟩).1))
+            · exact (h_s_cross i 0 hmemQσ hQs).1
+          refine ⟨hmemP, ?_⟩
+          show liftPaintP_BM σ μP μQ i 0 = .dot
+          simp only [liftPaintP_BM, if_neg (show ¬((i, 0) ∉ μP) from not_not.mpr hmemP)]
+          by_cases h_bm : σ.γ = .Bminus ∧ i = μP.colLen 0 - 1
+          · -- B⁻ bottom: h_Bm_bottom says ∉ μQ ∨ Q.lo > 1, contradicting hmemQ + hlo
+            exfalso
+            have hcol0_pos : μP.colLen 0 > 0 :=
+              Nat.pos_of_ne_zero (by intro h0; rw [YoungDiagram.mem_iff_lt_colLen, h0] at hmemP; exact Nat.not_lt_zero _ hmemP)
+            rw [h_bm.2] at hmemQ
+            rcases h_Bm_bottom h_bm.1 hcol0_pos with h1 | h2
+            · exact h1 (show (μP.colLen 0 - 1, 0) ∈ μQ from hmemQ)
+            · exact h2 (by rw [← h_bm.2]; exact hlo)
+          · rw [if_neg h_bm]
+            rw [if_neg (by push_neg; exact ⟨(show (i, 0) ∈ μQ from hmemQ), hlo⟩)]
+        | succ j' =>
+          -- j = j'+1: P(i,j'+1) = σ.P(i,j'). Q(i,j'+1) has σ.Q(i,j'+1).lo ≤ 1.
+          -- σ.Q(i,j'+1) ∈ {dot, s} (B Q). Case split:
+          have hmemQσ : (i, j' + 1) ∈ σ.Q.shape := hQsh ▸ hmemQ
+          rcases (by
+            have hsym := σ.sym_Q i (j' + 1) hmemQσ
+            rcases hγ with hγ' | hγ' <;> rw [hγ'] at hsym <;> simp [DRCSymbol.allowed] at hsym <;>
+              (revert hlo; rcases hsym with h | h | h | h <;> rw [h] <;>
+                simp [DRCSymbol.layerOrd] <;> exact Or.inl rfl)
+            : σ.Q.paint i (j' + 1) = .dot ∨ σ.Q.paint i (j' + 1) = .s) with hQd | hQs
+          · -- σ.Q(i,j'+1) = dot → by σ.dot_match: σ.P(i,j'+1) = dot
+            have ⟨hmemPσ', hPdot'⟩ := (σ.dot_match i (j' + 1)).mpr ⟨hmemQσ, hQd⟩
+            -- (i,j'+1) ∈ σ.P.shape = shiftLeft(μP) → (i,j'+2) ∈ μP → (i,j'+1) ∈ μP
+            have hmemP : (i, j' + 1) ∈ μP :=
+              μP.isLowerSet (Prod.mk_le_mk.mpr ⟨le_refl _, Nat.le_succ _⟩)
+                (YoungDiagram.mem_shiftLeft.mp (hPsh ▸ hmemPσ'))
+            -- Also (i,j') ∈ σ.P.shape (lower set)
+            have hmemPσ : (i, j') ∈ σ.P.shape :=
+              σ.P.shape.isLowerSet (Prod.mk_le_mk.mpr ⟨le_refl _, Nat.le_succ _⟩) hmemPσ'
+            -- mono_P: σ.P(i,j').lo ≤ σ.P(i,j'+1).lo = 0
+            have hlo' : (σ.P.paint i j').layerOrd ≤ (σ.P.paint i (j' + 1)).layerOrd :=
+              σ.mono_P i j' i (j' + 1) le_rfl (Nat.le_succ _) hmemPσ'
+            rw [hPdot'] at hlo'; simp [DRCSymbol.layerOrd] at hlo'
+            -- σ.P(i,j') has layerOrd = 0 → dot (B P has {dot, c})
+            have hPdot : σ.P.paint i j' = .dot := by
+              have hsym := σ.sym_P i j' hmemPσ
+              rcases hγ with hγ' | hγ' <;> rw [hγ'] at hsym <;> simp [DRCSymbol.allowed] at hsym <;>
+                (rcases hsym with h | h <;> rw [h] at hlo' ⊢ <;> simp [DRCSymbol.layerOrd] at hlo' ⊢)
+            exact ⟨hmemP, by show liftPaintP_BM σ μP μQ i (j' + 1) = .dot; rw [liftPaintP_BM_succ]; exact hPdot⟩
+          · -- σ.Q(i,j'+1) = s → h_s_cross gives (i,j'+1) ∈ μP and σ.P(i,j')=dot
+            have ⟨hmemP, hPdot_fn⟩ := h_s_cross i (j' + 1) hmemQσ hQs
+            exact ⟨hmemP, by show liftPaintP_BM σ μP μQ i (j' + 1) = .dot; rw [liftPaintP_BM_succ]; exact hPdot_fn j' rfl⟩
+      · -- σ.Q(i,j).layerOrd > 1 but liftPaintQ_BM gave dot — impossible
+        exact absurd hpaint (by push_neg at hlo; revert hlo; cases σ.Q.paint i j <;> simp [DRCSymbol.layerOrd])
   mono_P := by
-    -- Computationally verified for dual partitions up to size 24.
-    -- Col 0 has dot(0) ≤ s(1) ≤ c(3), consistent with mono.
-    -- dot zone (Q lo ≤ 1) is above s zone (Q lo > 1), which is above c (B⁻ bottom).
-    -- For j ≥ 1: directly uses σ.mono_P.
-    sorry
+    -- layerMonotone: i₁≤i₂, j₁≤j₂, (i₂,j₂)∈μP → P(i₁,j₁).lo ≤ P(i₂,j₂).lo
+    intro i₁ j₁ i₂ j₂ hi hj hmem₂
+    show (liftPaintP_BM σ μP μQ i₁ j₁).layerOrd ≤ (liftPaintP_BM σ μP μQ i₂ j₂).layerOrd
+    cases j₁ with
+    | zero =>
+      cases j₂ with
+      | zero =>
+        -- Both col 0: dot(0) ≤ s(1) ≤ c(3) monotone
+        simp only [liftPaintP_BM]
+        have hmemP₂ : (i₂, 0) ∈ μP := hmem₂
+        have hmemP₁ : (i₁, 0) ∈ μP :=
+          μP.isLowerSet (Prod.mk_le_mk.mpr ⟨hi, le_refl _⟩) hmemP₂
+        rw [if_neg (not_not.mpr hmemP₁), if_neg (not_not.mpr hmemP₂)]
+        -- Need: P(i₁,0).lo ≤ P(i₂,0).lo where P(i,0) depends on B⁻/Q conditions
+        by_cases h_bm₂ : σ.γ = .Bminus ∧ i₂ = μP.colLen 0 - 1
+        · -- i₂ = bottom, P(i₂,0) = c (lo=3). Any ≤ 3.
+          rw [if_pos h_bm₂]; simp [DRCSymbol.layerOrd]
+          split_ifs <;> simp [DRCSymbol.layerOrd]
+        · rw [if_neg h_bm₂]
+          by_cases h_bm₁ : σ.γ = .Bminus ∧ i₁ = μP.colLen 0 - 1
+          · -- i₁ = bottom but i₂ ≠ bottom, yet i₁ ≤ i₂ and (i₂,0)∈μP
+            -- i₁ = μP.colLen 0 - 1, i₂ ≥ i₁, (i₂,0)∈μP → i₂ < μP.colLen 0
+            -- So i₂ = μP.colLen 0 - 1 = i₁. But h_bm₂ says ¬(Bminus ∧ i₂=bottom).
+            -- Since σ.γ = Bminus (from h_bm₁.1), h_bm₂ says i₂ ≠ bottom.
+            -- But i₂ = i₁ = bottom. Contradiction.
+            exfalso; apply h_bm₂; exact ⟨h_bm₁.1, by
+              have := YoungDiagram.mem_iff_lt_colLen.mp hmemP₂
+              omega⟩
+          · rw [if_neg h_bm₁]
+            -- Both in s or dot zone. P(i,0) = s if Q.lo > 1 or ∉μQ, dot if Q.lo ≤ 1
+            by_cases h_s₂ : (i₂, 0) ∉ μQ ∨ ¬(σ.Q.paint i₂ 0).layerOrd ≤ 1
+            · rw [if_pos h_s₂]
+              -- P(i₂,0) = s (lo=1). Any col 0 paint has lo ≤ 1 (dot=0 or s=1).
+              split_ifs <;> simp [DRCSymbol.layerOrd]
+            · rw [if_neg h_s₂]
+              -- P(i₂,0) = dot (lo=0).
+              -- Then σ.Q(i₂,0).lo ≤ 1 and (i₂,0) ∈ μQ.
+              -- By σ.mono_Q: σ.Q(i₁,0).lo ≤ σ.Q(i₂,0).lo ≤ 1 if (i₂,0) ∈ σ.Q.shape.
+              -- And (i₁,0) ∈ μQ (from h_P_le_Q and hmemP₁).
+              -- So h_s₁ conditions both fail: (i₁,0) ∈ μQ and σ.Q(i₁,0).lo ≤ 1.
+              push_neg at h_s₂
+              have ⟨hmemQ₂, hQlo₂⟩ := h_s₂
+              have hmemQ₁ : (i₁, 0) ∈ μQ := h_P_le_Q hmemP₁
+              have hQlo₁ : (σ.Q.paint i₁ 0).layerOrd ≤ 1 := by
+                exact le_trans (σ.mono_Q i₁ 0 i₂ 0 hi le_rfl (hQsh ▸ hmemQ₂)) hQlo₂
+              rw [if_neg (by push_neg; exact ⟨hmemQ₁, hQlo₁⟩)]
+      | succ j₂' =>
+        -- j₁=0, j₂=j₂'+1: P(i₁,0) vs σ.P(i₂,j₂')
+        rw [liftPaintP_BM_succ]
+        simp only [liftPaintP_BM]
+        have hmemP₂ : (i₂, j₂' + 1) ∈ μP := hmem₂
+        have hmemP₁ : (i₁, 0) ∈ μP :=
+          μP.isLowerSet (Prod.mk_le_mk.mpr ⟨hi, Nat.zero_le _⟩) hmemP₂
+        rw [if_neg (not_not.mpr hmemP₁)]
+        -- (i₂, j₂') ∈ σ.P.shape = shiftLeft(μP)
+        have hmemPσ₂ : (i₂, j₂') ∈ σ.P.shape := by
+          rw [hPsh, YoungDiagram.mem_shiftLeft]; exact hmemP₂
+        by_cases h_bm : σ.γ = .Bminus ∧ i₁ = μP.colLen 0 - 1
+        · rw [if_pos h_bm]
+          -- P(i₁,0) = c (lo=3). Need σ.P(i₂,j₂').lo ≥ 3.
+          -- i₁ = μP.colLen 0 - 1, i₂ ≥ i₁, (i₂,j₂'+1) ∈ μP → i₂ < μP.colLen(j₂'+1) ≤ μP.colLen 0
+          -- So i₂ = μP.colLen 0 - 1 = i₁.
+          have hi₂ : i₂ = μP.colLen 0 - 1 := by
+            have := YoungDiagram.mem_iff_lt_colLen.mp hmemP₂
+            have := μP.colLen_anti 0 (j₂' + 1) (Nat.zero_le _)
+            omega
+          -- σ.P(i₂, j₂') where i₂ = μP.colLen 0 - 1 and (i₂, j₂') ∈ σ.P.shape
+          -- By σ.mono_P, σ.P(i₂, 0).lo ≤ σ.P(i₂, j₂').lo (if (i₂,j₂') ∈ σ.P.shape)
+          -- σ.P(i₂, 0) ∈ {dot, c}. We need lo ≥ 3, i.e., σ.P(i₂, j₂') = c.
+          -- Actually, by σ.mono_P: σ.P(i₂,0).lo ≤ σ.P(i₂,j₂').lo
+          -- i₂ = μP.colLen 0 - 1, (i₂, 0) ∈ σ.P.shape = shiftLeft(μP) iff (i₂, 1) ∈ μP
+          -- (i₂, 1) ∈ μP? We know (i₂, j₂'+1) ∈ μP with j₂' ≥ 0, so j₂'+1 ≥ 1, hence (i₂, 1) ∈ μP.
+          have hmemPσ₂_0 : (i₂, 0) ∈ σ.P.shape := by
+            rw [hPsh, YoungDiagram.mem_shiftLeft]
+            exact μP.isLowerSet (Prod.mk_le_mk.mpr ⟨le_refl _, by omega⟩) hmemP₂
+          have hlo₀ : (σ.P.paint i₂ 0).layerOrd ≤ (σ.P.paint i₂ j₂').layerOrd :=
+            σ.mono_P i₂ 0 i₂ j₂' le_rfl (Nat.zero_le _) hmemPσ₂
+          -- σ.P(i₂, 0) ∈ {dot, c} for B type
+          -- Need to show σ.P(i₂,0) = c.
+          -- i₂ = bottom of col 0 of μP, (i₂,0) ∈ shiftLeft(μP) means (i₂,1) ∈ μP.
+          -- The bottom of shiftLeft P col 0 is at μP.colLen(1) - 1.
+          -- i₂ = μP.colLen(0)-1 ≥ μP.colLen(1)-1 (since colLen is anti-monotone)
+          -- Since (i₂,0) ∈ σ.P.shape and i₂ = μP.colLen(0)-1, this is the bottom of σ.P col 0.
+          -- σ.P.paint(bottom of col 0, 0) for B type...
+          -- Actually we just need lo ≥ 3. From σ.mono_P and B type, the bottom should have c.
+          -- Let's use a different approach: since σ.P is monotone and B P has {dot, c},
+          -- for (i₂, j₂') being a valid cell and i₂ being maximal in col, it should be c.
+          -- But this requires knowing that not all cells in the column are dot.
+          -- Alternative: from h_Bm_bottom (σ.γ = .Bminus): Q(bottom,0) ∉ μQ ∨ Q.lo > 1
+          -- This means bottom ∉ μQ or σ.Q at bottom has r or d.
+          -- Consider σ.dot_match: σ.P(i₂,0)=dot ↔ σ.Q(i₂,0)=dot.
+          -- σ.Q.shape = μQ. If (i₂,0) ∉ μQ: σ.Q.paint(i₂,0) = dot.
+          -- But σ.P(i₂,0) has (i₂,0) ∈ σ.P.shape, so if σ.P(i₂,0) = dot
+          -- then σ.Q(i₂,0) = dot, contradicting Q.lo > 1 (since dot has lo = 0 ≤ 1).
+          -- Wait but h_Bm_bottom says (bottom,0) ∉ μQ ∨ Q.lo > 1.
+          -- If (bottom,0) ∉ μQ: σ.Q.paint(bottom,0) = dot (paint_outside).
+          --   Then σ.dot_match: σ.P(bottom,0) = dot → (bottom,0) ∈ σ.Q.shape = μQ. But (bottom,0) ∉ μQ!
+          --   So σ.P(bottom,0) ≠ dot → σ.P(bottom,0) = c (B type).
+          -- If Q.lo > 1: σ.Q(bottom,0) has lo > 1, so ≠ dot.
+          --   σ.dot_match backward: if σ.Q(bottom,0)=dot, contradiction. So σ.Q(bottom,0) ≠ dot.
+          --   σ.dot_match forward: σ.P(bottom,0)=dot → σ.Q(bottom,0)=dot, contradiction.
+          --   So σ.P(bottom,0) ≠ dot → σ.P(bottom,0) = c.
+          have hPσ_c : σ.P.paint i₂ 0 = .c := by
+            have hsym := σ.sym_P i₂ 0 hmemPσ₂_0
+            rcases hγ with hγ' | hγ' <;> rw [hγ'] at hsym <;> simp [DRCSymbol.allowed] at hsym <;>
+              rcases hsym with hp | hp
+            all_goals (rw [hp]; try rfl)
+            all_goals (
+              exfalso
+              -- hp : σ.P.paint i₂ 0 = .dot
+              -- Get σ.Q(i₂,0) = .dot from dot_match
+              have ⟨hmemQσ, hQdot⟩ := (σ.dot_match i₂ 0).mp ⟨hmemPσ₂_0, hp⟩
+              rw [hi₂] at hmemQσ hQdot
+              have hcol0_pos : μP.colLen 0 > 0 :=
+                Nat.pos_of_ne_zero (by intro h0; rw [YoungDiagram.mem_iff_lt_colLen, h0] at hmemP₁; exact Nat.not_lt_zero _ hmemP₁)
+              rcases h_Bm_bottom h_bm.1 hcol0_pos with h1 | h2
+              · exact h1 (by rwa [← hQsh])
+              · exact h2 (by rw [hQdot]; simp [DRCSymbol.layerOrd]))
+          rw [hPσ_c] at hlo₀; simp [DRCSymbol.layerOrd] at hlo₀ ⊢
+          exact hlo₀
+        · rw [if_neg h_bm]
+          by_cases h_s : (i₁, 0) ∉ μQ ∨ ¬(σ.Q.paint i₁ 0).layerOrd ≤ 1
+          · rw [if_pos h_s]; simp [DRCSymbol.layerOrd]
+            -- P(i₁,0) = s (lo=1). Need σ.P(i₂,j₂').lo ≥ 1.
+            -- σ.P(i₂,j₂') ∈ {dot, c}. Need ≠ dot, i.e., = c.
+            -- s at (i₁,0): (i₁,0) ∉ μQ ∨ σ.Q(i₁,0).lo > 1
+            -- Since (i₁,0) ∈ μP and h_P_le_Q: μP ≤ μQ, (i₁,0) ∈ μQ.
+            -- So the first disjunct fails. Must have σ.Q(i₁,0).lo > 1.
+            -- h_s says (i₁,0) ∉ μQ ∨ Q.lo > 1. Since (i₁,0)∈μP→(i₁,0)∈μQ, must be Q.lo > 1.
+            have hmemQ₁ : (i₁, 0) ∈ μQ := h_P_le_Q hmemP₁
+            have hQlo₁ : ¬(σ.Q.paint i₁ 0).layerOrd ≤ 1 := by
+              rcases h_s with h_notQ | h_lo
+              · exact absurd hmemQ₁ h_notQ
+              · exact h_lo
+            -- By σ.Q monotonicity: σ.Q(i₁,0).lo ≤ σ.Q(i₂,0).lo (if (i₂,0)∈σ.Q.shape)
+            -- But wait, we have the wrong index: need σ.P(i₂,j₂').lo ≥ 1.
+            -- Actually: h_s says (i₁,0) ∉ μQ ∨ ... Let me reconsider.
+            -- We have σ.Q(i₁,0).lo > 1 and (i₁,0) ∈ μQ (from h_P_le_Q applied to hmemP₁).
+            -- σ.Q(i₁,0).lo > 1 means σ.Q(i₁,0) ∈ {r, d} (for B Q: {dot,s,r,d}).
+            -- By σ.mono_Q: σ.Q(i₁,0).lo ≤ σ.Q(i₂,0).lo (if (i₂,0) ∈ σ.Q.shape)
+            -- (i₂,0) ∈ σ.Q.shape = μQ? Need (i₂,0) ∈ μQ. From h_P_le_Q and hmemP₁... no, from hmemP₂.
+            -- (i₂,j₂'+1) ∈ μP → (i₂,0) ∈ μP → (i₂,0) ∈ μQ
+            have hmemQ₂ : (i₂, 0) ∈ μQ := h_P_le_Q (μP.isLowerSet (Prod.mk_le_mk.mpr ⟨le_refl _, Nat.zero_le _⟩) hmemP₂)
+            have hQlo₂ : ¬(σ.Q.paint i₂ 0).layerOrd ≤ 1 := by
+              intro hle
+              have := σ.mono_Q i₁ 0 i₂ 0 hi le_rfl (hQsh ▸ hmemQ₂)
+              exact hQlo₁ (le_trans this hle)
+            -- σ.Q(i₂,0) has lo > 1, so ≠ dot. By dot_match: σ.P at (i₂,0) ≠ dot.
+            -- Wait, dot_match relates P and Q at same position. Actually dot_match says:
+            -- σ.P(i₂,0)=dot ↔ σ.Q(i₂,0)=dot. σ.Q(i₂,0) ≠ dot (lo > 1 → not dot).
+            -- Wait, σ.Q(i₂,0) has lo > 1. dot has lo = 0. So σ.Q(i₂,0) ≠ dot.
+            -- By dot_match (mpr direction): σ.Q(i₂,0)=dot → σ.P(i₂,0)=dot.
+            -- Contrapositive: σ.P(i₂,0) ≠ dot → σ.Q(i₂,0) ≠ dot. That's the wrong direction.
+            -- Forward: σ.P(i₂,0) = dot → (i₂,0) ∈ σ.Q.shape ∧ σ.Q(i₂,0)=dot.
+            -- If σ.Q(i₂,0) ≠ dot, then σ.P(i₂,0) ≠ dot (contrapositive of forward).
+            -- But we need σ.P(i₂,j₂') not σ.P(i₂,0).
+            -- σ.mono_P: σ.P(i₂,0).lo ≤ σ.P(i₂,j₂').lo (if (i₂,j₂') ∈ σ.P.shape)
+            -- σ.P(i₂,0) ∈ {dot, c}. If c: lo = 3. So σ.P(i₂,j₂').lo ≥ 3 ≥ 1. Done.
+            -- If dot: σ.Q(i₂,0) = dot (forward dot_match). But we showed σ.Q(i₂,0) ≠ dot. Contradiction.
+            -- So σ.P(i₂,0) = c, hence σ.P(i₂,j₂').lo ≥ 3 ≥ 1.
+            have hmemPσ₂_0 : (i₂, 0) ∈ σ.P.shape := by
+              rw [hPsh, YoungDiagram.mem_shiftLeft]
+              exact μP.isLowerSet (Prod.mk_le_mk.mpr ⟨le_refl _, by omega⟩) hmemP₂
+            have hPσ_ne_dot : σ.P.paint i₂ 0 ≠ .dot := by
+              intro heq
+              have ⟨_, hQdot⟩ := (σ.dot_match i₂ 0).mp ⟨hmemPσ₂_0, heq⟩
+              rw [hQdot] at hQlo₂; simp [DRCSymbol.layerOrd] at hQlo₂
+            have hsym := σ.sym_P i₂ 0 hmemPσ₂_0
+            rcases hγ with hγ' | hγ' <;> rw [hγ'] at hsym <;> simp [DRCSymbol.allowed] at hsym <;>
+              (rcases hsym with hp | hp <;> first
+                | (rw [hp] at hPσ_ne_dot; exact absurd rfl hPσ_ne_dot)
+                | (have hlo_ge := σ.mono_P i₂ 0 i₂ j₂' le_rfl (Nat.zero_le _) hmemPσ₂;
+                   rw [hp] at hlo_ge; simp [DRCSymbol.layerOrd] at hlo_ge ⊢; omega))
+          · rw [if_neg h_s]; simp [DRCSymbol.layerOrd]
+            -- P(i₁,0) = dot (lo=0). Any ≥ 0.
+    | succ j₁' =>
+      cases j₂ with
+      | zero => omega
+      | succ j₂' =>
+        -- Both j ≥ 1: P(i₁,j₁'+1) = σ.P(i₁,j₁'), P(i₂,j₂'+1) = σ.P(i₂,j₂')
+        rw [liftPaintP_BM_succ, liftPaintP_BM_succ]
+        exact σ.mono_P i₁ j₁' i₂ j₂' hi (by omega) (by rw [hPsh, YoungDiagram.mem_shiftLeft]; exact hmem₂)
   mono_Q := by
     intro i₁ j₁ i₂ j₂ hi hj hmem₂
     show (liftPaintQ_BM σ i₁ j₁).layerOrd ≤ (liftPaintQ_BM σ i₂ j₂).layerOrd
@@ -1762,18 +2008,15 @@ private theorem descentMB_liftMB_round_trip {μP μQ : YoungDiagram}
     (h_dot_cross : ∀ i j, (i, j) ∈ σ.P.shape → σ.P.paint i j = .dot →
         (i, j + 1) ∈ σ.Q.shape → (σ.Q.paint i (j + 1)).layerOrd ≤ 1)
     (h_Bm_bottom : σ.γ = .Bminus → μP.colLen 0 > 0 →
-        (μP.colLen 0 - 1, 0) ∉ μQ ∨ ¬(σ.Q.paint (μP.colLen 0 - 1) 0).layerOrd ≤ 1) :
+        (μP.colLen 0 - 1, 0) ∉ μQ ∨ ¬(σ.Q.paint (μP.colLen 0 - 1) 0).layerOrd ≤ 1)
+    (h_Bm_pos : σ.γ = .Bminus → μP.colLen 0 > 0) :
     descentMB_PBP (liftMB_raw σ hγ μP μQ hPsh hQsh h_sub h_P_le_Q h_s_cross h_dot_cross h_Bm_bottom)
       (by rfl : (liftMB_raw σ hγ μP μQ hPsh hQsh h_sub h_P_le_Q h_s_cross h_dot_cross h_Bm_bottom).γ = .M) = σ := by
   -- Round-trip: descent(lift(σ)) = σ.
-  -- The proof requires showing γ, P shape, P paint, Q shape, Q paint all agree.
-  -- This is an algebraic identity between the fill/unfill operations:
-  --   P: descentPaintL_MB(liftPaintP_BM) at (i, j) = σ.P(i, j)
-  --      because liftPaintP_BM at (i, j+1) = σ.P(i, j), and the dotS zone maps to dot.
-  --   Q: descentPaintR_MB(liftPaintQ_BM) at (i, j) = σ.Q(i, j)
-  --      because the dot/s refill is exactly reversed.
-  --   γ: descentType_M checks for c in P col 0. B⁺→no c, B⁻→c at bottom.
   -- Computationally verified for dual partitions up to size 24.
+  -- Proof sketch: γ from descentType_M (B⁺→no c, B⁻→c at bottom via h_Bm_pos),
+  -- P via descentPaintL_MB ∘ liftPaintP_BM = id (shift right then left),
+  -- Q via descentPaintR_MB ∘ liftPaintQ_BM = id (dot/s refill reversed).
   sorry
 
 /-! ## M-type inductive step: primitive and balanced cases
