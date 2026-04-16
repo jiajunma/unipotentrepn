@@ -2166,22 +2166,24 @@ private theorem descentMB_liftMB_round_trip {μP μQ : YoungDiagram}
     Computationally verified for all dual partitions up to size 24.
     Reference: [BMSZb] Proposition 10.8 + 10.12. -/
 
-/-- card(M) = card(B⁺ target) + card(B⁻ target), via lift+round-trip bijection.
-    Uses: M→B descent (injective, proved) maps into B⁺ ⊔ B⁻.
-    B→M lift (with round-trip) maps B⁺ ⊔ B⁻ back into M.
-    So card(M) = card(B⁺) + card(B⁻).
-    The lift preconditions (h_s_cross, h_dot_cross, h_Bm_bottom) are derivable
-    from general B-PBP interlacing properties in the primitive case.
-    Computationally verified for dual partitions up to size 24. -/
+/-- card(M) = card(B⁺ target) + card(B⁻ target).
+    Computationally verified for dual partitions up to size 24.
+
+    The proof requires a bijection between M-type PBPs and B⁺ ⊕ B⁻ PBPs.
+    Forward (M → B⁺ ⊕ B⁻): descentMB_PBP is injective (proved).
+    Backward (B⁺ ⊕ B⁻ → M): requires lifting every B PBP to an M PBP.
+    The current lift (liftMB_raw) has cross-column preconditions (h_dot_cross)
+    that cannot be verified universally for all B PBPs on these shapes.
+    A different proof strategy (e.g., fiber decomposition as in CorrespondenceB)
+    is needed to establish the reverse inequality.
+    Reference: [BMSZb] Proposition 10.8. -/
 private theorem card_M_eq_card_B_target (μP μQ : YoungDiagram)
     (h_sub : μP.shiftLeft ≤ μQ) :
     Fintype.card (PBPSet .M μP μQ) =
       Fintype.card (PBPSet .Bplus μP.shiftLeft μQ) +
       Fintype.card (PBPSet .Bminus μP.shiftLeft μQ) := by
-  -- Forward: descent injects M into B⁺ ⊔ B⁻ (via descentMB_injective)
-  -- Backward: lift maps B⁺ ⊔ B⁻ injectively into M (via round-trip)
-  -- Together: card(M) = card(B⁺ ⊔ B⁻) = card(B⁺) + card(B⁻)
   sorry
+
 
 /-- The B⁺/B⁻ PBP count on target shapes equals tripleSum(countPBP_B(r₂::rest)).
     Admitted: requires connecting non-standard B shapes with countPBP_B formula.
