@@ -1230,13 +1230,47 @@ private lemma liftPaintQ_BM_ne_c (σ : PBP)
         (rcases hsym with hp | hp | hp | hp <;> rw [hp] at heq <;> simp at heq)
     · rw [σ.Q.paint_outside _ _ hmem] at heq; simp at heq
 
+private lemma liftPaintP_BM_zero (σ : PBP) (μP μQ : YoungDiagram) (i : ℕ) :
+    liftPaintP_BM σ μP μQ i 0 =
+      if (i, 0) ∈ μP ∧ ((i, 0) ∉ μQ ∨ ¬(σ.Q.paint i 0).layerOrd ≤ 1) then .s else .dot := rfl
+
+private lemma liftPaintP_BM_succ (σ : PBP) (μP μQ : YoungDiagram) (i j : ℕ) :
+    liftPaintP_BM σ μP μQ i (j + 1) = σ.P.paint i j := rfl
+
+private lemma liftPaintP_BM_ne_r (σ : PBP) (hγ : σ.γ = .Bplus ∨ σ.γ = .Bminus)
+    (μP μQ : YoungDiagram) (hPsh : σ.P.shape = YoungDiagram.shiftLeft μP) (i j : ℕ) :
+    liftPaintP_BM σ μP μQ i j ≠ .r := by
+  cases j with
+  | zero => simp [liftPaintP_BM_zero]; split_ifs <;> decide
+  | succ j' =>
+    rw [liftPaintP_BM_succ]
+    by_cases hmem : (i, j') ∈ σ.P.shape
+    · have hsym := σ.sym_P i j' hmem
+      rcases hγ with hγ' | hγ' <;> rw [hγ'] at hsym <;> simp [DRCSymbol.allowed] at hsym <;>
+        (rcases hsym with h | h <;> rw [h] <;> decide)
+    · rw [σ.P.paint_outside i j' hmem]; decide
+
+private lemma liftPaintP_BM_ne_d (σ : PBP) (hγ : σ.γ = .Bplus ∨ σ.γ = .Bminus)
+    (μP μQ : YoungDiagram) (hPsh : σ.P.shape = YoungDiagram.shiftLeft μP) (i j : ℕ) :
+    liftPaintP_BM σ μP μQ i j ≠ .d := by
+  cases j with
+  | zero => simp [liftPaintP_BM_zero]; split_ifs <;> decide
+  | succ j' =>
+    rw [liftPaintP_BM_succ]
+    by_cases hmem : (i, j') ∈ σ.P.shape
+    · have hsym := σ.sym_P i j' hmem
+      rcases hγ with hγ' | hγ' <;> rw [hγ'] at hsym <;> simp [DRCSymbol.allowed] at hsym <;>
+        (rcases hsym with h | h <;> rw [h] <;> decide)
+    · rw [σ.P.paint_outside i j' hmem]; decide
+
 /-- Raw PBP for B→M lift. Several PBP proof obligations admitted.
     Mirrors liftCD_raw in CorrespondenceC.lean.
     Computationally verified for dual partitions up to size 24. -/
 noncomputable def liftMB_raw (σ : PBP) (hγ : σ.γ = .Bplus ∨ σ.γ = .Bminus)
     (μP μQ : YoungDiagram) (hPsh : σ.P.shape = YoungDiagram.shiftLeft μP)
     (hQsh : σ.Q.shape = μQ)
-    (h_sub : YoungDiagram.shiftLeft μP ≤ μQ) : PBP where
+    (h_sub : YoungDiagram.shiftLeft μP ≤ μQ)
+    (h_P_le_Q : μP ≤ μQ) : PBP where
   γ := .M
   P := { shape := μP, paint := liftPaintP_BM σ μP μQ
          paint_outside := fun i j hmem => by
@@ -1276,13 +1310,72 @@ noncomputable def liftMB_raw (σ : PBP) (hγ : σ.γ = .Bplus ∨ σ.γ = .Bminu
     · simp [DRCSymbol.layerOrd]
     · exfalso; exact absurd (σ.mono_Q i₁ j₁ i₂ j₂ hi hj (by rw [hQsh]; exact hmem₂)) (by omega)
     · exact σ.mono_Q i₁ j₁ i₂ j₂ hi hj (by rw [hQsh]; exact hmem₂)
-  row_s := by sorry
-  row_r := by sorry
-  col_c_P := by sorry
+  row_s := by
+    intro i s₁ s₂ j₁ j₂ h₁ h₂
+    simp only [paintBySide] at h₁ h₂
+    cases s₁ <;> cases s₂ <;> simp only at h₁ h₂
+    · -- L.L: both P. s only at col 0.
+      change liftPaintP_BM σ μP μQ i j₁ = .s at h₁
+      change liftPaintP_BM σ μP μQ i j₂ = .s at h₂
+      have hj₁_zero : j₁ = 0 := by
+        cases j₁ with
+        | zero => rfl
+        | succ j₁' =>
+          rw [liftPaintP_BM_succ] at h₁
+          by_cases hmem : (i, j₁') ∈ σ.P.shape
+          · have hsym := σ.sym_P i j₁' hmem
+            rcases hγ with hγ' | hγ' <;> rw [hγ'] at hsym <;>
+              simp [DRCSymbol.allowed] at hsym <;>
+              (rcases hsym with h | h <;> rw [h] at h₁ <;> simp at h₁)
+          · rw [σ.P.paint_outside i j₁' hmem] at h₁; simp at h₁
+      have hj₂_zero : j₂ = 0 := by
+        cases j₂ with
+        | zero => rfl
+        | succ j₂' =>
+          rw [liftPaintP_BM_succ] at h₂
+          by_cases hmem : (i, j₂') ∈ σ.P.shape
+          · have hsym := σ.sym_P i j₂' hmem
+            rcases hγ with hγ' | hγ' <;> rw [hγ'] at hsym <;>
+              simp [DRCSymbol.allowed] at hsym <;>
+              (rcases hsym with h | h <;> rw [h] at h₂ <;> simp at h₂)
+          · rw [σ.P.paint_outside i j₂' hmem] at h₂; simp at h₂
+      exact ⟨rfl, by rw [hj₁_zero, hj₂_zero]⟩
+    · exact absurd h₂ (liftPaintQ_BM_ne_s σ i j₂)
+    · exact absurd h₁ (liftPaintQ_BM_ne_s σ i j₁)
+    · exact absurd h₁ (liftPaintQ_BM_ne_s σ i j₁)
+  row_r := by
+    intro i s₁ s₂ j₁ j₂ h₁ h₂
+    simp only [paintBySide] at h₁ h₂
+    cases s₁ <;> cases s₂ <;> simp only at h₁ h₂
+    · exact absurd h₁ (liftPaintP_BM_ne_r σ hγ μP μQ hPsh i j₁)
+    · exact absurd h₁ (liftPaintP_BM_ne_r σ hγ μP μQ hPsh i j₁)
+    · exact absurd h₂ (liftPaintP_BM_ne_r σ hγ μP μQ hPsh i j₂)
+    · -- R.R: both Q. liftPaintQ_BM keeps r when layerOrd > 1.
+      change liftPaintQ_BM σ i j₁ = .r at h₁
+      change liftPaintQ_BM σ i j₂ = .r at h₂
+      simp only [liftPaintQ_BM] at h₁ h₂
+      split_ifs at h₁ with h₁' <;> first | exact absurd h₁ (by decide) | skip
+      split_ifs at h₂ with h₂' <;> first | exact absurd h₂ (by decide) | skip
+      exact ⟨rfl, (σ.row_r i .R .R j₁ j₂
+        (by simp [paintBySide]; exact h₁)
+        (by simp [paintBySide]; exact h₂)).2⟩
+  col_c_P := by
+    intro j i₁ i₂ h₁ h₂
+    change liftPaintP_BM σ μP μQ i₁ j = .c at h₁
+    change liftPaintP_BM σ μP μQ i₂ j = .c at h₂
+    cases j with
+    | zero =>
+      rw [liftPaintP_BM_zero] at h₁; split_ifs at h₁ <;> exact absurd h₁ (by decide)
+    | succ j' =>
+      rw [liftPaintP_BM_succ] at h₁ h₂
+      exact σ.col_c_P j' i₁ i₂ h₁ h₂
   col_c_Q := by
     intro j i₁ i₂ h₁ _
     exact absurd h₁ (liftPaintQ_BM_ne_c σ hγ i₁ j)
-  col_d_P := by sorry
+  col_d_P := by
+    intro j i₁ _ h₁ _
+    change liftPaintP_BM σ μP μQ i₁ j = .d at h₁
+    exact absurd h₁ (liftPaintP_BM_ne_d σ hγ μP μQ hPsh i₁ j)
   col_d_Q := by
     intro j i₁ i₂ h₁ h₂
     simp only [liftPaintQ_BM] at h₁ h₂
@@ -1294,11 +1387,11 @@ noncomputable def liftMB_raw (σ : PBP) (hγ : σ.γ = .Bplus ∨ σ.γ = .Bminu
     Takes a B⁺ or B⁻ PBP on (shiftLeft μP, μQ) and produces an M PBP on (μP, μQ). -/
 noncomputable def liftMB_PBP {μP μQ : YoungDiagram}
     (σ : PBPSet .Bplus μP.shiftLeft μQ ⊕ PBPSet .Bminus μP.shiftLeft μQ)
-    (h_sub : μP.shiftLeft ≤ μQ) :
+    (h_sub : μP.shiftLeft ≤ μQ) (h_P_le_Q : μP ≤ μQ) :
     PBPSet .M μP μQ := by
   rcases σ with ⟨σ', hσ'⟩ | ⟨σ', hσ'⟩
-  · exact ⟨liftMB_raw σ' (Or.inl hσ'.1) μP μQ hσ'.2.1 hσ'.2.2 h_sub, rfl, rfl, rfl⟩
-  · exact ⟨liftMB_raw σ' (Or.inr hσ'.1) μP μQ hσ'.2.1 hσ'.2.2 h_sub, rfl, rfl, rfl⟩
+  · exact ⟨liftMB_raw σ' (Or.inl hσ'.1) μP μQ hσ'.2.1 hσ'.2.2 h_sub h_P_le_Q, rfl, rfl, rfl⟩
+  · exact ⟨liftMB_raw σ' (Or.inr hσ'.1) μP μQ hσ'.2.1 hσ'.2.2 h_sub h_P_le_Q, rfl, rfl, rfl⟩
 
 /-- The M→B descent of a lifted PBP recovers the original B-type PBP.
     Key identity: descentPaintL_MB(liftMB_raw σ) reduces to σ.P.paint
@@ -1306,12 +1399,12 @@ noncomputable def liftMB_PBP {μP μQ : YoungDiagram}
     Admitted: requires ~50 lines of paint equality proofs.
     Computationally verified for dual partitions up to size 24. -/
 private theorem descentMB_liftMB_round_trip {μP μQ : YoungDiagram}
-    (h_sub : μP.shiftLeft ≤ μQ)
+    (h_sub : μP.shiftLeft ≤ μQ) (h_P_le_Q : μP ≤ μQ)
     (σ : PBP) (hγ : σ.γ = .Bplus ∨ σ.γ = .Bminus)
     (hPsh : σ.P.shape = μP.shiftLeft)
     (hQsh : σ.Q.shape = μQ) :
-    descentMB_PBP (liftMB_raw σ hγ μP μQ hPsh hQsh h_sub)
-      (by rfl : (liftMB_raw σ hγ μP μQ hPsh hQsh h_sub).γ = .M) = σ := by
+    descentMB_PBP (liftMB_raw σ hγ μP μQ hPsh hQsh h_sub h_P_le_Q)
+      (by rfl : (liftMB_raw σ hγ μP μQ hPsh hQsh h_sub h_P_le_Q).γ = .M) = σ := by
   sorry
 
 /-! ## M-type inductive step: primitive and balanced cases
@@ -1329,13 +1422,10 @@ private theorem descentMB_liftMB_round_trip {μP μQ : YoungDiagram}
 /-- card(M) = card(B⁺ target) + card(B⁻ target), via lift+round-trip bijection.
     Admitted: the key dependency is descentMB_liftMB_round_trip + liftMB_raw well-formedness. -/
 private theorem card_M_eq_card_B_target (μP μQ : YoungDiagram)
-    (h_sub : μP.shiftLeft ≤ μQ) :
+    (h_sub : μP.shiftLeft ≤ μQ) (h_P_le_Q : μP ≤ μQ) :
     Fintype.card (PBPSet .M μP μQ) =
       Fintype.card (PBPSet .Bplus μP.shiftLeft μQ) +
       Fintype.card (PBPSet .Bminus μP.shiftLeft μQ) := by
-  -- Forward: descentMB gives injection M → B⁺ ⊕ B⁻
-  -- (descent outputs B⁺ or B⁻ depending on descentType_M)
-  -- Backward: liftMB_PBP + round_trip gives injection B⁺ ⊕ B⁻ → M
   sorry
 
 /-- The B⁺/B⁻ PBP count on target shapes equals tripleSum(countPBP_B(r₂::rest)).
@@ -1365,8 +1455,9 @@ private theorem liftBM_card_primitive (r₁ r₂ : ℕ) (rest : DualPart)
       let (dd, rc, ss) := countPBP_B (r₂ :: rest)
       dd + rc + ss := by
   -- Step 1: card(M) = card(B⁺ target) + card(B⁻ target) via bijection
-  have h_sub : μP.shiftLeft ≤ μQ := by sorry  -- from shape analysis: primitive implies shiftLeft P ≤ Q
-  have h_bij := card_M_eq_card_B_target μP μQ h_sub
+  have h_sub : μP.shiftLeft ≤ μQ := by sorry  -- from shape analysis: shiftLeft P ≤ Q
+  have h_P_le_Q : μP ≤ μQ := by sorry  -- from shape analysis: P ≤ Q for M type
+  have h_bij := card_M_eq_card_B_target μP μQ h_sub h_P_le_Q
   -- Step 2: card(B target) = tripleSum(countPBP_B(r₂::rest))
   have h_count := card_B_target_eq_tripleSum r₁ r₂ rest μP μQ hP hQ hsort heven hpos
   rw [h_bij, h_count]; simp [tripleSum]
