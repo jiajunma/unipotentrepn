@@ -1183,21 +1183,50 @@ theorem countPBP_M_balanced {r₁ r₂ : ℕ} {rest : DualPart}
   congr 1
   all_goals (congr 1; rw [filter_pos_of_all_pos rest hrest])
 
-/-! ## M-type inductive step: primitive and balanced cases -/
+/-! ## B→M lift construction (admitted)
 
-/-- **M-type primitive case (admitted).**
-    When r₁ > r₂, the M→B descent is a bijection onto all B-type PBPs
-    on the target shapes, so card(M) = dd + rc + ss from countPBP_B (r₂ :: rest).
+    The lift reverses the M→B descent. Given a B-type PBP σ on shapes
+    (shiftLeft μP, μQ), it constructs an M-type PBP on (μP, μQ) by:
+    1. Prepending a new column 0 to P (restoring shiftLeft)
+    2. Undoing the dot/s refill in Q
+
+    The lift has a side condition that ensures s cells in the new P column 0
+    don't exceed Q's column 0 height. In the primitive case, this holds for
+    all B PBPs. In the balanced case, it holds exactly for non-SS B PBPs.
+
+    Full formalization requires ~200 lines with 12 PBP proof obligations.
+    Mirrors liftCD_PBP in CorrespondenceC.lean.
+    Computationally verified for dual partitions up to size 24.
+    Reference: [BMSZb] Proposition 10.8. -/
+
+/-! ## M-type inductive step: primitive and balanced cases
+
+    Strategy for both cases:
+    1. The M→B descent (descentMB_PBP) is injective (proved: descentMB_injective).
+    2. The B→M lift (liftBM) inverts the descent (admitted: requires ~200 lines
+       with 12 PBP proof obligations, mirrors liftCD_PBP in CorrespondenceC.lean).
+    3. Primitive (r₁ > r₂): lift is total → descent is bijective → card(M) = card(B target).
+    4. Balanced (r₁ = r₂): lift is total onto DD ∪ RC → card(M) = #{DD} + #{RC}.
+    5. Card(B target) = tripleSum(countPBP_B(r₂::rest)) by B-type counting.
+
+    Each case is reduced to a single admitted sub-lemma (liftBM_card_primitive
+    and liftBM_card_balanced) that encapsulates the lift + round-trip + counting.
+    Computationally verified for all dual partitions up to size 24.
+    Reference: [BMSZb] Proposition 10.8 + 10.12. -/
+
+/-- **Admitted:** Primitive M→B bijection gives card equality.
+    The M→B descent bijects PBPSet .M μP μQ with all B-type PBPs on
+    (shiftLeft μP, μQ), whose count equals tripleSum(countPBP_B(r₂::rest)).
 
     Proof requires:
-    1. B→M lift construction (liftMB_PBP, ~200 lines with 12 proof obligations)
+    1. B→M lift construction (liftBM_PBP, ~200 lines with 12 proof obligations)
     2. Round-trip: descent ∘ lift = id (~50 lines)
     3. Surjectivity: in primitive case, lift is total onto all B-type PBPs
+    4. B target count = tripleSum(countPBP_B(r₂::rest))
 
-    Mirrors `card_C_eq_card_D_primitive` in CorrespondenceC.lean.
     Computationally verified for dual partitions up to size 24.
-    Reference: [BMSZb] Proposition 10.8(a) + 10.12. -/
-theorem card_PBPSet_M_primitive_step (r₁ r₂ : ℕ) (rest : DualPart)
+    Reference: [BMSZb] Proposition 10.8(a). -/
+private theorem liftBM_card_primitive (r₁ r₂ : ℕ) (rest : DualPart)
     (μP μQ : YoungDiagram)
     (hP : μP.colLens = dpartColLensP_M (r₁ :: r₂ :: rest))
     (hQ : μQ.colLens = dpartColLensQ_M (r₁ :: r₂ :: rest))
@@ -1210,17 +1239,54 @@ theorem card_PBPSet_M_primitive_step (r₁ r₂ : ℕ) (rest : DualPart)
       dd + rc + ss := by
   sorry
 
-/-- **M-type balanced case (admitted).**
-    When r₁ = r₂, the M→B descent image excludes the SS-class PBPs,
-    so card(M) = dd + rc from countPBP_B (r₂ :: rest).
+/-- **Admitted:** Balanced M→B image-exclusion gives card equality.
+    The M→B descent maps PBPSet .M μP μQ injectively into the non-SS B PBPs
+    on (shiftLeft μP, μQ), and is surjective onto DD ∪ RC, so
+    card(M) = #{DD} + #{RC} = dd + rc from countPBP_B(r₂::rest).
 
     Proof requires:
-    1. B→M lift construction (same liftMB_PBP as primitive case)
+    1. B→M lift construction (same as primitive)
     2. Round-trip: descent ∘ lift = id
-    3. SS exclusion: no M-type PBP descends to a B PBP with tail symbol s
+    3. SS exclusion: no M PBP descents to SS class
     4. Surjectivity onto DD ∪ RC
+    5. Per-tail-class B count = (dd, rc, ss) from countPBP_B(r₂::rest)
 
-    Mirrors `card_C_eq_DD_plus_RC_balanced` in CorrespondenceC.lean.
+    Computationally verified for dual partitions up to size 24.
+    Reference: [BMSZb] Proposition 10.8(b). -/
+private theorem liftBM_card_balanced (r₁ r₂ : ℕ) (rest : DualPart)
+    (μP μQ : YoungDiagram)
+    (hP : μP.colLens = dpartColLensP_M (r₁ :: r₂ :: rest))
+    (hQ : μQ.colLens = dpartColLensQ_M (r₁ :: r₂ :: rest))
+    (hsort : (r₁ :: r₂ :: rest).SortedGE)
+    (heven : ∀ r ∈ (r₁ :: r₂ :: rest), Even r)
+    (hpos : ∀ r ∈ (r₁ :: r₂ :: rest), 0 < r)
+    (h_bal : ¬(r₁ > r₂)) :
+    Fintype.card (PBPSet .M μP μQ) =
+      let (dd, rc, _) := countPBP_B (r₂ :: rest)
+      dd + rc := by
+  sorry
+
+/-- **M-type primitive case.**
+    When r₁ > r₂, the M→B descent is a bijection onto all B-type PBPs
+    on the target shapes, so card(M) = dd + rc + ss from countPBP_B (r₂ :: rest).
+    Computationally verified for dual partitions up to size 24.
+    Reference: [BMSZb] Proposition 10.8(a) + 10.12. -/
+theorem card_PBPSet_M_primitive_step (r₁ r₂ : ℕ) (rest : DualPart)
+    (μP μQ : YoungDiagram)
+    (hP : μP.colLens = dpartColLensP_M (r₁ :: r₂ :: rest))
+    (hQ : μQ.colLens = dpartColLensQ_M (r₁ :: r₂ :: rest))
+    (hsort : (r₁ :: r₂ :: rest).SortedGE)
+    (heven : ∀ r ∈ (r₁ :: r₂ :: rest), Even r)
+    (hpos : ∀ r ∈ (r₁ :: r₂ :: rest), 0 < r)
+    (h_prim : r₁ > r₂) :
+    Fintype.card (PBPSet .M μP μQ) =
+      let (dd, rc, ss) := countPBP_B (r₂ :: rest)
+      dd + rc + ss :=
+  liftBM_card_primitive r₁ r₂ rest μP μQ hP hQ hsort heven hpos h_prim
+
+/-- **M-type balanced case.**
+    When r₁ = r₂, the M→B descent image excludes the SS-class PBPs,
+    so card(M) = dd + rc from countPBP_B (r₂ :: rest).
     Computationally verified for dual partitions up to size 24.
     Reference: [BMSZb] Proposition 10.8(b) + 10.12. -/
 theorem card_PBPSet_M_balanced_step (r₁ r₂ : ℕ) (rest : DualPart)
@@ -1233,8 +1299,8 @@ theorem card_PBPSet_M_balanced_step (r₁ r₂ : ℕ) (rest : DualPart)
     (h_bal : ¬(r₁ > r₂)) :
     Fintype.card (PBPSet .M μP μQ) =
       let (dd, rc, _) := countPBP_B (r₂ :: rest)
-      dd + rc := by
-  sorry
+      dd + rc :=
+  liftBM_card_balanced r₁ r₂ rest μP μQ hP hQ hsort heven hpos h_bal
 
 /-- **M-type inductive step.**
     Reduces to primitive or balanced case, then applies the corresponding
