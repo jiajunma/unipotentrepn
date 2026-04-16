@@ -1270,7 +1270,15 @@ noncomputable def liftMB_raw (σ : PBP) (hγ : σ.γ = .Bplus ∨ σ.γ = .Bminu
     (μP μQ : YoungDiagram) (hPsh : σ.P.shape = YoungDiagram.shiftLeft μP)
     (hQsh : σ.Q.shape = μQ)
     (h_sub : YoungDiagram.shiftLeft μP ≤ μQ)
-    (h_P_le_Q : μP ≤ μQ) : PBP where
+    (h_P_le_Q : μP ≤ μQ)
+    -- h_s_cross: Q has s at (i,j) → (i,j) ∈ μP and P(i,j-1)=dot (for j≥1).
+    -- Holds for B PBPs in the image of descentMB.
+    (h_s_cross : ∀ i j, (i, j) ∈ σ.Q.shape → σ.Q.paint i j = .s →
+        (i, j) ∈ μP ∧ (∀ j', j = j' + 1 → σ.P.paint i j' = .dot))
+    -- h_dot_cross: P(i,j)=dot → Q(i,j+1) has layerOrd ≤ 1 (if in shape).
+    -- Holds for B PBPs in the image of descentMB.
+    (h_dot_cross : ∀ i j, (i, j) ∈ σ.P.shape → σ.P.paint i j = .dot →
+        (i, j + 1) ∈ σ.Q.shape → (σ.Q.paint i (j + 1)).layerOrd ≤ 1) : PBP where
   γ := .M
   P := { shape := μP, paint := liftPaintP_BM σ μP μQ
          paint_outside := fun i j hmem => by
@@ -1299,7 +1307,69 @@ noncomputable def liftMB_raw (σ : PBP) (hγ : σ.γ = .Bplus ∨ σ.γ = .Bminu
       rcases hγ with hγ' | hγ' <;> rw [hγ'] at hsym <;> simp [DRCSymbol.allowed] at hsym <;>
         (revert h; rcases hsym with h₁ | h₁ | h₁ | h₁ <;> rw [h₁] <;>
           simp [DRCSymbol.layerOrd, DRCSymbol.allowed])
-  dot_match := by sorry
+  dot_match := by
+    intro i j; constructor
+    · -- Forward: (i,j) ∈ μP ∧ liftP(i,j) = dot → (i,j) ∈ μQ ∧ liftQ(i,j) = dot
+      intro ⟨hmemP, hpaint⟩
+      change liftPaintP_BM σ μP μQ i j = .dot at hpaint
+      cases j with
+      | zero =>
+        simp only [liftPaintP_BM] at hpaint; simp at hpaint
+        have ⟨hmemQ, hlo⟩ := hpaint hmemP
+        exact ⟨hmemQ, by show liftPaintQ_BM σ i 0 = .dot; simp [liftPaintQ_BM, hlo]⟩
+      | succ j' =>
+        rw [liftPaintP_BM_succ] at hpaint
+        -- σ.P(i,j') = dot. Need liftQ(i,j'+1) = dot, i.e., σ.Q(i,j'+1).lo ≤ 1.
+        have hmemPσ : (i, j') ∈ σ.P.shape := hPsh ▸ YoungDiagram.mem_shiftLeft.mpr hmemP
+        refine ⟨h_P_le_Q hmemP, ?_⟩
+        show liftPaintQ_BM σ i (j' + 1) = .dot
+        simp only [liftPaintQ_BM]; rw [if_pos]
+        -- Use h_dot_cross: σ.P(i,j')=dot → σ.Q(i,j'+1).lo ≤ 1 (if in shape)
+        by_cases hmemQ' : (i, j' + 1) ∈ σ.Q.shape
+        · exact h_dot_cross i j' hmemPσ hpaint hmemQ'
+        · rw [σ.Q.paint_outside _ _ hmemQ']; simp [DRCSymbol.layerOrd]
+    · -- Backward: (i,j) ∈ μQ ∧ liftQ(i,j) = dot → (i,j) ∈ μP ∧ liftP(i,j) = dot
+      intro ⟨hmemQ, hpaint⟩
+      change liftPaintQ_BM σ i j = .dot at hpaint
+      simp only [liftPaintQ_BM] at hpaint
+      split_ifs at hpaint with hlo
+      · by_cases hdot : σ.Q.paint i j = .dot
+        · -- σ.Q(i,j) = dot → σ.dot_match → (i,j) ∈ σ.P ∧ σ.P(i,j) = dot
+          have hmemQσ : (i, j) ∈ σ.Q.shape := hQsh ▸ hmemQ
+          have ⟨hmemPσ, hdotP⟩ := (σ.dot_match i j).mpr ⟨hmemQσ, hdot⟩
+          rw [hPsh] at hmemPσ
+          have hmemP_succ : (i, j + 1) ∈ μP := YoungDiagram.mem_shiftLeft.mp hmemPσ
+          have hmemP : (i, j) ∈ μP :=
+            μP.isLowerSet (Prod.mk_le_mk.mpr ⟨le_refl _, Nat.le_succ _⟩) hmemP_succ
+          refine ⟨hmemP, ?_⟩
+          show liftPaintP_BM σ μP μQ i j = .dot
+          cases j with
+          | zero => simp [liftPaintP_BM, hmemQ, hlo]
+          | succ j' =>
+            rw [liftPaintP_BM_succ]
+            have hmono := σ.mono_P i j' i (j' + 1) le_rfl (Nat.le_succ _)
+              (hPsh ▸ YoungDiagram.mem_shiftLeft.mpr hmemP_succ)
+            rw [hdotP, DRCSymbol.layerOrd] at hmono
+            -- σ.P(i,j').layerOrd ≤ 0 → dot (B P has {dot, c})
+            by_cases hmemPσ' : (i, j') ∈ σ.P.shape
+            · have hsym := σ.sym_P i j' hmemPσ'
+              rcases hγ with hγ' | hγ' <;> rw [hγ'] at hsym <;> simp [DRCSymbol.allowed] at hsym <;>
+                (rcases hsym with h | h <;> rw [h] at hmono ⊢ <;> simp [DRCSymbol.layerOrd] at hmono ⊢)
+            · exact σ.P.paint_outside i j' hmemPσ'
+        · -- σ.Q(i,j) = s
+          have hmemQσ : (i, j) ∈ σ.Q.shape := hQsh ▸ hmemQ
+          have hs : σ.Q.paint i j = .s := by
+            have hsym := σ.sym_Q i j hmemQσ
+            rcases hγ with hγ' | hγ' <;> rw [hγ'] at hsym <;> simp [DRCSymbol.allowed] at hsym <;>
+              rcases hsym with h | h | h | h <;> simp_all [DRCSymbol.layerOrd]
+          obtain ⟨hmemP, hP_dot⟩ := h_s_cross i j hmemQσ hs
+          refine ⟨hmemP, ?_⟩
+          show liftPaintP_BM σ μP μQ i j = .dot
+          cases j with
+          | zero => simp [liftPaintP_BM, hmemQ, hlo]
+          | succ j' => rw [liftPaintP_BM_succ]; exact hP_dot j' rfl
+      · -- hlo: ¬lo≤1, but hpaint: σ.Q = dot, lo = 0 ≤ 1. Contradiction.
+        exfalso; rw [hpaint, DRCSymbol.layerOrd] at hlo; omega
   mono_P := by
     intro i₁ j₁ i₂ j₂ hi hj hmem₂
     show (liftPaintP_BM σ μP μQ i₁ j₁).layerOrd ≤ (liftPaintP_BM σ μP μQ i₂ j₂).layerOrd
@@ -1447,11 +1517,25 @@ noncomputable def liftMB_raw (σ : PBP) (hγ : σ.γ = .Bplus ∨ σ.γ = .Bminu
     Takes a B⁺ or B⁻ PBP on (shiftLeft μP, μQ) and produces an M PBP on (μP, μQ). -/
 noncomputable def liftMB_PBP {μP μQ : YoungDiagram}
     (σ : PBPSet .Bplus μP.shiftLeft μQ ⊕ PBPSet .Bminus μP.shiftLeft μQ)
-    (h_sub : μP.shiftLeft ≤ μQ) (h_P_le_Q : μP ≤ μQ) :
+    (h_sub : μP.shiftLeft ≤ μQ) (h_P_le_Q : μP ≤ μQ)
+    (h_s_cross : ∀ (σ' : PBP), σ'.γ = .Bplus ∨ σ'.γ = .Bminus →
+        σ'.P.shape = μP.shiftLeft → σ'.Q.shape = μQ →
+        ∀ i j, (i, j) ∈ σ'.Q.shape → σ'.Q.paint i j = .s →
+        (i, j) ∈ μP ∧ (∀ j', j = j' + 1 → σ'.P.paint i j' = .dot))
+    (h_dot_cross : ∀ (σ' : PBP), σ'.γ = .Bplus ∨ σ'.γ = .Bminus →
+        σ'.P.shape = μP.shiftLeft → σ'.Q.shape = μQ →
+        ∀ i j, (i, j) ∈ σ'.P.shape → σ'.P.paint i j = .dot →
+        (i, j + 1) ∈ σ'.Q.shape → (σ'.Q.paint i (j + 1)).layerOrd ≤ 1) :
     PBPSet .M μP μQ := by
   rcases σ with ⟨σ', hσ'⟩ | ⟨σ', hσ'⟩
-  · exact ⟨liftMB_raw σ' (Or.inl hσ'.1) μP μQ hσ'.2.1 hσ'.2.2 h_sub h_P_le_Q, rfl, rfl, rfl⟩
-  · exact ⟨liftMB_raw σ' (Or.inr hσ'.1) μP μQ hσ'.2.1 hσ'.2.2 h_sub h_P_le_Q, rfl, rfl, rfl⟩
+  · exact ⟨liftMB_raw σ' (Or.inl hσ'.1) μP μQ hσ'.2.1 hσ'.2.2 h_sub h_P_le_Q
+      (fun i j hm hs => h_s_cross σ' (Or.inl hσ'.1) hσ'.2.1 hσ'.2.2 i j hm hs)
+      (fun i j hm hd hq => h_dot_cross σ' (Or.inl hσ'.1) hσ'.2.1 hσ'.2.2 i j hm hd hq),
+      rfl, rfl, rfl⟩
+  · exact ⟨liftMB_raw σ' (Or.inr hσ'.1) μP μQ hσ'.2.1 hσ'.2.2 h_sub h_P_le_Q
+      (fun i j hm hs => h_s_cross σ' (Or.inr hσ'.1) hσ'.2.1 hσ'.2.2 i j hm hs)
+      (fun i j hm hd hq => h_dot_cross σ' (Or.inr hσ'.1) hσ'.2.1 hσ'.2.2 i j hm hd hq),
+      rfl, rfl, rfl⟩
 
 /-- The M→B descent of a lifted PBP recovers the original B-type PBP.
     Key identity: descentPaintL_MB(liftMB_raw σ) reduces to σ.P.paint
@@ -1462,9 +1546,13 @@ private theorem descentMB_liftMB_round_trip {μP μQ : YoungDiagram}
     (h_sub : μP.shiftLeft ≤ μQ) (h_P_le_Q : μP ≤ μQ)
     (σ : PBP) (hγ : σ.γ = .Bplus ∨ σ.γ = .Bminus)
     (hPsh : σ.P.shape = μP.shiftLeft)
-    (hQsh : σ.Q.shape = μQ) :
-    descentMB_PBP (liftMB_raw σ hγ μP μQ hPsh hQsh h_sub h_P_le_Q)
-      (by rfl : (liftMB_raw σ hγ μP μQ hPsh hQsh h_sub h_P_le_Q).γ = .M) = σ := by
+    (hQsh : σ.Q.shape = μQ)
+    (h_s_cross : ∀ i j, (i, j) ∈ σ.Q.shape → σ.Q.paint i j = .s →
+        (i, j) ∈ μP ∧ (∀ j', j = j' + 1 → σ.P.paint i j' = .dot))
+    (h_dot_cross : ∀ i j, (i, j) ∈ σ.P.shape → σ.P.paint i j = .dot →
+        (i, j + 1) ∈ σ.Q.shape → (σ.Q.paint i (j + 1)).layerOrd ≤ 1) :
+    descentMB_PBP (liftMB_raw σ hγ μP μQ hPsh hQsh h_sub h_P_le_Q h_s_cross h_dot_cross)
+      (by rfl : (liftMB_raw σ hγ μP μQ hPsh hQsh h_sub h_P_le_Q h_s_cross h_dot_cross).γ = .M) = σ := by
   sorry
 
 /-! ## M-type inductive step: primitive and balanced cases
