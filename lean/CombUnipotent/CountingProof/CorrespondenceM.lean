@@ -1147,19 +1147,98 @@ theorem card_PBPSet_M_empty :
     Fintype.card (PBPSet .M ⊥ ⊥) = countPBP_M [] := by
   simp [countPBP_M, card_PBPSet_bot]
 
-/-- **M-type inductive step (admitted).**
-    Proves: card(PBPSet .M μP μQ) = countPBP_M (r₁ :: r₂ :: rest)
-    for the inductive case of the M main theorem.
+/-! ## Structural theorems for countPBP_M -/
 
-    This requires building the M→B lift (partial inverse of descent) and
-    proving surjectivity (primitive) or image characterization (balanced).
-    The construction mirrors liftCD_PBP in CorrespondenceC.lean (~500 lines total).
+/-- Filter by positivity is identity on lists of positive naturals. -/
+private lemma filter_pos_of_all_pos (l : List ℕ) (h : ∀ x ∈ l, 0 < x) :
+    l.filter (fun x => decide (x > 0)) = l := by
+  induction l with
+  | nil => simp
+  | cons a t ih =>
+    simp only [List.filter]
+    have ha := h a (List.mem_cons.mpr (Or.inl rfl))
+    simp [ha, ih (fun x hx => h x (List.mem_cons.mpr (Or.inr hx)))]
 
-    Key admitted facts:
-    1. liftMB_PBP: B→M lift construction (~200 lines)
-    2. descentMB_liftMB_round_trip: descent ∘ lift = id (~50 lines)
-    3. Primitive: lift is total → card(M) = card(B target) = tripleSum(countPBP_B tail)
-    4. Balanced: lift defined on DD∪RC, SS excluded → card(M) = dd + rc
+theorem countPBP_M_primitive {r₁ r₂ : ℕ} {rest : DualPart}
+    (h : r₁ > r₂) (hpos : ∀ x ∈ r₁ :: r₂ :: rest, 0 < x) :
+    countPBP_M (r₁ :: r₂ :: rest) =
+      let (dd, rc, ss) := countPBP_B (r₂ :: rest)
+      dd + rc + ss := by
+  have hr1 : r₁ > 0 := hpos r₁ (by simp)
+  have hr2 : r₂ > 0 := hpos r₂ (by simp)
+  have hrest : ∀ x ∈ rest, 0 < x := fun x hx => hpos x (by simp [hx])
+  simp only [countPBP_M, List.filter, hr1, hr2, decide_true, h, ite_true, List.tail_cons]
+  congr 1; congr 1
+  all_goals (congr 1; rw [filter_pos_of_all_pos rest hrest])
+
+theorem countPBP_M_balanced {r₁ r₂ : ℕ} {rest : DualPart}
+    (h : ¬(r₁ > r₂)) (hpos : ∀ x ∈ r₁ :: r₂ :: rest, 0 < x) :
+    countPBP_M (r₁ :: r₂ :: rest) =
+      let (dd, rc, _) := countPBP_B (r₂ :: rest)
+      dd + rc := by
+  have hr1 : r₁ > 0 := hpos r₁ (by simp)
+  have hr2 : r₂ > 0 := hpos r₂ (by simp)
+  have hrest : ∀ x ∈ rest, 0 < x := fun x hx => hpos x (by simp [hx])
+  simp only [countPBP_M, List.filter, hr1, hr2, decide_true, h, ite_false, List.tail_cons]
+  congr 1
+  all_goals (congr 1; rw [filter_pos_of_all_pos rest hrest])
+
+/-! ## M-type inductive step: primitive and balanced cases -/
+
+/-- **M-type primitive case (admitted).**
+    When r₁ > r₂, the M→B descent is a bijection onto all B-type PBPs
+    on the target shapes, so card(M) = dd + rc + ss from countPBP_B (r₂ :: rest).
+
+    Proof requires:
+    1. B→M lift construction (liftMB_PBP, ~200 lines with 12 proof obligations)
+    2. Round-trip: descent ∘ lift = id (~50 lines)
+    3. Surjectivity: in primitive case, lift is total onto all B-type PBPs
+
+    Mirrors `card_C_eq_card_D_primitive` in CorrespondenceC.lean.
+    Computationally verified for dual partitions up to size 24.
+    Reference: [BMSZb] Proposition 10.8(a) + 10.12. -/
+theorem card_PBPSet_M_primitive_step (r₁ r₂ : ℕ) (rest : DualPart)
+    (μP μQ : YoungDiagram)
+    (hP : μP.colLens = dpartColLensP_M (r₁ :: r₂ :: rest))
+    (hQ : μQ.colLens = dpartColLensQ_M (r₁ :: r₂ :: rest))
+    (hsort : (r₁ :: r₂ :: rest).SortedGE)
+    (heven : ∀ r ∈ (r₁ :: r₂ :: rest), Even r)
+    (hpos : ∀ r ∈ (r₁ :: r₂ :: rest), 0 < r)
+    (h_prim : r₁ > r₂) :
+    Fintype.card (PBPSet .M μP μQ) =
+      let (dd, rc, ss) := countPBP_B (r₂ :: rest)
+      dd + rc + ss := by
+  sorry
+
+/-- **M-type balanced case (admitted).**
+    When r₁ = r₂, the M→B descent image excludes the SS-class PBPs,
+    so card(M) = dd + rc from countPBP_B (r₂ :: rest).
+
+    Proof requires:
+    1. B→M lift construction (same liftMB_PBP as primitive case)
+    2. Round-trip: descent ∘ lift = id
+    3. SS exclusion: no M-type PBP descends to a B PBP with tail symbol s
+    4. Surjectivity onto DD ∪ RC
+
+    Mirrors `card_C_eq_DD_plus_RC_balanced` in CorrespondenceC.lean.
+    Computationally verified for dual partitions up to size 24.
+    Reference: [BMSZb] Proposition 10.8(b) + 10.12. -/
+theorem card_PBPSet_M_balanced_step (r₁ r₂ : ℕ) (rest : DualPart)
+    (μP μQ : YoungDiagram)
+    (hP : μP.colLens = dpartColLensP_M (r₁ :: r₂ :: rest))
+    (hQ : μQ.colLens = dpartColLensQ_M (r₁ :: r₂ :: rest))
+    (hsort : (r₁ :: r₂ :: rest).SortedGE)
+    (heven : ∀ r ∈ (r₁ :: r₂ :: rest), Even r)
+    (hpos : ∀ r ∈ (r₁ :: r₂ :: rest), 0 < r)
+    (h_bal : ¬(r₁ > r₂)) :
+    Fintype.card (PBPSet .M μP μQ) =
+      let (dd, rc, _) := countPBP_B (r₂ :: rest)
+      dd + rc := by
+  sorry
+
+/-- **M-type inductive step.**
+    Reduces to primitive or balanced case, then applies the corresponding
+    admitted theorem and algebraic identity from `countPBP_M`.
 
     Computationally verified for all dual partitions up to size 24 (test_verify_drc.py).
     Reference: [BMSZb] Proposition 10.8 + 10.12. -/
@@ -1171,7 +1250,13 @@ theorem card_PBPSet_M_inductive_step (r₁ r₂ : ℕ) (rest : DualPart)
     (heven : ∀ r ∈ (r₁ :: r₂ :: rest), Even r)
     (hpos : ∀ r ∈ (r₁ :: r₂ :: rest), 0 < r) :
     Fintype.card (PBPSet .M μP μQ) = countPBP_M (r₁ :: r₂ :: rest) := by
-  sorry
+  by_cases h_prim : r₁ > r₂
+  · -- Primitive: card(M) = dd + rc + ss = countPBP_M (primitive)
+    rw [countPBP_M_primitive h_prim hpos]
+    exact card_PBPSet_M_primitive_step r₁ r₂ rest μP μQ hP hQ hsort heven hpos h_prim
+  · -- Balanced: card(M) = dd + rc = countPBP_M (balanced)
+    rw [countPBP_M_balanced h_prim hpos]
+    exact card_PBPSet_M_balanced_step r₁ r₂ rest μP μQ hP hQ hsort heven hpos h_prim
 
 /-! ## Main theorem -/
 
@@ -1227,38 +1312,3 @@ theorem card_PBPSet_M_eq_countPBP_M (dp : DualPart) (μP μQ : YoungDiagram)
     -- for all dual partitions up to size 24).
     exact card_PBPSet_M_inductive_step r₁ r₂ rest μP μQ hP hQ hsort heven hpos
 
-/-! ## Structural theorems -/
-
-/-- Filter by positivity is identity on lists of positive naturals. -/
-private lemma filter_pos_of_all_pos (l : List ℕ) (h : ∀ x ∈ l, 0 < x) :
-    l.filter (fun x => decide (x > 0)) = l := by
-  induction l with
-  | nil => simp
-  | cons a t ih =>
-    simp only [List.filter]
-    have ha := h a (List.mem_cons.mpr (Or.inl rfl))
-    simp [ha, ih (fun x hx => h x (List.mem_cons.mpr (Or.inr hx)))]
-
-theorem countPBP_M_primitive {r₁ r₂ : ℕ} {rest : DualPart}
-    (h : r₁ > r₂) (hpos : ∀ x ∈ r₁ :: r₂ :: rest, 0 < x) :
-    countPBP_M (r₁ :: r₂ :: rest) =
-      let (dd, rc, ss) := countPBP_B (r₂ :: rest)
-      dd + rc + ss := by
-  have hr1 : r₁ > 0 := hpos r₁ (by simp)
-  have hr2 : r₂ > 0 := hpos r₂ (by simp)
-  have hrest : ∀ x ∈ rest, 0 < x := fun x hx => hpos x (by simp [hx])
-  simp only [countPBP_M, List.filter, hr1, hr2, decide_true, h, ite_true, List.tail_cons]
-  congr 1; congr 1
-  all_goals (congr 1; rw [filter_pos_of_all_pos rest hrest])
-
-theorem countPBP_M_balanced {r₁ r₂ : ℕ} {rest : DualPart}
-    (h : ¬(r₁ > r₂)) (hpos : ∀ x ∈ r₁ :: r₂ :: rest, 0 < x) :
-    countPBP_M (r₁ :: r₂ :: rest) =
-      let (dd, rc, _) := countPBP_B (r₂ :: rest)
-      dd + rc := by
-  have hr1 : r₁ > 0 := hpos r₁ (by simp)
-  have hr2 : r₂ > 0 := hpos r₂ (by simp)
-  have hrest : ∀ x ∈ rest, 0 < x := fun x hx => hpos x (by simp [hx])
-  simp only [countPBP_M, List.filter, hr1, hr2, decide_true, h, ite_false, List.tail_cons]
-  congr 1
-  all_goals (congr 1; rw [filter_pos_of_all_pos rest hrest])
