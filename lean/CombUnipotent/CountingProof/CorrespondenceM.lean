@@ -1107,11 +1107,282 @@ private theorem card_PBPSet_M_bot_singleCol (μQ : YoungDiagram)
   rw [Fintype.card_congr (PBPSet_M_bot_equiv_MSeq hsc)]
   exact MSeq_card_pos _ hpos
 
+/-! ### SCSeq: P-column sequences in {s, c} for M-type with Q = ⊥
+
+When Q = ⊥, dot_match forces all P cells to be non-dot.
+M-type P symbols are {dot, s, c}, so P cells ∈ {s, c}.
+Monotone layerOrd (s=1 ≤ c=3) + at most one c → exactly 2 elements. -/
+
+/-- SCSeq k: length-k sequences in {s, c}, monotone layerOrd, at most one c. -/
+private def SCSeq (k : ℕ) : Type :=
+  { f : Fin k → DRCSymbol //
+    (∀ i, f i = .s ∨ f i = .c) ∧
+    (∀ i j : Fin k, i ≤ j → (f i).layerOrd ≤ (f j).layerOrd) ∧
+    (∀ i j : Fin k, f i = .c → f j = .c → i = j) }
+
+private instance (k : ℕ) : Fintype (SCSeq k) := by unfold SCSeq; infer_instance
+private instance (k : ℕ) : DecidableEq (SCSeq k) := by unfold SCSeq; infer_instance
+
+private def SCSeq_alls_fun (k : ℕ) : Fin k → DRCSymbol := fun _ => .s
+
+private def SCSeq_alls (k : ℕ) : SCSeq k :=
+  ⟨SCSeq_alls_fun k,
+   ⟨fun _ => Or.inl rfl,
+    fun _ _ _ => le_refl _,
+    fun i _ h1 _ => by simp [SCSeq_alls_fun] at h1⟩⟩
+
+private def SCSeq_lastc_fun (k : ℕ) : Fin k → DRCSymbol :=
+  fun i => if (i : ℕ) = k - 1 then .c else .s
+
+private def SCSeq_lastc (k : ℕ) (hk : k > 0) : SCSeq k :=
+  ⟨SCSeq_lastc_fun k,
+   ⟨fun i => by simp only [SCSeq_lastc_fun]; split_ifs <;> simp,
+    fun i j hij => by
+      simp only [SCSeq_lastc_fun, DRCSymbol.layerOrd]
+      by_cases h1 : (i : ℕ) = k - 1 <;> by_cases h2 : (j : ℕ) = k - 1
+      · simp [h1, h2]
+      · exfalso; have : (j : ℕ) < k - 1 := by omega
+        have : (i : ℕ) ≤ (j : ℕ) := hij; omega
+      · simp [h1, h2]
+      · simp [h1, h2],
+    fun i j hi hj => by
+      simp only [SCSeq_lastc_fun] at hi hj
+      split_ifs at hi with h1
+      split_ifs at hj with h2
+      exact Fin.ext (by omega)⟩⟩
+
+private theorem SCSeq_exhaust (k : ℕ) (hk : k > 0) (x : SCSeq k) :
+    x = SCSeq_alls k ∨ x = SCSeq_lastc k hk := by
+  obtain ⟨f, hsc, hmono, huniq⟩ := x
+  by_cases hc : ∃ i, f i = .c
+  · right
+    apply Subtype.ext; funext i; simp only [SCSeq_lastc, SCSeq_lastc_fun]
+    obtain ⟨j, hj⟩ := hc
+    have hj_last : (j : ℕ) = k - 1 := by
+      by_contra hne
+      have hjlt : (j : ℕ) < k - 1 := by have := j.isLt; omega
+      have hk1 : k - 1 < k := Nat.sub_lt hk (by omega)
+      have hmj := hmono j ⟨k - 1, hk1⟩ (by exact Fin.mk_le_mk.mpr (by omega))
+      rw [hj] at hmj; simp [DRCSymbol.layerOrd] at hmj
+      rcases hsc ⟨k - 1, hk1⟩ with h | h <;> rw [h] at hmj <;> simp at hmj
+      exact hne (congrArg Fin.val (huniq j ⟨k - 1, hk1⟩ hj h))
+    by_cases h : (i : ℕ) = k - 1
+    · rw [if_pos h]
+      have hi_eq_j : i = j := Fin.ext (by omega)
+      rw [hi_eq_j]; exact hj
+    · rw [if_neg h]
+      rcases hsc i with hs | hc_i
+      · exact hs
+      · exfalso; exact h (congrArg Fin.val (huniq i j hc_i hj) |>.trans hj_last)
+  · left
+    apply Subtype.ext; funext i; simp only [SCSeq_alls]
+    push_neg at hc
+    rcases hsc i with h | h
+    · exact h
+    · exact absurd h (hc i)
+
+private theorem SCSeq_alls_ne_lastc (k : ℕ) (hk : k > 0) :
+    SCSeq_alls k ≠ SCSeq_lastc k hk := by
+  intro h
+  have := congrArg (fun s => s.val ⟨k - 1, by omega⟩) h
+  simp [SCSeq_alls, SCSeq_alls_fun, SCSeq_lastc, SCSeq_lastc_fun] at this
+
+private theorem SCSeq_card_pos (k : ℕ) (hk : k > 0) : Fintype.card (SCSeq k) = 2 := by
+  have h_two : Fintype.card (Fin 2) = 2 := Fintype.card_fin 2
+  rw [← h_two]
+  apply Fintype.card_eq.mpr
+  refine ⟨{
+    toFun := fun x => if x = SCSeq_alls k then 0 else 1
+    invFun := fun i => if i = 0 then SCSeq_alls k else SCSeq_lastc k hk
+    left_inv := by
+      intro x; rcases SCSeq_exhaust k hk x with rfl | rfl
+      · simp
+      · simp [Ne.symm (SCSeq_alls_ne_lastc k hk)]
+    right_inv := by
+      intro ⟨i, hi⟩; cases i with
+      | zero => simp
+      | succ n => simp [Ne.symm (SCSeq_alls_ne_lastc k hk)]; omega }⟩
+
+/-- Paint P column 0 from an SCSeq, dots elsewhere. -/
+private def mkPpaint_M (μP : YoungDiagram) (m : SCSeq (μP.colLen 0)) (i j : ℕ) : DRCSymbol :=
+  if h : j = 0 ∧ i < μP.colLen 0 then m.val ⟨i, h.2⟩ else .dot
+
+private lemma mkPpaint_M_nondot_imp {μP : YoungDiagram} {m : SCSeq (μP.colLen 0)}
+    {i j : ℕ} (h : mkPpaint_M μP m i j ≠ .dot) : j = 0 ∧ i < μP.colLen 0 := by
+  unfold mkPpaint_M at h; split_ifs at h with hc; exact hc; exact absurd rfl h
+
+@[simp] private lemma mkPpaint_M_col0 {μP : YoungDiagram} {m : SCSeq (μP.colLen 0)}
+    {i : ℕ} (hi : i < μP.colLen 0) : mkPpaint_M μP m i 0 = m.val ⟨i, hi⟩ := by
+  simp [mkPpaint_M, hi]
+
+/-- Construct PBPSet .M μP ⊥ from an SCSeq, for single-column P. -/
+private noncomputable def SCSeq_to_PBP_M {μP : YoungDiagram}
+    (hsc : ∀ j, j ≥ 1 → μP.colLen j = 0) (m : SCSeq (μP.colLen 0)) :
+    PBPSet .M μP ⊥ := by
+  refine ⟨⟨.M,
+    ⟨μP, mkPpaint_M μP m, fun i j hmem => ?_⟩,
+    emptyPYD,
+    ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩, rfl, rfl, rfl⟩
+  -- paint_outside
+  · unfold mkPpaint_M; split_ifs with hc
+    · exact absurd (YoungDiagram.mem_iff_lt_colLen.mpr (hc.1 ▸ hc.2)) hmem
+    · rfl
+  -- sym_P
+  · intro i j hmem'; change (i, j) ∈ μP at hmem'
+    have hj := singleCol_j0_M hsc hmem'; subst hj
+    have hi := YoungDiagram.mem_iff_lt_colLen.mp hmem'
+    show DRCSymbol.allowed .M .L (mkPpaint_M μP m i 0)
+    rw [mkPpaint_M_col0 hi]; simp [DRCSymbol.allowed]
+    rcases m.prop.1 ⟨i, hi⟩ with h | h <;> simp [h]
+  -- sym_Q
+  · intro _ _ h; exact absurd h (YoungDiagram.notMem_bot _)
+  -- dot_match
+  · intro i' j'; constructor
+    · intro ⟨hmemP, hpaint⟩; exfalso
+      change (i', j') ∈ μP at hmemP; change mkPpaint_M μP m i' j' = .dot at hpaint
+      have hj' := singleCol_j0_M hsc hmemP; subst hj'
+      rw [mkPpaint_M_col0 (YoungDiagram.mem_iff_lt_colLen.mp hmemP)] at hpaint
+      rcases m.prop.1 ⟨i', YoungDiagram.mem_iff_lt_colLen.mp hmemP⟩ with h | h <;> simp [h] at hpaint
+    · intro ⟨h, _⟩; exact absurd h (YoungDiagram.notMem_bot _)
+  -- mono_P
+  · intro i₁ j₁ i₂ j₂ hi hj hmem₂
+    show (mkPpaint_M μP m i₁ j₁).layerOrd ≤ (mkPpaint_M μP m i₂ j₂).layerOrd
+    change (i₂, j₂) ∈ μP at hmem₂
+    have hj₂ := singleCol_j0_M hsc hmem₂; subst hj₂
+    have hj₁ : j₁ = 0 := by omega
+    subst hj₁
+    have hi₂ := YoungDiagram.mem_iff_lt_colLen.mp hmem₂
+    rw [mkPpaint_M_col0 (show i₁ < μP.colLen 0 by omega), mkPpaint_M_col0 hi₂]
+    exact m.prop.2.1 ⟨i₁, by omega⟩ ⟨i₂, hi₂⟩ hi
+  -- mono_Q
+  · intro _ _ _ _ _ _ h; exact absurd h (YoungDiagram.notMem_bot _)
+  -- row_s
+  · intro i' s₁ s₂ j₁ j₂ h₁ h₂
+    simp only [paintBySide] at h₁ h₂
+    rcases s₁ with _ | _ <;> rcases s₂ with _ | _ <;> dsimp at h₁ h₂
+    · exact ⟨rfl, by
+        rw [(mkPpaint_M_nondot_imp (show mkPpaint_M μP m i' j₁ ≠ .dot by rw [h₁]; exact DRCSymbol.noConfusion)).1,
+            (mkPpaint_M_nondot_imp (show mkPpaint_M μP m i' j₂ ≠ .dot by rw [h₂]; exact DRCSymbol.noConfusion)).1]⟩
+    · simp [emptyPYD] at h₂
+    · simp [emptyPYD] at h₁
+    · simp [emptyPYD] at h₁
+  -- row_r: M-type P has {dot, s, c}, none of which is r. So this case is vacuous.
+  · intro i' s₁ s₂ j₁ j₂ h₁ h₂
+    simp only [paintBySide] at h₁ h₂
+    rcases s₁ with _ | _ <;> rcases s₂ with _ | _ <;> dsimp at h₁ h₂
+    · -- P.paint = r: impossible for M-type P (allowed: dot, s, c)
+      exfalso
+      have ⟨hj₁, hi₁⟩ := mkPpaint_M_nondot_imp (show mkPpaint_M μP m i' j₁ ≠ .dot by rw [h₁]; exact DRCSymbol.noConfusion)
+      subst hj₁
+      rcases m.prop.1 ⟨i', hi₁⟩ with h | h <;> rw [mkPpaint_M_col0 hi₁] at h₁ <;> simp [h] at h₁
+    · simp [emptyPYD] at h₂
+    · simp [emptyPYD] at h₁
+    · simp [emptyPYD] at h₁
+  -- col_c_P
+  · intro j' i₁ i₂ h₁ h₂
+    change mkPpaint_M μP m i₁ j' = .c at h₁
+    change mkPpaint_M μP m i₂ j' = .c at h₂
+    have ⟨hj', hi₁⟩ := mkPpaint_M_nondot_imp (show mkPpaint_M μP m i₁ j' ≠ .dot by rw [h₁]; exact DRCSymbol.noConfusion)
+    have ⟨_, hi₂⟩ := mkPpaint_M_nondot_imp (show mkPpaint_M μP m i₂ j' ≠ .dot by rw [h₂]; exact DRCSymbol.noConfusion)
+    subst hj'; rw [mkPpaint_M_col0 hi₁] at h₁; rw [mkPpaint_M_col0 hi₂] at h₂
+    exact Fin.val_eq_of_eq (m.prop.2.2 ⟨i₁, hi₁⟩ ⟨i₂, hi₂⟩ h₁ h₂)
+  -- col_c_Q
+  · intro _ _ _ h; simp [emptyPYD] at h
+  -- col_d_P
+  · intro j' i₁ _ h₁ _; exfalso
+    change mkPpaint_M μP m i₁ j' = .d at h₁
+    have ⟨hj', hi₁⟩ := mkPpaint_M_nondot_imp (show mkPpaint_M μP m i₁ j' ≠ .dot by rw [h₁]; exact DRCSymbol.noConfusion)
+    subst hj'; rw [mkPpaint_M_col0 hi₁] at h₁
+    rcases m.prop.1 ⟨i₁, hi₁⟩ with h | h <;> simp [h] at h₁
+  -- col_d_Q
+  · intro _ _ _ h; simp [emptyPYD] at h
+
+/-- Extract P col 0 as an SCSeq from a PBPSet .M μP ⊥. -/
+private noncomputable def PBPSet_M_Qbot_to_SCSeq {μP : YoungDiagram}
+    (τ : PBPSet .M μP ⊥) : SCSeq (μP.colLen 0) :=
+  ⟨fun i => τ.val.P.paint i.val 0, by
+    refine ⟨fun i => ?_, fun i j hij => ?_, fun i j hi hj => ?_⟩
+    · have hmemP : (i.val, 0) ∈ τ.val.P.shape := by
+        rw [τ.prop.2.1]; exact YoungDiagram.mem_iff_lt_colLen.mpr i.isLt
+      have hne : τ.val.P.paint i.val 0 ≠ .dot := by
+        intro hdot
+        have ⟨hmemQ, _⟩ := (τ.val.dot_match i.val 0).mp ⟨hmemP, hdot⟩
+        rw [τ.prop.2.2] at hmemQ; exact absurd hmemQ (YoungDiagram.notMem_bot _)
+      have hall := τ.val.sym_P i.val 0 hmemP
+      simp [DRCSymbol.allowed, τ.prop.1] at hall
+      rcases hall with h | h | h
+      · exact absurd h hne
+      · exact Or.inl h
+      · exact Or.inr h
+    · exact τ.val.mono_P i.val 0 j.val 0 hij (le_refl 0)
+        (by rw [τ.prop.2.1]; exact YoungDiagram.mem_iff_lt_colLen.mpr j.isLt)
+    · exact Fin.ext (τ.val.col_c_P 0 i.val j.val hi hj)⟩
+
+/-- Round-trip: extract then reconstruct gives the same PBP (single-column P, M-type, Q=⊥). -/
+private theorem SCSeq_roundtrip_left {μP : YoungDiagram}
+    (hsc : ∀ j, j ≥ 1 → μP.colLen j = 0) (τ : PBPSet .M μP ⊥) :
+    SCSeq_to_PBP_M hsc (PBPSet_M_Qbot_to_SCSeq τ) = τ := by
+  apply Subtype.ext; apply PBP.ext''
+  · -- γ: both .M
+    unfold SCSeq_to_PBP_M; dsimp; exact τ.prop.1.symm
+  · -- P: paint agrees
+    apply PaintedYoungDiagram.ext'
+    · unfold SCSeq_to_PBP_M; dsimp; exact τ.prop.2.1.symm
+    · ext i j
+      unfold SCSeq_to_PBP_M PBPSet_M_Qbot_to_SCSeq; dsimp
+      simp only [mkPpaint_M]
+      split_ifs with hc
+      · rw [hc.1]
+      · push_neg at hc
+        symm; apply τ.val.P.paint_outside
+        intro hmem; rw [τ.prop.2.1] at hmem
+        by_cases hj : j = 0
+        · subst hj; exact absurd (YoungDiagram.mem_iff_lt_colLen.mp hmem) (not_lt.mpr (hc rfl))
+        · exact absurd (singleCol_j0_M hsc hmem) hj
+  · -- Q: both emptyPYD
+    unfold SCSeq_to_PBP_M; dsimp
+    exact (PYD_eq_emptyPYD_of_shape_bot τ.prop.2.2).symm
+
+/-- Round-trip: reconstruct then extract gives the same SCSeq. -/
+private theorem SCSeq_roundtrip_right {μP : YoungDiagram}
+    (hsc : ∀ j, j ≥ 1 → μP.colLen j = 0) (m : SCSeq (μP.colLen 0)) :
+    PBPSet_M_Qbot_to_SCSeq (SCSeq_to_PBP_M hsc m) = m := by
+  apply Subtype.ext; funext i
+  simp only [PBPSet_M_Qbot_to_SCSeq, SCSeq_to_PBP_M, mkPpaint_M]
+  dsimp; simp [i.isLt]
+
+/-- PBPSet .M μP ⊥ ≃ SCSeq (μP.colLen 0) for single-column P. -/
+private noncomputable def PBPSet_M_Qbot_equiv_SCSeq {μP : YoungDiagram}
+    (hsc : ∀ j, j ≥ 1 → μP.colLen j = 0) :
+    PBPSet .M μP ⊥ ≃ SCSeq (μP.colLen 0) where
+  toFun := PBPSet_M_Qbot_to_SCSeq
+  invFun := SCSeq_to_PBP_M hsc
+  left_inv := SCSeq_roundtrip_left hsc
+  right_inv := SCSeq_roundtrip_right hsc
+
+/-- card(PBPSet .M μP ⊥) = 2 for single-column P with positive height. -/
+private theorem card_PBPSet_M_Qbot_singleCol (μP : YoungDiagram)
+    (hsc : ∀ j, j ≥ 1 → μP.colLen j = 0) (hpos : μP.colLen 0 > 0) :
+    Fintype.card (PBPSet .M μP ⊥) = 2 := by
+  rw [Fintype.card_congr (PBPSet_M_Qbot_equiv_SCSeq hsc)]
+  exact SCSeq_card_pos _ hpos
+
+/-- Helper: colLen j = 0 for j ≥ 1 when colLens = [a]. -/
+private lemma singleCol_from_colLens {μ : YoungDiagram} {a : ℕ}
+    (h : μ.colLens = [a]) : ∀ j, j ≥ 1 → μ.colLen j = 0 := by
+  intro j hj
+  have hlen : μ.colLens.length = 1 := by rw [h]; simp
+  rw [YoungDiagram.length_colLens] at hlen
+  have : μ.rowLen 0 = 1 := hlen
+  -- colLen j = 0 when j ≥ rowLen 0 = 1
+  by_contra hne; push_neg at hne; have hpos := Nat.pos_of_ne_zero (by omega)
+  have hmem : (0, j) ∈ μ := YoungDiagram.mem_iff_lt_colLen.mpr hpos
+  have := YoungDiagram.mem_iff_lt_rowLen.mp hmem
+  omega
+
 /-- Base case: M with single even row [r₁].
     With corrected defs: P has single column of height r₁/2, Q = ⊥.
-    countPBP_M [r₁] = 2 (= 0 + 1 + 1 from countPBP_B []).
-    Admitted: needs PBPSet .M μP ⊥ = 2 infrastructure (dual of existing P=⊥ case).
-    Computationally verified for all even r₁ up to 24. -/
+    countPBP_M [r₁] = 2 (= 0 + 1 + 1 from countPBP_B []). -/
 theorem card_PBPSet_M_singleton (r₁ : ℕ) (μP μQ : YoungDiagram)
     (hP : μP.colLens = dpartColLensP_M [r₁])
     (hQ : μQ.colLens = dpartColLensQ_M [r₁])
@@ -1128,9 +1399,13 @@ theorem card_PBPSet_M_singleton (r₁ : ℕ) (μP μQ : YoungDiagram)
     simp only [countPBP_M, List.filter]
     simp [hr, countPBP_B]
   rw [h_count]
-  -- Need: card(PBPSet .M μP ⊥) = 2 where μP has single column of height r₁/2.
-  -- This is the P↔Q dual of card_PBPSet_M_bot_singleCol.
-  sorry
+  -- Apply card_PBPSet_M_Qbot_singleCol
+  have hP_single : μP.colLens = [r₁ / 2] := by rw [hP, hP_form]
+  have hsc := singleCol_from_colLens hP_single
+  have hpos : μP.colLen 0 > 0 := by
+    rw [colLen_0_eq_of_colLens_cons (by rw [hP_single])]
+    obtain ⟨k, hk⟩ := heven; omega
+  exact card_PBPSet_M_Qbot_singleCol μP hsc hpos
 
 /-- Base case: empty orbit for M type. -/
 theorem card_PBPSet_M_empty :
@@ -1527,10 +1802,13 @@ noncomputable def liftMB_PBP {μP μQ : YoungDiagram}
       (fun i j hm hd hq => h_dot_cross σ' (Or.inr hσ'.1) hσ'.2.1 hσ'.2.2 i j hm hd hq),
       rfl, rfl, rfl⟩
 
-/-- The M→B descent of a lifted PBP recovers the original B-type PBP.
+/-- The M→B descent of a lifted B⁺ PBP recovers the original PBP.
     Key identity: descentPaintL_MB(liftMB_raw σ) reduces to σ.P.paint
     and descentPaintR_MB(liftMB_raw σ) reduces to σ.Q.paint.
-    Admitted: requires ~50 lines of paint equality proofs.
+
+    Note: the current liftPaintP_BM fills P col 0 with {dot, s} only,
+    so descentType_M always returns B⁺. The round-trip only holds for B⁺ inputs.
+    For B⁻, one must modify liftPaintP_BM to place c at the bottom of col 0.
     Computationally verified for dual partitions up to size 24. -/
 private theorem descentMB_liftMB_round_trip {μP μQ : YoungDiagram}
     (h_sub : μP.shiftLeft ≤ μQ) (h_P_le_Q : μP ≤ μQ)
