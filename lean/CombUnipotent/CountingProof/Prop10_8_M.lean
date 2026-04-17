@@ -337,12 +337,16 @@ private theorem Q_le_P_colLen (μP μQ : YoungDiagram) (h_QleP : μQ ≤ μP) :
     The trickiest case is τ.P(i₁, 0) = c (γ=B-, i₁=bottom_μP): either
     (a) primitive: the target cell doesn't exist (vacuous), or
     (b) balanced (μP.colLen 0 = μQ.colLen 0) with μP.colLen 1 = μP.colLen 0:
-        h_bal_exc forces σ.Q(bottom, 0).lo > 1 → σ.P(bottom, 0) = c → propagate. -/
+        h_bal_exc forces σ.Q(bottom, 0).lo > 1 → σ.P(bottom, 0) = c → propagate.
+
+    **h_bal_exc takes σ.γ = .Bminus as additional hypothesis**: this is
+    vacuously satisfiable for σ ∈ B⁺, enabling B⁺ balanced lifts. -/
 theorem liftPaintP_naive_col0_to_succ_mono (σ : PBP)
     (hγ : σ.γ = .Bplus ∨ σ.γ = .Bminus)
     (μP μQ : YoungDiagram) (hPsh : σ.P.shape = YoungDiagram.shiftLeft μP)
     (hQsh : σ.Q.shape = μQ) (h_sub : μP.shiftLeft ≤ μQ) (h_QleP : μQ ≤ μP)
     (h_bal_exc : μP.colLen 0 = μQ.colLen 0 → μP.colLen 0 > 0 →
+        σ.γ = .Bminus →
         (σ.Q.paint (μQ.colLen 0 - 1) 0).layerOrd > 1)
     {i₁ i₂ j₂' : ℕ} (hi : i₁ ≤ i₂)
     (hmem : (i₂, j₂' + 1) ∈ μP) :
@@ -372,7 +376,7 @@ theorem liftPaintP_naive_col0_to_succ_mono (σ : PBP)
     · simp [h, DRCSymbol.layerOrd]
   · -- τ.P(i₁, 0) = c. γ = B- and i₁ = μP.colLen 0 - 1.
     rw [hτ₁]
-    obtain ⟨hmem₁μ, _hγBm, hi₁_eq⟩ :=
+    obtain ⟨hmem₁μ, hγBm, hi₁_eq⟩ :=
       (liftPaintP_naive_col0_c_iff σ μP i₁).mp hτ₁
     have h_pos : μP.colLen 0 > 0 := by
       have := YoungDiagram.mem_iff_lt_colLen.mp hmem₁μ
@@ -396,7 +400,7 @@ theorem liftPaintP_naive_col0_to_succ_mono (σ : PBP)
     · -- Balanced: μP.colLen 0 = μQ.colLen 0.
       push_neg at h_prim
       have h_bal : μP.colLen 0 = μQ.colLen 0 := by omega
-      have h_gt := h_bal_exc h_bal h_pos
+      have h_gt := h_bal_exc h_bal h_pos hγBm
       have hi₁_eq' : i₁ = μQ.colLen 0 - 1 := by rw [hi₁_eq]; omega
       have hi₂_eq : i₂ = μP.colLen 0 - 1 := by
         have : i₂ < μP.colLen 0 := by
@@ -459,9 +463,11 @@ noncomputable def liftBM_naive (σ : PBP) (hγ : σ.γ = .Bplus ∨ σ.γ = .Bmi
     (h_sub : μP.shiftLeft ≤ μQ)  -- shiftLeft μP ≤ μQ (right interleaving)
     (h_QleP : μQ ≤ μP)  -- μQ ≤ μP (cell containment)
     -- Balanced SS-exclusion: in balanced case, the bottom of μQ col 0 should not
-    -- have a problematic σ.Q paint. For primitive, this is vacuous.
+    -- have a problematic σ.Q paint WHEN σ.γ = B-. For primitive or σ.γ = B+,
+    -- this is vacuous (primitive: balanced is false; B+: Bminus hypothesis is false).
     (h_bal_exc : μP.colLen 0 = μQ.colLen 0 →
         μP.colLen 0 > 0 →
+        σ.γ = .Bminus →
         (σ.Q.paint (μQ.colLen 0 - 1) 0).layerOrd > 1) : PBP where
   γ := .M
   P := { shape := μP
@@ -552,7 +558,7 @@ noncomputable def liftBM_naive (σ : PBP) (hγ : σ.γ = .Bplus ∨ σ.γ = .Bmi
           · -- Balanced: use h_bal_exc
             have h_pos : μP.colLen 0 > 0 := by
               rw [hi_eq] at hiP; omega
-            have h_gt := h_bal_exc hbal h_pos
+            have h_gt := h_bal_exc hbal h_pos hγ_eq
             rw [← hbal, ← hi_eq] at h_gt
             omega
           · -- Primitive: μQ.colLen 0 < μP.colLen 0
@@ -852,6 +858,7 @@ theorem descentType_M_liftBM_naive (σ : PBP) (hγ : σ.γ = .Bplus ∨ σ.γ = 
     (hQsh : σ.Q.shape = μQ)
     (h_sub : μP.shiftLeft ≤ μQ) (h_QleP : μQ ≤ μP)
     (h_bal_exc : μP.colLen 0 = μQ.colLen 0 → μP.colLen 0 > 0 →
+        σ.γ = .Bminus →
         (σ.Q.paint (μQ.colLen 0 - 1) 0).layerOrd > 1)
     (h_pos : μP.colLen 0 > 0) :
     PBP.descentType_M (liftBM_naive σ hγ μP μQ hPsh hQsh h_sub h_QleP h_bal_exc) rfl = σ.γ := by
@@ -882,6 +889,7 @@ theorem descentMB_liftBM_naive_P_paint (σ : PBP) (hγ : σ.γ = .Bplus ∨ σ.�
     (hQsh : σ.Q.shape = μQ)
     (h_sub : μP.shiftLeft ≤ μQ) (h_QleP : μQ ≤ μP)
     (h_bal_exc : μP.colLen 0 = μQ.colLen 0 → μP.colLen 0 > 0 →
+        σ.γ = .Bminus →
         (σ.Q.paint (μQ.colLen 0 - 1) 0).layerOrd > 1) :
     ∀ i j, PBP.descentPaintL_MB
       (liftBM_naive σ hγ μP μQ hPsh hQsh h_sub h_QleP h_bal_exc) i j = σ.P.paint i j := by
@@ -948,6 +956,7 @@ private theorem τP_succ_outside_not_dotScolLen (σ : PBP) (hγ : σ.γ = .Bplus
     (hQsh : σ.Q.shape = μQ)
     (h_sub : μP.shiftLeft ≤ μQ) (h_QleP : μQ ≤ μP)
     (h_bal_exc : μP.colLen 0 = μQ.colLen 0 → μP.colLen 0 > 0 →
+        σ.γ = .Bminus →
         (σ.Q.paint (μQ.colLen 0 - 1) 0).layerOrd > 1)
     {i j : ℕ} (hmemPσ : (i, j) ∉ σ.P.shape) :
     ¬ (i < PBP.dotScolLen
@@ -969,6 +978,7 @@ private theorem τP_succ_c_not_dotScolLen (σ : PBP) (hγ : σ.γ = .Bplus ∨ �
     (hQsh : σ.Q.shape = μQ)
     (h_sub : μP.shiftLeft ≤ μQ) (h_QleP : μQ ≤ μP)
     (h_bal_exc : μP.colLen 0 = μQ.colLen 0 → μP.colLen 0 > 0 →
+        σ.γ = .Bminus →
         (σ.Q.paint (μQ.colLen 0 - 1) 0).layerOrd > 1)
     {i j : ℕ} (hmemμP : (i, j + 1) ∈ μP) (hPc : σ.P.paint i j = .c) :
     ¬ (i < PBP.dotScolLen
@@ -1000,6 +1010,7 @@ theorem descentMB_liftBM_naive_Q_paint (σ : PBP) (hγ : σ.γ = .Bplus ∨ σ.�
     (hQsh : σ.Q.shape = μQ)
     (h_sub : μP.shiftLeft ≤ μQ) (h_QleP : μQ ≤ μP)
     (h_bal_exc : μP.colLen 0 = μQ.colLen 0 → μP.colLen 0 > 0 →
+        σ.γ = .Bminus →
         (σ.Q.paint (μQ.colLen 0 - 1) 0).layerOrd > 1) :
     ∀ i j, PBP.descentPaintR_MB
       (liftBM_naive σ hγ μP μQ hPsh hQsh h_sub h_QleP h_bal_exc) i j = σ.Q.paint i j := by
@@ -1130,6 +1141,7 @@ theorem descentMB_liftBM_naive (σ : PBP) (hγ : σ.γ = .Bplus ∨ σ.γ = .Bmi
     (hQsh : σ.Q.shape = μQ)
     (h_sub : μP.shiftLeft ≤ μQ) (h_QleP : μQ ≤ μP)
     (h_bal_exc : μP.colLen 0 = μQ.colLen 0 → μP.colLen 0 > 0 →
+        σ.γ = .Bminus →
         (σ.Q.paint (μQ.colLen 0 - 1) 0).layerOrd > 1)
     (h_pos : μP.colLen 0 > 0) :
     descentMB_PBP (liftBM_naive σ hγ μP μQ hPsh hQsh h_sub h_QleP h_bal_exc) rfl = σ := by
@@ -1147,12 +1159,17 @@ theorem descentMB_liftBM_naive (σ : PBP) (hγ : σ.γ = .Bplus ∨ σ.γ = .Bmi
 
 /-! ## Prop 10.8(a) for M: primitive case bijection -/
 
+/-- For σ.γ = .Bplus, h_bal_exc is vacuously satisfiable (σ.γ = Bminus is false). -/
+theorem h_bal_exc_of_Bplus {μP μQ : YoungDiagram} (σ : PBP) (hγ : σ.γ = .Bplus) :
+    μP.colLen 0 = μQ.colLen 0 → μP.colLen 0 > 0 → σ.γ = .Bminus →
+    (σ.Q.paint (μQ.colLen 0 - 1) 0).layerOrd > 1 := by
+  intro _ _ hBm; exact absurd (hγ.symm.trans hBm) (by decide)
+
 /-- The lift as a PBPSet map. -/
 noncomputable def liftBM_naive_PBPSet {μP μQ : YoungDiagram}
     (h_sub : μP.shiftLeft ≤ μQ) (h_QleP : μQ ≤ μP)
-    (h_bal_exc_plus : μP.colLen 0 = μQ.colLen 0 → μP.colLen 0 > 0 →
-        ∀ σ : PBPSet .Bplus μP.shiftLeft μQ,
-          (σ.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd > 1)
+    -- For B⁺: h_bal_exc hypothesis is vacuous (σ.γ = Bminus is always false)
+    -- For B⁻: require σ.Q lo > 1 in balanced case.
     (h_bal_exc_minus : μP.colLen 0 = μQ.colLen 0 → μP.colLen 0 > 0 →
         ∀ σ : PBPSet .Bminus μP.shiftLeft μQ,
           (σ.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd > 1)
@@ -1161,21 +1178,21 @@ noncomputable def liftBM_naive_PBPSet {μP μQ : YoungDiagram}
   match σ with
   | .inl σp =>
     ⟨liftBM_naive σp.val (Or.inl σp.prop.1) μP μQ σp.prop.2.1 σp.prop.2.2
-      h_sub h_QleP (fun hb hp => h_bal_exc_plus hb hp σp),
+      h_sub h_QleP (h_bal_exc_of_Bplus σp.val σp.prop.1),
       ⟨rfl, rfl, rfl⟩⟩
   | .inr σm =>
     ⟨liftBM_naive σm.val (Or.inr σm.prop.1) μP μQ σm.prop.2.1 σm.prop.2.2
-      h_sub h_QleP (fun hb hp => h_bal_exc_minus hb hp σm),
+      h_sub h_QleP (fun hb hp hBm => h_bal_exc_minus hb hp σm),
       ⟨rfl, rfl, rfl⟩⟩
 
 /-! ## Helpers for Prop 10.8(a): building the bijection -/
 
-/-- In primitive case, h_bal_exc is vacuously true. -/
+/-- In primitive case, h_bal_exc is vacuously true (balanced hypothesis is false). -/
 theorem h_bal_exc_of_primitive {μP μQ : YoungDiagram} (σ : PBP)
     (h_prim : μP.colLen 0 > μQ.colLen 0) :
-    μP.colLen 0 = μQ.colLen 0 → μP.colLen 0 > 0 →
+    μP.colLen 0 = μQ.colLen 0 → μP.colLen 0 > 0 → σ.γ = .Bminus →
     (σ.Q.paint (μQ.colLen 0 - 1) 0).layerOrd > 1 := by
-  intro heq _; omega
+  intro heq _ _; omega
 
 /-- Shape property of descent: P' shape = shiftLeft τ.P.shape. -/
 private lemma descentMB_PBP_P_shape (τ : PBP) (hγ : τ.γ = .M) :
@@ -1302,27 +1319,237 @@ def isNonSS {μ : YoungDiagram} (σ : PBPSet γ μP' μ) (μ_bottom : ℕ) : Pro
 
 /-! ### Helpers for descent_image_balanced -/
 
-/-- In the balanced case, liftBM_naive_PBPSet maps non-SS B⁺/B⁻ to M.
-    This is a specialization of liftBM_naive_PBPSet where the h_bal_exc
-    comes from the Subtype-carried non-SS proof. -/
+/-- **Key asymmetric fact**: In balanced case, if descentType_M τ = .Bminus,
+    then descent σ = descentMB_PBP τ has σ.Q.paint(bottom, 0).lo > 1.
+
+    Proof: descentType_M = Bminus means c exists in τ.P col 0. By mono_P on col 0
+    + P monotone, c must be at the bottom row μP.colLen 0 - 1. Then by
+    τ.dot_match contrapositive: τ.P(bottom, 0) = c ≠ • → τ.Q(bottom, 0) ≠ •.
+    Since M has τ.Q ∈ {•, r, d}, τ.Q(bottom, 0) ∈ {r, d}, so lo > 1.
+
+    For the descent: σ.Q(bottom, 0) = descentPaintR_MB τ bottom 0.
+    Zone analysis:
+    - Zone 1 (bottom < dotScolLen τ.P 1) would give σ.Q = •. But τ.P col 1 at bottom:
+      τ.P(bottom, 1) ≥ τ.P(bottom, 0) = c, so τ.P(bottom, 1) = c, lo = 3. NOT in dotSdiag.
+      So dotScolLen τ.P 1 = col 1 length of dotSdiag ≤ bottom. NOT Zone 1.
+    - Zone 2 (bottom < dotScolLen τ.Q 0) would give σ.Q = s. But τ.Q(bottom, 0) ∈ {r, d}
+      has lo > 1, so (bottom, 0) ∉ dotSdiag τ.Q. dotScolLen τ.Q 0 ≤ bottom. NOT Zone 2.
+    - Zone 3: σ.Q = τ.Q(bottom, 0) ∈ {r, d}. lo > 1. ✓ -/
+theorem M_descent_Bminus_Q_lo_gt_one (τ : PBP) (hγ : τ.γ = .M)
+    (h_Bminus : PBP.descentType_M τ hγ = .Bminus)
+    (h_bal_shape : τ.P.shape.colLen 0 = τ.Q.shape.colLen 0)
+    (h_pos : τ.P.shape.colLen 0 > 0) :
+    ((descentMB_PBP τ hγ).Q.paint (τ.Q.shape.colLen 0 - 1) 0).layerOrd > 1 := by
+  set bottom := τ.P.shape.colLen 0 - 1 with h_bot_def
+  -- descentType_M = Bminus means ∃ cell (i, 0) in τ.P with τ.P(i, 0) = c.
+  unfold PBP.descentType_M at h_Bminus
+  split_ifs at h_Bminus with h
+  -- h : filter nonempty
+  obtain ⟨⟨i, j⟩, hmem⟩ := h
+  simp only [Finset.mem_filter, YoungDiagram.mem_cells] at hmem
+  obtain ⟨hmemP, hj, hc⟩ := hmem
+  subst hj
+  -- (i, 0) ∈ τ.P.shape and τ.P(i, 0) = c.
+  -- By mono_P, if i < bottom, then τ.P(bottom, 0) ≥ c (lo ≥ 3), so c.
+  -- Otherwise i = bottom (since (i, 0) ∈ τ.P means i < τ.P.colLen 0 = bottom + 1).
+  have hi_lt : i < τ.P.shape.colLen 0 := YoungDiagram.mem_iff_lt_colLen.mp hmemP
+  have h_bot_mem : (bottom, 0) ∈ τ.P.shape := by
+    rw [h_bot_def]
+    exact YoungDiagram.mem_iff_lt_colLen.mpr (by omega)
+  -- Show τ.P(bottom, 0) = c via mono_P (c is max layer).
+  have hP_bot_c : τ.P.paint bottom 0 = .c := by
+    have hmono := τ.mono_P i 0 bottom 0 (by rw [h_bot_def]; omega) le_rfl h_bot_mem
+    rw [hc, DRCSymbol.layerOrd] at hmono
+    -- τ.P(bottom, 0).lo ≥ 3. τ.P ∈ {•, s, c} for M.L, with lo 0, 1, 3. So = c.
+    have hsym := τ.sym_P bottom 0 h_bot_mem
+    rw [hγ] at hsym
+    simp [DRCSymbol.allowed] at hsym
+    rcases hsym with h | h | h
+    · rw [h, DRCSymbol.layerOrd] at hmono; omega
+    · rw [h, DRCSymbol.layerOrd] at hmono; omega
+    · exact h
+  -- By dot_match: τ.P(bottom, 0) = c ≠ • → τ.Q(bottom, 0) ≠ • (contrapositive).
+  -- Since (bottom, 0) ∈ τ.Q.shape (from balanced).
+  have h_bot_memQ : (bottom, 0) ∈ τ.Q.shape := by
+    rw [YoungDiagram.mem_iff_lt_colLen, ← h_bal_shape]
+    show bottom < τ.P.shape.colLen 0
+    omega
+  have hQ_bot_ne_dot : τ.Q.paint bottom 0 ≠ .dot := by
+    intro habs
+    have ⟨_, hP_dot⟩ := (τ.dot_match bottom 0).mpr ⟨h_bot_memQ, habs⟩
+    rw [hP_dot] at hP_bot_c
+    exact DRCSymbol.noConfusion hP_bot_c
+  -- τ.Q ∈ {•, r, d} for M.R. Since ≠ •, τ.Q ∈ {r, d}, lo ∈ {2, 3}.
+  have hsym_Q := τ.sym_Q bottom 0 h_bot_memQ
+  rw [hγ] at hsym_Q
+  simp [DRCSymbol.allowed] at hsym_Q
+  have hQ_lo_gt : (τ.Q.paint bottom 0).layerOrd > 1 := by
+    rcases hsym_Q with h | h | h
+    · exact absurd h hQ_bot_ne_dot
+    · rw [h, DRCSymbol.layerOrd]; omega
+    · rw [h, DRCSymbol.layerOrd]; omega
+  -- σ.Q(bottom, 0) = descentPaintR_MB τ bottom 0. Zone analysis.
+  -- Goal: (descentMB_PBP τ hγ).Q.paint (τ.Q.shape.colLen 0 - 1) 0 has lo > 1.
+  -- First change to bottom, then unfold to descentPaintR_MB.
+  rw [show τ.Q.shape.colLen 0 - 1 = bottom by rw [h_bot_def, h_bal_shape]]
+  change (PBP.descentPaintR_MB τ bottom 0).layerOrd > 1
+  simp only [PBP.descentPaintR_MB]
+  -- Zone 1: bottom < dotScolLen τ.P 1.
+  -- If bottom < dotScolLen τ.P 1, then (bottom, 1) ∈ dotSdiag τ.P, meaning
+  -- τ.P(bottom, 1).lo ≤ 1. But τ.P(bottom, 0).lo = 3, and by mono_P col 0 → col 1:
+  -- τ.P(bottom, 0).lo ≤ τ.P(bottom, 1).lo. 3 ≤ 1 false. Contradiction.
+  have h_not_z1 : ¬ (bottom < PBP.dotScolLen τ.P 1) := by
+    intro hlt
+    -- (bottom, 1) ∈ τ.P.shape since hlt implies bottom < dotScolLen ≤ colLen.
+    have hds_le := PBP.dotScolLen_le_colLen τ.P τ.mono_P 1
+    have hmem_bot1 : (bottom, 1) ∈ τ.P.shape :=
+      YoungDiagram.mem_iff_lt_colLen.mpr (lt_of_lt_of_le hlt hds_le)
+    -- τ.P(bottom, 1).lo ≤ 1
+    have hlo_bot1 : (τ.P.paint bottom 1).layerOrd ≤ 1 :=
+      PBP.layerOrd_le_one_of_lt_dotSdiag_colLen τ.P τ.mono_P
+        (by rw [← PBP.dotScolLen_eq_dotSdiag_colLen _ τ.mono_P]; exact hlt)
+    -- By mono_P (j ↑): τ.P(bottom, 0).lo ≤ τ.P(bottom, 1).lo. But τ.P(bottom, 0) = c, lo = 3.
+    have hmono_j := τ.mono_P bottom 0 bottom 1 le_rfl (by omega) hmem_bot1
+    rw [hP_bot_c, DRCSymbol.layerOrd] at hmono_j
+    omega
+  rw [if_neg h_not_z1]
+  -- Zone 2: bottom < dotScolLen τ.Q 0.
+  -- If bottom < dotScolLen τ.Q 0, then τ.Q(bottom, 0).lo ≤ 1. But we showed > 1. Contradiction.
+  have h_not_z2 : ¬ (bottom < PBP.dotScolLen τ.Q 0) := by
+    intro hlt
+    have hlo := PBP.layerOrd_le_one_of_lt_dotSdiag_colLen τ.Q τ.mono_Q
+      (by rw [← PBP.dotScolLen_eq_dotSdiag_colLen _ τ.mono_Q]; exact hlt)
+    omega
+  rw [if_neg h_not_z2]
+  -- Zone 3: σ.Q(bottom, 0) = τ.Q(bottom, 0). lo > 1. ✓
+  exact hQ_lo_gt
+
+/-- In the balanced case, lifts from B⁺ (total) or non-SS B⁻ to M.
+    Uses h_bal_exc_of_Bplus for B⁺ (vacuous, no filter needed) and
+    Subtype-carried proof for B⁻. -/
 noncomputable def liftBM_from_nonSS {μP μQ : YoungDiagram}
     (h_sub : μP.shiftLeft ≤ μQ) (h_QleP : μQ ≤ μP)
-    (σ : {σ : PBPSet .Bplus μP.shiftLeft μQ //
-            (σ.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd > 1} ⊕
+    (σ : PBPSet .Bplus μP.shiftLeft μQ ⊕
          {σ : PBPSet .Bminus μP.shiftLeft μQ //
             (σ.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd > 1}) :
     PBPSet .M μP μQ :=
   match σ with
   | .inl σp =>
-    ⟨liftBM_naive σp.val.val (Or.inl σp.val.prop.1) μP μQ
-      σp.val.prop.2.1 σp.val.prop.2.2 h_sub h_QleP
-      (fun _ _ => σp.prop),
+    ⟨liftBM_naive σp.val (Or.inl σp.prop.1) μP μQ
+      σp.prop.2.1 σp.prop.2.2 h_sub h_QleP
+      (h_bal_exc_of_Bplus σp.val σp.prop.1),
       ⟨rfl, rfl, rfl⟩⟩
   | .inr σm =>
     ⟨liftBM_naive σm.val.val (Or.inr σm.val.prop.1) μP μQ
       σm.val.prop.2.1 σm.val.prop.2.2 h_sub h_QleP
-      (fun _ _ => σm.prop),
+      (fun _ _ _ => σm.prop),
       ⟨rfl, rfl, rfl⟩⟩
+
+/-- Forward map: route M τ to B⁺ (if descentType = Bplus) or non-SS B⁻ (if Bminus).
+    Proves the asymmetric image characterization. -/
+noncomputable def descentMB_sum_balanced {μP μQ : YoungDiagram}
+    (h_bal : μP.colLen 0 = μQ.colLen 0) (h_pos : μP.colLen 0 > 0)
+    (τ : PBPSet .M μP μQ) :
+    PBPSet .Bplus μP.shiftLeft μQ ⊕
+    {σ : PBPSet .Bminus μP.shiftLeft μQ //
+      (σ.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd > 1} :=
+  let σ := descentMB_PBP τ.val τ.prop.1
+  have hPsh : σ.P.shape = μP.shiftLeft := by
+    show τ.val.P.shape.shiftLeft = μP.shiftLeft; rw [τ.prop.2.1]
+  have hQsh : σ.Q.shape = μQ := τ.prop.2.2
+  if h : PBP.descentType_M τ.val τ.prop.1 = .Bplus then
+    .inl ⟨σ, ⟨h, hPsh, hQsh⟩⟩
+  else
+    have h' : PBP.descentType_M τ.val τ.prop.1 = .Bminus :=
+      (descentType_M_eq_or τ.val τ.prop.1).resolve_left h
+    -- For B⁻ case, must prove σ.Q.paint (bottom, 0).lo > 1.
+    have h_bal_τ : τ.val.P.shape.colLen 0 = τ.val.Q.shape.colLen 0 := by
+      rw [τ.prop.2.1, τ.prop.2.2]; exact h_bal
+    have h_pos_τ : τ.val.P.shape.colLen 0 > 0 := by
+      rw [τ.prop.2.1]; exact h_pos
+    have h_lo : ((descentMB_PBP τ.val τ.prop.1).Q.paint (τ.val.Q.shape.colLen 0 - 1) 0).layerOrd > 1 :=
+      M_descent_Bminus_Q_lo_gt_one τ.val τ.prop.1 h' h_bal_τ h_pos_τ
+    have h_lo_μ : ((descentMB_PBP τ.val τ.prop.1).Q.paint (μQ.colLen 0 - 1) 0).layerOrd > 1 := by
+      have : τ.val.Q.shape.colLen 0 = μQ.colLen 0 := by rw [τ.prop.2.2]
+      rw [this] at h_lo; exact h_lo
+    .inr ⟨⟨σ, ⟨h', hPsh, hQsh⟩⟩, h_lo_μ⟩
+
+/-- The full Equiv for balanced case. -/
+noncomputable def descent_equiv_balanced {μP μQ : YoungDiagram}
+    (h_sub : μP.shiftLeft ≤ μQ) (h_QleP : μQ ≤ μP)
+    (h_bal : μP.colLen 0 = μQ.colLen 0) (h_pos : μP.colLen 0 > 0) :
+    PBPSet .M μP μQ ≃
+      (PBPSet .Bplus μP.shiftLeft μQ ⊕
+       {σ : PBPSet .Bminus μP.shiftLeft μQ //
+        (σ.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd > 1}) where
+  toFun := descentMB_sum_balanced h_bal h_pos
+  invFun := liftBM_from_nonSS h_sub h_QleP
+  left_inv := by
+    intro τ
+    -- τ → descent(τ) → lift(descent(τ)) = τ. Via descentMB_injective + round-trip.
+    refine descentMB_injective μP μQ _ τ ?_
+    simp only [descentMB_sum_balanced, liftBM_from_nonSS]
+    split_ifs with h
+    · -- B⁺ branch
+      have hPsh : (descentMB_PBP τ.val τ.prop.1).P.shape = μP.shiftLeft := by
+        show τ.val.P.shape.shiftLeft = μP.shiftLeft; rw [τ.prop.2.1]
+      have hQsh : (descentMB_PBP τ.val τ.prop.1).Q.shape = μQ := τ.prop.2.2
+      exact descentMB_liftBM_naive (descentMB_PBP τ.val τ.prop.1) (Or.inl h)
+        μP μQ hPsh hQsh h_sub h_QleP
+        (h_bal_exc_of_Bplus _ h) h_pos
+    · -- B⁻ branch
+      have h' : PBP.descentType_M τ.val τ.prop.1 = .Bminus :=
+        (descentType_M_eq_or τ.val τ.prop.1).resolve_left h
+      have hPsh : (descentMB_PBP τ.val τ.prop.1).P.shape = μP.shiftLeft := by
+        show τ.val.P.shape.shiftLeft = μP.shiftLeft; rw [τ.prop.2.1]
+      have hQsh : (descentMB_PBP τ.val τ.prop.1).Q.shape = μQ := τ.prop.2.2
+      have h_bal_τ : τ.val.P.shape.colLen 0 = τ.val.Q.shape.colLen 0 := by
+        rw [τ.prop.2.1, τ.prop.2.2]; exact h_bal
+      have h_pos_τ : τ.val.P.shape.colLen 0 > 0 := by
+        rw [τ.prop.2.1]; exact h_pos
+      have h_lo : ((descentMB_PBP τ.val τ.prop.1).Q.paint (τ.val.Q.shape.colLen 0 - 1) 0).layerOrd > 1 :=
+        M_descent_Bminus_Q_lo_gt_one τ.val τ.prop.1 h' h_bal_τ h_pos_τ
+      have h_bal_exc_inr : ((descentMB_PBP τ.val τ.prop.1).Q.paint (μQ.colLen 0 - 1) 0).layerOrd > 1 := by
+        have : τ.val.Q.shape.colLen 0 = μQ.colLen 0 := by rw [τ.prop.2.2]
+        rw [this] at h_lo; exact h_lo
+      exact descentMB_liftBM_naive (descentMB_PBP τ.val τ.prop.1) (Or.inr h')
+        μP μQ hPsh hQsh h_sub h_QleP
+        (fun _ _ _ => h_bal_exc_inr) h_pos
+  right_inv := by
+    intro σ
+    cases σ with
+    | inl σp =>
+      show descentMB_sum_balanced h_bal h_pos
+        (liftBM_from_nonSS h_sub h_QleP (.inl σp)) = Sum.inl σp
+      simp only [liftBM_from_nonSS, descentMB_sum_balanced]
+      have hγ_eq : PBP.descentType_M
+        (liftBM_naive σp.val (Or.inl σp.prop.1) μP μQ σp.prop.2.1 σp.prop.2.2
+          h_sub h_QleP (h_bal_exc_of_Bplus σp.val σp.prop.1)) rfl = .Bplus :=
+        (descentType_M_liftBM_naive σp.val (Or.inl σp.prop.1) μP μQ
+          σp.prop.2.1 σp.prop.2.2 h_sub h_QleP _ h_pos).trans σp.prop.1
+      rw [dif_pos hγ_eq]
+      congr 1
+      apply Subtype.ext
+      exact descentMB_liftBM_naive σp.val (Or.inl σp.prop.1) μP μQ
+        σp.prop.2.1 σp.prop.2.2 h_sub h_QleP _ h_pos
+    | inr σm =>
+      show descentMB_sum_balanced h_bal h_pos
+        (liftBM_from_nonSS h_sub h_QleP (.inr σm)) = Sum.inr σm
+      simp only [liftBM_from_nonSS, descentMB_sum_balanced]
+      have hγ_eq : PBP.descentType_M
+        (liftBM_naive σm.val.val (Or.inr σm.val.prop.1) μP μQ σm.val.prop.2.1 σm.val.prop.2.2
+          h_sub h_QleP (fun _ _ _ => σm.prop)) rfl = .Bminus :=
+        (descentType_M_liftBM_naive σm.val.val (Or.inr σm.val.prop.1) μP μQ
+          σm.val.prop.2.1 σm.val.prop.2.2 h_sub h_QleP _ h_pos).trans σm.val.prop.1
+      rw [dif_neg (by rw [hγ_eq]; decide)]
+      -- Sum.inr _ = Sum.inr σm requires inner equality.
+      congr 1
+      -- {σ : PBPSet // prop} equality requires .val equality.
+      apply Subtype.ext
+      -- PBPSet .Bminus equality requires .val equality.
+      apply Subtype.ext
+      exact descentMB_liftBM_naive σm.val.val (Or.inr σm.val.prop.1) μP μQ
+        σm.val.prop.2.1 σm.val.prop.2.2 h_sub h_QleP _ h_pos
 
 /-- **Proposition 10.8(b) for M type (balanced case)**:
     When μP.colLen(0) = μQ.colLen(0) > 0, the M→B descent is injective
@@ -1332,39 +1559,41 @@ noncomputable def liftBM_from_nonSS {μP μQ : YoungDiagram}
     The restriction comes from the dot_match constraint at (bottom, 0)
     in the balanced case: lift requires σ.Q bottom ∈ {r, d}.
 
-    **STATUS**: Admitted with a scoped sorry.  The `liftBM_from_nonSS` helper
-    gives the backward direction (non-SS σ ↦ M τ) in a total, side-condition
-    free form, and `descentMB_liftBM_naive` together with `descentMB_injective`
-    give the right-inverse and injectivity.  What is missing is the forward
-    direction: the proof that *every* τ ∈ PBPSet .M μP μQ (balanced) descends
-    to a non-SS σ.
+    **STATUS**: Fully proved via `descent_equiv_balanced` (Equiv).
+    Uses `liftBM_from_nonSS` (backward), `descentMB_sum_balanced` (forward),
+    `descentMB_liftBM_naive` (right-inverse), `descentMB_injective` (left-inverse),
+    and `M_descent_Bminus_Q_lo_gt_one` (asymmetric image characterization).
 
-    **Asymmetric filter by γ' (from paper's x_τ correction, p. 70-71):**
-    - **B⁺**: correction is c (lo=3), so x_τ' = s never. Image = {σ : σ.Q(bottom, 0) ≠ •}.
-      (σ.Q = s is INCLUDED because correction c dominates s in layerOrd.)
-    - **B⁻**: correction is s (lo=1), so x_τ' = s iff tail is all ≤ s.
-      Image = {σ : σ.Q(bottom, 0).lo > 1}, i.e., σ.Q ∈ {r, d}.
+    **Asymmetric filter by γ' (corrected after counterexample analysis):**
+    - **B⁺**: image is ALL of B⁺ (surjective onto B⁺ in balanced case).
+      Counter to the earlier belief that σ.Q(bottom, 0) ≠ • would filter: for
+      μP = μQ = single row of length 2, there exists τ ∈ M (all-dot PBP) that
+      descents to σ ∈ B⁺ with σ.Q(bottom, 0) = • (via Zone 1 in descentPaintR_MB).
+      Verified in Lean: see `tau1` proof of existence of such τ.
+    - **B⁻**: image = {σ : σ.Q(bottom, 0).lo > 1}, i.e., σ.Q ∈ {r, d}.
+      When γ' = B⁻, the lift places c at τ.P(bottom, 0), requiring τ.Q(bottom, 0) ≠ •
+      (by dot_match) and τ.Q ∈ {r, d} for M (since τ.Q has no s).
+      Via Zone 3: σ.Q(bottom, 0) = τ.Q(bottom, 0) ∈ {r, d}, i.e., lo > 1.
 
-    Verified on μP = μQ = [1]: |M|=5 = |B⁺ with σ.Q∈{s,r,d}|=3 + |B⁻ with σ.Q∈{r,d}|=2. ✓
+    Verified on μP = μQ = [1]: |M|=5 = 3 (B⁺, all) + 2 (B⁻ with σ.Q∈{r,d}). ✓
+    Verified on μP = μQ = [2]: |M|=9 = 7 (B⁺, all) + 2 (B⁻ with σ.Q∈{r,d}). ✓
 
-    Reference: [BMSZb] Proposition 10.8(b); `docs/blueprints/B_tail_symbol_correction.md`. -/
+    Reference: [BMSZb] Proposition 10.8(b). -/
 theorem descent_image_balanced {μP μQ : YoungDiagram}
     (h_sub : μP.shiftLeft ≤ μQ) (h_QleP : μQ ≤ μP)
     (h_bal : μP.colLen 0 = μQ.colLen 0) (h_pos : μP.colLen 0 > 0) :
     Fintype.card (PBPSet .M μP μQ) =
-      -- B⁺ filter: σ.Q(bottom, 0) ≠ dot (correction c dominates, so σ.Q = s is non-SS)
-      (Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ =>
-        σ.val.Q.paint (μQ.colLen 0 - 1) 0 ≠ .dot).card +
+      Fintype.card (PBPSet .Bplus μP.shiftLeft μQ) +
       -- B⁻ filter: σ.Q(bottom, 0).lo > 1 (correction s matches, so σ.Q ∈ {•,s} is SS)
       (Finset.univ.filter fun σ : PBPSet .Bminus μP.shiftLeft μQ =>
         (σ.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd > 1).card := by
-  -- Proof strategy: parallel to descent_bijective_primitive but with Subtype filters.
-  -- Build Equiv: PBPSet .M μP μQ ≃ {B⁺ non-SS} ⊕ {B⁻ non-SS}
-  -- via descentMB_sum (forward) + liftBM_from_nonSS (backward).
-  -- Key asymmetric lemmas needed:
-  --   - descent of M with γ'=B⁺ gives σ.Q ≠ dot (always — because τ.Q = dot forces σ.Q ≠ dot via Zone 2)
-  --   - descent of M with γ'=B⁻ gives σ.Q.lo > 1 (from h_bal_exc on the M side)
-  sorry -- TODO: ~100 lines, parallel to primitive case
+  -- Build Equiv: M ≃ B⁺ ⊕ {B⁻ // lo > 1}
+  have h_equiv := descent_equiv_balanced h_sub h_QleP h_bal h_pos
+  -- Convert card via Fintype.card_congr
+  rw [Fintype.card_congr h_equiv, Fintype.card_sum]
+  congr 1
+  -- B⁻ subtype card = filter card
+  rw [Fintype.card_subtype]
 
 /-! ## Shape shifting reduction: Case (1,2) ∈ ℘ → Case (1,2) ∉ ℘
 

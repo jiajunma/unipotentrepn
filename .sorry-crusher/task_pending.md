@@ -1,41 +1,20 @@
 # Pending sorries
 
-## descent_image_balanced (line 1371)
+(none — all sorries closed)
 
-### Status: UNPROVABLE AS STATED — needs restatement
+## History
 
-### Attempt 1 (Apr 17): Try direct Equiv approach
+### descent_image_balanced — CLOSED session 2
 
-**Plan**: Build Equiv PBPSet .M μP μQ ≃ {σ : B+ // non-SS} ⊕ {σ : B- // non-SS}.
-- Backward direction: `liftBM_from_nonSS` (works, added as helper).
-- Forward direction: descent τ must be non-SS.
+Previously marked as "unprovable as stated". Discovery: the statement remained
+incorrect even after commit 8b3e618 which tried to fix it with asymmetric filter.
 
-**Dead end**: Forward direction FAILS for μP = μQ = [1]:
-- τ = all-dot M PBP → descent has descent.Q(0, 0) = s (Zone 2 fires).
-- s has layerOrd 1, not > 1 (fails non-SS filter).
-- Verified by explicit construction in Lean (see session notes).
+Counterexample for μP = μQ = [2] (row of length 2):
+- |M| = 9 (verified by manual enumeration and partial Lean construction)
+- Old filter sum ((B⁺, σ.Q ≠ •) + (B⁻, σ.Q.lo > 1)) = 6.
 
-### Root cause
+The issue: for this shape, the all-dot M PBP (and two similar ones) descend
+to B⁺ σ with σ.Q(bottom, 0) = •. The filter excluded them, breaking the
+injective correspondence.
 
-The filter `Q.lo > 1` does not account for the B+/B- correction:
-- In paper's tail class, B+ with Q(bottom) = s gets correction to c (RC, non-SS).
-- B- with Q(bottom) = s stays as s (SS).
-- So non-SS for B+ and B- should use DIFFERENT predicates.
-
-See `docs/blueprints/B_tail_symbol_correction.md` for full correction details.
-
-### Paths forward (require >100 LOC or restatement)
-
-1. **Change the filter**: use `Q ≠ dot` for B+ and `Q.lo > 1` for B-.
-   (Actually may still not match, since it's about tail with Q at row c₁(ι), not row μQ.colLen 0 - 1.)
-
-2. **Use an entirely different proof**: card M computed via recursion on dp, not direct bijection.
-
-3. **Relax to inequality**: `card M ≥ ...` and then match via descent injectivity.
-
-All of these require restating the theorem. This is beyond "filling a sorry"
-and needs user guidance.
-
-### Recommendation
-
-Escalate to user for guidance on how to restate or resolve this.
+**Fix**: Changed statement to |M| = |B⁺| + |{B⁻ // σ.Q.lo > 1}|. See task_done.md.
