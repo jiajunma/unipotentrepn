@@ -1865,33 +1865,31 @@ private theorem liftBM_card_primitive (r₁ r₂ : ℕ) (rest : DualPart)
   have h_count := card_B_target_eq_tripleSum r₁ r₂ rest μP μQ hP hQ hsort heven hpos
   rw [h_bij, h_count]; simp [tripleSum]
 
-/-- **Admitted:** Balanced M→B image-exclusion gives card equality.
-    The M→B descent maps PBPSet .M μP μQ injectively into the non-SS B PBPs
-    on (shiftLeft μP, μQ), and is surjective onto DD ∪ RC, so
-    card(M) = #{DD} + #{RC} = dd + rc from countPBP_B(r₂::rest).
+/-- **Key combinatorial identity (admitted).**
+    For B-type shapes derived from a dual partition dp (all even, positive, sorted),
+    the number of B⁻ PBPs whose Q column 0 bottom cell has layerOrd ≤ 1
+    (i.e., dot or s) equals the ss component of countPBP_B(dp).
 
-    Proof sketch:
-    1. Descent: M → B is injective (descentMB_injective, proved).
-    2. SS exclusion: For balanced r₁ = r₂, μP.colLen 0 = μQ.colLen 0.
-       The M PBP P col 0 bottom has P(bottom, 0) ≠ dot (by dot_match,
-       since (bottom, 0) is at the boundary of μQ).
-       If P(bottom, 0) = c: descent gives B⁻. The B⁻ tail class checks
-       Q col 0 below P boundary — but P and Q have same height in col 0,
-       so tail is empty → SS. So B⁻ descents are actually SS.
-       Wait — the M→B descent P is shiftLeft(P_M), Q is Q_M with refill.
-       The descended B PBP has P.shape = shiftLeft(μP), Q.shape = μQ.
-       P.colLen 0 = μP.colLen 1 ≤ μP.colLen 0 = μQ.colLen 0.
-       tailLen_B = Q.colLen 0 - P.colLen 0 = μQ.colLen 0 - μP.colLen 1.
-       If μP.colLen 1 < μP.colLen 0 = μQ.colLen 0: tailLen > 0.
-       The tail symbol is the bottom of Q col 0 (row μP.colLen 1).
-       For B⁻ SS: tail symbol is s (layerOrd ≤ 1).
-       The lift for B⁻ puts c at bottom of P col 0 of M. dot_match requires
-       Q(bottom, 0) ≠ dot. But for B⁻ SS, Q at that position has s/dot.
-       If Q has dot: c vs dot violates dot_match. So B⁻ SS can't be lifted.
-    3. DD ∪ RC: lift succeeds for all non-SS B PBPs → surjective onto DD ∪ RC.
-    4. card(M) = |DD| + |RC| = dd + rc.
-    Computationally verified for dual partitions up to size 24.
-    Reference: [BMSZb] Proposition 10.8(b). -/
+    This is the "tail-s ⟹ γ=B⁻" identity: by the correction rule
+    (x₁ = s only for B⁻ when Q_boundary ∈ {•, s}), SS-class PBPs with tail
+    ending in s are exclusively B⁻. Numerically verified for all dual
+    partitions up to size 24 (see tools/verify_ss_identity.py): `ss = |B⁻ SS|`.
+
+    This is the one missing combinatorial step for M balanced counting.
+    Reference: [BMSZb] Proposition 10.11, correction rule for x_τ. -/
+private theorem card_Bminus_bottom_lo_le_one_eq_ss (dp : DualPart)
+    {μP μQ : YoungDiagram}
+    (hP : μP.colLens = dpartColLensP_B dp)
+    (hQ : μQ.colLens = dpartColLensQ_B dp)
+    (hsort : dp.SortedGE)
+    (heven : ∀ r ∈ dp, Even r)
+    (hpos : ∀ r ∈ dp, 0 < r)
+    (hQ_pos : μQ.colLen 0 > 0) :
+    (Finset.univ.filter fun σ : PBPSet .Bminus μP μQ =>
+      (σ.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd ≤ 1).card =
+      (countPBP_B dp).2.2 := by
+  sorry
+
 private theorem liftBM_card_balanced (r₁ r₂ : ℕ) (rest : DualPart)
     (μP μQ : YoungDiagram)
     (hP : μP.colLens = dpartColLensP_M (r₁ :: r₂ :: rest))
@@ -1903,7 +1901,102 @@ private theorem liftBM_card_balanced (r₁ r₂ : ℕ) (rest : DualPart)
     Fintype.card (PBPSet .M μP μQ) =
       let (dd, rc, _) := countPBP_B (r₂ :: rest)
       dd + rc := by
-  sorry
+  -- Shape unfolding for M and for the B-target (r₂ :: rest) shapes
+  have hpos_rest : ∀ x ∈ rest, 0 < x :=
+    fun x hx => hpos x (List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hx))
+  have hpos_r₂rest : ∀ x ∈ (r₂ :: rest), 0 < x :=
+    fun x hx => hpos x (List.mem_cons_of_mem _ hx)
+  have hP_unfold : μP.colLens = r₁ / 2 :: dpartColLensP_B (r₂ :: rest) := by
+    rw [hP, dpartColLensP_M_cons₂_eq_cons_dpartColLensP_B _ _ _ hpos_rest]
+  have hQ_unfold : μQ.colLens = dpartColLensQ_B (r₂ :: rest) := by
+    rw [hQ, dpartColLensQ_M_cons₂_eq_dpartColLensQ_B _ _ _ hpos_r₂rest]
+  -- h_sub, h_QleP
+  have hP_sh : μP.shiftLeft.colLens = dpartColLensP_B (r₂ :: rest) := by
+    rw [YoungDiagram.colLens_shiftLeft, hP_unfold]; rfl
+  have hsort' : (r₂ :: rest).SortedGE := (List.pairwise_cons.mp hsort.pairwise).2.sortedGE
+  have heven' : ∀ r ∈ (r₂ :: rest), Even r := fun r hr => heven r (List.mem_cons_of_mem _ hr)
+  have h_sub : μP.shiftLeft ≤ μQ :=
+    yd_PB_le_QB (r₂ :: rest) hsort' heven' hpos_r₂rest hP_sh hQ_unfold
+  have h_QleP : μQ ≤ μP := yd_QM_le_PM _ hsort heven hpos hP hQ
+  -- r₁ = r₂ from h_bal + sorted
+  have h_r₂_le_r₁ : r₂ ≤ r₁ := by
+    have hp := hsort.pairwise; rw [List.pairwise_cons] at hp
+    exact hp.1 r₂ (List.mem_cons.mpr (Or.inl rfl))
+  have h_r₁_eq_r₂ : r₁ = r₂ := by omega
+  -- μP.colLen 0 = r₁/2 = μQ.colLen 0
+  have hP0 : μP.colLen 0 = r₁ / 2 :=
+    colLen_0_eq_of_colLens_cons hP_unfold
+  have hQ0 : μQ.colLen 0 = r₂ / 2 := by
+    cases rest with
+    | nil =>
+      have h_r₂pos : r₂ > 0 := hpos r₂ (by simp)
+      apply colLen_0_eq_of_colLens_cons (tail := [])
+      rw [hQ_unfold]
+      simp [dpartColLensQ_B, h_r₂pos]
+    | cons r₃ rest' =>
+      apply colLen_0_eq_of_colLens_cons (tail := dpartColLensQ_B rest')
+      rw [hQ_unfold, dpartColLensQ_B_cons₂]
+  have h_bal_shape : μP.colLen 0 = μQ.colLen 0 := by rw [hP0, hQ0, h_r₁_eq_r₂]
+  have h_pos_shape : μP.colLen 0 > 0 := by
+    rw [hP0]
+    have hr₁_even : Even r₁ := heven r₁ (by simp)
+    have hr₁_pos : r₁ > 0 := hpos r₁ (by simp)
+    obtain ⟨a, ha⟩ := hr₁_even
+    omega
+  have hQ_pos_shape : μQ.colLen 0 > 0 := by rw [← h_bal_shape]; exact h_pos_shape
+  -- Step 1: Prop 10.8(b)
+  --   card(M) = card(B⁺) + |{σ ∈ B⁻ : σ.Q(bottom).lo > 1}|
+  have h_desc := descent_image_balanced h_sub h_QleP h_bal_shape h_pos_shape
+  -- Step 2: B counting on r₂::rest: card(B⁺) + card(B⁻) = dd + rc + ss
+  have h_count : Fintype.card (PBPSet .Bplus μP.shiftLeft μQ) +
+                 Fintype.card (PBPSet .Bminus μP.shiftLeft μQ) =
+                 tripleSum (countPBP_B (r₂ :: rest)) :=
+    card_PBPSet_B_eq_tripleSum_countPBP_B (r₂ :: rest) μP.shiftLeft μQ
+      hP_sh hQ_unfold hsort' heven' hpos_r₂rest
+  -- Step 3: B⁺ ↔ B⁻ symmetry: card(B⁺) = card(B⁻)
+  have h_sym : Fintype.card (PBPSet .Bplus μP.shiftLeft μQ) =
+               Fintype.card (PBPSet .Bminus μP.shiftLeft μQ) :=
+    card_Bplus_eq_Bminus μP.shiftLeft μQ
+  -- Step 4: split B⁻ card by filter: card(B⁻) = |lo>1| + |lo≤1|
+  have h_split : Fintype.card (PBPSet .Bminus μP.shiftLeft μQ) =
+    (Finset.univ.filter fun σ : PBPSet .Bminus μP.shiftLeft μQ =>
+       (σ.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd > 1).card +
+    (Finset.univ.filter fun σ : PBPSet .Bminus μP.shiftLeft μQ =>
+       (σ.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd ≤ 1).card := by
+    have h_univ := Finset.filter_card_add_filter_neg_card_eq_card
+      (s := (Finset.univ : Finset (PBPSet .Bminus μP.shiftLeft μQ)))
+      (p := fun σ => (σ.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd > 1)
+    rw [Finset.card_univ] at h_univ
+    rw [← h_univ]
+    congr 1
+    -- Show the two filters are equal by showing predicates are equivalent
+    have h_filter_eq : Finset.univ.filter (fun σ : PBPSet .Bminus μP.shiftLeft μQ =>
+        ¬ (σ.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd > 1) =
+      Finset.univ.filter (fun σ : PBPSet .Bminus μP.shiftLeft μQ =>
+        (σ.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd ≤ 1) := by
+      apply Finset.filter_congr
+      intro σ _
+      omega
+    rw [h_filter_eq]
+  -- Step 5: key lemma: |{σ ∈ B⁻ : σ.Q(bottom).lo ≤ 1}| = ss
+  have h_ss := card_Bminus_bottom_lo_le_one_eq_ss (r₂ :: rest)
+    hP_sh hQ_unfold hsort' heven' hpos_r₂rest hQ_pos_shape
+  simp only [tripleSum] at h_count
+  -- Destructure countPBP_B via cases on the tuple
+  rcases h_ct : countPBP_B (r₂ :: rest) with ⟨dd, rc, ss⟩
+  rw [h_ct] at h_ss h_count
+  simp only at h_ss h_count
+  -- Rewrite h_count using h_sym to get 2·card(B⁻) form
+  rw [h_sym] at h_count
+  -- Now h_count : card(B⁻) + card(B⁻) = dd + rc + ss
+  rw [h_desc, h_sym]
+  -- Simplify the let/match in the goal to dd + rc
+  show _ + _ = dd + rc
+  -- Goal: card(B⁻) + |lo>1| = dd + rc
+  -- h_split: card(B⁻) = |lo>1| + |lo≤1|
+  -- h_ss: |lo≤1| = ss
+  -- h_count: 2·card(B⁻) = dd+rc+ss
+  omega
 
 /-- **M-type primitive case.**
     When r₁ > r₂, the M→B descent is a bijection onto all B-type PBPs
