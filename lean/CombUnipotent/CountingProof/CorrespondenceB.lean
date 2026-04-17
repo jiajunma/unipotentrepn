@@ -5151,21 +5151,531 @@ private theorem fiber_le_validCol0_B_Qlow {μP μQ : YoungDiagram}
       exact absurd hPc (fiber_P_col0_no_c_of_Qlow σ hP_pos h_hQσ_eq h_Qlow τ)
     · trivial
 
+/-- **Specialized balanced lift for Qlow case**: takes a DSeq (no `h_Qd` needed).
+    Constructs a PBPSet using `Sum.inl d : ValidCol0_B` internally. In the balanced
+    case, the 5 sites in `liftPBP_B_bal_Qd` that use `sigma_Q_eq_d_of_Qbot_d_bal`
+    (reachable only for `inr`) become unreachable here, and the balanced constraints
+    (`mono_P/Q`, `row_s/r` at the col-0 boundary) discharge via the inl structure
+    (col 0 P is all dots; col 0 Q has non-dot only at rows ≥ hP). -/
+private noncomputable def liftPBP_B_bal_Qlow {μP μQ : YoungDiagram}
+    (σ : PBPSet .Bplus (μP.shiftLeft) (μQ.shiftLeft))
+    (d : DSeq (μQ.colLen 0 - μP.colLen 0))
+    (hle : μP.colLen 0 ≤ μQ.colLen 0)
+    (hP_pos : 0 < μP.colLen 0)
+    (h_hQσ_eq : μQ.shiftLeft.colLen 0 = μP.colLen 0)
+    (h_weak : ∀ j, j ≥ 1 → μQ.colLen j ≤ μP.colLen 0) :
+    PBPSet .Bplus μP μQ := by
+  -- Use Sum.inl d as the underlying ValidCol0_B witness.
+  let v : ValidCol0_B (μP.colLen 0) (μQ.colLen 0) := Sum.inl d
+  have hpoP : ∀ i j, (i, j) ∉ μP → liftPaint_B_P σ.val (μP.colLen 0) v i j = .dot := by
+    intro i j hmem; cases j with
+    | zero => simp only [liftPaint_B_P, liftCol0P_B, v]
+    | succ j =>
+      simp only [liftPaint_B_P]
+      exact σ.val.P.paint_outside i j (by
+        rw [σ.prop.2.1, YoungDiagram.mem_shiftLeft]; exact hmem)
+  have hpoQ : ∀ i j, (i, j) ∉ μQ → liftPaint_B_Q σ.val (μP.colLen 0) (μQ.colLen 0) v i j = .dot := by
+    intro i j hmem; cases j with
+    | zero =>
+      have hi : ¬(i < μQ.colLen 0) := by
+        rw [YoungDiagram.mem_iff_lt_colLen] at hmem; omega
+      unfold liftPaint_B_Q liftCol0Q_B
+      simp only [v]
+      split_ifs with hc
+      · exact absurd hc.2 hi
+      · rfl
+    | succ j =>
+      simp only [liftPaint_B_Q]
+      exact σ.val.Q.paint_outside i j (by
+        rw [σ.prop.2.2, YoungDiagram.mem_shiftLeft]; exact hmem)
+  refine ⟨⟨.Bplus,
+    ⟨μP, liftPaint_B_P σ.val (μP.colLen 0) v, hpoP⟩,
+    ⟨μQ, liftPaint_B_Q σ.val (μP.colLen 0) (μQ.colLen 0) v, hpoQ⟩,
+    ?sym_P, ?sym_Q, ?dot_match, ?mono_P, ?mono_Q,
+    ?row_s, ?row_r, ?col_c_P, ?col_c_Q, ?col_d_P, ?col_d_Q⟩,
+    rfl, rfl, rfl⟩
+  case sym_P =>
+    intro i j _
+    show (liftPaint_B_P σ.val (μP.colLen 0) v i j).allowed .Bplus .L
+    cases j with
+    | zero => simp only [liftPaint_B_P, liftCol0P_B, v]; simp [DRCSymbol.allowed]
+    | succ j =>
+      simp only [liftPaint_B_P]
+      have hmem' : (i, j) ∈ σ.val.P.shape := by
+        rw [σ.prop.2.1, YoungDiagram.mem_shiftLeft]
+        have hinμP : (i, j + 1) ∈ μP := by
+          rename_i hmem
+          exact hmem
+        exact hinμP
+      have := σ.val.sym_P i j hmem'
+      rw [σ.prop.1] at this; exact this
+  case sym_Q =>
+    intro i j _
+    show (liftPaint_B_Q σ.val (μP.colLen 0) (μQ.colLen 0) v i j).allowed .Bplus .R
+    cases j with
+    | zero =>
+      unfold liftPaint_B_Q liftCol0Q_B
+      simp only [v]
+      split_ifs with hc
+      · simp [DRCSymbol.allowed]
+        rcases d.prop.1 ⟨i - μP.colLen 0, by omega⟩ with h | h | h <;> simp [h]
+      · simp [DRCSymbol.allowed]
+    | succ j =>
+      simp only [liftPaint_B_Q]
+      rename_i hmem
+      have := σ.val.sym_Q i j (by rw [σ.prop.2.2]; exact YoungDiagram.mem_shiftLeft.mpr hmem)
+      rw [σ.prop.1] at this; exact this
+  case dot_match =>
+    intro i j; constructor
+    · intro ⟨hmem, hpaint⟩
+      cases j with
+      | zero =>
+        have hi : i < μP.colLen 0 := YoungDiagram.mem_iff_lt_colLen.mp hmem
+        refine ⟨YoungDiagram.mem_iff_lt_colLen.mpr (Nat.lt_of_lt_of_le hi hle), ?_⟩
+        change liftCol0Q_B _ _ v i = .dot
+        simp only [liftCol0Q_B, v]; exact dif_neg (by omega)
+      | succ j =>
+        simp only [liftPaint_B_P] at hpaint
+        have hmemP : (i, j) ∈ σ.val.P.shape := by
+          rw [σ.prop.2.1]; exact YoungDiagram.mem_shiftLeft.mpr hmem
+        have ⟨hmemQ, hQdot⟩ := (σ.val.dot_match i j).mp ⟨hmemP, hpaint⟩
+        exact ⟨by rw [σ.prop.2.2] at hmemQ; exact YoungDiagram.mem_shiftLeft.mp hmemQ,
+               by simp only [liftPaint_B_Q]; exact hQdot⟩
+    · intro ⟨hmem, hpaint⟩
+      cases j with
+      | zero =>
+        unfold liftPaint_B_Q liftCol0Q_B at hpaint
+        have hi : i < μQ.colLen 0 := YoungDiagram.mem_iff_lt_colLen.mp hmem
+        simp only [v] at hpaint
+        split_ifs at hpaint with hc
+        · rcases d.prop.1 ⟨i - μP.colLen 0, by omega⟩ with h | h | h <;> simp [h] at hpaint
+        · have hiP : i < μP.colLen 0 := by omega
+          exact ⟨YoungDiagram.mem_iff_lt_colLen.mpr hiP,
+                 by unfold liftPaint_B_P liftCol0P_B; simp only [v]⟩
+      | succ j =>
+        simp only [liftPaint_B_Q] at hpaint
+        have hmemQ : (i, j) ∈ σ.val.Q.shape := by
+          rw [σ.prop.2.2]; exact YoungDiagram.mem_shiftLeft.mpr hmem
+        have ⟨hmemP, hPdot⟩ := (σ.val.dot_match i j).mpr ⟨hmemQ, hpaint⟩
+        exact ⟨by rw [σ.prop.2.1] at hmemP; exact YoungDiagram.mem_shiftLeft.mp hmemP,
+               by simp only [liftPaint_B_P]; exact hPdot⟩
+  case mono_P =>
+    intro i₁ j₁ i₂ j₂ hi hj hmem₂
+    show (liftPaint_B_P σ.val (μP.colLen 0) v i₁ j₁).layerOrd ≤
+         (liftPaint_B_P σ.val (μP.colLen 0) v i₂ j₂).layerOrd
+    cases j₁ with
+    | zero =>
+      -- LHS: liftCol0P_B .inl d = .dot (layerOrd 0).
+      have hLHS : liftPaint_B_P σ.val (μP.colLen 0) v i₁ 0 = .dot := by
+        simp only [liftPaint_B_P, liftCol0P_B, v]
+      rw [hLHS]; simp [DRCSymbol.layerOrd]
+    | succ j₁ =>
+      cases j₂ with
+      | zero => omega
+      | succ j₂ =>
+        simp only [liftPaint_B_P]
+        exact σ.val.mono_P i₁ j₁ i₂ j₂ hi (by omega)
+          (by rw [σ.prop.2.1]; exact YoungDiagram.mem_shiftLeft.mpr hmem₂)
+  case mono_Q =>
+    intro i₁ j₁ i₂ j₂ hi hj hmem₂
+    show (liftPaint_B_Q σ.val (μP.colLen 0) (μQ.colLen 0) v i₁ j₁).layerOrd ≤
+         (liftPaint_B_Q σ.val (μP.colLen 0) (μQ.colLen 0) v i₂ j₂).layerOrd
+    have hi₂ : i₂ < μQ.colLen j₂ := YoungDiagram.mem_iff_lt_colLen.mp hmem₂
+    cases j₁ with
+    | zero =>
+      cases j₂ with
+      | zero =>
+        change (liftCol0Q_B _ _ v i₁).layerOrd ≤ (liftCol0Q_B _ _ v i₂).layerOrd
+        unfold liftCol0Q_B; simp only [v]
+        by_cases hc1 : μP.colLen 0 ≤ i₁ ∧ i₁ < μQ.colLen 0
+        · have hb1 : i₁ - μP.colLen 0 < μQ.colLen 0 - μP.colLen 0 := Nat.sub_lt_sub_right hc1.1 hc1.2
+          have hb2 : i₂ - μP.colLen 0 < μQ.colLen 0 - μP.colLen 0 := Nat.sub_lt_sub_right (by omega) hi₂
+          rw [dif_pos hc1, dif_pos ⟨by omega, hi₂⟩]
+          exact d.prop.2.1 ⟨_, hb1⟩ ⟨_, hb2⟩ (by simp; omega)
+        · rw [dif_neg hc1]; simp [DRCSymbol.layerOrd]
+      | succ j₂ =>
+        change (liftCol0Q_B _ _ v i₁).layerOrd ≤ (σ.val.Q.paint i₂ j₂).layerOrd
+        unfold liftCol0Q_B; simp only [v]
+        by_cases hc : μP.colLen 0 ≤ i₁ ∧ i₁ < μQ.colLen 0
+        · exfalso
+          have hi₂_bound : i₂ < μQ.colLen (j₂+1) := hi₂
+          have := h_weak (j₂ + 1) (by omega); omega
+        · rw [dif_neg hc]; simp [DRCSymbol.layerOrd]
+    | succ j₁ =>
+      cases j₂ with
+      | zero => omega
+      | succ j₂ =>
+        simp only [liftPaint_B_Q]
+        exact σ.val.mono_Q i₁ j₁ i₂ j₂ hi (by omega)
+          (by rw [σ.prop.2.2]; exact YoungDiagram.mem_shiftLeft.mpr hmem₂)
+  case row_s =>
+    have hP_no_s : ∀ i j, liftPaint_B_P σ.val (μP.colLen 0) v i j ≠ .s := by
+      intro i j; cases j with
+      | zero => simp only [liftPaint_B_P, liftCol0P_B, v]; simp
+      | succ j =>
+        simp only [liftPaint_B_P]
+        intro heq
+        by_cases hmem : (i, j) ∈ σ.val.P.shape
+        · have := σ.val.sym_P i j hmem; rw [σ.prop.1] at this
+          simp [DRCSymbol.allowed] at this; rcases this with h | h <;> simp [h] at heq
+        · simp [σ.val.P.paint_outside i j hmem] at heq
+    intro i s₁ s₂ j₁ j₂ h₁ h₂
+    simp only [paintBySide] at h₁ h₂
+    rcases s₁ with _ | _ <;> rcases s₂ with _ | _ <;> simp only at h₁ h₂
+    · exact absurd h₁ (hP_no_s i j₁)
+    · exact absurd h₁ (hP_no_s i j₁)
+    · exact absurd h₂ (hP_no_s i j₂)
+    · -- For v = inl d, liftCol0Q_B at row i = .s forces hP ≤ i.
+      have hQ0_nondot : ∀ x, liftPaint_B_Q σ.val (μP.colLen 0) (μQ.colLen 0) v x 0 ≠ .dot →
+          μP.colLen 0 ≤ x := by
+        intro x hne; simp only [liftPaint_B_Q] at hne; unfold liftCol0Q_B at hne
+        simp only [v] at hne
+        split_ifs at hne with hc
+        · exact hc.1
+        · exact absurd rfl hne
+      cases j₁ with
+      | zero =>
+        cases j₂ with
+        | zero => exact ⟨rfl, rfl⟩
+        | succ j₂ =>
+          exfalso
+          have hi_lb := hQ0_nondot i (by rw [h₁]; decide)
+          have hmemQ : (i, j₂ + 1) ∈ μQ := by
+            by_contra hout; rw [hpoQ i (j₂ + 1) hout] at h₂; exact absurd h₂ (by decide)
+          have hi₂ := YoungDiagram.mem_iff_lt_colLen.mp hmemQ
+          have h_weak_j : μQ.colLen (j₂+1) ≤ μP.colLen 0 := h_weak (j₂+1) (by omega)
+          omega
+      | succ j₁ =>
+        cases j₂ with
+        | zero =>
+          exfalso
+          have hi_lb := hQ0_nondot i (by rw [h₂]; decide)
+          have hmemQ : (i, j₁ + 1) ∈ μQ := by
+            by_contra hout; rw [hpoQ i (j₁ + 1) hout] at h₁; exact absurd h₁ (by decide)
+          have hi₁ := YoungDiagram.mem_iff_lt_colLen.mp hmemQ
+          have h_weak_j : μQ.colLen (j₁+1) ≤ μP.colLen 0 := h_weak (j₁+1) (by omega)
+          omega
+        | succ j₂ =>
+          have := σ.val.row_s i .R .R j₁ j₂
+            (show paintBySide σ.val.P σ.val.Q .R i j₁ = .s by simp [paintBySide]; exact h₁)
+            (show paintBySide σ.val.P σ.val.Q .R i j₂ = .s by simp [paintBySide]; exact h₂)
+          exact ⟨rfl, by omega⟩
+  case row_r =>
+    have hP_no_r : ∀ i j, liftPaint_B_P σ.val (μP.colLen 0) v i j ≠ .r := by
+      intro i j; cases j with
+      | zero => simp only [liftPaint_B_P, liftCol0P_B, v]; simp
+      | succ j =>
+        simp only [liftPaint_B_P]
+        intro heq
+        by_cases hmem : (i, j) ∈ σ.val.P.shape
+        · have := σ.val.sym_P i j hmem; rw [σ.prop.1] at this
+          simp [DRCSymbol.allowed] at this; rcases this with h | h <;> simp [h] at heq
+        · simp [σ.val.P.paint_outside i j hmem] at heq
+    intro i s₁ s₂ j₁ j₂ h₁ h₂
+    simp only [paintBySide] at h₁ h₂
+    rcases s₁ with _ | _ <;> rcases s₂ with _ | _ <;> simp only at h₁ h₂
+    · exact absurd h₁ (hP_no_r i j₁)
+    · exact absurd h₁ (hP_no_r i j₁)
+    · exact absurd h₂ (hP_no_r i j₂)
+    · have hQ0_nondot : ∀ x, liftPaint_B_Q σ.val (μP.colLen 0) (μQ.colLen 0) v x 0 ≠ .dot →
+          μP.colLen 0 ≤ x := by
+        intro x hne; simp only [liftPaint_B_Q] at hne; unfold liftCol0Q_B at hne
+        simp only [v] at hne
+        split_ifs at hne with hc
+        · exact hc.1
+        · exact absurd rfl hne
+      cases j₁ with
+      | zero =>
+        cases j₂ with
+        | zero => exact ⟨rfl, rfl⟩
+        | succ j₂ =>
+          exfalso
+          have hi_lb := hQ0_nondot i (by rw [h₁]; decide)
+          have hmemQ : (i, j₂ + 1) ∈ μQ := by
+            by_contra hout; rw [hpoQ i (j₂ + 1) hout] at h₂; exact absurd h₂ (by decide)
+          have hi₂ := YoungDiagram.mem_iff_lt_colLen.mp hmemQ
+          have h_weak_j : μQ.colLen (j₂+1) ≤ μP.colLen 0 := h_weak (j₂+1) (by omega)
+          omega
+      | succ j₁ =>
+        cases j₂ with
+        | zero =>
+          exfalso
+          have hi_lb := hQ0_nondot i (by rw [h₂]; decide)
+          have hmemQ : (i, j₁ + 1) ∈ μQ := by
+            by_contra hout; rw [hpoQ i (j₁ + 1) hout] at h₁; exact absurd h₁ (by decide)
+          have hi₁ := YoungDiagram.mem_iff_lt_colLen.mp hmemQ
+          have h_weak_j : μQ.colLen (j₁+1) ≤ μP.colLen 0 := h_weak (j₁+1) (by omega)
+          omega
+        | succ j₂ =>
+          have := σ.val.row_r i .R .R j₁ j₂
+            (show paintBySide σ.val.P σ.val.Q .R i j₁ = .r by simp [paintBySide]; exact h₁)
+            (show paintBySide σ.val.P σ.val.Q .R i j₂ = .r by simp [paintBySide]; exact h₂)
+          exact ⟨rfl, by omega⟩
+  case col_c_P =>
+    intro j i₁ i₂ h₁ h₂
+    show i₁ = i₂
+    simp only [liftPaint_B_P] at h₁ h₂
+    cases j with
+    | zero =>
+      -- v = .inl d ⇒ liftCol0P_B = .dot ≠ .c.
+      simp only [liftCol0P_B, v] at h₁
+      exact absurd h₁ (by decide)
+    | succ j => exact σ.val.col_c_P j i₁ i₂ h₁ h₂
+  case col_c_Q =>
+    intro j i₁ i₂ h₁ h₂
+    cases j with
+    | zero =>
+      change liftPaint_B_Q σ.val (μP.colLen 0) (μQ.colLen 0) v i₁ 0 = .c at h₁
+      simp only [liftPaint_B_Q] at h₁
+      simp only [liftCol0Q_B, v] at h₁
+      split_ifs at h₁ with hc
+      rcases d.prop.1 ⟨i₁ - μP.colLen 0, by omega⟩ with h | h | h <;> simp [h] at h₁
+    | succ j =>
+      simp only [liftPaint_B_Q] at h₁ h₂
+      exact σ.val.col_c_Q j i₁ i₂ h₁ h₂
+  case col_d_P =>
+    intro j i₁ i₂ h₁ h₂
+    cases j with
+    | zero =>
+      change liftPaint_B_P σ.val (μP.colLen 0) v i₁ 0 = .d at h₁
+      simp only [liftPaint_B_P, liftCol0P_B, v] at h₁
+      exact absurd (show (DRCSymbol.dot : DRCSymbol) = .d from h₁) (by decide)
+    | succ j =>
+      simp only [liftPaint_B_P] at h₁ h₂
+      exact σ.val.col_d_P j i₁ i₂ h₁ h₂
+  case col_d_Q =>
+    intro j i₁ i₂ h₁ h₂
+    cases j with
+    | zero =>
+      change liftPaint_B_Q σ.val (μP.colLen 0) (μQ.colLen 0) v i₁ 0 = .d at h₁
+      change liftPaint_B_Q σ.val (μP.colLen 0) (μQ.colLen 0) v i₂ 0 = .d at h₂
+      simp only [liftPaint_B_Q] at h₁ h₂
+      simp only [liftCol0Q_B, v] at h₁ h₂
+      split_ifs at h₁ with hc₁
+      split_ifs at h₂ with hc₂
+      have heq := d.prop.2.2 ⟨i₁ - μP.colLen 0, by omega⟩ ⟨i₂ - μP.colLen 0, by omega⟩ h₁ h₂
+      have := congr_arg Fin.val heq; simp at this; omega
+    | succ j =>
+      simp only [liftPaint_B_Q] at h₁ h₂
+      exact σ.val.col_d_Q j i₁ i₂ h₁ h₂
+
+/-- Round-trip: doubleDescent_Bplus_map (liftPBP_B_bal_Qlow σ d) = σ. -/
+private theorem liftPBP_B_bal_Qlow_round_trip {μP μQ : YoungDiagram}
+    (σ : PBPSet .Bplus (μP.shiftLeft) (μQ.shiftLeft))
+    (d : DSeq (μQ.colLen 0 - μP.colLen 0))
+    (hle : μP.colLen 0 ≤ μQ.colLen 0)
+    (hP_pos : 0 < μP.colLen 0)
+    (h_hQσ_eq : μQ.shiftLeft.colLen 0 = μP.colLen 0)
+    (h_weak : ∀ j, j ≥ 1 → μQ.colLen j ≤ μP.colLen 0) :
+    doubleDescent_Bplus_map μP μQ
+      (liftPBP_B_bal_Qlow σ d hle hP_pos h_hQσ_eq h_weak) = σ := by
+  set τ := liftPBP_B_bal_Qlow σ d hle hP_pos h_hQσ_eq h_weak
+  apply Subtype.ext
+  apply PBP_eq_of_data
+  · simp only [doubleDescent_Bplus_map, doubleDescent_B_PBP]; exact σ.prop.1.symm
+  · apply PaintedYoungDiagram.ext'
+    · simp only [doubleDescent_Bplus_map, doubleDescent_B_PBP]
+      rw [σ.prop.2.1]; rfl
+    · funext i j
+      show PBP.doubleDescent_B_paintL τ.val i j = σ.val.P.paint i j
+      simp only [PBP.doubleDescent_B_paintL]
+      by_cases hds : i < PBP.dotScolLen τ.val.P (j + 1)
+      · rw [if_pos hds]
+        have hlo := PBP.layerOrd_le_one_of_lt_dotSdiag_colLen τ.val.P τ.val.mono_P
+          (by rwa [PBP.dotScolLen_eq_dotSdiag_colLen] at hds)
+        have hpaint : τ.val.P.paint i (j + 1) = σ.val.P.paint i j := rfl
+        rw [hpaint] at hlo
+        have hmem_shape : (i, j + 1) ∈ τ.val.P.shape := by
+          have := PBP.dotScolLen_le_colLen τ.val.P τ.val.mono_P (j + 1)
+          exact YoungDiagram.mem_iff_lt_colLen.mpr (by omega)
+        have hmem_σ : (i, j) ∈ σ.val.P.shape := by
+          rw [σ.prop.2.1, YoungDiagram.mem_iff_lt_colLen, YoungDiagram.colLen_shiftLeft]
+          exact YoungDiagram.mem_iff_lt_colLen.mp hmem_shape
+        have hσ_sym := σ.val.sym_P i j hmem_σ
+        rw [σ.prop.1] at hσ_sym
+        simp only [DRCSymbol.allowed] at hσ_sym
+        rcases hσ_sym with h | h <;> rw [h] at hlo ⊢ <;>
+          simp [DRCSymbol.layerOrd] at hlo ⊢
+      · rw [if_neg hds]; rfl
+  · apply PaintedYoungDiagram.ext'
+    · simp only [doubleDescent_Bplus_map, doubleDescent_B_PBP]
+      rw [σ.prop.2.2]; rfl
+    · funext i j
+      show PBP.doubleDescent_B_paintR τ.val i j = σ.val.Q.paint i j
+      simp only [PBP.doubleDescent_B_paintR]
+      by_cases hdsP : i < PBP.dotScolLen τ.val.P (j + 1)
+      · rw [if_pos hdsP]
+        have hpaintP : τ.val.P.paint i (j + 1) = σ.val.P.paint i j := rfl
+        have hlo := PBP.layerOrd_le_one_of_lt_dotSdiag_colLen τ.val.P τ.val.mono_P
+          (by rwa [PBP.dotScolLen_eq_dotSdiag_colLen] at hdsP)
+        rw [hpaintP] at hlo
+        have hmem_shape : (i, j + 1) ∈ τ.val.P.shape := by
+          have := PBP.dotScolLen_le_colLen τ.val.P τ.val.mono_P (j + 1)
+          exact YoungDiagram.mem_iff_lt_colLen.mpr (by omega)
+        have hmem_σP : (i, j) ∈ σ.val.P.shape := by
+          rw [σ.prop.2.1, YoungDiagram.mem_iff_lt_colLen, YoungDiagram.colLen_shiftLeft]
+          exact YoungDiagram.mem_iff_lt_colLen.mp hmem_shape
+        have hσP_sym := σ.val.sym_P i j hmem_σP
+        rw [σ.prop.1] at hσP_sym
+        simp only [DRCSymbol.allowed] at hσP_sym
+        have hσP_dot : σ.val.P.paint i j = .dot := by
+          rcases hσP_sym with h | h <;> rw [h] at hlo <;>
+            simp [DRCSymbol.layerOrd] at hlo ⊢ <;> exact h
+        have ⟨_, hQd'⟩ := (σ.val.dot_match i j).mp ⟨hmem_σP, hσP_dot⟩
+        exact hQd'.symm
+      · rw [if_neg hdsP]
+        by_cases hdsQ : i < PBP.dotScolLen τ.val.Q (j + 1)
+        · rw [if_pos hdsQ]
+          have hpaintQ : τ.val.Q.paint i (j + 1) = σ.val.Q.paint i j := rfl
+          have hloQ := PBP.layerOrd_le_one_of_lt_dotSdiag_colLen τ.val.Q τ.val.mono_Q
+            (by rwa [PBP.dotScolLen_eq_dotSdiag_colLen] at hdsQ)
+          rw [hpaintQ] at hloQ
+          have hmemQ : (i, j + 1) ∈ τ.val.Q.shape := by
+            have := PBP.dotScolLen_le_colLen τ.val.Q τ.val.mono_Q (j + 1)
+            exact YoungDiagram.mem_iff_lt_colLen.mpr (by omega)
+          have hmem_σQ : (i, j) ∈ σ.val.Q.shape := by
+            rw [σ.prop.2.2, YoungDiagram.mem_iff_lt_colLen, YoungDiagram.colLen_shiftLeft]
+            exact YoungDiagram.mem_iff_lt_colLen.mp hmemQ
+          have hQ_ne_dot : σ.val.Q.paint i j ≠ .dot := by
+            intro hQd'
+            have ⟨hmemP, hPd⟩ := (σ.val.dot_match i j).mpr ⟨hmem_σQ, hQd'⟩
+            have hlo_σP : (σ.val.P.paint i j).layerOrd ≤ 1 := by rw [hPd]; decide
+            have hP_in_shape : (i, j + 1) ∈ τ.val.P.shape := by
+              have : i < σ.val.P.shape.colLen j := YoungDiagram.mem_iff_lt_colLen.mp hmemP
+              rw [σ.prop.2.1, YoungDiagram.colLen_shiftLeft] at this
+              exact YoungDiagram.mem_iff_lt_colLen.mpr this
+            have hlo_τP : (τ.val.P.paint i (j + 1)).layerOrd ≤ 1 := hlo_σP
+            have h_in_dsdiag : (i, j + 1) ∈ PBP.dotSdiag τ.val.P τ.val.mono_P := by
+              simp only [PBP.dotSdiag, YoungDiagram.mem_mk, Finset.mem_filter,
+                YoungDiagram.mem_cells]
+              exact ⟨hP_in_shape, hlo_τP⟩
+            have := YoungDiagram.mem_iff_lt_colLen.mp h_in_dsdiag
+            rw [← PBP.dotScolLen_eq_dotSdiag_colLen] at this
+            exact hdsP this
+          have hσQ_sym := σ.val.sym_Q i j hmem_σQ
+          rw [σ.prop.1] at hσQ_sym
+          simp only [DRCSymbol.allowed] at hσQ_sym
+          rcases hσQ_sym with h | h | h | h <;> rw [h] at hloQ hQ_ne_dot ⊢ <;>
+            simp [DRCSymbol.layerOrd] at hloQ hQ_ne_dot ⊢
+        · rw [if_neg hdsQ]; rfl
+
+/-- liftPBP_B_bal_Qlow is injective: different d give different PBPs. -/
+private theorem liftPBP_B_bal_Qlow_injective {μP μQ : YoungDiagram}
+    (σ : PBPSet .Bplus (μP.shiftLeft) (μQ.shiftLeft))
+    (hle : μP.colLen 0 ≤ μQ.colLen 0)
+    (hP_pos : 0 < μP.colLen 0)
+    (h_hQσ_eq : μQ.shiftLeft.colLen 0 = μP.colLen 0)
+    (h_weak : ∀ j, j ≥ 1 → μQ.colLen j ≤ μP.colLen 0) :
+    Function.Injective (fun d : DSeq (μQ.colLen 0 - μP.colLen 0) =>
+      liftPBP_B_bal_Qlow σ d hle hP_pos h_hQσ_eq h_weak) := by
+  intro d₁ d₂ h
+  have hval : (liftPBP_B_bal_Qlow σ d₁ hle hP_pos h_hQσ_eq h_weak).val =
+              (liftPBP_B_bal_Qlow σ d₂ hle hP_pos h_hQσ_eq h_weak).val :=
+    congrArg Subtype.val h
+  have hQeq : ∀ i, liftPaint_B_Q σ.val (μP.colLen 0) (μQ.colLen 0) (Sum.inl d₁) i 0 =
+                    liftPaint_B_Q σ.val (μP.colLen 0) (μQ.colLen 0) (Sum.inl d₂) i 0 := by
+    intro i
+    exact congr_fun (congr_fun (congrArg (fun d => d.Q.paint) hval) i) 0
+  simp only [liftPaint_B_Q, liftCol0Q_B] at hQeq
+  apply Subtype.ext; funext ⟨k, hk⟩
+  have hq := hQeq (μP.colLen 0 + k)
+  have hlt : μP.colLen 0 + k < μQ.colLen 0 := by omega
+  simp only [dif_pos (show μP.colLen 0 ≤ μP.colLen 0 + k ∧ μP.colLen 0 + k < μQ.colLen 0
+    from ⟨by omega, hlt⟩)] at hq
+  have hfin : (⟨μP.colLen 0 + k - μP.colLen 0, by omega⟩ : Fin _) = ⟨k, hk⟩ :=
+    Fin.ext (by simp)
+  rw [hfin] at hq; exact hq
+
 /-- Lower bound for Qlow balanced case: ValidCol0_B_Qlow ↪ fiber.
     Reasoning: For v = Sum.inl d (ValidCol0_B_Qlow element), the balanced
-    lift produces a valid τ. Injectivity via DSeq distinctness. -/
+    lift `liftPBP_B_bal_Qlow` produces a valid τ. Injectivity via DSeq distinctness. -/
 private theorem validCol0_B_Qlow_le_fiber {r₁ r₂ : ℕ} {rest : DualPart} {μP μQ : YoungDiagram}
-    (_hP : μP.colLens = dpartColLensP_B (r₁ :: r₂ :: rest))
-    (_hQ : μQ.colLens = dpartColLensQ_B (r₁ :: r₂ :: rest))
-    (_hsort : (r₁ :: r₂ :: rest).SortedGE)
-    (_heven : ∀ r ∈ (r₁ :: r₂ :: rest), Even r)
-    (_hpos : ∀ r ∈ (r₁ :: r₂ :: rest), 0 < r)
-    (_h_bal : ¬(r₂ > rest.head?.getD 0))
+    (hP : μP.colLens = dpartColLensP_B (r₁ :: r₂ :: rest))
+    (hQ : μQ.colLens = dpartColLensQ_B (r₁ :: r₂ :: rest))
+    (hsort : (r₁ :: r₂ :: rest).SortedGE)
+    (heven : ∀ r ∈ (r₁ :: r₂ :: rest), Even r)
+    (hpos : ∀ r ∈ (r₁ :: r₂ :: rest), 0 < r)
+    (h_bal : ¬(r₂ > rest.head?.getD 0))
     (σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft)
     (_h_Qlow : (σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0).layerOrd ≤ 1) :
     Fintype.card (ValidCol0_B_Qlow (μP.colLen 0) (μQ.colLen 0)) ≤
     Fintype.card (doubleDescent_Bplus_fiber σ) := by
-  sorry
+  -- Extract shape relations (parallel to fiber_card_B_bal_Qd).
+  have hP0 : μP.colLen 0 = r₂ / 2 :=
+    colLen_0_eq_of_colLens_cons (by rw [hP, dpartColLensP_B_cons₂])
+  have hQ0 : μQ.colLen 0 = r₁ / 2 :=
+    colLen_0_eq_of_colLens_cons (by rw [hQ, dpartColLensQ_B_cons₂])
+  have h_ge := sortedGE_head_ge hsort
+  have hle : μP.colLen 0 ≤ μQ.colLen 0 := by
+    rw [hP0, hQ0]; exact Nat.div_le_div_right h_ge
+  have heven₂ := heven r₂ (by simp)
+  obtain ⟨b, hb⟩ := heven₂
+  have hpos₂ := hpos r₂ (by simp)
+  have hP_pos : 0 < μP.colLen 0 := by rw [hP0, hb]; omega
+  -- h_hQσ_eq: μQ.shiftLeft.colLen 0 = μP.colLen 0 (from balanced).
+  have h_hQσ_eq : μQ.shiftLeft.colLen 0 = μP.colLen 0 := by
+    push_neg at h_bal
+    rw [hP0]
+    match rest, show μQ.shiftLeft.colLens = dpartColLensQ_B rest from
+      (by rw [YoungDiagram.colLens_shiftLeft, hQ]; simp [dpartColLensQ_B]) with
+    | [], heq => simp at h_bal; omega
+    | [r₃], heq =>
+      simp at h_bal
+      have hr₃_le : r₃ ≤ r₂ := by
+        have hsort' : Antitone (r₁ :: r₂ :: [r₃]).get := hsort
+        have h12 := @hsort' ⟨1, by simp⟩ ⟨2, by simp⟩ (by simp)
+        simpa using h12
+      have hr₂_eq : r₂ = r₃ := le_antisymm (by omega) hr₃_le
+      have hpos₃ := hpos r₃ (by simp)
+      have h : μQ.shiftLeft.colLens = [r₃/2] := by
+        rw [heq]; simp [dpartColLensQ_B, hpos₃]
+      have hcl : μQ.shiftLeft.colLen 0 = r₃/2 := colLen_0_eq_of_colLens_cons h
+      rw [hcl, hr₂_eq]
+    | r₃ :: r₄ :: rest', heq =>
+      simp at h_bal
+      have hr₃_le : r₃ ≤ r₂ := by
+        have hsort' : Antitone (r₁ :: r₂ :: r₃ :: r₄ :: rest').get := hsort
+        have h12 := @hsort' ⟨1, by simp⟩ ⟨2, by simp⟩ (by simp : (⟨1, by simp⟩ : Fin 4) ≤ ⟨2, by simp⟩)
+        simpa using h12
+      have hr₂_eq : r₂ = r₃ := le_antisymm h_bal hr₃_le
+      have h : μQ.shiftLeft.colLens = r₃/2 :: dpartColLensQ_B rest' := by
+        rw [heq, dpartColLensQ_B_cons₂]
+      have hcl : μQ.shiftLeft.colLen 0 = r₃/2 := colLen_0_eq_of_colLens_cons h
+      rw [hcl, hr₂_eq]
+  -- h_weak: μQ.colLen j ≤ μP.colLen 0 for j ≥ 1.
+  have h_weak : ∀ j, j ≥ 1 → μQ.colLen j ≤ μP.colLen 0 := by
+    intro j hj
+    have h1 : μQ.colLen j ≤ μQ.colLen 1 := μQ.colLen_anti 1 j (by omega)
+    rw [show μQ.colLen 1 = μQ.shiftLeft.colLen 0 from
+      (YoungDiagram.colLen_shiftLeft μQ 0).symm] at h1
+    omega
+  -- Go via DSeq: ValidCol0_B_Qlow ≃ DSeq (μQ.colLen 0 - μP.colLen 0) ↪ fiber.
+  have hcongr : Fintype.card (ValidCol0_B_Qlow (μP.colLen 0) (μQ.colLen 0)) =
+      Fintype.card (DSeq (μQ.colLen 0 - μP.colLen 0)) := by
+    apply Fintype.card_congr
+    refine {
+      toFun := fun ⟨v, hv⟩ => ?_
+      invFun := fun d => ⟨Sum.inl d, trivial⟩
+      left_inv := ?_
+      right_inv := ?_
+    }
+    · cases v with
+      | inl d => exact d
+      | inr _ => exact absurd hv (by simp [ValidCol0_B_Qlow])
+    · rintro ⟨v, hv⟩
+      cases v with
+      | inl d => rfl
+      | inr _ => exact absurd hv (by simp [ValidCol0_B_Qlow])
+    · intro d; rfl
+  rw [hcongr]
+  exact Fintype.card_le_of_injective
+    (fun d : DSeq (μQ.colLen 0 - μP.colLen 0) =>
+      (⟨liftPBP_B_bal_Qlow σ d hle hP_pos h_hQσ_eq h_weak,
+        liftPBP_B_bal_Qlow_round_trip σ d hle hP_pos h_hQσ_eq h_weak⟩ :
+       doubleDescent_Bplus_fiber σ))
+    (fun d₁ d₂ hEq =>
+      liftPBP_B_bal_Qlow_injective σ hle hP_pos h_hQσ_eq h_weak
+        (congrArg Subtype.val hEq))
 
 /-- **Per-class fiber size (Q_bot ∈ {•, s})**: In balanced case, a sub-PBP σ with
     Q_bot.layerOrd ≤ 1 has a fiber of size 2k - 1 in the new level.
