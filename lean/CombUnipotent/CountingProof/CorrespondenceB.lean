@@ -3176,6 +3176,27 @@ private theorem card_B_DD_alpha_eq_countB_dd (dp : DualPart)
         h_prim h_total_rest
     · -- Balanced case: requires per-Q_bot-class fiber refinement to relate
       -- `new Q_bot = d` count to the per-sub-class counts `dd'` and `rc'`.
+      --
+      -- Target: A1_new = dd' · tDD + rc' · scDD, where
+      --   tDD = ν(k-1) + [k≥2→ν(k-2)]  (balanced tail coefficient, sub.Q=d class)
+      --   scDD = 2 · [k≥2→ν(k-2)]      (balanced sub-correction, sub.Q=r class)
+      --
+      -- **Required infrastructure** (not yet built):
+      --   * `fiber_alpha_dd_count_bal_Qd σ : |{τ ∈ fiber(σ) | τ.new_Q_bot = .d}| = tDD`
+      --     when σ.Q_bot = .d in the balanced case.
+      --   * `fiber_alpha_dd_count_bal_Qr σ : |{τ ∈ fiber(σ) | τ.new_Q_bot = .d}| = scDD`
+      --     when σ.Q_bot = .r in the balanced case.
+      --   * `fiber_alpha_dd_count_bal_Qlow σ : |{τ ∈ fiber(σ) | τ.new_Q_bot = .d}| = 0`
+      --     when σ.Q_bot.layerOrd ≤ 1 (Qlow) in the balanced case.
+      -- Then A1_new sum decomposes by σ.Q_bot class (parallel to
+      -- `card_B_bal_grouped_fiber`) and gives dd'·tDD + rc'·scDD (using
+      -- A1(rest) and RC-class partition derivation).
+      --
+      -- Blocker: fiber-α refinement requires a `ValidCol0_B_bal_α` subtype
+      -- keyed on τ.new_Q_bot, parallel to existing `ValidCol0_B_Qr`/
+      -- `ValidCol0_B_Qlow` (which are keyed on σ.Q_bot).
+      --
+      -- **Status**: admitted as bare sorry until fiber-α refinement is built.
       -- Numerically verified via `tools/verify_all_B_lemmas.py` (82 dp cases).
       sorry
 
@@ -4604,7 +4625,20 @@ private theorem fiber_le_validCol0_B_Qr {μP μQ : YoungDiagram}
       exact fiber_Q_hPm1_nrd_of_Qr σ hP_pos h_hQσ_eq h_Qr τ hPc
     · trivial
 
-/-- Lower bound for Qr balanced case: ValidCol0_B_Qr ↪ fiber. -/
+/-- Lower bound for Qr balanced case: ValidCol0_B_Qr ↪ fiber.
+
+    **Closure plan**: Build `liftPBP_B_bal_Qr σ v hle hP_pos h_weakP h_shape_inc
+    h_hQσ_eq h_weak h_Qr` parallel to `liftPBP_B_bal_Qd`, replacing the 5 uses
+    of `sigma_Q_eq_d_of_Qbot_d_bal` with `sigma_Q_eq_d_of_Qbot_r_bal_j_pos` for
+    j ≥ 1 (i.e. in the `| succ j₂ =>` / `| j + 1` branches for Q). The
+    ValidCol0_B_Qr constraint excludes `inr d` with `d.val(0) ∈ {r, d}`, so
+    the boundary row τ.Q(hP-1, 0) is always in {•, s} (layerOrd ≤ 1 ≤ 2),
+    making `mono_Q` from τ.Q(hP-1, 0) to τ.Q(hP-1, 1) = σ.Q(hP-1, 0) = .r
+    automatically satisfied. `row_r` is automatic since τ.Q(hP-1, 0) ≠ .r.
+
+    **Status**: admitted as bare sorry; the Qd template (~450 lines) needs
+    structural copy with targeted replacements. Numerically verified: 82 dp
+    cases via `tools/verify_all_B_lemmas.py`. -/
 private theorem validCol0_B_Qr_le_fiber {r₁ r₂ : ℕ} {rest : DualPart} {μP μQ : YoungDiagram}
     (_hP : μP.colLens = dpartColLensP_B (r₁ :: r₂ :: rest))
     (_hQ : μQ.colLens = dpartColLensQ_B (r₁ :: r₂ :: rest))
