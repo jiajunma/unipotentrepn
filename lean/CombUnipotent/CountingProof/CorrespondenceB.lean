@@ -3182,6 +3182,60 @@ theorem card_PBPSet_Bplus_eq (dp : DualPart) (μP μQ : YoungDiagram)
   have h_total := card_PBPSet_B_eq_tripleSum_countPBP_B dp μP μQ hP hQ hsort heven hpos
   omega
 
+/-- **A2 (inductive case) — full proof** using Total + A1 + A3 + γ-swap + partitions.
+
+    Algebraically:
+    `|B⁺ Q≠d| + |B⁻ Q=r|`
+    `= (|B⁺| - |B⁺ Q=d|) + (|B⁻| - |B⁻ Q=d| - |B⁻ Q.lo≤1|)`  (partitions)
+    `= (|B⁺| + |B⁻|) - (|B⁺ Q=d| + |B⁻ Q=d|) - |B⁻ Q.lo≤1|`
+    `= tripleSum - dd - ss = rc`                              (Total, A1, A3).
+
+    This theorem duplicates `card_B_RC_alpha_eq_countB_rc` but provides the inductive
+    case proof that `card_B_RC_alpha_eq_countB_rc` leaves as sorry (since A2's original
+    location is above the Total theorem in the file, it cannot reference Total directly). -/
+theorem card_B_RC_alpha_eq_countB_rc_full (dp : DualPart)
+    {μP μQ : YoungDiagram}
+    (hP : μP.colLens = dpartColLensP_B dp)
+    (hQ : μQ.colLens = dpartColLensQ_B dp)
+    (hsort : dp.SortedGE)
+    (heven : ∀ r ∈ dp, Even r)
+    (hpos : ∀ r ∈ dp, 0 < r)
+    (hQ_pos : μQ.colLen 0 > 0) :
+    (Finset.univ.filter fun σ : PBPSet .Bplus μP μQ =>
+      σ.val.Q.paint (μQ.colLen 0 - 1) 0 ≠ .d).card +
+    (Finset.univ.filter fun σ : PBPSet .Bminus μP μQ =>
+      σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .r).card =
+      (countPBP_B dp).2.1 := by
+  -- Unlike `card_B_RC_alpha_eq_countB_rc`, we can use Total(dp) here.
+  -- Derivation: |B⁺ Q≠d| + |B⁻ Q=r| = |B⁺| + |B⁻| - (|B⁺ Q=d| + |B⁻ Q=d|) - |B⁻ Q.lo≤1|
+  --            = tripleSum - dd - ss = rc.
+  have h_total := card_PBPSet_B_eq_tripleSum_countPBP_B dp μP μQ hP hQ hsort heven hpos
+  have h_A1 := card_B_DD_alpha_eq_countB_dd dp hP hQ hsort heven hpos hQ_pos
+  have h_A3 := card_B_SS_alpha_eq_countB_ss dp hP hQ hsort heven hpos hQ_pos
+  have h_Bp_part := card_Bplus_nonD_eq_low_plus_r μP μQ hQ_pos
+  have h_Bm_part := card_Bminus_partition_Qbot μP μQ hQ_pos
+  have h_swap_low := card_Bplus_SS_eq_Bminus_SS μP μQ
+  -- Split B⁺ by Q=d.
+  have h_Bp_split : Fintype.card (PBPSet .Bplus μP μQ) =
+      (Finset.univ.filter fun σ : PBPSet .Bplus μP μQ =>
+        σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .d).card +
+      (Finset.univ.filter fun σ : PBPSet .Bplus μP μQ =>
+        σ.val.Q.paint (μQ.colLen 0 - 1) 0 ≠ .d).card := by
+    rw [← Finset.card_univ, ← Finset.card_filter_add_card_filter_not
+      (p := fun σ : PBPSet .Bplus μP μQ =>
+        σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .d)]
+  -- Destructure countPBP_B dp.
+  rcases h_ct : countPBP_B dp with ⟨dd, rc, ss⟩
+  rw [h_ct] at h_A1 h_A3 h_total
+  simp only at h_A1 h_A3 h_total
+  -- tripleSum = dd + rc + ss.
+  have h_ts : tripleSum (dd, rc, ss) = dd + rc + ss := rfl
+  rw [h_ts] at h_total
+  show _ = rc
+  -- Goal: |B⁺ Q≠d| + |B⁻ Q=r| = rc.
+  -- Use partitions + A1 + A3 + swaps + total to derive.
+  omega
+
 /-! ## Structural theorems for Counting.lean -/
 
 theorem countPBP_B_primitive {r₁ r₂ : ℕ} {rest : DualPart}
