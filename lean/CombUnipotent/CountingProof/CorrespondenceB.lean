@@ -2576,45 +2576,6 @@ private theorem card_B_DD_alpha_eq_countB_dd (dp : DualPart)
     -- Inductive case: admitted as focused sub-sorry.
     sorry
 
-/-- **α-class RC count** (γ-asymmetric): B⁺ with Q_bot ≠ d, plus B⁻ with Q_bot = r.
-    equals `countPBP_B(dp).2.1`. The asymmetry reflects the tail correction:
-    B⁺ with natural Q_bot ∈ {•, s} gets corrected x_τ = c (RC), while B⁻ stays SS.
-
-    Structural induction on dp:
-    - Empty: hQ_pos false (vacuous, now closed).
-    - Singleton: closed via `singleton_case_B_RC_alpha` (|B⁺| - |B⁺ Q=d| + |B⁻ Q=r|).
-    - Inductive: admitted as focused sub-sorry. -/
-private theorem card_B_RC_alpha_eq_countB_rc (dp : DualPart)
-    {μP μQ : YoungDiagram}
-    (hP : μP.colLens = dpartColLensP_B dp)
-    (hQ : μQ.colLens = dpartColLensQ_B dp)
-    (hsort : dp.SortedGE)
-    (heven : ∀ r ∈ dp, Even r)
-    (hpos : ∀ r ∈ dp, 0 < r)
-    (hQ_pos : μQ.colLen 0 > 0) :
-    (Finset.univ.filter fun σ : PBPSet .Bplus μP μQ =>
-      σ.val.Q.paint (μQ.colLen 0 - 1) 0 ≠ .d).card +
-    (Finset.univ.filter fun σ : PBPSet .Bminus μP μQ =>
-      σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .r).card =
-      (countPBP_B dp).2.1 := by
-  match dp, hP, hQ, hsort, heven, hpos, hQ_pos with
-  | [], _, hQ, _, _, _, hQ_pos =>
-    have hQ_bot : μQ = ⊥ := yd_of_colLens_nil (by rw [hQ]; rfl)
-    exfalso
-    rw [hQ_bot] at hQ_pos
-    have : ¬ (⊥ : YoungDiagram).colLen 0 > 0 := by
-      intro h
-      have hmem := YoungDiagram.mem_iff_lt_colLen.mpr h
-      simp at hmem
-    exact this hQ_pos
-  | [r₁], hP, hQ, _, heven, hpos, _ =>
-    exact singleton_case_B_RC_alpha r₁ hP hQ heven hpos
-  | _ :: _ :: _, _, _, _, _, _, _ =>
-    -- Inductive case: see `card_B_RC_alpha_inductive_step` at the end of the file.
-    -- A2 can be derived from A1 + A3 + Total + γ-swap + partitions (algebraic).
-    -- We leave sorry here and prove a parallel theorem using Total.
-    sorry
-
 /-- Singleton case helper for `card_B_SS_alpha_eq_countB_ss`.
     For dp = [r₁] with r₁ > 0 Even, the B⁻ PBPs over (⊥, μQ) are in bijection
     with DSeq(μQ.colLen 0) (single-column Q). The filter {σ | Q col-0 bottom
@@ -3182,18 +3143,22 @@ theorem card_PBPSet_Bplus_eq (dp : DualPart) (μP μQ : YoungDiagram)
   have h_total := card_PBPSet_B_eq_tripleSum_countPBP_B dp μP μQ hP hQ hsort heven hpos
   omega
 
-/-- **A2 (inductive case) — full proof** using Total + A1 + A3 + γ-swap + partitions.
+/-- **α-class RC count** (γ-asymmetric): B⁺ with Q_bot ≠ d, plus B⁻ with Q_bot = r
+    equals `countPBP_B(dp).2.1`. The asymmetry reflects the tail correction:
+    B⁺ with natural Q_bot ∈ {•, s} gets corrected x_τ = c (RC), while B⁻ stays SS.
 
-    Algebraically:
-    `|B⁺ Q≠d| + |B⁻ Q=r|`
-    `= (|B⁺| - |B⁺ Q=d|) + (|B⁻| - |B⁻ Q=d| - |B⁻ Q.lo≤1|)`  (partitions)
-    `= (|B⁺| + |B⁻|) - (|B⁺ Q=d| + |B⁻ Q=d|) - |B⁻ Q.lo≤1|`
-    `= tripleSum - dd - ss = rc`                              (Total, A1, A3).
+    Structural proof:
+    - Empty: hQ_pos false (vacuous).
+    - Singleton: via `singleton_case_B_RC_alpha` (|B⁺| - |B⁺ Q=d| + |B⁻ Q=r|).
+    - Inductive: algebraic derivation from Total + A1 + A3 + γ-swap + partitions:
+      `|B⁺ Q≠d| + |B⁻ Q=r|`
+      `= (|B⁺| - |B⁺ Q=d|) + (|B⁻| - |B⁻ Q=d| - |B⁻ Q.lo≤1|)`  (partitions)
+      `= (|B⁺| + |B⁻|) - (|B⁺ Q=d| + |B⁻ Q=d|) - |B⁻ Q.lo≤1|`
+      `= tripleSum - dd - ss = rc`                              (Total, A1, A3).
 
-    This theorem duplicates `card_B_RC_alpha_eq_countB_rc` but provides the inductive
-    case proof that `card_B_RC_alpha_eq_countB_rc` leaves as sorry (since A2's original
-    location is above the Total theorem in the file, it cannot reference Total directly). -/
-theorem card_B_RC_alpha_eq_countB_rc_full (dp : DualPart)
+    This theorem is declared after `card_PBPSet_B_eq_tripleSum_countPBP_B` because its
+    inductive case depends on Total(dp). -/
+theorem card_B_RC_alpha_eq_countB_rc (dp : DualPart)
     {μP μQ : YoungDiagram}
     (hP : μP.colLens = dpartColLensP_B dp)
     (hQ : μQ.colLens = dpartColLensQ_B dp)
@@ -3206,7 +3171,6 @@ theorem card_B_RC_alpha_eq_countB_rc_full (dp : DualPart)
     (Finset.univ.filter fun σ : PBPSet .Bminus μP μQ =>
       σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .r).card =
       (countPBP_B dp).2.1 := by
-  -- Unlike `card_B_RC_alpha_eq_countB_rc`, we can use Total(dp) here.
   -- Derivation: |B⁺ Q≠d| + |B⁻ Q=r| = |B⁺| + |B⁻| - (|B⁺ Q=d| + |B⁻ Q=d|) - |B⁻ Q.lo≤1|
   --            = tripleSum - dd - ss = rc.
   have h_total := card_PBPSet_B_eq_tripleSum_countPBP_B dp μP μQ hP hQ hsort heven hpos
