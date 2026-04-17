@@ -3402,6 +3402,44 @@ private theorem sigma_P_eq_c_of_Qbot_d_bal {μP μQ : YoungDiagram}
     exact DRCSymbol.noConfusion this.2
   exact PBP.P_nonDot_eq_c_of_B σ.val (Or.inl σ.prop.1) _ _ hmemP hPne
 
+/-! ### Qr balanced case: key helper lemmas
+
+When `σ.Q_bot = r` (at (hP-1, 0)) and `σ.Q.colLen 0 = μP.colLen 0` (balanced),
+by `σ.mono_Q` + `σ.row_r` + sym_Q, for j ≥ 1 with (hP-1, j) ∈ σ.Q.shape:
+  σ.Q(hP-1, j) = .d
+(mono_Q gives ≥ r, sym_Q gives ∈ {s,r,d} (nondot, from mono_Q ≥ r excludes s/dot),
+ row_r excludes another r, so = d.)
+-/
+
+/-- Given σ with Q_bot = r at (hP - 1, 0), for j ≥ 1 with (hP-1, j) ∈ σ.Q.shape,
+    σ.Q(hP-1, j) = d. -/
+private theorem sigma_Q_eq_d_of_Qbot_r_bal_j_pos {μP μQ : YoungDiagram}
+    (σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft)
+    (h_hQσ_eq : μQ.shiftLeft.colLen 0 = μP.colLen 0)
+    (h_Qr : σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .r)
+    (j : ℕ) (hj : j ≥ 1) (hmem : (μP.colLen 0 - 1, j) ∈ σ.val.Q.shape) :
+    σ.val.Q.paint (μP.colLen 0 - 1) j = .d := by
+  -- First: rewrite h_Qr to row (μP.colLen 0 - 1)
+  have h_Qr' : σ.val.Q.paint (μP.colLen 0 - 1) 0 = .r := by
+    rw [← h_hQσ_eq]; exact h_Qr
+  -- σ.mono_Q: σ.Q(hP-1, 0).layerOrd ≤ σ.Q(hP-1, j).layerOrd
+  have hmono := σ.val.mono_Q (μP.colLen 0 - 1) 0 (μP.colLen 0 - 1) j le_rfl (Nat.zero_le _) hmem
+  rw [h_Qr'] at hmono
+  -- layerOrd(r) = 2, Q ∈ {•, s, r, d} with layerOrds {0, 1, 2, 4}
+  have hsym := σ.val.sym_Q (μP.colLen 0 - 1) j hmem
+  rw [σ.prop.1] at hsym
+  simp [DRCSymbol.allowed] at hsym
+  rcases hsym with h | h | h | h
+  · rw [h] at hmono; simp [DRCSymbol.layerOrd] at hmono
+  · rw [h] at hmono; simp [DRCSymbol.layerOrd] at hmono
+  · -- σ.Q(hP-1, j) = r: row_r forces j = 0, but hj says j ≥ 1. Contradiction.
+    exfalso
+    have := σ.val.row_r (μP.colLen 0 - 1) .R .R 0 j
+      (by simp [paintBySide]; exact h_Qr')
+      (by simp [paintBySide]; exact h)
+    omega
+  · exact h
+
 /-! ### Balanced-Qd lift construction
 
 Parallel to `liftPBP_B` (primitive case), but uses:
