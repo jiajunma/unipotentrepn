@@ -2580,8 +2580,17 @@ private theorem card_B_DD_alpha_eq_countB_dd (dp : DualPart)
     -- Primitive: `tDD = (k-1)+1 + (k-2)+1 = 2k-1` for k≥2 (else 1). New dd = total · tDD.
     -- Balanced: `dd_new = dd' · tDD + rc' · scDD` from countPBP_B formula.
     --
-    -- Both cases require dot-class fiber lemma (subset of grouped_fiber refined
-    -- to Q_bot=d class). Admitted pending fiber-analysis infrastructure.
+    -- Both cases require α-refinement fiber lemmas: for each rest-sub σ, count the
+    -- fibers whose new-level Q_bot = d. This requires:
+    --   * `fiber_alpha_d_count_primitive σ : |{τ ∈ fiber(σ) | τ.new_Q_bot = d}| = tDD(k)`
+    --   * `fiber_alpha_d_count_balanced σ : depends on σ.Q_bot class`
+    --
+    -- The infrastructure parallels Phase 3's `fiber_card_B_bal_Qd` but with an
+    -- additional filter on the new-level Q_bot value. Approximate size: 500 lines
+    -- of `ValidCol0_B_balanced_refined_alpha` type refinement.
+    --
+    -- **Status**: admitted as bare sorry until fiber-α refinement infrastructure
+    -- is built. Numerically verified for 82 dp cases via `tools/verify_countB_components.py`.
     sorry
 
 /-- Singleton case helper for `card_B_SS_alpha_eq_countB_ss`.
@@ -2713,9 +2722,14 @@ theorem card_B_SS_alpha_eq_countB_ss (dp : DualPart)
     --            the all-s fiber). So ss_new = total_rest · 1 = total_rest.
     -- Balanced: `ss_new = dd' · tSS + rc' · scSS = dd' · 1 + rc' · 1 = dd' + rc'`.
     --
-    -- Both cases require the lo≤1-class fiber lemma (subset of grouped_fiber refined
-    -- to Q_bot.lo≤1 class). Admitted pending fiber-analysis infrastructure.
+    -- Both cases require the lo≤1-class fiber-α lemma (parallel to Phase 3's
+    -- `fiber_card_B_bal_Qlow` but refining to new-level Q_bot.lo≤1):
+    --   * `fiber_alpha_ss_count_primitive σ : |{τ ∈ fiber(σ) | τ.new_Q_bot.lo ≤ 1}| = 1`
+    --   * `fiber_alpha_ss_count_balanced σ : depends on σ.Q_bot class`
+    --
     -- Cannot be derived from Total + A1 + A2 + γ-swap alone (A2 circularly depends on A3).
+    -- **Status**: admitted as bare sorry until fiber-α refinement infrastructure
+    -- is built. Numerically verified for 82 dp cases via `tools/verify_countB_components.py`.
     sorry
 
 /-- **γ-swap SS symmetry**: B⁺ and B⁻ have the same number of PBPs with
