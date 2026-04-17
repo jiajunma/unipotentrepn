@@ -314,6 +314,134 @@ theorem liftPaintP_naive_succ_mono (σ : PBP) (hγ : σ.γ = .Bplus ∨ σ.γ = 
     rcases liftPaintP_naive_mem σ μP i₁ (j₁' + 1) with h | h | h <;>
       rw [h] <;> decide
 
+/-- Helper: μP.colLen(1) ≤ μQ.colLen(0) from h_sub. -/
+private theorem col1_le_Q_of_h_sub (μP μQ : YoungDiagram) (h_sub : μP.shiftLeft ≤ μQ) :
+    μP.colLen 1 ≤ μQ.colLen 0 := by
+  by_contra hne; push_neg at hne
+  have : (μQ.colLen 0, 0) ∈ μP.shiftLeft := by
+    rw [YoungDiagram.mem_iff_lt_colLen, YoungDiagram.colLen_shiftLeft]; exact hne
+  exact absurd (h_sub this)
+    (YoungDiagram.mem_iff_lt_colLen.not.mpr (by omega))
+
+/-- Helper: μQ.colLen(0) ≤ μP.colLen(0) from h_QleP. -/
+private theorem Q_le_P_colLen (μP μQ : YoungDiagram) (h_QleP : μQ ≤ μP) :
+    μQ.colLen 0 ≤ μP.colLen 0 := by
+  by_contra hne; push_neg at hne
+  have : (μP.colLen 0, 0) ∈ μQ :=
+    YoungDiagram.mem_iff_lt_colLen.mpr hne
+  exact absurd (h_QleP this)
+    (YoungDiagram.mem_iff_lt_colLen.not.mpr (by omega))
+
+/-- Key helper: τ.P monotone across col 0 → col ≥ 1 boundary.
+    Uses shape conditions (h_sub, h_QleP, h_bal_exc) to handle all cases.
+    The trickiest case is τ.P(i₁, 0) = c (γ=B-, i₁=bottom_μP): either
+    (a) primitive: the target cell doesn't exist (vacuous), or
+    (b) balanced (μP.colLen 0 = μQ.colLen 0) with μP.colLen 1 = μP.colLen 0:
+        h_bal_exc forces σ.Q(bottom, 0).lo > 1 → σ.P(bottom, 0) = c → propagate. -/
+theorem liftPaintP_naive_col0_to_succ_mono (σ : PBP)
+    (hγ : σ.γ = .Bplus ∨ σ.γ = .Bminus)
+    (μP μQ : YoungDiagram) (hPsh : σ.P.shape = YoungDiagram.shiftLeft μP)
+    (hQsh : σ.Q.shape = μQ) (h_sub : μP.shiftLeft ≤ μQ) (h_QleP : μQ ≤ μP)
+    (h_bal_exc : μP.colLen 0 = μQ.colLen 0 → μP.colLen 0 > 0 →
+        (σ.Q.paint (μQ.colLen 0 - 1) 0).layerOrd > 1)
+    {i₁ i₂ j₂' : ℕ} (hi : i₁ ≤ i₂)
+    (hmem : (i₂, j₂' + 1) ∈ μP) :
+    (liftPaintP_naive σ μP i₁ 0).layerOrd ≤
+    (liftPaintP_naive σ μP i₂ (j₂' + 1)).layerOrd := by
+  rcases liftPaintP_naive_mem σ μP i₁ 0 with hτ₁ | hτ₁ | hτ₁
+  · rw [hτ₁]; simp [DRCSymbol.layerOrd]
+  · -- τ.P(i₁, 0) = s. Need τ.P(i₂, j₂'+1).lo ≥ 1, i.e., ≠ •.
+    rw [hτ₁]
+    obtain ⟨_, _, hnot_dot⟩ :=
+      (liftPaintP_naive_col0_s_iff σ μP i₁).mp hτ₁
+    have hne_dot_2 : liftPaintP_naive σ μP i₂ (j₂' + 1) ≠ .dot := by
+      intro hτ₂
+      rw [liftPaintP_naive_succ σ μP i₂ j₂' hmem] at hτ₂
+      by_cases hc₂ : σ.P.paint i₂ j₂' = .c
+      · rw [if_pos hc₂] at hτ₂; exact absurd hτ₂ (by decide)
+      · rw [if_neg hc₂] at hτ₂
+        by_cases hdot₂' : (i₂, j₂' + 1) ∈ σ.Q.shape ∧ (σ.Q.paint i₂ (j₂' + 1)).layerOrd ≤ 1
+        · apply hnot_dot
+          refine ⟨σ.Q.shape.isLowerSet (Prod.mk_le_mk.mpr ⟨hi, by omega⟩) hdot₂'.1, ?_⟩
+          have hmono_Q := σ.mono_Q i₁ 0 i₂ (j₂' + 1) hi (by omega) hdot₂'.1
+          omega
+        · rw [if_neg hdot₂'] at hτ₂; exact absurd hτ₂ (by decide)
+    rcases liftPaintP_naive_mem σ μP i₂ (j₂' + 1) with h | h | h
+    · exact absurd h hne_dot_2
+    · simp [h, DRCSymbol.layerOrd]
+    · simp [h, DRCSymbol.layerOrd]
+  · -- τ.P(i₁, 0) = c. γ = B- and i₁ = μP.colLen 0 - 1.
+    rw [hτ₁]
+    obtain ⟨hmem₁μ, _hγBm, hi₁_eq⟩ :=
+      (liftPaintP_naive_col0_c_iff σ μP i₁).mp hτ₁
+    have h_pos : μP.colLen 0 > 0 := by
+      have := YoungDiagram.mem_iff_lt_colLen.mp hmem₁μ
+      rw [hi₁_eq] at this; omega
+    have hi₂_lt_μP : i₂ < μP.colLen (j₂' + 1) :=
+      YoungDiagram.mem_iff_lt_colLen.mp hmem
+    have hcolLen_anti : μP.colLen (j₂' + 1) ≤ μP.colLen 1 := μP.colLen_anti 1 (j₂' + 1) (by omega)
+    have hcol1_le_Q : μP.colLen 1 ≤ μQ.colLen 0 := col1_le_Q_of_h_sub μP μQ h_sub
+    have hQ_le_P : μQ.colLen 0 ≤ μP.colLen 0 := Q_le_P_colLen μP μQ h_QleP
+    have hi₂_ge : i₂ ≥ μP.colLen 0 - 1 := by rw [← hi₁_eq]; exact hi
+    -- i₂ < μP.colLen(j₂'+1) ≤ μP.colLen(1) ≤ μQ.colLen(0) ≤ μP.colLen(0)
+    by_cases h_prim : μP.colLen 0 > μQ.colLen 0
+    · -- Primitive: contradiction.
+      exfalso
+      have : i₂ < μP.colLen 0 - 1 := by
+        calc i₂ < μP.colLen (j₂' + 1) := hi₂_lt_μP
+          _ ≤ μP.colLen 1 := hcolLen_anti
+          _ ≤ μQ.colLen 0 := hcol1_le_Q
+          _ ≤ μP.colLen 0 - 1 := by omega
+      omega
+    · -- Balanced: μP.colLen 0 = μQ.colLen 0.
+      push_neg at h_prim
+      have h_bal : μP.colLen 0 = μQ.colLen 0 := by omega
+      have h_gt := h_bal_exc h_bal h_pos
+      have hi₁_eq' : i₁ = μQ.colLen 0 - 1 := by rw [hi₁_eq]; omega
+      have hi₂_eq : i₂ = μP.colLen 0 - 1 := by
+        have : i₂ < μP.colLen 0 := by
+          calc i₂ < μP.colLen (j₂' + 1) := hi₂_lt_μP
+            _ ≤ μP.colLen 1 := hcolLen_anti
+            _ ≤ μQ.colLen 0 := hcol1_le_Q
+            _ = μP.colLen 0 := h_bal.symm
+        omega
+      have hcol1_eq : μP.colLen 1 = μP.colLen 0 := by
+        have := hi₂_lt_μP; omega
+      have hmemPσ : (i₁, 0) ∈ σ.P.shape := by
+        rw [hPsh, YoungDiagram.mem_shiftLeft, YoungDiagram.mem_iff_lt_colLen]
+        rw [hi₁_eq]
+        show μP.colLen 0 - 1 < μP.colLen (0 + 1)
+        rw [show (0 + 1 : ℕ) = 1 from rfl, hcol1_eq]; omega
+      have hmemQσ_i₁ : (i₁, 0) ∈ σ.Q.shape := by
+        rw [hQsh, YoungDiagram.mem_iff_lt_colLen]; rw [hi₁_eq']; omega
+      -- h_gt at (μQ.colLen 0 - 1, 0), same as (i₁, 0) via hi₁_eq'.
+      have h_gt_at_i₁ : (σ.Q.paint i₁ 0).layerOrd > 1 := by rw [hi₁_eq']; exact h_gt
+      have hQne_dot : σ.Q.paint i₁ 0 ≠ .dot := by
+        intro habs; rw [habs, DRCSymbol.layerOrd] at h_gt_at_i₁; omega
+      have hPne_dot : σ.P.paint i₁ 0 ≠ .dot := by
+        intro habs
+        have ⟨_, hQ_dot⟩ := (σ.dot_match i₁ 0).mp ⟨hmemPσ, habs⟩
+        exact hQne_dot hQ_dot
+      have hPc : σ.P.paint i₁ 0 = .c := by
+        rcases B_P_dot_or_c σ hγ hmemPσ with h | h
+        · exact absurd h hPne_dot
+        · exact h
+      -- Propagate to σ.P(i₁, j₂').
+      have hmemPσ_j : (i₁, j₂') ∈ σ.P.shape := by
+        rw [hPsh, YoungDiagram.mem_shiftLeft, YoungDiagram.mem_iff_lt_colLen]
+        rw [hi₁_eq]
+        have := hi₂_lt_μP; rw [hi₂_eq] at this; omega
+      have hmono_σP := σ.mono_P i₁ 0 i₁ j₂' le_rfl (by omega) hmemPσ_j
+      rw [hPc, DRCSymbol.layerOrd] at hmono_σP
+      have hPc_j : σ.P.paint i₁ j₂' = .c := by
+        rcases B_P_dot_or_c σ hγ hmemPσ_j with h | h
+        · rw [h, DRCSymbol.layerOrd] at hmono_σP; omega
+        · exact h
+      -- i₂ = i₁ (both = μP.colLen 0 - 1).
+      have hi₂_eq_i₁ : i₂ = i₁ := by rw [hi₂_eq, hi₁_eq]
+      rw [hi₂_eq_i₁]
+      rw [(liftPaintP_naive_succ_c_iff σ μP i₁ j₂').mpr ⟨(hi₂_eq_i₁ ▸ hmem), hPc_j⟩]
+
 /-! ## Main construction: liftBM_naive -/
 
 /-- Preimage construction for Prop 10.8(a) (primitive case).
@@ -502,14 +630,20 @@ noncomputable def liftBM_naive (σ : PBP) (hγ : σ.γ = .Bplus ∨ σ.γ = .Bmi
         rw [if_neg h_not_c]
         rw [if_pos ⟨hmemQσ, hlo⟩]
   mono_P := by
-    -- τ.P pattern: col 0 = dots, s's, then s/c at bottom; col j+1 = σ.P's c direct, else •/s via τ.Q.
-    -- Mono: (i₁, j₁) ≤ (i₂, j₂) ∧ (i₂, j₂) ∈ μP → τ.P(i₁, j₁).lo ≤ τ.P(i₂, j₂).lo.
-    -- Case split on j₁, j₂. Col 0 helper done as `liftPaintP_naive_col0_mono`.
-    -- Cases:
-    --   j₁=0, j₂=0: use liftPaintP_naive_col0_mono
-    --   j₁≥1, j₂≥1: use σ's mono_P via σ.P(i, j-1) relation
-    --   j₁=0, j₂≥1: hardest case (col 0 → col ≥ 1 boundary)
-    sorry -- TODO: full mono_P proof (~200 lines)
+    intro i₁ j₁ i₂ j₂ hi hj hmem
+    show (liftPaintP_naive σ μP i₁ j₁).layerOrd ≤ (liftPaintP_naive σ μP i₂ j₂).layerOrd
+    -- Case split on j₁, j₂
+    match j₁, j₂, hj with
+    | 0, 0, _ =>
+      -- Col 0 → Col 0: use liftPaintP_naive_col0_mono
+      exact liftPaintP_naive_col0_mono σ hγ μP μQ hQsh h_QleP hi hmem
+    | j₁' + 1, j₂' + 1, hj =>
+      -- Col ≥ 1 → Col ≥ 1: use liftPaintP_naive_succ_mono
+      exact liftPaintP_naive_succ_mono σ hγ μP hPsh hi hj hmem
+    | 0, j₂' + 1, _ =>
+      -- Col 0 → Col ≥ 1: use liftPaintP_naive_col0_to_succ_mono
+      exact liftPaintP_naive_col0_to_succ_mono σ hγ μP μQ hPsh hQsh h_sub h_QleP
+        h_bal_exc hi hmem
   mono_Q := by
     intro i₁ j₁ i₂ j₂ hi hj hmem
     show (liftPaintQ_naive σ i₁ j₁).layerOrd ≤ (liftPaintQ_naive σ i₂ j₂).layerOrd
