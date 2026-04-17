@@ -1,97 +1,80 @@
-# Progress — Prop10_8_M.lean
+# Progress — CorrespondenceB.lean (session 3)
 
 ## Summary
 
-- Started session 2 with 1 sorry (descent_image_balanced).
-- Closed all sorries: 0 remaining.
-- Build: PASSES.
+Current 5 sub-sorries in CorrespondenceB.lean for α-class count identities
+and Phase 3 fiber identity. All identities numerically verified for 82 dp cases.
 
-## Closed this session (session 2)
+## Current sorries
 
-### descent_image_balanced (was line 1367, closed)
+| Line | Lemma | Case | Difficulty |
+|---|---|---|---|
+| 2137 | `card_B_DD_alpha_eq_countB_dd` | singleton + inductive | Medium |
+| 2166 | `card_B_RC_alpha_eq_countB_rc` | singleton + inductive | Medium-Hard |
+| 2201 | `card_B_SS_alpha_eq_countB_ss` | singleton | Medium |
+| 2205 | `card_B_SS_alpha_eq_countB_ss` | inductive | Hard |
+| 2280 | `card_B_bal_grouped_fiber` | all | Very Hard |
 
-**Key discovery**: The theorem statement was still incorrect after commit 8b3e618.
-Specifically, the B⁺ filter `σ.Q(bottom, 0) ≠ •` was too restrictive.
+## Objectives (ordered by strategy)
 
-**Counterexample**: For μP = μQ = single row of length 2 (`ofRowLens [2]`):
-- |M| = 9 (manually enumerated + verified in Lean with `tau1` = all-dot M PBP)
-- Old filter sum (B⁺ with σ.Q≠•, B⁻ with lo>1) = 6.
-- Mismatch of 3.
+### 1. A3 singleton (line 2201) — SIMPLEST
 
-The issue: all-dot M τ (and τ.P = (•,s), (•,c) variants) descend to B⁺ σ
-with σ.Q(bottom, 0) = • (via Zone 1 in descentPaintR_MB). These τ are in
-the image but fail the old filter.
+For dp = [r₁]: μP = ⊥, μQ has 1 col of c₁ = r₁/2 cells.
+`countPBP_B([r₁]).2.2 = 1`.
 
-**Correct statement**: |M| = |B⁺| + |{σ ∈ B⁻ : σ.Q(bottom, 0).lo > 1}|.
-- Verified on [1]: |M|=5 = 3 + 2. ✓
-- Verified on [2]: |M|=9 = 7 + 2. ✓
+For B⁻ PBPs on (⊥, μQ), use existing `PBPSet_Bminus_bot_equiv_DSeq`:
+bijection with DSeq(c₁) = sequences Fin c₁ → {s,r,d} sorted with ≤1 d.
 
-### Refactoring work
+Q_bot.lo ≤ 1 ⟺ v(c₁-1).lo ≤ 1 ⟺ v(c₁-1) = s (since {s,r,d}.lo = {1,2,4}).
+Sorted + v(c₁-1) = s ⟹ all v = s (unique seq).
 
-Major refactor: `h_bal_exc` signature changed from
-```
-μP.colLen 0 = μQ.colLen 0 → μP.colLen 0 > 0 →
-  (σ.Q.paint (μQ.colLen 0 - 1) 0).layerOrd > 1
-```
-to
-```
-μP.colLen 0 = μQ.colLen 0 → μP.colLen 0 > 0 → σ.γ = .Bminus →
-  (σ.Q.paint (μQ.colLen 0 - 1) 0).layerOrd > 1
-```
+Count = 1. ✓
 
-The new `σ.γ = .Bminus` hypothesis allows vacuous satisfaction for σ ∈ B⁺
-(since the conclusion isn't needed when σ.γ ≠ Bminus), enabling total lifts
-for ALL B⁺ σ (not just those with σ.Q.lo > 1).
+### 2. A1 singleton (after A3 done)
 
-Helpers added:
-- `h_bal_exc_of_Bplus`: for σ.γ = .Bplus, provides vacuous h_bal_exc.
-- `M_descent_Bminus_Q_lo_gt_one`: asymmetric forward theorem.
-  For balanced τ ∈ M with descentType_M = .Bminus, proves σ.Q(bottom, 0).lo > 1.
-  Proof via Zone analysis:
-  - descentType_M = Bminus → ∃ c in τ.P col 0 → by mono_P c is at bottom.
-  - dot_match: τ.P(bot, 0) = c → τ.Q(bot, 0) ≠ • → τ.Q ∈ {r, d}, lo > 1.
-  - Zone 1 (bottom < dotScolLen τ.P 1): would require τ.P(bot, 1) ∈ {•, s},
-    but mono_P j↑ gives τ.P(bot, 0).lo ≤ τ.P(bot, 1).lo, 3 ≤ 1 false. ∴ NOT Zone 1.
-  - Zone 2 (bottom < dotScolLen τ.Q 0): would force τ.Q(bot, 0).lo ≤ 1,
-    contradicting > 1. ∴ NOT Zone 2.
-  - Zone 3: σ.Q(bot, 0) = τ.Q(bot, 0). lo > 1. ✓
-- `descentMB_sum_balanced`: forward map M → B⁺ ⊕ non-SS B⁻.
-- `descent_equiv_balanced`: full Equiv.
+For dp = [r₁]: |d combined| = ?
+countPBP_B([r₁]).1 = 2·nu(c₁-1) = 2·c₁ (c₁ ≥ 1).
 
-Updated `descent_image_balanced` to new statement + proof via Equiv.
+Via DSeq for B⁻ (and mirror for B⁺ via γ-swap symmetry on this filter too):
+Q_bot = d ⟺ v(c₁-1) = d. Sorted + at most 1 d + last = d means d at last,
+rest in {s, r}. Count of sorted (s,r) sequences of length c₁-1 = c₁.
+Both γ = 2·c₁. ✓
 
-### Cascading signature updates
+### 3. A2 singleton (after A1, A3)
 
-All these lemmas had h_bal_exc updated to the new signature:
-- `liftPaintP_naive_col0_to_succ_mono`
-- `liftBM_naive` 
-- `descentType_M_liftBM_naive`
-- `descentMB_liftBM_naive_P_paint`
-- `descentMB_liftBM_naive_Q_paint`
-- `descentMB_liftBM_naive`
-- `τP_succ_c_not_dotScolLen`, `τP_succ_outside_not_dotScolLen`
-- `liftBM_naive_PBPSet`
-- `h_bal_exc_of_primitive` (added σ.γ = .Bminus param)
-- `liftBM_from_nonSS`
+For dp = [r₁]: |B⁺ Q_bot≠d| + |B⁻ Q_bot=r|.
+countPBP_B([r₁]).2.1 = nu(c₁) + nu(c₁-1) = (c₁+1) + c₁ = 2c₁+1.
 
-## Closed in session 1
+|B⁺ non-d| = |B⁺| - |B⁺ d| = (2c₁+1) - c₁ = c₁+1.
+|B⁻ r| = ? via DSeq: v(c₁-1)=r, sorted, all v ≤ r. v ∈ {s, r}. Count = c₁.
 
-### descentMB_liftBM_naive_Q_paint (line 954, closed with commit 88f7ee4)
+Total = (c₁+1) + c₁ = 2c₁+1. ✓
 
-Case analysis on σ.Q ∈ {dot, s, r, d}:
-- dot: Zone 1 via τ.P(i, j+1).lo ≤ 1.
-- s: ¬Zone 1; Zone 2 via τ.Q = dot.
-- r/d: ¬Zone 1; τ.Q preserved; ¬Zone 2; Zone 3.
-- Outside: Zones collapse to dot.
+### 4. Inductive cases (A1/A2/A3)
 
-## Files modified (session 2)
+Primitive (r₂ > r₃):
+- Each sub σ gives 4k tail configs (uniform), tDD giving new d, tRC giving new r, tSS giving new low.
+- A1 new.dd = (|sub d| + |sub r| + |sub low|)·tDD = card_rest · tDD = dd_new ✓ (primitive formula)
+- Similarly A2, A3.
 
-- `/Users/hoxide/mycodes/unipotentrepn/lean/CombUnipotent/CountingProof/Prop10_8_M.lean`
-  - Lines added: ~200
-  - Helpers added: 4
-  - Refactoring touched: 10+ lemmas
+Balanced (r₂ ≤ r₃): use Phase 3 fiber identity + IH.
 
-## Verification
+### 5. Phase 3 fiber identity
 
-- `grep -c sorry Prop10_8_M.lean`: 0
-- `lake build`: PASSES (full project)
+Most complex. Needs explicit fiber construction for balanced case
+with non-uniform sizes 4k/4k-2/2k-1 based on sub's Q_bot.
+
+## Proof strategies to try
+
+- **A3 singleton**: Fintype.card_congr with DSeq bijection, restrict to filter.
+- **A1, A2 singleton**: similar, adapting DSeq argument.
+- **Inductive**: structural induction mirroring `card_PBPSet_B_eq_tripleSum_countPBP_B`.
+- **Phase 3**: new infrastructure, defer if too complex.
+
+## Known infrastructure
+
+- `PBPSet_Bminus_bot_equiv_DSeq` — B⁻ PBPs on (⊥, μQ) ≃ DSeq(c₁)
+- `DSeq_card`, `DSeq_equiv_GSeq`
+- `card_PBPSet_Bminus_bot_singleCol` for total count
+- `swapBplusBminus` for γ-swap bijection
+- `card_PBPSet_B_primitive_step` for primitive recursion (uniform fiber)

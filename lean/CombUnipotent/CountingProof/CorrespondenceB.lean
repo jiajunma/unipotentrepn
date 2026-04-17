@@ -2841,10 +2841,57 @@ private theorem card_Bplus_Qbot_r_eq_Bminus_Qbot_r (μP μQ : YoungDiagram) :
       · simp [PBP.swapBplusBminus]
   }
 
+/-! ### Balanced case fiber closure path
+
+In balanced (r₂ ≤ r₃), the primitive lemma `fiber_card_B_primitive` does NOT apply:
+its hypothesis `hprimQ : ∀ j ≥ 1, μQ.colLen j ≤ μP.colLen 0 - 1` is FALSE because
+μQ.shiftLeft.colLen 0 = r₃/2 ≥ r₂/2 = μP.colLen 0.
+
+The closure path for each Qd/Qr/Qlow lemma requires:
+
+**Step 1**: Define `ValidCol0_B_bal (σ) (Q_bot)` = a subtype of `ValidCol0_B hP hQ`
+  (where hP = μP.colLen 0 = r₂/2, hQ = μQ.colLen 0 = r₁/2), whose elements `v`
+  also satisfy mono_Q against σ's col 0 in the overlap region:
+    ∀ i < min(hP, σ.Q.colLen 0), (liftCol0Q_B hP hQ v i).layerOrd ≤ σ.Q.paint i 0.layerOrd
+
+**Step 2**: Prove fiber ≤ ValidCol0_B_bal via col-0 extraction + mono_Q on τ.
+  Requires showing that for any τ ∈ fiber(σ), the extracted v satisfies the
+  balanced admissibility (from τ.mono_Q applied to new col 0 vs col 1 = σ.col 0).
+
+**Step 3**: Prove ValidCol0_B_bal ≤ fiber via a balanced lift construction
+  `liftPBP_B_bal σ v (h_adm : admissible)`. Parallel to `liftPBP_B` but uses
+  h_adm to handle mono_Q between col 0 and col 1. Also needs row_s, row_r
+  handling: in balanced case, non-dot rows in Q col 0 CAN overlap with col ≥ 1,
+  so `row_s` (equal non-dot rows must have equal j's) may fire. Requires
+  additional constraints: if σ.Q(i, 0) = .s, then v's col 0 at row i must NOT be .s
+  (since v.Q(i, 0) = σ.Q(i, 0) = .s would contradict row_s). Similarly for .r.
+  These row_s/row_r constraints further restrict ValidCol0_B_bal.
+
+**Step 4**: Count |ValidCol0_B_bal (σ) (Q_bot)| by Q_bot trichotomy:
+  - Q_bot = d: max layerOrd cap, row_s/row_r trivially satisfied (no s/r below d
+    row by mono). Count = 4k. Admissibility vacuous for rows below d.
+  - Q_bot = r: cap layerOrd at 2 for overlap rows. Count = 4k - 2 (2 exclusions:
+    d and c at the boundary row).
+  - Q_bot ∈ {•, s}: heavy cap (layerOrd ≤ 1). Count = 2k - 1.
+
+The DSeq enumeration machinery at lines ~2150-2500 (`DSeq_sr`, `DSeq_srd`, `DSeq_last_s_eq`,
+etc.) would be extended with `DSeq_bal_{d,r,low}` variants tracking admissibility.
+
+Each lemma requires ~500 lines; full Phase 3 infrastructure ~1500 lines total.
+Parallels the primitive case's ~650-line infrastructure at lines 880-1930.
+
+Status: all three lemmas admitted as focused sorries. Numerically verified for
+all 82 dp cases up to size 24 via `tools/verify_all_B_lemmas.py`.
+-/
+
 /-- **Per-class fiber size (Q_bot = d)**: In balanced case, a sub-PBP σ with
     Q_bot = d has a fiber of size 4k in the new level.
-    Empirically verified for 82 dp cases; requires `ValidCol0_B_balanced_d`
-    refinement of the primitive case machinery. -/
+
+    **Closure path**: See the prelude block above. Requires building
+    `ValidCol0_B_bal σ .d` (subtype of `ValidCol0_B hP hQ` with admissibility),
+    showing its card = 4k, and a balanced lift bijection `ValidCol0_B_bal ≃ fiber`.
+
+    **Numerical verification**: 82 dp cases via `tools/verify_all_B_lemmas.py`. -/
 private theorem fiber_card_B_bal_Qd {r₁ r₂ : ℕ} {rest : DualPart}
     {μP μQ : YoungDiagram}
     (_hP : μP.colLens = dpartColLensP_B (r₁ :: r₂ :: rest))
@@ -2860,7 +2907,13 @@ private theorem fiber_card_B_bal_Qd {r₁ r₂ : ℕ} {rest : DualPart}
 
 /-- **Per-class fiber size (Q_bot = r)**: In balanced case, a sub-PBP σ with
     Q_bot = r has a fiber of size 4k - 2 in the new level.
-    Empirically verified for 82 dp cases. -/
+
+    **Closure path**: Parallel to `fiber_card_B_bal_Qd`, but the admissibility
+    constraint `(τ.Q col 0 at row < hP_σ).layerOrd ≤ 2` excludes 2 col-0 paintings
+    from the `ValidCol0_B hP hQ` = 4k count: those that would paint the boundary
+    row as `c` (layerOrd 3) or `d` (layerOrd 4). Net fiber = 4k - 2.
+
+    **Numerical verification**: 82 dp cases via `tools/verify_all_B_lemmas.py`. -/
 private theorem fiber_card_B_bal_Qr {r₁ r₂ : ℕ} {rest : DualPart}
     {μP μQ : YoungDiagram}
     (_hP : μP.colLens = dpartColLensP_B (r₁ :: r₂ :: rest))
@@ -2876,7 +2929,12 @@ private theorem fiber_card_B_bal_Qr {r₁ r₂ : ℕ} {rest : DualPart}
 
 /-- **Per-class fiber size (Q_bot ∈ {•, s})**: In balanced case, a sub-PBP σ with
     Q_bot.layerOrd ≤ 1 has a fiber of size 2k - 1 in the new level.
-    Empirically verified for 82 dp cases. -/
+
+    **Closure path**: Parallel to `fiber_card_B_bal_Qd`. Admissibility
+    `(τ.Q col 0 at row < hP_σ).layerOrd ≤ 1` forces ≈ half the ValidCol0_B
+    paintings to be valid (those using only •/s for overlap rows). Count = 2k - 1.
+
+    **Numerical verification**: 82 dp cases via `tools/verify_all_B_lemmas.py`. -/
 private theorem fiber_card_B_bal_Qlow {r₁ r₂ : ℕ} {rest : DualPart}
     {μP μQ : YoungDiagram}
     (_hP : μP.colLens = dpartColLensP_B (r₁ :: r₂ :: rest))
