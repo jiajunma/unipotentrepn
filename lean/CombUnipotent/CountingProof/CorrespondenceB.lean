@@ -895,6 +895,16 @@ private theorem validCol0_B_card (hP hQ : ℕ) (hle : hP ≤ hQ)
   simp only [ValidCol0_B, Fintype.card_sum, DSeq_card]
   omega
 
+/-- The top Q symbol of a ValidCol0_B, i.e., the symbol at row μQ.colLen 0 - 1
+    of the lifted Q col 0. For inl (P all dots), this is the last DSeq entry
+    when the tail is non-empty; otherwise .dot (P extends to the top, forcing
+    Q = dot by dot_match). For inr (P has c), this is always the last DSeq entry. -/
+private noncomputable def topSym_B (hP hQ : ℕ) (v : ValidCol0_B hP hQ) : DRCSymbol :=
+  match v with
+  | .inl d =>
+    if h : hQ - hP ≥ 1 then d.val ⟨hQ - hP - 1, by omega⟩ else .dot
+  | .inr d => d.val ⟨hQ - hP, by omega⟩
+
 /-! ### Extraction map: fiber → ValidCol0_B
 
 For each fiber element τ, extract:
@@ -1938,6 +1948,160 @@ private theorem sortedGE_head_ge {r₁ r₂ : ℕ} {rest : List ℕ}
   simp at this
   exact this
 
+/-! ### Top-Q preservation for extract / lift -/
+
+/-- `extractCol0_B` preserves the top-Q symbol at row μQ.colLen 0 - 1.
+    Requires μQ.colLen 0 ≥ 1. -/
+private theorem extractCol0_B_preserves_top_Q {μP μQ : YoungDiagram}
+    (τ : PBPSet .Bplus μP μQ) (hle : μP.colLen 0 ≤ μQ.colLen 0)
+    (hQ_pos : μQ.colLen 0 ≥ 1) :
+    topSym_B (μP.colLen 0) (μQ.colLen 0) (extractCol0_B τ hle) =
+      τ.val.Q.paint (μQ.colLen 0 - 1) 0 := by
+  unfold extractCol0_B
+  split_ifs with hc
+  · -- Sum.inr (extractQtail_B): topSym = d.val ⟨hQ-hP, _⟩
+    simp only [topSym_B]
+    -- The DSeq underlying function: ⟨k, _⟩ ↦ τ.Q.paint (Q_tail_start + k) 0
+    -- where Q_tail_start = hP - 1 (since has c).
+    have hts : Q_tail_start τ = μP.colLen 0 - 1 := by
+      unfold Q_tail_start; rw [if_pos hc]
+    show (extractQtail_B τ hle _ (by simp [Q_tail_len, if_pos hc])).val
+        ⟨μQ.colLen 0 - μP.colLen 0, by omega⟩ = _
+    -- Unfold extractQtail_B.val : the val of the subtype is fun ⟨k, _⟩ => τ.Q.paint (tail_start + k) 0
+    show τ.val.Q.paint (Q_tail_start τ + (μQ.colLen 0 - μP.colLen 0)) 0 = _
+    rw [hts]
+    have hpos : μP.colLen 0 ≥ 1 := hc.1
+    congr 1; omega
+  · -- Sum.inl (extractQtail_B): topSym = dif on hQ-hP ≥ 1
+    simp only [topSym_B]
+    split_ifs with h
+    · -- hQ-hP ≥ 1: topSym = d.val ⟨hQ-hP-1, _⟩
+      show (extractQtail_B τ hle _ (by simp [Q_tail_len, if_neg hc])).val
+          ⟨μQ.colLen 0 - μP.colLen 0 - 1, by omega⟩ = _
+      show τ.val.Q.paint (Q_tail_start τ + (μQ.colLen 0 - μP.colLen 0 - 1)) 0 = _
+      have hts : Q_tail_start τ = μP.colLen 0 := by
+        unfold Q_tail_start; rw [if_neg hc]
+      rw [hts]; congr 1; omega
+    · -- hQ-hP = 0, i.e., hP = hQ: top Q = .dot (by Q_col0_dot_below_tail with hQ-1 < hP)
+      -- In this case, the row hQ-1 is in P shape (since hQ = hP and hQ-1 < hP).
+      -- Not has-c in P, so P.paint(hQ-1, 0) = dot, dot_match forces Q.paint(hQ-1, 0) = dot.
+      have hP_eq : μQ.colLen 0 = μP.colLen 0 := by omega
+      have hdot : τ.val.Q.paint (μQ.colLen 0 - 1) 0 = .dot := by
+        apply Q_col0_dot_below_tail
+        unfold Q_tail_start; rw [if_neg hc]; omega
+      exact hdot.symm
+
+/-- `liftPBP_B` preserves the top-Q symbol at row μQ.colLen 0 - 1.
+    Requires μQ.colLen 0 ≥ 1. -/
+private theorem liftPBP_B_preserves_top_Q {μP μQ : YoungDiagram}
+    (σ : PBPSet .Bplus (μP.shiftLeft) (μQ.shiftLeft))
+    (v : ValidCol0_B (μP.colLen 0) (μQ.colLen 0))
+    (hle : μP.colLen 0 ≤ μQ.colLen 0)
+    (hP_pos : 0 < μP.colLen 0)
+    (hQ_pos : μQ.colLen 0 ≥ 1)
+    (hprimP : ∀ j, j ≥ 1 → μP.colLen j < μP.colLen 0)
+    (hprimQ : ∀ j, j ≥ 1 → μQ.colLen j ≤ μP.colLen 0 - 1) :
+    (liftPBP_B σ v hle hP_pos hprimP hprimQ).val.Q.paint (μQ.colLen 0 - 1) 0 =
+      topSym_B (μP.colLen 0) (μQ.colLen 0) v := by
+  -- The paint at col 0 is liftCol0Q_B (by definition of liftPaint_B_Q at j=0).
+  show liftPaint_B_Q σ.val (μP.colLen 0) (μQ.colLen 0) v (μQ.colLen 0 - 1) 0 =
+      topSym_B (μP.colLen 0) (μQ.colLen 0) v
+  simp only [liftPaint_B_Q, liftCol0Q_B]
+  rcases v with d | d
+  · -- .inl d: liftCol0Q_B = if hP ≤ hQ-1 ∧ hQ-1 < hQ then d.val ⟨hQ-1-hP, _⟩ else .dot
+    simp only [topSym_B]
+    by_cases h_ge_1 : μQ.colLen 0 - μP.colLen 0 ≥ 1
+    · -- hQ - hP ≥ 1, so hP < hQ, so hP ≤ hQ-1.
+      rw [dif_pos h_ge_1]
+      have hcond : μP.colLen 0 ≤ μQ.colLen 0 - 1 ∧ μQ.colLen 0 - 1 < μQ.colLen 0 := ⟨by omega, by omega⟩
+      rw [dif_pos hcond]
+      have hfin : (⟨μQ.colLen 0 - 1 - μP.colLen 0, by omega⟩ : Fin (μQ.colLen 0 - μP.colLen 0)) =
+          ⟨μQ.colLen 0 - μP.colLen 0 - 1, by omega⟩ := by
+        apply Fin.ext; show μQ.colLen 0 - 1 - μP.colLen 0 = μQ.colLen 0 - μP.colLen 0 - 1; omega
+      rw [hfin]
+    · -- hQ - hP = 0, so hP = hQ, so ¬(hP ≤ hQ-1).
+      rw [dif_neg h_ge_1]
+      have hcond : ¬ (μP.colLen 0 ≤ μQ.colLen 0 - 1 ∧ μQ.colLen 0 - 1 < μQ.colLen 0) := by
+        intro ⟨h1, _⟩; omega
+      rw [dif_neg hcond]
+  · -- .inr d
+    simp only [topSym_B]
+    have hcond : μP.colLen 0 - 1 ≤ μQ.colLen 0 - 1 ∧ μQ.colLen 0 - 1 < μQ.colLen 0 ∧
+        μP.colLen 0 > 0 := ⟨by omega, by omega, hP_pos⟩
+    rw [dif_pos hcond]
+    have hfin : (⟨μQ.colLen 0 - 1 - (μP.colLen 0 - 1), by omega⟩ : Fin (μQ.colLen 0 - μP.colLen 0 + 1)) =
+        ⟨μQ.colLen 0 - μP.colLen 0, by omega⟩ := by
+      apply Fin.ext
+      show μQ.colLen 0 - 1 - (μP.colLen 0 - 1) = μQ.colLen 0 - μP.colLen 0; omega
+    rw [hfin]
+
+/-- Primitive per-top-Q-sym step for B+ only:
+    |{τ : B+ | Q_bot = sym}| = |B+ shift| · |ValidCol0_B | topSym = sym|. -/
+private theorem card_PBPSet_Bplus_primitive_step_top_Q {μP μQ : YoungDiagram}
+    (hle : μP.colLen 0 ≤ μQ.colLen 0)
+    (hP_pos : 0 < μP.colLen 0)
+    (hQ_pos : μQ.colLen 0 ≥ 1)
+    (hprimP : ∀ j, j ≥ 1 → μP.colLen j < μP.colLen 0)
+    (hprimQ : ∀ j, j ≥ 1 → μQ.colLen j ≤ μP.colLen 0 - 1)
+    (sym : DRCSymbol) :
+    Fintype.card {τ : PBPSet .Bplus μP μQ //
+      τ.val.Q.paint (μQ.colLen 0 - 1) 0 = sym} =
+      Fintype.card (PBPSet .Bplus μP.shiftLeft μQ.shiftLeft) *
+        Fintype.card {v : ValidCol0_B (μP.colLen 0) (μQ.colLen 0) //
+          topSym_B (μP.colLen 0) (μQ.colLen 0) v = sym} := by
+  apply le_antisymm
+  · -- Upper bound: fiber with Q_bot = sym ↪ (sub × ValidCol0_B with topSym = sym).
+    rw [← Fintype.card_prod]
+    apply Fintype.card_le_of_injective
+      (fun (x : {τ : PBPSet .Bplus μP μQ //
+          τ.val.Q.paint (μQ.colLen 0 - 1) 0 = sym}) =>
+        ((doubleDescent_Bplus_map μP μQ x.val,
+          ⟨extractCol0_B x.val hle, by
+            rw [extractCol0_B_preserves_top_Q x.val hle hQ_pos]
+            exact x.prop⟩) :
+          PBPSet .Bplus μP.shiftLeft μQ.shiftLeft ×
+          {v : ValidCol0_B (μP.colLen 0) (μQ.colLen 0) //
+            topSym_B (μP.colLen 0) (μQ.colLen 0) v = sym}))
+    intro ⟨τ₁, _⟩ ⟨τ₂, _⟩ heq
+    simp only [Prod.mk.injEq] at heq
+    have h_σ := heq.1
+    have h_v_sub := Subtype.ext_iff.mp heq.2
+    -- Use extractCol0_B_injective_on_fiber with both τ₁, τ₂ as fiber elements over σ := doubleDescent τ₁
+    have h_fib_eq : (⟨τ₁, rfl⟩ : doubleDescent_Bplus_fiber (doubleDescent_Bplus_map μP μQ τ₁)) =
+        ⟨τ₂, h_σ.symm⟩ := by
+      apply extractCol0_B_injective_on_fiber (μP := μP) (μQ := μQ)
+        (doubleDescent_Bplus_map μP μQ τ₁) hle
+      exact h_v_sub
+    -- Extract τ₁ = τ₂ from the fiber equality.
+    have : τ₁ = τ₂ := by
+      have := congrArg (fun x : doubleDescent_Bplus_fiber _ => x.val) h_fib_eq
+      exact this
+    exact Subtype.ext this
+  · -- Lower bound: sub × ValidCol0_B with topSym = sym ↪ fiber with Q_bot = sym.
+    rw [← Fintype.card_prod]
+    apply Fintype.card_le_of_injective
+      (fun (p : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft ×
+          {v : ValidCol0_B (μP.colLen 0) (μQ.colLen 0) //
+            topSym_B (μP.colLen 0) (μQ.colLen 0) v = sym}) =>
+        (⟨liftPBP_B p.1 p.2.1 hle hP_pos hprimP hprimQ, by
+          rw [liftPBP_B_preserves_top_Q p.1 p.2.1 hle hP_pos hQ_pos hprimP hprimQ]
+          exact p.2.prop⟩ :
+          {τ : PBPSet .Bplus μP μQ //
+            τ.val.Q.paint (μQ.colLen 0 - 1) 0 = sym}))
+    intro ⟨σ₁, v₁, _⟩ ⟨σ₂, v₂, _⟩ heq
+    -- Extract that liftPBP_B are equal on values
+    have h_lift_eq : liftPBP_B σ₁ v₁ hle hP_pos hprimP hprimQ =
+        liftPBP_B σ₂ v₂ hle hP_pos hprimP hprimQ := Subtype.ext_iff.mp heq
+    -- Round-trip: doubleDescent_Bplus_map (liftPBP_B σ v) = σ
+    have hrt₁ := liftPBP_B_round_trip σ₁ v₁ hle hP_pos hprimP hprimQ
+    have hrt₂ := liftPBP_B_round_trip σ₂ v₂ hle hP_pos hprimP hprimQ
+    have hσ_eq : σ₁ = σ₂ := by
+      rw [← hrt₁, ← hrt₂, h_lift_eq]
+    subst hσ_eq
+    -- Now σ₁ = σ₂; need v₁ = v₂. Use liftPBP_B_injective.
+    have hv_eq := liftPBP_B_injective σ₁ hle hP_pos hprimP hprimQ h_lift_eq
+    exact Prod.ext rfl (Subtype.ext hv_eq)
+
 /-! ## Recursive step -/
 
 /-- Primitive case (r₂ > r₃): fiber is uniform across all tail classes. -/
@@ -2397,16 +2561,6 @@ private theorem card_DSeq_last_d {k : ℕ} (hk : k ≥ 1) :
   have h_r_ge := card_DSeq_last_r_ge hk
   have h_d_ge := card_DSeq_last_d_ge hk
   omega
-
-/-- The top Q symbol of a ValidCol0_B, i.e., the symbol at row μQ.colLen 0 - 1
-    of the lifted Q col 0. For inl (P all dots), this is the last DSeq entry
-    when the tail is non-empty; otherwise .dot (P extends to the top, forcing
-    Q = dot by dot_match). For inr (P has c), this is always the last DSeq entry. -/
-private noncomputable def topSym_B (hP hQ : ℕ) (v : ValidCol0_B hP hQ) : DRCSymbol :=
-  match v with
-  | .inl d =>
-    if h : hQ - hP ≥ 1 then d.val ⟨hQ - hP - 1, by omega⟩ else .dot
-  | .inr d => d.val ⟨hQ - hP, by omega⟩
 
 /-- Sum decomposition for ValidCol0_B top-symbol subtype card. -/
 private theorem validCol0_B_card_top_split (hP hQ : ℕ) (sym : DRCSymbol) :
