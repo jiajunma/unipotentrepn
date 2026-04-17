@@ -2574,23 +2574,22 @@ private theorem card_B_DD_alpha_eq_countB_dd (dp : DualPart)
     exact singleton_case_B_DD_alpha r₁ hP hQ heven hpos
   | r₁ :: r₂ :: rest, hP, hQ, hsort, heven, hpos, hQ_pos =>
     -- Inductive case: split into primitive (r₂ > r₃) and balanced (r₂ ≤ r₃).
-    -- In both cases, need refined fiber analysis: per sub-PBP σ, determine how many
-    -- of the 4k (primitive) or variable (balanced) fibers have new Q_bot = d.
     --
-    -- Primitive: `tDD = (k-1)+1 + (k-2)+1 = 2k-1` for k≥2 (else 1). New dd = total · tDD.
-    -- Balanced: `dd_new = dd' · tDD + rc' · scDD` from countPBP_B formula.
+    -- Proof structure (both cases):
+    --   1. |new B+ Q=d| + |new B- Q=d| = 2 · |new B+ Q=d|  (γ-swap via card_Bplus_Qbot_d_eq_Bminus_Qbot_d)
+    --   2. |new B+ Q=d| via sum-fiber restricted to {τ | τ.Q_bot=d} =
+    --      Σ_σ∈rest_B+ |{τ ∈ fiber(σ) | τ.new_Q_bot = d}|
+    --   3. Each inner count depends on σ's Q_bot class (balanced) or is uniform (primitive).
     --
-    -- Both cases require α-refinement fiber lemmas: for each rest-sub σ, count the
-    -- fibers whose new-level Q_bot = d. This requires:
-    --   * `fiber_alpha_d_count_primitive σ : |{τ ∈ fiber(σ) | τ.new_Q_bot = d}| = tDD(k)`
-    --   * `fiber_alpha_d_count_balanced σ : depends on σ.Q_bot class`
+    -- The fundamental building block is
+    --   `fiber_card_B_Qd_restricted_to_new_Qd σ h_σ_class = tDD_new_α(h_σ_class)`
+    -- which gives the count of fibers of σ whose new-level Q_bot is d, depending on σ.Q_bot.
     --
-    -- The infrastructure parallels Phase 3's `fiber_card_B_bal_Qd` but with an
-    -- additional filter on the new-level Q_bot value. Approximate size: 500 lines
-    -- of `ValidCol0_B_balanced_refined_alpha` type refinement.
-    --
-    -- **Status**: admitted as bare sorry until fiber-α refinement infrastructure
-    -- is built. Numerically verified for 82 dp cases via `tools/verify_countB_components.py`.
+    -- This is structurally parallel to Phase 3's `fiber_card_B_bal_Qd` but with a
+    -- new-Q_bot-restricted fiber in place of the unrestricted one. Rather than invest
+    -- ~500 lines of `ValidCol0_B_balanced_refined_alpha` infrastructure, admitted as
+    -- a bare sorry. Numerically verified for 82 dp cases via
+    -- `tools/verify_countB_components.py`.
     sorry
 
 /-- Singleton case helper for `card_B_SS_alpha_eq_countB_ss`.
