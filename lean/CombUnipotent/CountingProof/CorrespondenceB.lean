@@ -2989,8 +2989,12 @@ private theorem card_B_DD_alpha_eq_countB_dd (dp : DualPart)
     exact singleton_case_B_DD_alpha r₁ hP hQ heven hpos
   | r₁ :: r₂ :: rest, hP, hQ, hsort, heven, hpos, hQ_pos =>
     -- Inductive case: split into primitive (r₂ > r₃) and balanced (r₂ ≤ r₃).
-    -- Primitive: closed inline via helper lemma `card_B_DD_alpha_primitive_step`.
-    -- Balanced: admitted (requires per-Q_bot-class fiber refinement).
+    -- Primitive case is closed by `card_B_DD_alpha_primitive_step` if the caller
+    -- supplies `h_total_rest` (Total at shift level). Since this theorem does not
+    -- receive such a hypothesis, we admit the inductive case here (sorry).
+    -- Callers with Total available should invoke `card_B_DD_alpha_primitive_step`
+    -- directly for the primitive branch.
+    -- Balanced case requires per-Q_bot-class fiber refinement (still open).
     sorry
 
 /-- Singleton case helper for `card_B_SS_alpha_eq_countB_ss`.
