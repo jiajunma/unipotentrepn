@@ -3174,29 +3174,38 @@ private theorem card_B_DD_alpha_eq_countB_dd (dp : DualPart)
       -- Apply the primitive step lemma.
       exact card_B_DD_alpha_primitive_step r₁ r₂ rest hP hQ hsort heven hpos hQ_pos
         h_prim h_total_rest
-    · -- Balanced case: requires per-Q_bot-class fiber refinement to relate
-      -- `new Q_bot = d` count to the per-sub-class counts `dd'` and `rc'`.
+    · -- Balanced case: derive |B+ Q=d new| + |B- Q=d new| via fiber-α decomposition.
       --
       -- Target: A1_new = dd' · tDD + rc' · scDD, where
       --   tDD = ν(k-1) + [k≥2→ν(k-2)]  (balanced tail coefficient, sub.Q=d class)
       --   scDD = 2 · [k≥2→ν(k-2)]      (balanced sub-correction, sub.Q=r class)
       --
-      -- **Required infrastructure** (not yet built):
-      --   * `fiber_alpha_dd_count_bal_Qd σ : |{τ ∈ fiber(σ) | τ.new_Q_bot = .d}| = tDD`
-      --     when σ.Q_bot = .d in the balanced case.
-      --   * `fiber_alpha_dd_count_bal_Qr σ : |{τ ∈ fiber(σ) | τ.new_Q_bot = .d}| = scDD`
-      --     when σ.Q_bot = .r in the balanced case.
-      --   * `fiber_alpha_dd_count_bal_Qlow σ : |{τ ∈ fiber(σ) | τ.new_Q_bot = .d}| = 0`
-      --     when σ.Q_bot.layerOrd ≤ 1 (Qlow) in the balanced case.
-      -- Then A1_new sum decomposes by σ.Q_bot class (parallel to
-      -- `card_B_bal_grouped_fiber`) and gives dd'·tDD + rc'·scDD (using
-      -- A1(rest) and RC-class partition derivation).
+      -- **Infrastructure available** (lines 7028+, 7160+, 7303+):
+      --   * `fiber_alpha_topSym_d_count_bal_Qd σ : ... = 2k - 1 = tDD`
+      --     (for σ.Q_bot = .d in the balanced case)
+      --   * `fiber_alpha_topSym_d_count_bal_Qr σ : ... = scDD`
+      --     (for σ.Q_bot = .r in the balanced case)
+      --   * `fiber_alpha_topSym_d_count_bal_Qlow σ : ... = scDD/2`
+      --     (for σ.Q_bot.lo≤1 in the balanced case)
       --
-      -- Blocker: fiber-α refinement requires a `ValidCol0_B_bal_α` subtype
-      -- keyed on τ.new_Q_bot, parallel to existing `ValidCol0_B_Qr`/
-      -- `ValidCol0_B_Qlow` (which are keyed on σ.Q_bot).
+      -- Derivation (per `card_B_bal_grouped_fiber` pattern):
+      -- |B+ Q=d new| = Σ_σ [σ ∈ B+sub] fiber_alpha_d_count(σ)
+      --             = Bp_d · tDD + Bp_r · scDD + Bp_low · (scDD/2)
+      -- |B- Q=d new| = Bp_d · tDD + Bp_r · scDD + Bp_low · (scDD/2) (γ-swap)
+      -- Sum = 2·Bp_d·tDD + 2·Bp_r·scDD + Bp_low·scDD
+      --     = dd'·tDD + (rc' - ss')·scDD + ss'·scDD  (via A1, γ-swap, partitions)
+      --     = dd'·tDD + rc'·scDD ✓
       --
-      -- **Status**: admitted as bare sorry until fiber-α refinement is built.
+      -- **Blocker** (requires ~400-500 line helper lemma):
+      --   * Need `card_B_DD_alpha_bal_grouped_fiber`: parallel of `card_B_bal_grouped_fiber`
+      --     computing Σ_σ fiber-α-d counts for each Q_bot class.
+      --   * Need `card_B_DD_alpha_balanced_step`: combines h_A1_rest, h_A3_rest, h_total_rest
+      --     with the grouped-fiber-α identity to derive A1_new.
+      --   * Move of A1/A3 to after Total required so A1 balanced can use
+      --     `card_PBPSet_B_eq_tripleSum_countPBP_B rest` for Total(rest).
+      --
+      -- **Status**: admitted as bare sorry. Fiber-α lemmas (7028+) and
+      -- balanced_step refactor (h_A1_rest, h_A3_rest explicit) unblock this.
       -- Numerically verified via `tools/verify_all_B_lemmas.py` (82 dp cases).
       sorry
 
@@ -3329,14 +3338,22 @@ theorem card_B_SS_alpha_eq_countB_ss (dp : DualPart)
     --            the all-s fiber). So ss_new = total_rest · 1 = total_rest.
     -- Balanced: `ss_new = dd' · tSS + rc' · scSS = dd' · 1 + rc' · 1 = dd' + rc'`.
     --
-    -- Both cases require the lo≤1-class fiber-α lemma (parallel to Phase 3's
-    -- `fiber_card_B_bal_Qlow` but refining to new-level Q_bot.lo≤1):
-    --   * `fiber_alpha_ss_count_primitive σ : |{τ ∈ fiber(σ) | τ.new_Q_bot.lo ≤ 1}| = 1`
-    --   * `fiber_alpha_ss_count_balanced σ : depends on σ.Q_bot class`
+    -- **Infrastructure available** (lines 7565+, 7687+, 7831+):
+    --   * `fiber_alpha_topSym_lo_le_one_count_bal_Qd σ : ... = 2`
+    --   * `fiber_alpha_topSym_lo_le_one_count_bal_Qr σ : ... = 2`
+    --   * `fiber_alpha_topSym_lo_le_one_count_bal_Qlow σ : ... = 1`
+    -- Plus primitive-case analogs (NOT yet built).
     --
-    -- Cannot be derived from Total + A1 + A2 + γ-swap alone (A2 circularly depends on A3).
-    -- **Status**: admitted as bare sorry until fiber-α refinement infrastructure
-    -- is built. Numerically verified for 82 dp cases via `tools/verify_countB_components.py`.
+    -- **Blocker** (requires ~400-500 line helper lemmas):
+    --   * Need `card_B_SS_alpha_primitive_step` (analog of `card_B_DD_alpha_primitive_step`).
+    --   * Need `card_B_SS_alpha_bal_grouped_fiber` (parallel to `card_B_bal_grouped_fiber`).
+    --   * Need `card_B_SS_alpha_balanced_step` combining these with A1(rest), A3(rest),
+    --     Total(rest) to derive A3_new.
+    --   * Move of A3 to after Total required so A3 balanced can use
+    --     `card_PBPSet_B_eq_tripleSum_countPBP_B rest` for Total(rest).
+    --
+    -- **Status**: admitted as bare sorry. Fiber-α SS-direction lemmas unblock this.
+    -- Numerically verified for 82 dp cases via `tools/verify_countB_components.py`.
     sorry
 
 /-- **γ-swap SS symmetry**: B⁺ and B⁻ have the same number of PBPs with
