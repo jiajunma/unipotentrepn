@@ -8247,7 +8247,7 @@ private theorem card_B_bal_grouped_fiber (r₁ r₂ : ℕ) (rest : DualPart)
       intros σ hσ
       simp only [Finset.mem_filter] at hσ
       exact fiber_card_B_bal_Qd hP hQ hsort heven hpos h_bal σ hσ.2
-    · simp [Finset.sum_const, mul_comm]
+    · rw [Finset.sum_const, Nat.nsmul_eq_mul, Nat.mul_comm]
   have h_sum_r : (∑ σ ∈ Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
         σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .r,
       Fintype.card (doubleDescent_Bplus_fiber σ)) =
@@ -8259,7 +8259,7 @@ private theorem card_B_bal_grouped_fiber (r₁ r₂ : ℕ) (rest : DualPart)
       intros σ hσ
       simp only [Finset.mem_filter] at hσ
       exact fiber_card_B_bal_Qr hP hQ hsort heven hpos h_bal σ hσ.2
-    · simp [Finset.sum_const, mul_comm]
+    · rw [Finset.sum_const, Nat.nsmul_eq_mul, Nat.mul_comm]
   have h_sum_low : (∑ σ ∈ Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
         (σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0).layerOrd ≤ 1,
       Fintype.card (doubleDescent_Bplus_fiber σ)) =
@@ -8271,7 +8271,468 @@ private theorem card_B_bal_grouped_fiber (r₁ r₂ : ℕ) (rest : DualPart)
       intros σ hσ
       simp only [Finset.mem_filter] at hσ
       exact fiber_card_B_bal_Qlow hP hQ hsort heven hpos h_bal σ hσ.2
-    · simp [Finset.sum_const, mul_comm]
+    · rw [Finset.sum_const, Nat.nsmul_eq_mul, Nat.mul_comm]
+  rw [h_sum_d, h_sum_r, h_sum_low]
+
+/-- **Filtered sum-fiber identity for B⁺**: `|{σ ∈ B⁺_new : P σ}| = Σ_sub |{τ ∈ fiber(sub) : P τ.val}|`.
+    Variant of `card_PBPSet_Bplus_eq_sum_fiber` with a predicate on the new-level.
+    Proof: transport via the sigma fibration. -/
+private theorem card_PBPSet_Bplus_filter_eq_sum_fiber_filter {μP μQ : YoungDiagram}
+    (P : PBPSet .Bplus μP μQ → Prop) [DecidablePred P] :
+    (Finset.univ.filter P).card =
+      Finset.sum Finset.univ (fun σ : PBPSet .Bplus (μP.shiftLeft) (μQ.shiftLeft) =>
+        (Finset.univ.filter fun τ : doubleDescent_Bplus_fiber σ => P τ.val).card) := by
+  -- Use Equiv (PBPSet .Bplus μP μQ) ≃ Σ σ, doubleDescent_Bplus_fiber σ
+  -- Both sides equal |{x : Σ σ, fiber σ // P x.snd.val}|.
+  rw [show (Finset.univ.filter P).card =
+        Fintype.card {τ : PBPSet .Bplus μP μQ // P τ} from
+      (Fintype.card_subtype _).symm]
+  simp_rw [show ∀ σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft,
+        (Finset.univ.filter fun τ : doubleDescent_Bplus_fiber σ => P τ.val).card =
+        Fintype.card {τ : doubleDescent_Bplus_fiber σ // P τ.val} from fun _ =>
+      (Fintype.card_subtype _).symm]
+  rw [← Fintype.card_sigma]
+  apply Fintype.card_congr
+  refine {
+    toFun := fun τ =>
+      ⟨doubleDescent_Bplus_map μP μQ τ.val, ⟨⟨τ.val, rfl⟩, τ.prop⟩⟩
+    invFun := fun x => ⟨x.snd.val.val, x.snd.prop⟩
+    left_inv := fun ⟨τ, hP⟩ => rfl
+    right_inv := fun ⟨σ, ⟨τ, hP⟩⟩ => by
+      -- Need Sigma equality: first component = σ comes from τ.prop.
+      obtain ⟨τ_val, hτ_map⟩ := τ
+      simp only [Sigma.mk.injEq]
+      refine ⟨hτ_map, ?_⟩
+      cases hτ_map
+      rfl
+  }
+
+/-- **A1 balanced grouped-fiber identity**: in balanced case,
+    `|B+ Q=d new| + |B- Q=d new|` equals the sum of per-class partition counts at
+    rest level, weighted by the per-class fiber-α-d sizes.
+    Mirror of `card_B_bal_grouped_fiber` but filtered to new-Q=d fibers. -/
+private theorem card_B_DD_alpha_bal_grouped_fiber (r₁ r₂ : ℕ) (rest : DualPart)
+    (μP μQ : YoungDiagram)
+    (hP : μP.colLens = dpartColLensP_B (r₁ :: r₂ :: rest))
+    (hQ : μQ.colLens = dpartColLensQ_B (r₁ :: r₂ :: rest))
+    (hsort : (r₁ :: r₂ :: rest).SortedGE)
+    (heven : ∀ r ∈ (r₁ :: r₂ :: rest), Even r)
+    (hpos : ∀ r ∈ (r₁ :: r₂ :: rest), 0 < r)
+    (h_bal : ¬(r₂ > rest.head?.getD 0)) :
+    (Finset.univ.filter fun σ : PBPSet .Bplus μP μQ =>
+      σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .d).card +
+    (Finset.univ.filter fun σ : PBPSet .Bminus μP μQ =>
+      σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .d).card =
+      let k := (r₁ - r₂) / 2 + 1
+      let f_d := 2 * k - 1  -- tDD
+      let f_r := 2 * (if k ≥ 2 then (k - 1) else 0)  -- scDD = 2·(if k≥2 then k-1 else 0)
+      let f_lo := (if k ≥ 2 then (k - 1) else 0)  -- scDD/2
+      let Bp_d := (Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+          σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .d).card
+      let Bm_d := (Finset.univ.filter fun σ : PBPSet .Bminus μP.shiftLeft μQ.shiftLeft =>
+          σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .d).card
+      let Bp_r := (Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+          σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .r).card
+      let Bm_r := (Finset.univ.filter fun σ : PBPSet .Bminus μP.shiftLeft μQ.shiftLeft =>
+          σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .r).card
+      let Bp_low := (Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+          (σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0).layerOrd ≤ 1).card
+      let Bm_low := (Finset.univ.filter fun σ : PBPSet .Bminus μP.shiftLeft μQ.shiftLeft =>
+          (σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0).layerOrd ≤ 1).card
+      (Bp_d + Bm_d) * f_d + (Bp_r + Bm_r) * f_r + (Bp_low + Bm_low) * f_lo := by
+  simp only
+  -- γ-swap for B⁺/B⁻ on the target predicate.
+  have h_swap_new_d := card_Bplus_Qbot_d_eq_Bminus_Qbot_d μP μQ
+  -- γ-swap for sub-level predicates.
+  have h_swap_d := card_Bplus_Qbot_d_eq_Bminus_Qbot_d μP.shiftLeft μQ.shiftLeft
+  have h_swap_r := card_Bplus_Qbot_r_eq_Bminus_Qbot_r μP.shiftLeft μQ.shiftLeft
+  have h_swap_low := card_Bplus_SS_eq_Bminus_SS μP.shiftLeft μQ.shiftLeft
+  rw [← h_swap_new_d]
+  -- Now LHS = 2 · |B⁺ Q=d new|. Decompose via sum-fiber (filtered).
+  rw [show (Finset.univ.filter fun σ : PBPSet .Bplus μP μQ =>
+         σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .d).card +
+         (Finset.univ.filter fun σ : PBPSet .Bplus μP μQ =>
+         σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .d).card =
+       2 * (Finset.univ.filter fun σ : PBPSet .Bplus μP μQ =>
+         σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .d).card from by ring]
+  rw [card_PBPSet_Bplus_filter_eq_sum_fiber_filter
+      (fun τ : PBPSet .Bplus μP μQ => τ.val.Q.paint (μQ.colLen 0 - 1) 0 = .d)]
+  set Bp_d := (Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+    σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .d).card
+  set Bp_r := (Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+    σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .r).card
+  set Bp_low := (Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+    (σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0).layerOrd ≤ 1).card
+  set Bm_d := (Finset.univ.filter fun σ : PBPSet .Bminus μP.shiftLeft μQ.shiftLeft =>
+    σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .d).card
+  set Bm_r := (Finset.univ.filter fun σ : PBPSet .Bminus μP.shiftLeft μQ.shiftLeft =>
+    σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .r).card
+  set Bm_low := (Finset.univ.filter fun σ : PBPSet .Bminus μP.shiftLeft μQ.shiftLeft =>
+    (σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0).layerOrd ≤ 1).card
+  set k := (r₁ - r₂) / 2 + 1 with hk_def
+  have hBm_d : Bm_d = Bp_d := h_swap_d.symm
+  have hBm_r : Bm_r = Bp_r := h_swap_r.symm
+  have hBm_low : Bm_low = Bp_low := h_swap_low.symm
+  rw [hBm_d, hBm_r, hBm_low]
+  -- Goal now: 2 * Σ_σ |{τ:fiber σ // τ.Q=d}| =
+  --   (Bp_d + Bp_d)*f_d + (Bp_r + Bp_r)*f_r + (Bp_low + Bp_low)*f_lo
+  -- which simplifies to 2*(Bp_d*f_d + Bp_r*f_r + Bp_low*f_lo).
+  suffices h : (∑ σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft,
+      (Finset.univ.filter fun τ : doubleDescent_Bplus_fiber σ =>
+        τ.val.val.Q.paint (μQ.colLen 0 - 1) 0 = .d).card) =
+      Bp_d * (2 * k - 1) + Bp_r * (2 * (if k ≥ 2 then k - 1 else 0)) +
+      Bp_low * (if k ≥ 2 then k - 1 else 0) by
+    rw [h]; ring
+  -- Partition Σ by Q_bot class at sub level.
+  have h_partition : (Finset.univ : Finset (PBPSet .Bplus μP.shiftLeft μQ.shiftLeft)) =
+      (Finset.univ.filter fun σ => σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .d) ∪
+      (Finset.univ.filter fun σ => σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .r) ∪
+      (Finset.univ.filter fun σ =>
+          (σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0).layerOrd ≤ 1) := by
+    ext σ
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_union]
+    constructor
+    · intro _
+      by_cases h_Qs_pos : μQ.shiftLeft.colLen 0 > 0
+      · have hmem : (μQ.shiftLeft.colLen 0 - 1, 0) ∈ μQ.shiftLeft := by
+          rw [YoungDiagram.mem_iff_lt_colLen]; omega
+        have hmemQ : (μQ.shiftLeft.colLen 0 - 1, 0) ∈ σ.val.Q.shape := by
+          rw [σ.prop.2.2]; exact hmem
+        have hsym := σ.val.sym_Q _ _ hmemQ
+        rw [σ.prop.1] at hsym
+        simp [DRCSymbol.allowed] at hsym
+        rcases hsym with h | h | h | h
+        · right; rw [h]; decide
+        · right; rw [h]; decide
+        · left; right; exact h
+        · left; left; exact h
+      · push_neg at h_Qs_pos
+        have h0 : μQ.shiftLeft.colLen 0 = 0 := by omega
+        have hnmem : (μQ.shiftLeft.colLen 0 - 1, 0) ∉ σ.val.Q.shape := by
+          rw [σ.prop.2.2, YoungDiagram.mem_iff_lt_colLen]; omega
+        have hdot : σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .dot :=
+          σ.val.Q.paint_outside _ _ hnmem
+        right; rw [hdot]; decide
+    · intro _; trivial
+  have h_disj_dr : Disjoint
+      (Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+        σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .d)
+      (Finset.univ.filter fun σ => σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .r) := by
+    rw [Finset.disjoint_filter]
+    intros _ _ h1 h2; rw [h1] at h2; exact DRCSymbol.noConfusion h2
+  have h_disj_dl : Disjoint
+      (Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+        σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .d)
+      (Finset.univ.filter fun σ =>
+        (σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0).layerOrd ≤ 1) := by
+    rw [Finset.disjoint_filter]
+    intros _ _ h1 h2; rw [h1] at h2; simp [DRCSymbol.layerOrd] at h2
+  have h_disj_rl : Disjoint
+      (Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+        σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .r)
+      (Finset.univ.filter fun σ =>
+        (σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0).layerOrd ≤ 1) := by
+    rw [Finset.disjoint_filter]
+    intros _ _ h1 h2; rw [h1] at h2; simp [DRCSymbol.layerOrd] at h2
+  have h_sum_split : (∑ σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft,
+      (Finset.univ.filter fun τ : doubleDescent_Bplus_fiber σ =>
+        τ.val.val.Q.paint (μQ.colLen 0 - 1) 0 = .d).card) =
+      (∑ σ ∈ Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+          σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .d,
+        (Finset.univ.filter fun τ : doubleDescent_Bplus_fiber σ =>
+          τ.val.val.Q.paint (μQ.colLen 0 - 1) 0 = .d).card) +
+      (∑ σ ∈ Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+          σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .r,
+        (Finset.univ.filter fun τ : doubleDescent_Bplus_fiber σ =>
+          τ.val.val.Q.paint (μQ.colLen 0 - 1) 0 = .d).card) +
+      (∑ σ ∈ Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+          (σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0).layerOrd ≤ 1,
+        (Finset.univ.filter fun τ : doubleDescent_Bplus_fiber σ =>
+          τ.val.val.Q.paint (μQ.colLen 0 - 1) 0 = .d).card) := by
+    conv_lhs => rw [show (Finset.univ : Finset _) =
+      ((Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+          σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .d) ∪
+        (Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+          σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .r)) ∪
+        (Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+            (σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0).layerOrd ≤ 1) from h_partition]
+    rw [Finset.sum_union (by
+      rw [Finset.disjoint_union_left]
+      exact ⟨h_disj_dl, h_disj_rl⟩)]
+    rw [Finset.sum_union h_disj_dr]
+  rw [h_sum_split]
+  -- Apply per-class fiber-α lemmas.
+  have h_fib_Qd : ∀ σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft,
+      σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .d →
+      (Finset.univ.filter fun τ : doubleDescent_Bplus_fiber σ =>
+          τ.val.val.Q.paint (μQ.colLen 0 - 1) 0 = .d).card = 2 * k - 1 := by
+    intros σ h_Qd
+    rw [show (Finset.univ.filter fun τ : doubleDescent_Bplus_fiber σ =>
+          τ.val.val.Q.paint (μQ.colLen 0 - 1) 0 = .d).card =
+        Fintype.card {τ : doubleDescent_Bplus_fiber σ //
+          τ.val.val.Q.paint (μQ.colLen 0 - 1) 0 = .d} from (Fintype.card_subtype _).symm]
+    rw [fiber_alpha_topSym_d_count_bal_Qd hP hQ hsort heven hpos h_bal σ h_Qd]
+  have h_fib_Qr : ∀ σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft,
+      σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .r →
+      (Finset.univ.filter fun τ : doubleDescent_Bplus_fiber σ =>
+          τ.val.val.Q.paint (μQ.colLen 0 - 1) 0 = .d).card =
+        2 * (if k ≥ 2 then k - 1 else 0) := by
+    intros σ h_Qr
+    rw [show (Finset.univ.filter fun τ : doubleDescent_Bplus_fiber σ =>
+          τ.val.val.Q.paint (μQ.colLen 0 - 1) 0 = .d).card =
+        Fintype.card {τ : doubleDescent_Bplus_fiber σ //
+          τ.val.val.Q.paint (μQ.colLen 0 - 1) 0 = .d} from (Fintype.card_subtype _).symm]
+    rw [fiber_alpha_topSym_d_count_bal_Qr hP hQ hsort heven hpos h_bal σ h_Qr]
+    show 2 * (if (r₁ - r₂) / 2 + 1 ≥ 2 then nu ((r₁ - r₂) / 2 + 1 - 2) else 0) =
+         2 * (if k ≥ 2 then k - 1 else 0)
+    unfold nu
+    by_cases hk2 : (r₁ - r₂) / 2 + 1 ≥ 2
+    · simp [hk2]
+      rw [hk_def]; simp [hk2]
+      omega
+    · simp [hk2]
+      rw [hk_def]; simp [hk2]
+  have h_fib_Qlow : ∀ σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft,
+      (σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0).layerOrd ≤ 1 →
+      (Finset.univ.filter fun τ : doubleDescent_Bplus_fiber σ =>
+          τ.val.val.Q.paint (μQ.colLen 0 - 1) 0 = .d).card =
+        (if k ≥ 2 then k - 1 else 0) := by
+    intros σ h_Qlow
+    rw [show (Finset.univ.filter fun τ : doubleDescent_Bplus_fiber σ =>
+          τ.val.val.Q.paint (μQ.colLen 0 - 1) 0 = .d).card =
+        Fintype.card {τ : doubleDescent_Bplus_fiber σ //
+          τ.val.val.Q.paint (μQ.colLen 0 - 1) 0 = .d} from (Fintype.card_subtype _).symm]
+    rw [fiber_alpha_topSym_d_count_bal_Qlow hP hQ hsort heven hpos h_bal σ h_Qlow]
+    show (if (r₁ - r₂) / 2 + 1 ≥ 2 then nu ((r₁ - r₂) / 2 + 1 - 2) else 0) =
+         (if k ≥ 2 then k - 1 else 0)
+    unfold nu
+    by_cases hk2 : (r₁ - r₂) / 2 + 1 ≥ 2
+    · simp [hk2]
+      rw [hk_def]; simp [hk2]
+      omega
+    · simp [hk2]
+      rw [hk_def]; simp [hk2]
+  -- Each sum = |class| · per-class count.
+  have h_sum_d : (∑ σ ∈ Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+        σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .d,
+      (Finset.univ.filter fun τ : doubleDescent_Bplus_fiber σ =>
+        τ.val.val.Q.paint (μQ.colLen 0 - 1) 0 = .d).card) =
+      Bp_d * (2 * k - 1) := by
+    rw [show (fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+      (Finset.univ.filter fun τ : doubleDescent_Bplus_fiber σ =>
+        τ.val.val.Q.paint (μQ.colLen 0 - 1) 0 = .d).card) =
+      fun σ => (Finset.univ.filter fun τ : doubleDescent_Bplus_fiber σ =>
+        τ.val.val.Q.paint (μQ.colLen 0 - 1) 0 = .d).card from rfl]
+    trans ((Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+        σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .d).sum (fun _ : _ => 2 * k - 1))
+    · apply Finset.sum_congr rfl
+      intros σ hσ
+      simp only [Finset.mem_filter] at hσ
+      exact h_fib_Qd σ hσ.2
+    · rw [Finset.sum_const, Nat.nsmul_eq_mul, Nat.mul_comm]
+  have h_sum_r : (∑ σ ∈ Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+        σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .r,
+      (Finset.univ.filter fun τ : doubleDescent_Bplus_fiber σ =>
+        τ.val.val.Q.paint (μQ.colLen 0 - 1) 0 = .d).card) =
+      Bp_r * (2 * (if k ≥ 2 then k - 1 else 0)) := by
+    trans ((Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+        σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .r).sum
+        (fun _ : _ => 2 * (if k ≥ 2 then k - 1 else 0)))
+    · apply Finset.sum_congr rfl
+      intros σ hσ
+      simp only [Finset.mem_filter] at hσ
+      exact h_fib_Qr σ hσ.2
+    · rw [Finset.sum_const, Nat.nsmul_eq_mul, Nat.mul_comm]
+  have h_sum_low : (∑ σ ∈ Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+        (σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0).layerOrd ≤ 1,
+      (Finset.univ.filter fun τ : doubleDescent_Bplus_fiber σ =>
+        τ.val.val.Q.paint (μQ.colLen 0 - 1) 0 = .d).card) =
+      Bp_low * (if k ≥ 2 then k - 1 else 0) := by
+    trans ((Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+        (σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0).layerOrd ≤ 1).sum
+        (fun _ : _ => (if k ≥ 2 then k - 1 else 0)))
+    · apply Finset.sum_congr rfl
+      intros σ hσ
+      simp only [Finset.mem_filter] at hσ
+      exact h_fib_Qlow σ hσ.2
+    · rw [Finset.sum_const, Nat.nsmul_eq_mul, Nat.mul_comm]
+  rw [h_sum_d, h_sum_r, h_sum_low]
+
+/-- **A3 balanced grouped-fiber identity**: in balanced case,
+    `|B- Q.lo≤1 new|` (equivalently `|B+ Q.lo≤1 new|` by γ-swap) equals the
+    per-class sum. The per-class fiber-α-lo-le-one sizes are all smaller:
+    d class → 2, r class → 2, lo class → 1. -/
+private theorem card_B_SS_alpha_bal_grouped_fiber (r₁ r₂ : ℕ) (rest : DualPart)
+    (μP μQ : YoungDiagram)
+    (hP : μP.colLens = dpartColLensP_B (r₁ :: r₂ :: rest))
+    (hQ : μQ.colLens = dpartColLensQ_B (r₁ :: r₂ :: rest))
+    (hsort : (r₁ :: r₂ :: rest).SortedGE)
+    (heven : ∀ r ∈ (r₁ :: r₂ :: rest), Even r)
+    (hpos : ∀ r ∈ (r₁ :: r₂ :: rest), 0 < r)
+    (h_bal : ¬(r₂ > rest.head?.getD 0)) :
+    (Finset.univ.filter fun σ : PBPSet .Bminus μP μQ =>
+      (σ.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd ≤ 1).card =
+      let Bp_d := (Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+          σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .d).card
+      let Bp_r := (Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+          σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .r).card
+      let Bp_low := (Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+          (σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0).layerOrd ≤ 1).card
+      Bp_d * 2 + Bp_r * 2 + Bp_low * 1 := by
+  simp only
+  -- γ-swap B- Q.lo≤1 = B+ Q.lo≤1.
+  have h_swap_new_low := card_Bplus_SS_eq_Bminus_SS μP μQ
+  rw [← h_swap_new_low]
+  -- Decompose via filtered sum-fiber.
+  rw [card_PBPSet_Bplus_filter_eq_sum_fiber_filter
+      (fun τ : PBPSet .Bplus μP μQ => (τ.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd ≤ 1)]
+  set Bp_d := (Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+    σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .d).card
+  set Bp_r := (Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+    σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .r).card
+  set Bp_low := (Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+    (σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0).layerOrd ≤ 1).card
+  -- Partition by sub Q_bot (same as in A1 version).
+  have h_partition : (Finset.univ : Finset (PBPSet .Bplus μP.shiftLeft μQ.shiftLeft)) =
+      (Finset.univ.filter fun σ => σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .d) ∪
+      (Finset.univ.filter fun σ => σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .r) ∪
+      (Finset.univ.filter fun σ =>
+          (σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0).layerOrd ≤ 1) := by
+    ext σ
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_union]
+    constructor
+    · intro _
+      by_cases h_Qs_pos : μQ.shiftLeft.colLen 0 > 0
+      · have hmem : (μQ.shiftLeft.colLen 0 - 1, 0) ∈ μQ.shiftLeft := by
+          rw [YoungDiagram.mem_iff_lt_colLen]; omega
+        have hmemQ : (μQ.shiftLeft.colLen 0 - 1, 0) ∈ σ.val.Q.shape := by
+          rw [σ.prop.2.2]; exact hmem
+        have hsym := σ.val.sym_Q _ _ hmemQ
+        rw [σ.prop.1] at hsym
+        simp [DRCSymbol.allowed] at hsym
+        rcases hsym with h | h | h | h
+        · right; rw [h]; decide
+        · right; rw [h]; decide
+        · left; right; exact h
+        · left; left; exact h
+      · push_neg at h_Qs_pos
+        have h0 : μQ.shiftLeft.colLen 0 = 0 := by omega
+        have hnmem : (μQ.shiftLeft.colLen 0 - 1, 0) ∉ σ.val.Q.shape := by
+          rw [σ.prop.2.2, YoungDiagram.mem_iff_lt_colLen]; omega
+        have hdot : σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .dot :=
+          σ.val.Q.paint_outside _ _ hnmem
+        right; rw [hdot]; decide
+    · intro _; trivial
+  have h_disj_dr : Disjoint
+      (Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+        σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .d)
+      (Finset.univ.filter fun σ => σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .r) := by
+    rw [Finset.disjoint_filter]
+    intros _ _ h1 h2; rw [h1] at h2; exact DRCSymbol.noConfusion h2
+  have h_disj_dl : Disjoint
+      (Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+        σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .d)
+      (Finset.univ.filter fun σ =>
+        (σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0).layerOrd ≤ 1) := by
+    rw [Finset.disjoint_filter]
+    intros _ _ h1 h2; rw [h1] at h2; simp [DRCSymbol.layerOrd] at h2
+  have h_disj_rl : Disjoint
+      (Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+        σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .r)
+      (Finset.univ.filter fun σ =>
+        (σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0).layerOrd ≤ 1) := by
+    rw [Finset.disjoint_filter]
+    intros _ _ h1 h2; rw [h1] at h2; simp [DRCSymbol.layerOrd] at h2
+  have h_sum_split : (∑ σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft,
+      (Finset.univ.filter fun τ : doubleDescent_Bplus_fiber σ =>
+        (τ.val.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd ≤ 1).card) =
+      (∑ σ ∈ Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+          σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .d,
+        (Finset.univ.filter fun τ : doubleDescent_Bplus_fiber σ =>
+          (τ.val.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd ≤ 1).card) +
+      (∑ σ ∈ Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+          σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .r,
+        (Finset.univ.filter fun τ : doubleDescent_Bplus_fiber σ =>
+          (τ.val.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd ≤ 1).card) +
+      (∑ σ ∈ Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+          (σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0).layerOrd ≤ 1,
+        (Finset.univ.filter fun τ : doubleDescent_Bplus_fiber σ =>
+          (τ.val.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd ≤ 1).card) := by
+    conv_lhs => rw [show (Finset.univ : Finset _) =
+      ((Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+          σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .d) ∪
+        (Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+          σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .r)) ∪
+        (Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+            (σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0).layerOrd ≤ 1) from h_partition]
+    rw [Finset.sum_union (by
+      rw [Finset.disjoint_union_left]
+      exact ⟨h_disj_dl, h_disj_rl⟩)]
+    rw [Finset.sum_union h_disj_dr]
+  rw [h_sum_split]
+  -- Per-class fiber-α-lo-le-one lemmas.
+  have h_fib_Qd : ∀ σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft,
+      σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .d →
+      (Finset.univ.filter fun τ : doubleDescent_Bplus_fiber σ =>
+          (τ.val.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd ≤ 1).card = 2 := by
+    intros σ h_Qd
+    rw [show (Finset.univ.filter fun τ : doubleDescent_Bplus_fiber σ =>
+          (τ.val.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd ≤ 1).card =
+        Fintype.card {τ : doubleDescent_Bplus_fiber σ //
+          (τ.val.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd ≤ 1} from (Fintype.card_subtype _).symm]
+    exact fiber_alpha_topSym_lo_le_one_count_bal_Qd hP hQ hsort heven hpos h_bal σ h_Qd
+  have h_fib_Qr : ∀ σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft,
+      σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .r →
+      (Finset.univ.filter fun τ : doubleDescent_Bplus_fiber σ =>
+          (τ.val.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd ≤ 1).card = 2 := by
+    intros σ h_Qr
+    rw [show (Finset.univ.filter fun τ : doubleDescent_Bplus_fiber σ =>
+          (τ.val.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd ≤ 1).card =
+        Fintype.card {τ : doubleDescent_Bplus_fiber σ //
+          (τ.val.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd ≤ 1} from (Fintype.card_subtype _).symm]
+    exact fiber_alpha_topSym_lo_le_one_count_bal_Qr hP hQ hsort heven hpos h_bal σ h_Qr
+  have h_fib_Qlow : ∀ σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft,
+      (σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0).layerOrd ≤ 1 →
+      (Finset.univ.filter fun τ : doubleDescent_Bplus_fiber σ =>
+          (τ.val.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd ≤ 1).card = 1 := by
+    intros σ h_Qlow
+    exact fiber_alpha_topSym_lo_le_one_count_bal_Qlow hP hQ hsort heven hpos h_bal σ h_Qlow
+  have h_sum_d : (∑ σ ∈ Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+        σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .d,
+      (Finset.univ.filter fun τ : doubleDescent_Bplus_fiber σ =>
+        (τ.val.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd ≤ 1).card) =
+      Bp_d * 2 := by
+    trans ((Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+        σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .d).sum (fun _ => 2))
+    · apply Finset.sum_congr rfl
+      intros σ hσ
+      simp only [Finset.mem_filter] at hσ
+      exact h_fib_Qd σ hσ.2
+    · rw [Finset.sum_const, Nat.nsmul_eq_mul, Nat.mul_comm]
+  have h_sum_r : (∑ σ ∈ Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+        σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .r,
+      (Finset.univ.filter fun τ : doubleDescent_Bplus_fiber σ =>
+        (τ.val.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd ≤ 1).card) =
+      Bp_r * 2 := by
+    trans ((Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+        σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .r).sum (fun _ => 2))
+    · apply Finset.sum_congr rfl
+      intros σ hσ
+      simp only [Finset.mem_filter] at hσ
+      exact h_fib_Qr σ hσ.2
+    · rw [Finset.sum_const, Nat.nsmul_eq_mul, Nat.mul_comm]
+  have h_sum_low : (∑ σ ∈ Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+        (σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0).layerOrd ≤ 1,
+      (Finset.univ.filter fun τ : doubleDescent_Bplus_fiber σ =>
+        (τ.val.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd ≤ 1).card) =
+      Bp_low * 1 := by
+    trans ((Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+        (σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0).layerOrd ≤ 1).sum (fun _ => 1))
+    · apply Finset.sum_congr rfl
+      intros σ hσ
+      simp only [Finset.mem_filter] at hσ
+      exact h_fib_Qlow σ hσ.2
+    · rw [Finset.sum_const, Nat.nsmul_eq_mul, Nat.mul_comm]
   rw [h_sum_d, h_sum_r, h_sum_low]
 
 /-- **B⁺ set partition**: for σ ∈ B⁺, σ.Q_bot ∈ {•, s, r, d}. So the predicates
