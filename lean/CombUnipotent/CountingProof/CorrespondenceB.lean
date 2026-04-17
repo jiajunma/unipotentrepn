@@ -4905,12 +4905,228 @@ private theorem validCol0_B_Qlow_card (hP hQ : ℕ) (hle : hP ≤ hQ)
     violating row_s uniqueness. -/
 private theorem fiber_P_col0_no_c_of_Qlow {μP μQ : YoungDiagram}
     (σ : PBPSet .Bplus (μP.shiftLeft) (μQ.shiftLeft))
-    (_hP_pos : 0 < μP.colLen 0)
-    (_h_hQσ_eq : μQ.shiftLeft.colLen 0 = μP.colLen 0)
-    (_h_Qlow : (σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0).layerOrd ≤ 1)
+    (hP_pos : 0 < μP.colLen 0)
+    (h_hQσ_eq : μQ.shiftLeft.colLen 0 = μP.colLen 0)
+    (h_Qlow : (σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0).layerOrd ≤ 1)
     (τ : doubleDescent_Bplus_fiber σ) :
     ¬ P_col0_has_c τ.val := by
-  sorry
+  -- Assume for contradiction τ.P(hP-1, 0) = c.
+  rintro ⟨_, hPc⟩
+  -- τ in fiber of σ: σ.Q = doubleDescent_B_paintR τ.
+  have hddmap : doubleDescent_Bplus_map μP μQ τ.val = σ := τ.prop
+  have hσ_eq : σ.val = doubleDescent_B_PBP τ.val.val (Or.inl τ.val.prop.1) :=
+    congrArg Subtype.val hddmap.symm
+  have hσ_Q_eq : σ.val.Q.paint (μP.colLen 0 - 1) 0 =
+      PBP.doubleDescent_B_paintR τ.val.val (μP.colLen 0 - 1) 0 := by
+    rw [hσ_eq]; rfl
+  -- Rewrite h_Qlow using h_hQσ_eq so the index matches (hP-1, 0).
+  have h_Qlow' : (PBP.doubleDescent_B_paintR τ.val.val (μP.colLen 0 - 1) 0).layerOrd ≤ 1 := by
+    rw [← hσ_Q_eq, ← h_hQσ_eq]; exact h_Qlow
+  -- Cell (hP-1, 0) ∈ τ.P.shape.
+  have hmemP0 : (μP.colLen 0 - 1, 0) ∈ τ.val.val.P.shape := by
+    rw [τ.val.prop.2.1]
+    exact YoungDiagram.mem_iff_lt_colLen.mpr (by omega)
+  -- Case split on the three branches of doubleDescent_B_paintR.
+  simp only [PBP.doubleDescent_B_paintR] at h_Qlow'
+  split_ifs at h_Qlow' with h1 h2
+  · -- Branch 1: hP-1 < dotScolLen τ.P 1 ⇒ σ.Q = dot.
+    -- Then (hP-1, 1) ∈ dotSdiag P, so τ.P(hP-1, 1) has layerOrd ≤ 1.
+    -- mono_P: τ.P(hP-1, 0).layerOrd ≤ 1. But = c (layerOrd 3). Contradiction.
+    have h_mem_sd : (μP.colLen 0 - 1, 1) ∈
+        PBP.dotSdiag τ.val.val.P τ.val.val.mono_P := by
+      rw [PBP.dotScolLen_eq_dotSdiag_colLen _ τ.val.val.mono_P] at h1
+      exact YoungDiagram.mem_iff_lt_colLen.mpr h1
+    have h_memP1 : (μP.colLen 0 - 1, 1) ∈ τ.val.val.P.shape :=
+      PBP.dotSdiag_le_shape τ.val.val.P τ.val.val.mono_P h_mem_sd
+    have h_layer_P1 : (τ.val.val.P.paint (μP.colLen 0 - 1) 1).layerOrd ≤ 1 := by
+      rw [PBP.dotSdiag, YoungDiagram.mem_mk, Finset.mem_filter,
+          YoungDiagram.mem_cells] at h_mem_sd
+      exact h_mem_sd.2
+    have hmonoP := τ.val.val.mono_P (μP.colLen 0 - 1) 0 (μP.colLen 0 - 1) 1
+      le_rfl (by omega) h_memP1
+    rw [hPc] at hmonoP
+    -- hmonoP: (c).layerOrd ≤ (P(hP-1, 1)).layerOrd, but layer ≤ 1.
+    rcases hP1 : τ.val.val.P.paint (μP.colLen 0 - 1) 1 with _ | _ | _ | _ | _ <;>
+      rw [hP1] at hmonoP h_layer_P1 <;>
+      simp only [DRCSymbol.layerOrd] at hmonoP h_layer_P1 <;> omega
+  · -- Branch 2: σ.Q(hP-1, 0) = s (middle branch). Requires dotSdiag Q membership.
+    -- Then derive τ.Q(hP-1, 1) = s (only non-dot layer-1 symbol).
+    -- Also τ.Q(hP-1, 0) = s (via dot_match, mono, sym). Apply row_s ⇒ contradiction.
+    have h_mem_sd_Q : (μP.colLen 0 - 1, 1) ∈
+        PBP.dotSdiag τ.val.val.Q τ.val.val.mono_Q := by
+      rw [PBP.dotScolLen_eq_dotSdiag_colLen _ τ.val.val.mono_Q] at h2
+      exact YoungDiagram.mem_iff_lt_colLen.mpr h2
+    have h_memQ1 : (μP.colLen 0 - 1, 1) ∈ τ.val.val.Q.shape :=
+      PBP.dotSdiag_le_shape τ.val.val.Q τ.val.val.mono_Q h_mem_sd_Q
+    have h_layer_Q1 : (τ.val.val.Q.paint (μP.colLen 0 - 1) 1).layerOrd ≤ 1 := by
+      rw [PBP.dotSdiag, YoungDiagram.mem_mk, Finset.mem_filter,
+          YoungDiagram.mem_cells] at h_mem_sd_Q
+      exact h_mem_sd_Q.2
+    -- τ.Q(hP-1, 1) ≠ dot: else dot_match gives (hP-1, 1) ∈ dotDiag ⊆ dotSdiag (P), contradicting h1.
+    have hQ1_ne_dot : τ.val.val.Q.paint (μP.colLen 0 - 1) 1 ≠ .dot := by
+      intro hd
+      have h_eqv := (τ.val.val.dot_match (μP.colLen 0 - 1) 1).mpr ⟨h_memQ1, hd⟩
+      have h_memP1 : (μP.colLen 0 - 1, 1) ∈ τ.val.val.P.shape := h_eqv.1
+      have hPd : τ.val.val.P.paint (μP.colLen 0 - 1) 1 = .dot := h_eqv.2
+      -- (hP-1, 1) ∈ dotSdiag P: P = dot with layerOrd 0 ≤ 1.
+      have h_dotS : (μP.colLen 0 - 1, 1) ∈ PBP.dotSdiag τ.val.val.P τ.val.val.mono_P := by
+        rw [PBP.dotSdiag, YoungDiagram.mem_mk, Finset.mem_filter,
+            YoungDiagram.mem_cells]
+        exact ⟨h_memP1, by rw [hPd]; decide⟩
+      rw [PBP.dotScolLen_eq_dotSdiag_colLen _ τ.val.val.mono_P] at h1
+      exact absurd (YoungDiagram.mem_iff_lt_colLen.mp h_dotS) h1
+    -- From sym_Q and layer ≤ 1 and ≠ dot: τ.Q(hP-1, 1) = s.
+    have hQ1_s : τ.val.val.Q.paint (μP.colLen 0 - 1) 1 = .s := by
+      have hsym := τ.val.val.sym_Q _ _ h_memQ1
+      rw [τ.val.prop.1] at hsym
+      simp only [DRCSymbol.allowed] at hsym
+      rcases hsym with h | h | h | h
+      · exact absurd h hQ1_ne_dot
+      · exact h
+      · rw [h] at h_layer_Q1; simp only [DRCSymbol.layerOrd] at h_layer_Q1; omega
+      · rw [h] at h_layer_Q1; simp only [DRCSymbol.layerOrd] at h_layer_Q1; omega
+    -- (hP-1, 0) ∈ τ.Q.shape: Q.colLen 1 ≤ Q.colLen 0.
+    have h_memQ0 : (μP.colLen 0 - 1, 0) ∈ τ.val.val.Q.shape := by
+      rw [YoungDiagram.mem_iff_lt_colLen] at h_memQ1 ⊢
+      have := τ.val.val.Q.shape.colLen_anti 0 1 (by omega)
+      omega
+    have hmonoQ := τ.val.val.mono_Q (μP.colLen 0 - 1) 0 (μP.colLen 0 - 1) 1
+      le_rfl (by omega) h_memQ1
+    rw [hQ1_s] at hmonoQ
+    have hQ0_nd : τ.val.val.Q.paint (μP.colLen 0 - 1) 0 ≠ .dot := by
+      intro hd
+      have h_eqv := (τ.val.val.dot_match (μP.colLen 0 - 1) 0).mpr ⟨h_memQ0, hd⟩
+      have hPd : τ.val.val.P.paint (μP.colLen 0 - 1) 0 = .dot := h_eqv.2
+      rw [hPc] at hPd
+      exact absurd hPd (by decide)
+    have hQ0_s : τ.val.val.Q.paint (μP.colLen 0 - 1) 0 = .s := by
+      have hsym := τ.val.val.sym_Q _ _ h_memQ0
+      rw [τ.val.prop.1] at hsym
+      simp only [DRCSymbol.allowed] at hsym
+      rcases hsym with h | h | h | h
+      · exact absurd h hQ0_nd
+      · exact h
+      · rw [h] at hmonoQ; simp only [DRCSymbol.layerOrd] at hmonoQ; omega
+      · rw [h] at hmonoQ; simp only [DRCSymbol.layerOrd] at hmonoQ; omega
+    -- Apply row_s.
+    have h_rows := τ.val.val.row_s (μP.colLen 0 - 1) .R .R 0 1
+      (by simp [paintBySide]; exact hQ0_s)
+      (by simp [paintBySide]; exact hQ1_s)
+    omega
+  · -- Branch 3: σ.Q(hP-1, 0) = τ.Q(hP-1, 1); layerOrd ≤ 1 directly.
+    by_cases h_memQ1 : (μP.colLen 0 - 1, 1) ∈ τ.val.val.Q.shape
+    · by_cases hQ1_dot : τ.val.val.Q.paint (μP.colLen 0 - 1) 1 = .dot
+      · -- Case 3a: τ.Q(hP-1, 1) = dot. dot_match: τ.P(hP-1, 1) = dot.
+        have h_eqv := (τ.val.val.dot_match (μP.colLen 0 - 1) 1).mpr ⟨h_memQ1, hQ1_dot⟩
+        have h_memP1 : (μP.colLen 0 - 1, 1) ∈ τ.val.val.P.shape := h_eqv.1
+        have hPd : τ.val.val.P.paint (μP.colLen 0 - 1) 1 = .dot := h_eqv.2
+        have hmonoP := τ.val.val.mono_P (μP.colLen 0 - 1) 0 (μP.colLen 0 - 1) 1
+          le_rfl (by omega) h_memP1
+        rw [hPc, hPd] at hmonoP
+        simp only [DRCSymbol.layerOrd] at hmonoP
+        omega
+      · -- Case 3b: τ.Q(hP-1, 1) ≠ dot; layer ≤ 1 forces = s.
+        have hQ1_s : τ.val.val.Q.paint (μP.colLen 0 - 1) 1 = .s := by
+          have hsym := τ.val.val.sym_Q _ _ h_memQ1
+          rw [τ.val.prop.1] at hsym
+          simp only [DRCSymbol.allowed] at hsym
+          rcases hsym with h | h | h | h
+          · exact absurd h hQ1_dot
+          · exact h
+          · rw [h] at h_Qlow'; simp only [DRCSymbol.layerOrd] at h_Qlow'; omega
+          · rw [h] at h_Qlow'; simp only [DRCSymbol.layerOrd] at h_Qlow'; omega
+        -- Now derive τ.Q(hP-1, 0) = s and apply row_s.
+        have h_memQ0 : (μP.colLen 0 - 1, 0) ∈ τ.val.val.Q.shape := by
+          rw [YoungDiagram.mem_iff_lt_colLen] at h_memQ1 ⊢
+          have := τ.val.val.Q.shape.colLen_anti 0 1 (by omega)
+          omega
+        have hmonoQ := τ.val.val.mono_Q (μP.colLen 0 - 1) 0 (μP.colLen 0 - 1) 1
+          le_rfl (by omega) h_memQ1
+        rw [hQ1_s] at hmonoQ
+        have hQ0_nd : τ.val.val.Q.paint (μP.colLen 0 - 1) 0 ≠ .dot := by
+          intro hd
+          have h_eqv := (τ.val.val.dot_match (μP.colLen 0 - 1) 0).mpr ⟨h_memQ0, hd⟩
+          have hPd : τ.val.val.P.paint (μP.colLen 0 - 1) 0 = .dot := h_eqv.2
+          rw [hPc] at hPd
+          exact absurd hPd (by decide)
+        have hQ0_s : τ.val.val.Q.paint (μP.colLen 0 - 1) 0 = .s := by
+          have hsym := τ.val.val.sym_Q _ _ h_memQ0
+          rw [τ.val.prop.1] at hsym
+          simp only [DRCSymbol.allowed] at hsym
+          rcases hsym with h | h | h | h
+          · exact absurd h hQ0_nd
+          · exact h
+          · rw [h] at hmonoQ; simp only [DRCSymbol.layerOrd] at hmonoQ; omega
+          · rw [h] at hmonoQ; simp only [DRCSymbol.layerOrd] at hmonoQ; omega
+        have h_rows := τ.val.val.row_s (μP.colLen 0 - 1) .R .R 0 1
+          (by simp [paintBySide]; exact hQ0_s)
+          (by simp [paintBySide]; exact hQ1_s)
+        omega
+    · -- (hP-1, 1) ∉ τ.Q.shape: τ.Q(hP-1, 1) = dot (paint_outside).
+      -- By dot_match iff: not(P(hP-1,1) ∈ shape ∧ P(hP-1,1) = dot). So either (hP-1,1) ∉ P.shape
+      -- or P(hP-1, 1) ≠ dot. In both subcases use the rich structure:
+      --   Subcase A: (hP-1, 1) ∉ P.shape. Then P.colLen 1 ≤ hP-1. Combined with
+      --     P(hP-1, 0) = c (so ∈ P.shape, hP-1 < P.colLen 0 = hP), this means P.shape at
+      --     col 1 stops at or before hP-1. Use col_c_P: in col 0, there's only ONE c row.
+      --     Actually the c constraint is per column. No direct contradiction.
+      --   Use that σ.Q(hP-1, 0) = dot also means (hP-1, 0) is a dot in σ.Q? By dot_match
+      --     on σ (applied to σ at (hP-1, 0)): σ.Q(hP-1, 0) = dot ↔ σ.P(hP-1, 0) ∈ shape ∧ = dot
+      --     (if (hP-1, 0) ∈ σ.Q.shape).
+      --   σ.Q.shape = μQ.shiftLeft, and hP-1 < μP.colLen 0 = μQ.shiftLeft.colLen 0, so
+      --     (hP-1, 0) ∈ σ.Q.shape. By dot_match (on σ, at (hP-1, 0)): σ.P(hP-1, 0) ∈ σ.P.shape
+      --     AND σ.P(hP-1, 0) = dot.
+      --   σ.P.shape = μP.shiftLeft. For (hP-1, 0) to be in μP.shiftLeft, we need
+      --     hP-1 < μP.shiftLeft.colLen 0 = μP.colLen 1 (by shiftLeft definition).
+      --   So μP.colLen 1 > hP-1, i.e., (hP-1, 1) ∈ μP = τ.P.shape. This CONTRADICTS h_memQ1's
+      --     being false (since (hP-1, 1) ∈ τ.P.shape implies it's in τ.Q.shape if P ⊆ Q...).
+      --     Wait, we don't yet know P ⊆ Q. But we have σ.P(hP-1, 0) = dot and from doubleDescent,
+      --     that's τ.P(hP-1, 1) (when hP-1 ≥ dotScolLen(P,1), which is h1's negation).
+      --     Hmm, actually doubleDescent_B_paintL gives σ.P(i,0) as τ.P(i, 1) (for non-dot zone)
+      --     or dot (dot zone). Negation of h1 means hP-1 ≥ dotScolLen τ.P 1, non-dot zone for L.
+      --     So σ.P(hP-1, 0) = τ.P(hP-1, 1). And σ.P(hP-1, 0) = dot means τ.P(hP-1, 1) = dot.
+      --     Then by dot_match on τ at (hP-1, 1): (hP-1, 1) ∈ τ.Q.shape ∧ τ.Q(hP-1, 1) = dot.
+      --     This gives h_memQ1 contradiction! So Subcase A is impossible.
+      --
+      -- Establishing σ.Q(hP-1, 0) = dot here: σ.Q layerOrd ≤ 1 and from third branch def,
+      --   σ.Q(hP-1, 0) = τ.Q(hP-1, 1). Since (hP-1, 1) ∉ τ.Q.shape, τ.Q.paint_outside gives
+      --   τ.Q(hP-1, 1) = dot. So σ.Q(hP-1, 0) = dot. ✓
+      --
+      -- Deriving contradiction:
+      have hτQ1_dot : τ.val.val.Q.paint (μP.colLen 0 - 1) 1 = .dot :=
+        τ.val.val.Q.paint_outside _ _ h_memQ1
+      -- Need to show that τ.P(hP-1, 1) = dot, then use dot_match to put (hP-1, 1) ∈ τ.Q.shape.
+      -- Get σ.P(hP-1, 0) — σ.Q(hP-1, 0) = dot; by dot_match on σ, we have σ.P(hP-1, 0) = dot.
+      -- σ's dot_match uses σ's shapes.
+      -- σ.Q.shape = μQ.shiftLeft: (hP-1, 0) ∈ iff hP-1 < μQ.shiftLeft.colLen 0 = μP.colLen 0, yes.
+      have hσ_memQ0 : (μP.colLen 0 - 1, 0) ∈ σ.val.Q.shape := by
+        rw [σ.prop.2.2]
+        exact YoungDiagram.mem_iff_lt_colLen.mpr (by rw [h_hQσ_eq]; omega)
+      -- σ.Q(hP-1, 0) = τ.Q(hP-1, 1) = dot.
+      have hσQ_dot : σ.val.Q.paint (μP.colLen 0 - 1) 0 = .dot := by
+        rw [hσ_Q_eq]
+        simp [PBP.doubleDescent_B_paintR, h1, h2, hτQ1_dot]
+      -- By σ's dot_match: (hP-1, 0) ∈ σ.P.shape ∧ σ.P(hP-1, 0) = dot.
+      have h_σ_eqv := (σ.val.dot_match (μP.colLen 0 - 1) 0).mpr ⟨hσ_memQ0, hσQ_dot⟩
+      have hσ_memP0 : (μP.colLen 0 - 1, 0) ∈ σ.val.P.shape := h_σ_eqv.1
+      have hσ_Pdot : σ.val.P.paint (μP.colLen 0 - 1) 0 = .dot := h_σ_eqv.2
+      -- (hP-1, 0) ∈ σ.P.shape = μP.shiftLeft → hP-1 < μP.shiftLeft.colLen 0 = μP.colLen 1.
+      -- So (hP-1, 1) ∈ μP = τ.P.shape.
+      have h_memP1 : (μP.colLen 0 - 1, 1) ∈ τ.val.val.P.shape := by
+        rw [τ.val.prop.2.1]
+        rw [σ.prop.2.1, YoungDiagram.mem_shiftLeft] at hσ_memP0
+        exact hσ_memP0
+      -- σ.P = doubleDescent_B_paintL τ: σ.P(hP-1, 0) = τ.P(hP-1, 1) (non-dot zone).
+      have hσ_P_eq : σ.val.P.paint (μP.colLen 0 - 1) 0 =
+          PBP.doubleDescent_B_paintL τ.val.val (μP.colLen 0 - 1) 0 := by
+        rw [hσ_eq]; rfl
+      have hτP1_dot : τ.val.val.P.paint (μP.colLen 0 - 1) 1 = .dot := by
+        rw [hσ_Pdot] at hσ_P_eq
+        simp only [PBP.doubleDescent_B_paintL, if_neg h1] at hσ_P_eq
+        exact hσ_P_eq.symm
+      -- By dot_match: τ.P(hP-1, 1) = dot and ∈ P.shape ⇒ (hP-1, 1) ∈ τ.Q.shape.
+      have h_memQ1' : (μP.colLen 0 - 1, 1) ∈ τ.val.val.Q.shape :=
+        ((τ.val.val.dot_match _ _).mp ⟨h_memP1, hτP1_dot⟩).1
+      exact absurd h_memQ1' h_memQ1
 
 /-- Upper bound for Qlow balanced case: fiber ↪ ValidCol0_B_Qlow.
     Uses `extractCol0_B` from the primitive-step upper bound, and the Qlow
