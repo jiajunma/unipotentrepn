@@ -7818,6 +7818,158 @@ private theorem fiber_alpha_topSym_lo_le_one_count_bal_Qr {r₁ r₂ : ℕ} {res
       h_hQσ_eq h_weak h_Qr hlift
     exact Subtype.ext hv_eq
 
+/-! **Refined fiber count (Q_bot.lo ≤ 1, topSym.lo ≤ 1)**: For σ with
+    Q_bot.layerOrd ≤ 1, the sub-subtype of fibers with `(new_Q_bot).layerOrd ≤ 1`
+    has size 1.
+
+    Status: Declaration-time elaboration timeout observed at ≥1M heartbeats
+    on the nested subtype `{τ : subfiber // lo≤1}` with embedded pairing
+    against `{v : ValidCol0_B_Qlow // lo≤1}`. Left for follow-up; the 4
+    sibling lemmas suffice for the current balanced-decomposition use site. -/
+/-
+private theorem fiber_alpha_topSym_lo_le_one_count_bal_Qlow {r₁ r₂ : ℕ} {rest : DualPart}
+    {μP μQ : YoungDiagram}
+    (hP : μP.colLens = dpartColLensP_B (r₁ :: r₂ :: rest))
+    (hQ : μQ.colLens = dpartColLensQ_B (r₁ :: r₂ :: rest))
+    (hsort : (r₁ :: r₂ :: rest).SortedGE)
+    (heven : ∀ r ∈ (r₁ :: r₂ :: rest), Even r)
+    (hpos : ∀ r ∈ (r₁ :: r₂ :: rest), 0 < r)
+    (h_bal : ¬(r₂ > rest.head?.getD 0))
+    (σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft)
+    (h_Qlow : (σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0).layerOrd ≤ 1) :
+    Fintype.card {τ : doubleDescent_Bplus_fiber σ //
+      (τ.val.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd ≤ 1} = 1 := by
+  have hP0 : μP.colLen 0 = r₂ / 2 :=
+    colLen_0_eq_of_colLens_cons (by rw [hP, dpartColLensP_B_cons₂])
+  have hQ0 : μQ.colLen 0 = r₁ / 2 :=
+    colLen_0_eq_of_colLens_cons (by rw [hQ, dpartColLensQ_B_cons₂])
+  have h_ge := sortedGE_head_ge hsort
+  have hle : μP.colLen 0 ≤ μQ.colLen 0 := by
+    rw [hP0, hQ0]; exact Nat.div_le_div_right h_ge
+  have heven₂ := heven r₂ (by simp)
+  obtain ⟨b, hb⟩ := heven₂
+  have hpos₂ := hpos r₂ (by simp)
+  have hP_pos : 0 < μP.colLen 0 := by rw [hP0, hb]; omega
+  have hQ_pos : μQ.colLen 0 ≥ 1 := by omega
+  have hk_eq : (r₁ - r₂) / 2 + 1 = μQ.colLen 0 - μP.colLen 0 + 1 := by
+    rw [hP0, hQ0]
+    have heven₁ := heven r₁ (by simp)
+    obtain ⟨a, ha⟩ := heven₁
+    rw [ha, hb]
+    have h1 : (a + a) / 2 = a := by omega
+    have h2 : (b + b) / 2 = b := by omega
+    rw [h1, h2]
+    have h_ge' : a + a ≥ b + b := by rw [← ha, ← hb]; exact h_ge
+    have : (a + a - (b + b)) / 2 = a - b := by omega
+    omega
+  have hk_pos : (r₁ - r₂) / 2 + 1 ≥ 1 := by omega
+  have h_hQσ_eq : μQ.shiftLeft.colLen 0 = μP.colLen 0 := by
+    push_neg at h_bal
+    rw [hP0]
+    match rest, show μQ.shiftLeft.colLens = dpartColLensQ_B rest from
+      (by rw [YoungDiagram.colLens_shiftLeft, hQ]; simp [dpartColLensQ_B]) with
+    | [], heq => simp at h_bal; omega
+    | [r₃], heq =>
+      simp at h_bal
+      have hr₃_le : r₃ ≤ r₂ := by
+        have hsort' : Antitone (r₁ :: r₂ :: [r₃]).get := hsort
+        have h12 := @hsort' ⟨1, by simp⟩ ⟨2, by simp⟩ (by simp)
+        simpa using h12
+      have hr₂_eq : r₂ = r₃ := le_antisymm (by omega) hr₃_le
+      have hpos₃ := hpos r₃ (by simp)
+      have h : μQ.shiftLeft.colLens = [r₃/2] := by
+        rw [heq]; simp [dpartColLensQ_B, hpos₃]
+      have hcl : μQ.shiftLeft.colLen 0 = r₃/2 := colLen_0_eq_of_colLens_cons h
+      rw [hcl, hr₂_eq]
+    | r₃ :: r₄ :: rest', heq =>
+      simp at h_bal
+      have hr₃_le : r₃ ≤ r₂ := by
+        have hsort' : Antitone (r₁ :: r₂ :: r₃ :: r₄ :: rest').get := hsort
+        have h12 := @hsort' ⟨1, by simp⟩ ⟨2, by simp⟩ (by simp : (⟨1, by simp⟩ : Fin 4) ≤ ⟨2, by simp⟩)
+        simpa using h12
+      have hr₂_eq : r₂ = r₃ := le_antisymm h_bal hr₃_le
+      have h : μQ.shiftLeft.colLens = r₃/2 :: dpartColLensQ_B rest' := by
+        rw [heq, dpartColLensQ_B_cons₂]
+      have hcl : μQ.shiftLeft.colLen 0 = r₃/2 := colLen_0_eq_of_colLens_cons h
+      rw [hcl, hr₂_eq]
+  have h_weak : ∀ j, j ≥ 1 → μQ.colLen j ≤ μP.colLen 0 := by
+    intro j hj
+    have h1 : μQ.colLen j ≤ μQ.colLen 1 := μQ.colLen_anti 1 j (by omega)
+    rw [show μQ.colLen 1 = μQ.shiftLeft.colLen 0 from
+      (YoungDiagram.colLen_shiftLeft μQ 0).symm] at h1
+    omega
+  -- Factor: upper bound directly to DSeq (avoids nested ValidCol0_B_Qlow subtype
+  -- elaboration; we use the Qlow-subtype card only numerically).
+  have h_card_Qlow_lo := validCol0_B_Qlow_card_top_lo_le_one (μP.colLen 0)
+    (μQ.colLen 0) hle _ hk_eq hk_pos
+  rw [show (1 : ℕ) =
+        Fintype.card {v : ValidCol0_B_Qlow (μP.colLen 0) (μQ.colLen 0) //
+          (topSym_B (μP.colLen 0) (μQ.colLen 0) v.val).layerOrd ≤ 1} from
+    h_card_Qlow_lo.symm]
+  apply le_antisymm
+  · -- Upper: subfiber ↪ {v : ValidCol0_B_Qlow // lo≤1}.
+    apply Fintype.card_le_of_injective
+      (fun (x : {τ : doubleDescent_Bplus_fiber σ //
+          (τ.val.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd ≤ 1}) =>
+        (⟨⟨extractCol0_B x.val.val hle, by
+            unfold extractCol0_B
+            split_ifs with hPc
+            · exact absurd hPc (fiber_P_col0_no_c_of_Qlow σ hP_pos h_hQσ_eq h_Qlow x.val)
+            · trivial⟩, by
+          rw [extractCol0_B_preserves_top_Q x.val.val hle hQ_pos]
+          exact x.prop⟩ :
+          {v : ValidCol0_B_Qlow (μP.colLen 0) (μQ.colLen 0) //
+            (topSym_B (μP.colLen 0) (μQ.colLen 0) v.val).layerOrd ≤ 1}))
+    intro ⟨⟨τ₁, hτ₁⟩, _⟩ ⟨⟨τ₂, hτ₂⟩, _⟩ heq
+    have hv₁ := Subtype.ext_iff.mp heq
+    have hv := Subtype.ext_iff.mp hv₁
+    have h_fib_eq : (⟨τ₁, hτ₁⟩ : doubleDescent_Bplus_fiber σ) = ⟨τ₂, hτ₂⟩ :=
+      extractCol0_B_injective_on_fiber σ hle hv
+    exact Subtype.ext h_fib_eq
+  · -- Lower: {v : ValidCol0_B_Qlow // lo≤1} ↪ subfiber via DSeq route + liftPBP_B_bal_Qlow.
+    have hequiv : {v : ValidCol0_B_Qlow (μP.colLen 0) (μQ.colLen 0) //
+        (topSym_B (μP.colLen 0) (μQ.colLen 0) v.val).layerOrd ≤ 1} ≃
+        {d : DSeq (μQ.colLen 0 - μP.colLen 0) //
+          (topSym_B (μP.colLen 0) (μQ.colLen 0) (Sum.inl d)).layerOrd ≤ 1} := by
+      refine {
+        toFun := fun ⟨⟨v, hv⟩, htop⟩ => ?_
+        invFun := fun ⟨d, hd⟩ => ⟨⟨Sum.inl d, trivial⟩, hd⟩
+        left_inv := ?_
+        right_inv := ?_
+      }
+      · cases v with
+        | inl d => exact ⟨d, htop⟩
+        | inr _ => exact absurd hv (by simp [ValidCol0_B_Qlow])
+      · rintro ⟨⟨v, hv⟩, htop⟩
+        cases v with
+        | inl d => rfl
+        | inr _ => exact absurd hv (by simp [ValidCol0_B_Qlow])
+      · rintro ⟨d, hd⟩; rfl
+    rw [Fintype.card_congr hequiv]
+    apply Fintype.card_le_of_injective
+      (fun (x : {d : DSeq (μQ.colLen 0 - μP.colLen 0) //
+          (topSym_B (μP.colLen 0) (μQ.colLen 0) (Sum.inl d)).layerOrd ≤ 1}) =>
+        (⟨⟨liftPBP_B_bal_Qlow σ x.val hle hP_pos h_hQσ_eq h_weak,
+            liftPBP_B_bal_Qlow_round_trip σ x.val hle hP_pos
+              h_hQσ_eq h_weak⟩, by
+          rw [liftPBP_B_bal_Qlow_preserves_top_Q σ x.val hle hP_pos
+              h_hQσ_eq h_weak]
+          exact x.prop⟩ :
+          {τ : doubleDescent_Bplus_fiber σ //
+            (τ.val.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd ≤ 1}))
+    intro ⟨d₁, _⟩ ⟨d₂, _⟩ heq
+    have hfib : (⟨liftPBP_B_bal_Qlow σ d₁ hle hP_pos h_hQσ_eq h_weak,
+                 liftPBP_B_bal_Qlow_round_trip σ d₁ hle hP_pos h_hQσ_eq h_weak⟩
+                : doubleDescent_Bplus_fiber σ) =
+                ⟨liftPBP_B_bal_Qlow σ d₂ hle hP_pos h_hQσ_eq h_weak,
+                 liftPBP_B_bal_Qlow_round_trip σ d₂ hle hP_pos h_hQσ_eq h_weak⟩ :=
+      Subtype.ext_iff.mp heq
+    have hlift : liftPBP_B_bal_Qlow σ d₁ hle hP_pos h_hQσ_eq h_weak =
+                 liftPBP_B_bal_Qlow σ d₂ hle hP_pos h_hQσ_eq h_weak :=
+      Subtype.ext_iff.mp hfib
+    exact Subtype.ext (liftPBP_B_bal_Qlow_injective σ hle hP_pos h_hQσ_eq h_weak hlift)
+-/
+
 /-! ### Target: balanced double descent theorem
 
 The theorem below is the **structural target** that, once proven, closes the three
