@@ -2762,12 +2762,46 @@ private theorem card_Bplus_SS_eq_Bminus_SS (μP μQ : YoungDiagram) :
       · simp [PBP.swapBplusBminus]
   }
 
+/-! ### Per-class fiber sizes for balanced step
+
+In the balanced case (r₂ ≤ r₃), each sub-PBP σ at rest level has a fiber at the new
+level whose size depends on `σ.Q_bot` (the top entry of Q col 0):
+
+| σ.Q_bot class     | fiber size |
+|-------------------|------------|
+| .d (layerOrd 4)   | 4k         |
+| .r (layerOrd 2)   | 4k - 2     |
+| .lo ≤ 1 ({•, s})  | 2k - 1     |
+
+where k = (r₁ - r₂) / 2 + 1. These are empirically verified for all tested dp cases
+(`tools/verify_all_B_lemmas.py`, 82 cases). See blueprint
+`lean/docs/blueprints/B_balanced_fiber_structure.md`.
+
+Building each per-class fiber lemma requires a `ValidCol0_B_balanced` refinement
+of the primitive case's `ValidCol0_B`, parameterized by the boundary Q_bot value.
+The primitive case's infrastructure (lines 885-1930) is ~700 lines; the balanced
+refinement would be of comparable size.
+
+**Status**: Per-class fiber lemmas left as focused sorries inside
+`card_B_bal_grouped_fiber`. The combinatorial structure (Finset sum decomposition
+by sym_Q class) is documented in `card_PBPSet_B_balanced_step` (which uses this
+identity downstream).
+-/
+
 /-- **Balanced fiber identity**: in balanced case, the total count of
     new B⁺ ∪ B⁻ PBPs decomposes as a sum over sub-PBPs grouped by their Q_bot:
     each sub contributes `4k` (if Q_bot=d), `4k-2` (if Q_bot=r), or `2k-1` (if Q_bot.lo≤1).
 
-    Admitted; requires fiber analysis generalizing the primitive case's uniform fiber
-    to the balanced case's Q_bot-dependent fiber. See blueprint. -/
+    Proof structure (once per-class fiber size lemmas available):
+    1. `card(B⁺_new) = Σ_σ:B⁺_rest |fiber(σ)|` by `card_PBPSet_Bplus_eq_sum_fiber`.
+    2. Split sum by σ.Q_bot class (trichotomy from `sym_Q`: Q ∈ {•, s, r, d}).
+    3. For each class, `|fiber(σ)| = constant` (the three per-class lemmas).
+    4. `Finset.sum_const` + `Finset.card_filter` rewrites sum to
+       `|class| × constant`.
+    5. Mirror for B⁻. Combine.
+
+    Currently admitted as a single sorry pending per-class fiber infrastructure.
+    See blueprint section "Phase 3: Balanced fiber uniform by x_τ". -/
 private theorem card_B_bal_grouped_fiber (r₁ r₂ : ℕ) (rest : DualPart)
     (μP μQ : YoungDiagram)
     (hP : μP.colLens = dpartColLensP_B (r₁ :: r₂ :: rest))
