@@ -2165,6 +2165,92 @@ private theorem card_B_RC_alpha_eq_countB_rc (dp : DualPart)
   | _, _, _, _, _, _, _ =>
     sorry
 
+/-- Singleton case helper for `card_B_SS_alpha_eq_countB_ss`.
+    For dp = [r₁] with r₁ > 0 Even, the B⁻ PBPs over (⊥, μQ) are in bijection
+    with DSeq(μQ.colLen 0) (single-column Q). The filter {σ | Q col-0 bottom
+    has layerOrd ≤ 1} corresponds to DSeqs whose last entry has layerOrd ≤ 1.
+    Since DSeq entries are in {s, r, d} (layerOrds 1, 2, 4), monotonicity
+    forces all entries to be s. Count = 1 = (countPBP_B [r₁]).2.2. -/
+private theorem singleton_case_B_SS_alpha (r₁ : ℕ) {μP μQ : YoungDiagram}
+    (hP : μP.colLens = dpartColLensP_B [r₁])
+    (hQ : μQ.colLens = dpartColLensQ_B [r₁])
+    (heven : ∀ r ∈ [r₁], Even r)
+    (hpos : ∀ r ∈ [r₁], 0 < r) :
+    (Finset.univ.filter fun σ : PBPSet .Bminus μP μQ =>
+      (σ.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd ≤ 1).card =
+      (countPBP_B [r₁]).2.2 := by
+  -- Reduce μP = ⊥.
+  have hP_nil : μP = ⊥ := yd_of_colLens_nil (by rw [hP]; rfl)
+  subst hP_nil
+  -- r₁ > 0 and Even r₁, hence r₁ ≥ 2, so μQ.colLen 0 = r₁/2 ≥ 1.
+  have hr₁ : r₁ > 0 := hpos r₁ (List.mem_singleton.mpr rfl)
+  have hr₁_even : Even r₁ := heven r₁ (List.mem_singleton.mpr rfl)
+  have hr₁_ge_two : r₁ ≥ 2 := by
+    obtain ⟨m, rfl⟩ := hr₁_even; omega
+  -- Single-column Q description.
+  have hsc := dpartColLensQ_B_singleton_singleCol hQ hr₁
+  have hk_eq : μQ.colLen 0 = r₁ / 2 := dpartColLensQ_B_singleton_colLen0 hQ hr₁
+  have hk_pos : μQ.colLen 0 ≥ 1 := by rw [hk_eq]; omega
+  -- (countPBP_B [r₁]).2.2 = 1.
+  show _ = 1
+  -- Convert filter.card to Fintype.card subtype.
+  rw [show (Finset.univ.filter fun σ : PBPSet .Bminus ⊥ μQ =>
+        (σ.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd ≤ 1).card =
+      Fintype.card {σ : PBPSet .Bminus ⊥ μQ //
+        (σ.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd ≤ 1} from
+    (Fintype.card_subtype _).symm]
+  -- Transfer through the equiv PBPSet .Bminus ⊥ μQ ≃ DSeq (μQ.colLen 0).
+  -- The predicate σ.val.Q.paint (k-1) 0 corresponds to (d.val ⟨k-1, _⟩) under
+  -- the forward map PBPSet_Bminus_bot_to_DSeq.
+  have key : Fintype.card {σ : PBPSet .Bminus ⊥ μQ //
+      (σ.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd ≤ 1} =
+      Fintype.card {d : DSeq (μQ.colLen 0) //
+        (d.val ⟨μQ.colLen 0 - 1, by omega⟩).layerOrd ≤ 1} := by
+    apply Fintype.card_congr
+    refine {
+      toFun := fun σ => ⟨PBPSet_Bminus_bot_to_DSeq σ.val, ?_⟩
+      invFun := fun d => ⟨DSeq_to_PBP_Bminus hsc d.val, ?_⟩
+      left_inv := fun σ => by
+        apply Subtype.ext; exact DSeq_roundtrip_left hsc σ.val
+      right_inv := fun d => by
+        apply Subtype.ext; exact DSeq_roundtrip_right hsc d.val
+    }
+    · -- Forward direction on predicate.
+      simp only [PBPSet_Bminus_bot_to_DSeq]
+      exact σ.prop
+    · -- Backward direction on predicate.
+      have hi : μQ.colLen 0 - 1 < μQ.colLen 0 := by omega
+      show (mkQpaint μQ d.val (μQ.colLen 0 - 1) 0).layerOrd ≤ 1
+      rw [mkQpaint_col0 hi]
+      exact d.prop
+  rw [key]
+  -- Now goal: card {d : DSeq k // (d.val ⟨k-1, _⟩).layerOrd ≤ 1} = 1.
+  -- Unique such d: the constant s function.
+  rw [Fintype.card_eq_one_iff]
+  -- Build witness: constant s DSeq.
+  refine ⟨⟨⟨fun _ => DRCSymbol.s,
+    ⟨fun _ => Or.inl rfl,
+     fun _ _ _ => le_refl _,
+     fun _ _ hi _ => by simp at hi⟩⟩, ?_⟩, ?_⟩
+  · -- The witness satisfies v (k-1) has layerOrd ≤ 1.
+    simp [DRCSymbol.layerOrd]
+  · -- Uniqueness.
+    rintro ⟨⟨v, hv_srd, hv_mono, hv_d⟩, hv_last⟩
+    apply Subtype.ext
+    apply Subtype.ext
+    funext i
+    -- Need v i = s. We know v i ∈ {s, r, d} and v (k-1) has layerOrd ≤ 1.
+    -- By mono, v i.layerOrd ≤ v (k-1).layerOrd ≤ 1.
+    -- Since v i ∈ {s, r, d} (layerOrds 1, 2, 4), only s has layerOrd ≤ 1.
+    have hi : i.val ≤ μQ.colLen 0 - 1 := by
+      have := i.isLt; omega
+    have hmono := hv_mono i ⟨μQ.colLen 0 - 1, by omega⟩ hi
+    have hle : (v i).layerOrd ≤ 1 := le_trans hmono hv_last
+    rcases hv_srd i with h | h | h
+    · exact h
+    · rw [h] at hle; simp [DRCSymbol.layerOrd] at hle
+    · rw [h] at hle; simp [DRCSymbol.layerOrd] at hle
+
 /-- **α-class SS count**: B⁻ PBPs with Q column 0 bottom ∈ {•, s}
     (i.e., layerOrd ≤ 1) equals `countPBP_B(dp).2.2`.
     This is the "tail-s ⟹ γ=B⁻" identity.
@@ -2196,9 +2282,9 @@ theorem card_B_SS_alpha_eq_countB_ss (dp : DualPart)
       have hmem := YoungDiagram.mem_iff_lt_colLen.mpr h
       simp at hmem
     exact this hQ_pos
-  | [_], _, _, _, _, _, _ =>
+  | [r₁], hP, hQ, _, heven, hpos, _ =>
     -- Singleton case: direct computation via DSeq enumeration.
-    sorry
+    exact singleton_case_B_SS_alpha r₁ hP hQ heven hpos
   | _ :: _ :: _, _, _, _, _, _, _ =>
     -- Inductive case: primitive uses refined fiber (new sub-sorry),
     -- balanced uses Phase 3 fiber identity.
