@@ -3405,7 +3405,40 @@ private theorem sigma_P_eq_c_of_Qbot_d_bal {μP μQ : YoungDiagram}
 /-- **Per-class fiber size (Q_bot = d)**: In balanced case, a sub-PBP σ with
     Q_bot = d has a fiber of size 4k in the new level.
 
-    **Numerical verification**: 82 dp cases via `tools/verify_all_B_lemmas.py`. -/
+    **Numerical verification**: 82 dp cases via `tools/verify_all_B_lemmas.py`.
+
+    **Proof outline** (requires ~500 lines of balanced lift infrastructure):
+
+    By `le_antisymm`:
+    1. Upper bound: `|fiber σ| ≤ |ValidCol0_B hP hQ| = 4k`
+       - Use `fiber_le_validCol0_B σ hle` + `validCol0_B_card hP hQ hle k hk_pos`.
+
+    2. Lower bound: `|ValidCol0_B hP hQ| ≤ |fiber σ|`
+       - Need `liftPBP_B_bal_Qd σ v`: construct τ from v with σ.Q_bot = d.
+       - Differs from primitive `liftPBP_B` in 4 proof obligations:
+         • mono_Q cross-col (line 1522-1536 of primitive): the only case is
+           i₁ = i₂ = hP-1 with j₂ ≥ 1. By `sigma_Q_eq_d_of_Qbot_d_bal`,
+           σ.Q(hP-1, j₂) = d, so layerOrd = 4 ≥ τ.Q(hP-1, 0).layerOrd vacuously.
+         • mono_P cross-col (line 1483 of primitive, inr branch only): similar,
+           i₁ = i₂ = hP-1. By `sigma_P_eq_c_of_Qbot_d_bal`, σ.P(hP-1, j₂) = c,
+           so layerOrd = 3 ≥ τ.P(hP-1, 0).layerOrd. ✓
+         • row_s (line 1580-1586): τ.Q(i, 0) = s at i = hP-1 non-dot requires
+           no equal s on σ's side of same column. σ.Q(hP-1, j₂) = d ≠ s. ✓
+         • row_r (line 1633-1638): similar, σ.Q(hP-1, j₂) = d ≠ r. ✓
+       - Round-trip and injectivity: structurally identical to primitive
+         (`liftPBP_B_round_trip`, `liftPBP_B_injective` lines 1724-1900).
+
+    **Auxiliary lemmas** (already proven in this file):
+    - `sigma_Q_eq_d_of_Qbot_d_bal` (line 3305): σ.Q(hP-1, j) = d for any j in σ.Q shape.
+    - `sigma_P_eq_c_of_Qbot_d_bal` (line 3385): σ.P(hP-1, j) = c for any j in σ.P shape.
+    - `sigma_shape_inc_of_dp` (line 3369): shape inclusion from dp structure.
+
+    **Blocker**: Writing `liftPBP_B_bal_Qd` requires ~400 lines of careful case
+    analysis paralleling `liftPBP_B`. See `balanced_double_descent_theorem.md` for
+    the Phase B / C / D outline.
+
+    TODO: implement `liftPBP_B_bal_Qd` (Phase B) + round-trip/injectivity (Phase C)
+    + close via `le_antisymm`. -/
 private theorem fiber_card_B_bal_Qd {r₁ r₂ : ℕ} {rest : DualPart}
     {μP μQ : YoungDiagram}
     (_hP : μP.colLens = dpartColLensP_B (r₁ :: r₂ :: rest))
