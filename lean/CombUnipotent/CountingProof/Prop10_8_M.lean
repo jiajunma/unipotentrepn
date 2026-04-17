@@ -1610,3 +1610,409 @@ theorem card_M_eq_via_shape_shift_if_needed {μP μQ μP' μQ' : YoungDiagram}
     (hQ'S : ∀ i j, (i, j + 1) ∈ μQ' ↔ (i, j + 1) ∈ μQ) :
     Fintype.card (PBPSet .M μP μQ) = Fintype.card (PBPSet .M μP' μQ') :=
   card_PBPSet_M_shapeShift hP'0 hP'S hQ'0 hQ'S
+/-! ## M-type inductive step: primitive and balanced cases
+
+    Strategy for both cases:
+    1. The M→B descent (descentMB_PBP) is injective (proved: descentMB_injective).
+    2. The B→M lift (liftMB_raw) inverts the descent (descentMB_liftMB_round_trip).
+    3. Primitive (r₁ > r₂): lift is total → descent is bijective → card(M) = card(B target).
+    4. Balanced (r₁ = r₂): lift is total onto DD ∪ RC → card(M) = #{DD} + #{RC}.
+    5. Card(B target) = tripleSum(countPBP_B(r₂::rest)) by B-type counting.
+
+    Computationally verified for all dual partitions up to size 24.
+    Reference: [BMSZb] Proposition 10.8 + 10.12. -/
+
+/-- card(M) = card(B⁺ target) + card(B⁻ target) in the PRIMITIVE case.
+    Requires `h_prim : μP.colLen 0 > μQ.colLen 0`. In the balanced case
+    (μP.colLen 0 = μQ.colLen 0) this equality fails: by Prop 10.8(b)
+    (`descent_image_balanced`), the descent image excludes B⁻ PBPs with
+    σ.Q(bottom).lo ≤ 1.
+
+    Proof: direct application of `descent_bijective_primitive` (Prop 10.8(a)).
+    Reference: [BMSZb] Proposition 10.8(a). -/
+private theorem card_M_eq_card_B_target (μP μQ : YoungDiagram)
+    (h_sub : μP.shiftLeft ≤ μQ) (h_QleP : μQ ≤ μP)
+    (h_prim : μP.colLen 0 > μQ.colLen 0) :
+    Fintype.card (PBPSet .M μP μQ) =
+      Fintype.card (PBPSet .Bplus μP.shiftLeft μQ) +
+      Fintype.card (PBPSet .Bminus μP.shiftLeft μQ) :=
+  descent_bijective_primitive h_sub h_QleP h_prim
+
+
+/-- The B⁺/B⁻ PBP count on target shapes equals tripleSum(countPBP_B(r₂::rest)).
+    Admitted: requires connecting non-standard B shapes with countPBP_B formula.
+    Computationally verified for dual partitions up to size 24. -/
+private theorem card_B_target_eq_tripleSum (r₁ r₂ : ℕ) (rest : DualPart)
+    (μP μQ : YoungDiagram)
+    (hP : μP.colLens = dpartColLensP_M (r₁ :: r₂ :: rest))
+    (hQ : μQ.colLens = dpartColLensQ_M (r₁ :: r₂ :: rest))
+    (hsort : (r₁ :: r₂ :: rest).SortedGE)
+    (heven : ∀ r ∈ (r₁ :: r₂ :: rest), Even r)
+    (hpos : ∀ r ∈ (r₁ :: r₂ :: rest), 0 < r) :
+    Fintype.card (PBPSet .Bplus μP.shiftLeft μQ) +
+    Fintype.card (PBPSet .Bminus μP.shiftLeft μQ) =
+      tripleSum (countPBP_B (r₂ :: rest)) := by
+  -- Derive B-target shape hypotheses from M shapes via key identities
+  have hpos_rest : ∀ x ∈ rest, 0 < x :=
+    fun x hx => hpos x (List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hx))
+  have hpos_r₂rest : ∀ x ∈ (r₂ :: rest), 0 < x :=
+    fun x hx => hpos x (List.mem_cons_of_mem _ hx)
+  -- shiftLeft(μP).colLens = dpartColLensP_B(r₂::rest)
+  have hP_sh : μP.shiftLeft.colLens = dpartColLensP_B (r₂ :: rest) := by
+    rw [YoungDiagram.colLens_shiftLeft, hP,
+        dpartColLensP_M_cons₂_eq_cons_dpartColLensP_B _ _ _ hpos_rest]
+    rfl
+  -- μQ.colLens = dpartColLensQ_B(r₂::rest)
+  have hQ' : μQ.colLens = dpartColLensQ_B (r₂ :: rest) := by
+    rw [hQ, dpartColLensQ_M_cons₂_eq_dpartColLensQ_B _ _ _ hpos_r₂rest]
+  -- Sorted, Even, Pos for r₂::rest
+  have hsort' : (r₂ :: rest).SortedGE := (List.pairwise_cons.mp hsort.pairwise).2.sortedGE
+  have heven' : ∀ r ∈ (r₂ :: rest), Even r :=
+    fun r hr => heven r (List.mem_cons_of_mem _ hr)
+  -- Apply B-type counting theorem
+  exact card_PBPSet_B_eq_tripleSum_countPBP_B (r₂ :: rest) μP.shiftLeft μQ
+    hP_sh hQ' hsort' heven' hpos_r₂rest
+
+/-- P_B ≤ r₁/2 :: Q_B entrywise, from SortedGE + Even.
+    Precisely: dpartColLensP_B dp is pointwise ≤ dpartColLensQ_B dp
+    when prefixed by r₁/2, where r₁ ≥ dp[0]. -/
+private lemma yd_P_B_le_Q_M (r₁ : ℕ) (dp : DualPart)
+    (hsort : (r₁ :: dp).SortedGE)
+    (heven : ∀ r ∈ (r₁ :: dp), Even r)
+    {μP μQ : YoungDiagram}
+    (hP : μP.colLens = dpartColLensP_B dp)
+    (hQ : μQ.colLens = r₁ / 2 :: dpartColLensQ_B dp) :
+    μP ≤ μQ := by
+  match dp, hsort, heven, hP, hQ with
+  | [], _, _, hP, _ =>
+    have := yd_of_colLens_nil (by rw [hP]; rfl); subst this; exact bot_le
+  | [_], _, _, hP, _ =>
+    have := yd_of_colLens_nil (by rw [hP]; rfl); subst this; exact bot_le
+  | r₂ :: r₃ :: rest, hsort, heven, hP, hQ =>
+    -- μP.colLens = r₃/2 :: dpartColLensP_B rest
+    -- μQ.colLens = r₁/2 :: r₂/2 :: dpartColLensQ_B rest
+    intro ⟨i, j⟩ hmem
+    rw [YoungDiagram.mem_iff_lt_colLen] at hmem ⊢
+    have h_r₁_ge_r₂ : r₂ ≤ r₁ := by
+      have hp := hsort.pairwise; rw [List.pairwise_cons] at hp
+      exact hp.1 r₂ (List.mem_cons.mpr (Or.inl rfl))
+    have h_r₂_ge_r₃ : r₃ ≤ r₂ := by
+      have hp := hsort.pairwise; rw [List.pairwise_cons] at hp
+      have hp2 := hp.2; rw [List.pairwise_cons] at hp2
+      exact hp2.1 r₃ (List.mem_cons.mpr (Or.inl rfl))
+    cases j with
+    | zero =>
+      have hP0 := colLen_0_eq_of_colLens_cons (by rw [hP, dpartColLensP_B_cons₂])
+      have hQ0 := colLen_0_eq_of_colLens_cons (by rw [hQ])
+      rw [hP0] at hmem; rw [hQ0]
+      exact lt_of_lt_of_le hmem (Nat.div_le_div_right (le_trans h_r₂_ge_r₃ h_r₁_ge_r₂))
+    | succ j' =>
+      rw [show μP.colLen (j' + 1) = μP.shiftLeft.colLen j' from
+        (YoungDiagram.colLen_shiftLeft μP j').symm] at hmem
+      rw [show μQ.colLen (j' + 1) = μQ.shiftLeft.colLen j' from
+        (YoungDiagram.colLen_shiftLeft μQ j').symm]
+      have hshP : μP.shiftLeft.colLens = dpartColLensP_B rest := by
+        rw [YoungDiagram.colLens_shiftLeft, hP, dpartColLensP_B_cons₂]; rfl
+      have hshQ : μQ.shiftLeft.colLens = dpartColLensQ_B (r₂ :: r₃ :: rest) := by
+        rw [YoungDiagram.colLens_shiftLeft, hQ]; rfl
+      -- dpartColLensQ_B (r₂ :: r₃ :: rest) = r₂/2 :: dpartColLensQ_B rest
+      rw [dpartColLensQ_B_cons₂] at hshQ
+      have hsort' : (r₂ :: rest).SortedGE := by
+        have hp := hsort.pairwise; rw [List.pairwise_cons] at hp
+        have hp2 := hp.2; rw [List.pairwise_cons] at hp2
+        have hp3 := hp2.2; rw [List.pairwise_cons] at hp3
+        exact (List.pairwise_cons.mpr ⟨fun r hr => hp2.1 r (List.mem_cons_of_mem _ hr), hp3.2⟩).sortedGE
+      have heven' : ∀ r ∈ (r₂ :: rest), Even r := by
+        intro r hr
+        exact heven r (by simp only [List.mem_cons] at hr ⊢; tauto)
+      exact YoungDiagram.mem_iff_lt_colLen.mp
+        (yd_P_B_le_Q_M r₂ rest hsort' heven' hshP hshQ
+          (YoungDiagram.mem_iff_lt_colLen.mpr hmem))
+
+/-- shiftLeft(P) ≤ Q for M-type shapes. -/
+private lemma shiftLeft_P_le_Q_of_M (r₁ : ℕ) (dp : DualPart)
+    (hsort : (r₁ :: dp).SortedGE)
+    (heven : ∀ r ∈ (r₁ :: dp), Even r)
+    {μP μQ : YoungDiagram}
+    (hP : μP.colLens = dpartColLensP_B dp)
+    (hQ : μQ.colLens = r₁ / 2 :: dpartColLensQ_B dp) :
+    μP.shiftLeft ≤ μQ := by
+  apply le_trans _ (yd_P_B_le_Q_M r₁ dp hsort heven hP hQ)
+  intro ⟨i, j⟩ hmem
+  exact μP.isLowerSet (Prod.mk_le_mk.mpr ⟨le_refl _, Nat.le_succ _⟩)
+    (YoungDiagram.mem_shiftLeft.mp hmem)
+
+/-- B-type P ≤ Q: for a sorted even positive dual partition dp,
+    the Young diagram with column lengths dpartColLensP_B dp is contained
+    in the Young diagram with column lengths dpartColLensQ_B dp.
+    This is because P takes the smaller even-indexed rows and Q takes the larger odd-indexed rows.
+    Admitted: standard B-type shape inequality. Computationally verified up to size 24. -/
+private lemma yd_PB_le_QB (dp : DualPart)
+    (hsort : dp.SortedGE)
+    (heven : ∀ r ∈ dp, Even r)
+    (hpos : ∀ r ∈ dp, 0 < r)
+    {μP μQ : YoungDiagram}
+    (hP : μP.colLens = dpartColLensP_B dp)
+    (hQ : μQ.colLens = dpartColLensQ_B dp) :
+    μP ≤ μQ := by
+  match dp, hsort, heven, hpos, hP, hQ with
+  | [], _, _, _, hP, _ =>
+    have := yd_of_colLens_nil (by rw [hP]; rfl); subst this; exact bot_le
+  | [r₁], _, _, _, hP, _ =>
+    have := yd_of_colLens_nil (by rw [hP]; rfl); subst this; exact bot_le
+  | r₁ :: r₂ :: rest, hsort, heven, hpos, hP, hQ =>
+    -- P cols = r₂/2 :: P_B(rest), Q cols = r₁/2 :: Q_B(rest)
+    -- Since r₁ ≥ r₂ (sorted), col 0: r₂/2 ≤ r₁/2. Col j+1: by induction on shiftLeft.
+    intro ⟨i, j⟩ hmem
+    rw [YoungDiagram.mem_iff_lt_colLen] at hmem ⊢
+    have h_r₁_ge_r₂ : r₂ ≤ r₁ := by
+      have hp := hsort.pairwise; rw [List.pairwise_cons] at hp
+      exact hp.1 r₂ (List.mem_cons.mpr (Or.inl rfl))
+    cases j with
+    | zero =>
+      have hP0 := colLen_0_eq_of_colLens_cons (by rw [hP, dpartColLensP_B_cons₂])
+      have hQ0 := colLen_0_eq_of_colLens_cons (by rw [hQ, dpartColLensQ_B_cons₂])
+      rw [hP0] at hmem; rw [hQ0]
+      exact lt_of_lt_of_le hmem (Nat.div_le_div_right h_r₁_ge_r₂)
+    | succ j' =>
+      rw [show μP.colLen (j' + 1) = μP.shiftLeft.colLen j' from
+        (YoungDiagram.colLen_shiftLeft μP j').symm] at hmem
+      rw [show μQ.colLen (j' + 1) = μQ.shiftLeft.colLen j' from
+        (YoungDiagram.colLen_shiftLeft μQ j').symm]
+      have hshP : μP.shiftLeft.colLens = dpartColLensP_B rest := by
+        rw [YoungDiagram.colLens_shiftLeft, hP, dpartColLensP_B_cons₂]; rfl
+      have hshQ : μQ.shiftLeft.colLens = dpartColLensQ_B rest := by
+        rw [YoungDiagram.colLens_shiftLeft, hQ, dpartColLensQ_B_cons₂]; rfl
+      have hsort' : rest.SortedGE := sorted_tail₂ hsort
+      have heven' : ∀ r ∈ rest, Even r :=
+        fun r hr => heven r (List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hr))
+      have hpos' : ∀ r ∈ rest, 0 < r :=
+        fun r hr => hpos r (List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hr))
+      exact YoungDiagram.mem_iff_lt_colLen.mp
+        (yd_PB_le_QB rest hsort' heven' hpos' hshP hshQ
+          (YoungDiagram.mem_iff_lt_colLen.mpr hmem))
+
+/-- M-type shape inclusion: μQ ≤ μP for M-type dual partitions.
+    Since `dpartColLensP_M = dpartColLensQ_B` and `dpartColLensQ_M = dpartColLensP_B`
+    definitionally, this reduces directly to `yd_PB_le_QB` with swapped P/Q roles. -/
+private lemma yd_QM_le_PM (dp : DualPart) (hsort : dp.SortedGE)
+    (heven : ∀ r ∈ dp, Even r) (hpos : ∀ r ∈ dp, 0 < r)
+    {μP μQ : YoungDiagram}
+    (hP : μP.colLens = dpartColLensP_M dp)
+    (hQ : μQ.colLens = dpartColLensQ_M dp) :
+    μQ ≤ μP := by
+  rw [dpartColLensP_M_eq] at hP
+  rw [dpartColLensQ_M_eq] at hQ
+  exact yd_PB_le_QB dp hsort heven hpos hQ hP
+
+private theorem liftBM_card_primitive (r₁ r₂ : ℕ) (rest : DualPart)
+    (μP μQ : YoungDiagram)
+    (hP : μP.colLens = dpartColLensP_M (r₁ :: r₂ :: rest))
+    (hQ : μQ.colLens = dpartColLensQ_M (r₁ :: r₂ :: rest))
+    (hsort : (r₁ :: r₂ :: rest).SortedGE)
+    (heven : ∀ r ∈ (r₁ :: r₂ :: rest), Even r)
+    (hpos : ∀ r ∈ (r₁ :: r₂ :: rest), 0 < r)
+    (h_prim : r₁ > r₂) :
+    Fintype.card (PBPSet .M μP μQ) =
+      let (dd, rc, ss) := countPBP_B (r₂ :: rest)
+      dd + rc + ss := by
+  -- With corrected defs:
+  --   μP.colLens = dpartColLensP_M(r₁::r₂::rest) = r₁/2 :: dpartColLensP_B(r₂::rest)
+  --   μQ.colLens = dpartColLensQ_M(r₁::r₂::rest) = dpartColLensQ_B(r₂::rest)
+  -- B target shapes: shiftLeft(μP) has colLens = dpartColLensP_B(r₂::rest), μQ = dpartColLensQ_B(r₂::rest)
+  have hpos_rest : ∀ x ∈ rest, 0 < x :=
+    fun x hx => hpos x (List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hx))
+  have hP_unfold : μP.colLens = r₁ / 2 :: dpartColLensP_B (r₂ :: rest) := by
+    rw [hP, dpartColLensP_M_cons₂_eq_cons_dpartColLensP_B _ _ _ hpos_rest]
+  have hQ_unfold : μQ.colLens = dpartColLensQ_B (r₂ :: rest) := by
+    rw [hQ, dpartColLensQ_M_cons₂_eq_dpartColLensQ_B _ _ _
+      (fun x hx => hpos x (List.mem_cons_of_mem _ hx))]
+  -- Step 1: shiftLeft(μP) ≤ μQ — follows from B-type P ≤ Q shape relationship
+  have hP_sh : μP.shiftLeft.colLens = dpartColLensP_B (r₂ :: rest) := by
+    rw [YoungDiagram.colLens_shiftLeft, hP_unfold]; rfl
+  have hsort' : (r₂ :: rest).SortedGE := (List.pairwise_cons.mp hsort.pairwise).2.sortedGE
+  have heven' : ∀ r ∈ (r₂ :: rest), Even r := fun r hr => heven r (List.mem_cons_of_mem _ hr)
+  have h_sub : μP.shiftLeft ≤ μQ :=
+    yd_PB_le_QB (r₂ :: rest) hsort' heven'
+      (fun x hx => hpos x (List.mem_cons_of_mem _ hx))
+      hP_sh hQ_unfold
+  -- Step 1b: μQ ≤ μP for M-type shapes
+  have h_QleP : μQ ≤ μP :=
+    yd_QM_le_PM _ hsort heven hpos hP hQ
+  -- Step 1c: μP.colLen 0 > μQ.colLen 0 from r₁ > r₂ (both even)
+  have h_prim_shape : μP.colLen 0 > μQ.colLen 0 := by
+    have hP0 : μP.colLen 0 = r₁ / 2 :=
+      colLen_0_eq_of_colLens_cons hP_unfold
+    have hQ0 : μQ.colLen 0 = r₂ / 2 := by
+      cases rest with
+      | nil =>
+        have h_r₂pos : r₂ > 0 := hpos r₂ (by simp)
+        apply colLen_0_eq_of_colLens_cons (tail := [])
+        rw [hQ_unfold]
+        simp [dpartColLensQ_B, h_r₂pos]
+      | cons r₃ rest' =>
+        apply colLen_0_eq_of_colLens_cons (tail := dpartColLensQ_B rest')
+        rw [hQ_unfold, dpartColLensQ_B_cons₂]
+    rw [hP0, hQ0]
+    have hr₁_even : Even r₁ := heven r₁ (by simp)
+    have hr₂_even : Even r₂ := heven r₂ (by simp)
+    obtain ⟨a, ha⟩ := hr₁_even
+    obtain ⟨b, hb⟩ := hr₂_even
+    omega
+  -- Step 2: card(M) = card(B⁺ target) + card(B⁻ target)
+  have h_bij := card_M_eq_card_B_target μP μQ h_sub h_QleP h_prim_shape
+  -- Step 3: card(B target) = tripleSum(countPBP_B(r₂::rest))
+  have h_count := card_B_target_eq_tripleSum r₁ r₂ rest μP μQ hP hQ hsort heven hpos
+  rw [h_bij, h_count]; simp [tripleSum]
+
+/-- **Admitted:** Balanced M→B image-exclusion gives card equality.
+    The M→B descent maps PBPSet .M μP μQ injectively into the non-SS B PBPs
+    on (shiftLeft μP, μQ), and is surjective onto DD ∪ RC, so
+    card(M) = #{DD} + #{RC} = dd + rc from countPBP_B(r₂::rest).
+
+    Proof sketch:
+    1. Descent: M → B is injective (descentMB_injective, proved).
+    2. SS exclusion: For balanced r₁ = r₂, μP.colLen 0 = μQ.colLen 0.
+       The M PBP P col 0 bottom has P(bottom, 0) ≠ dot (by dot_match,
+       since (bottom, 0) is at the boundary of μQ).
+       If P(bottom, 0) = c: descent gives B⁻. The B⁻ tail class checks
+       Q col 0 below P boundary — but P and Q have same height in col 0,
+       so tail is empty → SS. So B⁻ descents are actually SS.
+       Wait — the M→B descent P is shiftLeft(P_M), Q is Q_M with refill.
+       The descended B PBP has P.shape = shiftLeft(μP), Q.shape = μQ.
+       P.colLen 0 = μP.colLen 1 ≤ μP.colLen 0 = μQ.colLen 0.
+       tailLen_B = Q.colLen 0 - P.colLen 0 = μQ.colLen 0 - μP.colLen 1.
+       If μP.colLen 1 < μP.colLen 0 = μQ.colLen 0: tailLen > 0.
+       The tail symbol is the bottom of Q col 0 (row μP.colLen 1).
+       For B⁻ SS: tail symbol is s (layerOrd ≤ 1).
+       The lift for B⁻ puts c at bottom of P col 0 of M. dot_match requires
+       Q(bottom, 0) ≠ dot. But for B⁻ SS, Q at that position has s/dot.
+       If Q has dot: c vs dot violates dot_match. So B⁻ SS can't be lifted.
+    3. DD ∪ RC: lift succeeds for all non-SS B PBPs → surjective onto DD ∪ RC.
+    4. card(M) = |DD| + |RC| = dd + rc.
+    Computationally verified for dual partitions up to size 24.
+    Reference: [BMSZb] Proposition 10.8(b). -/
+private theorem liftBM_card_balanced (r₁ r₂ : ℕ) (rest : DualPart)
+    (μP μQ : YoungDiagram)
+    (hP : μP.colLens = dpartColLensP_M (r₁ :: r₂ :: rest))
+    (hQ : μQ.colLens = dpartColLensQ_M (r₁ :: r₂ :: rest))
+    (hsort : (r₁ :: r₂ :: rest).SortedGE)
+    (heven : ∀ r ∈ (r₁ :: r₂ :: rest), Even r)
+    (hpos : ∀ r ∈ (r₁ :: r₂ :: rest), 0 < r)
+    (h_bal : ¬(r₁ > r₂)) :
+    Fintype.card (PBPSet .M μP μQ) =
+      let (dd, rc, _) := countPBP_B (r₂ :: rest)
+      dd + rc := by
+  sorry
+
+/-- **M-type primitive case.**
+    When r₁ > r₂, the M→B descent is a bijection onto all B-type PBPs
+    on the target shapes, so card(M) = dd + rc + ss from countPBP_B (r₂ :: rest).
+    Computationally verified for dual partitions up to size 24.
+    Reference: [BMSZb] Proposition 10.8(a) + 10.12. -/
+theorem card_PBPSet_M_primitive_step (r₁ r₂ : ℕ) (rest : DualPart)
+    (μP μQ : YoungDiagram)
+    (hP : μP.colLens = dpartColLensP_M (r₁ :: r₂ :: rest))
+    (hQ : μQ.colLens = dpartColLensQ_M (r₁ :: r₂ :: rest))
+    (hsort : (r₁ :: r₂ :: rest).SortedGE)
+    (heven : ∀ r ∈ (r₁ :: r₂ :: rest), Even r)
+    (hpos : ∀ r ∈ (r₁ :: r₂ :: rest), 0 < r)
+    (h_prim : r₁ > r₂) :
+    Fintype.card (PBPSet .M μP μQ) =
+      let (dd, rc, ss) := countPBP_B (r₂ :: rest)
+      dd + rc + ss :=
+  liftBM_card_primitive r₁ r₂ rest μP μQ hP hQ hsort heven hpos h_prim
+
+/-- **M-type balanced case.**
+    When r₁ = r₂, the M→B descent image excludes the SS-class PBPs,
+    so card(M) = dd + rc from countPBP_B (r₂ :: rest).
+    Computationally verified for dual partitions up to size 24.
+    Reference: [BMSZb] Proposition 10.8(b) + 10.12. -/
+theorem card_PBPSet_M_balanced_step (r₁ r₂ : ℕ) (rest : DualPart)
+    (μP μQ : YoungDiagram)
+    (hP : μP.colLens = dpartColLensP_M (r₁ :: r₂ :: rest))
+    (hQ : μQ.colLens = dpartColLensQ_M (r₁ :: r₂ :: rest))
+    (hsort : (r₁ :: r₂ :: rest).SortedGE)
+    (heven : ∀ r ∈ (r₁ :: r₂ :: rest), Even r)
+    (hpos : ∀ r ∈ (r₁ :: r₂ :: rest), 0 < r)
+    (h_bal : ¬(r₁ > r₂)) :
+    Fintype.card (PBPSet .M μP μQ) =
+      let (dd, rc, _) := countPBP_B (r₂ :: rest)
+      dd + rc :=
+  liftBM_card_balanced r₁ r₂ rest μP μQ hP hQ hsort heven hpos h_bal
+
+/-- **M-type inductive step.**
+    Reduces to primitive or balanced case, then applies the corresponding
+    admitted theorem and algebraic identity from `countPBP_M`.
+
+    Computationally verified for all dual partitions up to size 24 (test_verify_drc.py).
+    Reference: [BMSZb] Proposition 10.8 + 10.12. -/
+theorem card_PBPSet_M_inductive_step (r₁ r₂ : ℕ) (rest : DualPart)
+    (μP μQ : YoungDiagram)
+    (hP : μP.colLens = dpartColLensP_M (r₁ :: r₂ :: rest))
+    (hQ : μQ.colLens = dpartColLensQ_M (r₁ :: r₂ :: rest))
+    (hsort : (r₁ :: r₂ :: rest).SortedGE)
+    (heven : ∀ r ∈ (r₁ :: r₂ :: rest), Even r)
+    (hpos : ∀ r ∈ (r₁ :: r₂ :: rest), 0 < r) :
+    Fintype.card (PBPSet .M μP μQ) = countPBP_M (r₁ :: r₂ :: rest) := by
+  by_cases h_prim : r₁ > r₂
+  · -- Primitive: card(M) = dd + rc + ss = countPBP_M (primitive)
+    rw [countPBP_M_primitive h_prim hpos]
+    exact card_PBPSet_M_primitive_step r₁ r₂ rest μP μQ hP hQ hsort heven hpos h_prim
+  · -- Balanced: card(M) = dd + rc = countPBP_M (balanced)
+    rw [countPBP_M_balanced h_prim hpos]
+    exact card_PBPSet_M_balanced_step r₁ r₂ rest μP μQ hP hQ hsort heven hpos h_prim
+
+/-! ## Main theorem -/
+
+/-- **Proposition 10.12 for M type (= C̃):**
+    card(PBPSet .M μP μQ) = countPBP_M dp.
+
+    Proof: M→B descent is injective. Image analysis:
+    - Primitive (r₁ > r₂): surjective → count = DD + RC + SS
+    - Balanced (r₁ = r₂): image excludes SS → count = DD + RC
+
+    The inductive step requires:
+    1. M→B descent raw PBP construction (descentMB_PBP)
+    2. Injectivity (descentMB_injective)
+    3. Lift construction (liftMB_PBP) with round-trip proof
+    4. Primitive/balanced cardinality theorems
+    Each mirrors the corresponding C→D infrastructure in CorrespondenceC.lean. -/
+theorem card_PBPSet_M_eq_countPBP_M (dp : DualPart) (μP μQ : YoungDiagram)
+    (hP : μP.colLens = dpartColLensP_M dp)
+    (hQ : μQ.colLens = dpartColLensQ_M dp)
+    (hsort : dp.SortedGE)
+    (heven : ∀ r ∈ dp, Even r)
+    (hpos : ∀ r ∈ dp, 0 < r) :
+    Fintype.card (PBPSet .M μP μQ) = countPBP_M dp := by
+  match dp, hP, hQ, hsort, heven, hpos with
+  | [], hP, hQ, _, _, _ =>
+    have h1 := yd_of_colLens_nil (by rw [hP]; rfl)
+    have h2 := yd_of_colLens_nil (by rw [hQ]; rfl)
+    subst h1; subst h2
+    exact card_PBPSet_M_empty
+  | [r₁], hP, hQ, _, heven, hpos =>
+    exact card_PBPSet_M_singleton r₁ μP μQ hP hQ (heven r₁ (by simp)) (hpos r₁ (by simp))
+  | r₁ :: r₂ :: rest, hP, hQ, hsort, heven, hpos =>
+    -- Inductive step: M→B descent + lift give card(M) = countPBP_M formula.
+    --
+    -- The M→B descent (descentMB_PBP, fully proved) maps PBPSet .M μP μQ
+    -- injectively (descentMB_injective, fully proved) into B-type PBPs with
+    -- shapes (shiftLeft μP, μQ).
+    --
+    -- Primitive (r₁ > r₂): descent is bijective onto all B-type PBPs on target,
+    --   card(M) = tripleSum(countPBP_B (r₂::rest)) = dd + rc + ss = countPBP_M dp
+    --
+    -- Balanced (r₁ = r₂): descent image = {σ ∈ B | tailClass_B ≠ SS},
+    --   card(M) = dd + rc = countPBP_M dp
+    --
+    -- Infrastructure needed (~500 lines, mirrors CorrespondenceC.lean C→D case):
+    --   1. Lift B→M (liftMB_PBP): ~200 lines building PBP with 12 proof obligations
+    --   2. Round-trip: descent ∘ lift = id: ~50 lines
+    --   3. Primitive surjectivity: ~50 lines (lift is defined for all B PBPs)
+    --   4. Balanced image characterization: ~100 lines (SS exclusion)
+    --   5. Shape compatibility: target shapes match B dp_B = (r₂::rest) counting
+    --
+    -- All five dependencies have been verified computationally (Python tests pass
+    -- for all dual partitions up to size 24).
+    exact card_PBPSet_M_inductive_step r₁ r₂ rest μP μQ hP hQ hsort heven hpos
