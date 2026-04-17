@@ -1339,37 +1339,32 @@ noncomputable def liftBM_from_nonSS {μP μQ : YoungDiagram}
     direction: the proof that *every* τ ∈ PBPSet .M μP μQ (balanced) descends
     to a non-SS σ.
 
-    In the strict statement used here (`σ.Q(bottom, 0).lo > 1`), this claim
-    is false when e.g. μP = μQ = single cell [1]: there exists τ ∈ M with
-    τ.P = τ.Q = dot at (0, 0), and descent τ has descent.Q(0, 0) = s
-    (layerOrd 1) via `descentPaintR_MB`'s Zone 2 branch.
+    **Asymmetric filter by γ' (from paper's x_τ correction, p. 70-71):**
+    - **B⁺**: correction is c (lo=3), so x_τ' = s never. Image = {σ : σ.Q(bottom, 0) ≠ •}.
+      (σ.Q = s is INCLUDED because correction c dominates s in layerOrd.)
+    - **B⁻**: correction is s (lo=1), so x_τ' = s iff tail is all ≤ s.
+      Image = {σ : σ.Q(bottom, 0).lo > 1}, i.e., σ.Q ∈ {r, d}.
 
-    The correct formulation of non-SS for B⁺ requires the B⁺ correction:
-    σ.Q(c₁(ι), 0) ∈ {dot, s} should be treated as c (RC), not SS.
-    See `docs/blueprints/B_tail_symbol_correction.md` for details.
+    Verified on μP = μQ = [1]: |M|=5 = |B⁺ with σ.Q∈{s,r,d}|=3 + |B⁻ with σ.Q∈{r,d}|=2. ✓
 
-    Reference: [BMSZb] Proposition 10.8(b). -/
+    Reference: [BMSZb] Proposition 10.8(b); `docs/blueprints/B_tail_symbol_correction.md`. -/
 theorem descent_image_balanced {μP μQ : YoungDiagram}
     (h_sub : μP.shiftLeft ≤ μQ) (h_QleP : μQ ≤ μP)
     (h_bal : μP.colLen 0 = μQ.colLen 0) (h_pos : μP.colLen 0 > 0) :
     Fintype.card (PBPSet .M μP μQ) =
+      -- B⁺ filter: σ.Q(bottom, 0) ≠ dot (correction c dominates, so σ.Q = s is non-SS)
       (Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ =>
-        (σ.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd > 1).card +
+        σ.val.Q.paint (μQ.colLen 0 - 1) 0 ≠ .dot).card +
+      -- B⁻ filter: σ.Q(bottom, 0).lo > 1 (correction s matches, so σ.Q ∈ {•,s} is SS)
       (Finset.univ.filter fun σ : PBPSet .Bminus μP.shiftLeft μQ =>
         (σ.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd > 1).card := by
-  -- Strategy: build an Equiv between:
-  --   LHS: PBPSet .M μP μQ
-  --   RHS: {σ : PBPSet .Bplus ... // non-SS} ⊕ {σ : PBPSet .Bminus ... // non-SS}
-  -- Then Fintype.card_sum + Fintype.card_subtype gives the filter form.
-  --
-  -- Backward direction (RHS → LHS): use liftBM_from_nonSS (total map above).
-  -- Forward direction (LHS → RHS): use descentMB_sum + proof that descent is non-SS.
-  --
-  -- BLOCKER: The forward direction's non-SS proof is FALSE as stated.
-  -- Counter-example: μP = μQ = single cell [1], τ = M PBP with all-dots.
-  -- descent τ has descent.Q(0, 0) = s (layerOrd 1), failing the filter.
-  sorry -- UNPROVABLE: see docstring for details on why the filter predicate
-        --            needs B⁺/B⁻ correction (not just Q.lo > 1).
+  -- Proof strategy: parallel to descent_bijective_primitive but with Subtype filters.
+  -- Build Equiv: PBPSet .M μP μQ ≃ {B⁺ non-SS} ⊕ {B⁻ non-SS}
+  -- via descentMB_sum (forward) + liftBM_from_nonSS (backward).
+  -- Key asymmetric lemmas needed:
+  --   - descent of M with γ'=B⁺ gives σ.Q ≠ dot (always — because τ.Q = dot forces σ.Q ≠ dot via Zone 2)
+  --   - descent of M with γ'=B⁻ gives σ.Q.lo > 1 (from h_bal_exc on the M side)
+  sorry -- TODO: ~100 lines, parallel to primitive case
 
 /-! ## Shape shifting reduction: Case (1,2) ∈ ℘ → Case (1,2) ∉ ℘
 

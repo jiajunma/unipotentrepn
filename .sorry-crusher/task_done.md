@@ -1,6 +1,6 @@
 # Closed sorries
 
-## descentMB_liftBM_naive_Q_paint (Apr 17)
+## descentMB_liftBM_naive_Q_paint (Apr 17, commit 88f7ee4)
 
 **Strategy**: Case analysis on σ.Q(i, j) ∈ {dot, s, r, d} (B-type symbols).
 
@@ -14,4 +14,4 @@
 - `τP_succ_c_not_dotScolLen`: σ.P(i, j) = c → ¬(i < dotScolLen τ.P (j+1))
 - `σP_c_of_Q_ne_dot`: (i, j) ∈ σ.P.shape ∧ σ.Q(i, j) ≠ dot → σ.P(i, j) = c
 
-**Lines added**: ~200. Commit: `88f7ee4`.
+**Lines added**: ~200.
