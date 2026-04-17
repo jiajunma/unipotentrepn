@@ -4196,10 +4196,155 @@ private lemma DSeq_Rd_first {k : ℕ} (hk : k ≥ 1) (hk2 : k ≥ 2) :
   unfold DSeq_Rd; simp
   intro h; omega
 
+/-- Key lemma: a DSeq(k) with first entry = r has either all r's or r^(k-1) then d. -/
+private lemma DSeq_first_r_struct {k : ℕ} (hk : k ≥ 1) (d : DSeq k)
+    (h : d.val ⟨0, by omega⟩ = .r) :
+    d = DSeq_allR ∨ d = DSeq_Rd hk := by
+  by_cases hd_exists : ∃ i : Fin k, d.val i = .d
+  · right
+    obtain ⟨p, hp⟩ := hd_exists
+    apply Subtype.ext; funext i
+    by_cases hi : i.val = k - 1
+    · -- At position k-1: must be d (since d is monotone, at most 1 d).
+      -- If p = k-1, then d.val(k-1) = d. Goal: d.val i = .d (since hi).
+      have : d.val i = .d := by
+        -- If d.val(p) = d, monotone: d.val(i) ≥ d.val(p) when i ≥ p. Since d.val ∈ {s,r,d}.
+        -- d.val(i) for i ≥ p has layerOrd ≥ 4 = d.layerOrd. So d.val(i) = d.
+        have hip : p.val ≤ i.val := by
+          have := p.isLt; omega
+        have hmono := d.prop.2.1 p i hip
+        rw [hp] at hmono
+        -- hmono: (.d).layerOrd ≤ (d.val i).layerOrd. .d.layerOrd = 4.
+        -- d.val i ∈ {s,r,d}.
+        rcases d.prop.1 i with h1 | h1 | h1
+        · rw [h1] at hmono; simp [DRCSymbol.layerOrd] at hmono
+        · rw [h1] at hmono; simp [DRCSymbol.layerOrd] at hmono
+        · exact h1
+      unfold DSeq_Rd; simp [hi, this]
+    · -- At position i ≠ k-1: first derive p = k-1 by col_d_Q constraint.
+      -- d.val(0) = r, d.val(p) = d. So p ≠ 0.
+      have hp_ne_0 : p ≠ ⟨0, by omega⟩ := by
+        intro he; rw [he] at hp
+        simp [h] at hp
+      -- By monotonicity from p to i or i to p.
+      -- Actually, we need: d is monotone, d.val(p) = d (layerOrd 4). For i < p: d.val(i) ≤ 4.
+      -- For i > p: d.val(i) ≥ 4, so d.val(i) = d, so i = p (by col_d_Q).
+      -- So i ≤ p. For i < p, d.val(i) ∈ {s,r,d}; at most 1 d so d.val(i) = s or r.
+      -- Given d.val(0) = r, monotonicity: d.val(i) ≥ r for i ≥ 0. So d.val(i) ∈ {r, d}.
+      -- Combined: d.val(i) = r (for i < p). And p must equal k-1.
+      have hp_is_kmin1 : p.val = k - 1 := by
+        -- We need to show p = k - 1. If p < k-1, consider j = ⟨k-1, ...⟩.
+        -- d.val(j).layerOrd ≥ d.val(p).layerOrd = 4. So d.val(j) = d. Then col_d_Q: p = j.
+        by_contra hp_ne
+        have hp_lt : p.val < k - 1 := by
+          have := p.isLt; omega
+        let j : Fin k := ⟨k - 1, by omega⟩
+        have hmono := d.prop.2.1 p j (by show p.val ≤ k - 1; omega)
+        rw [hp] at hmono
+        rcases d.prop.1 j with h1 | h1 | h1
+        · rw [h1] at hmono; simp [DRCSymbol.layerOrd] at hmono
+        · rw [h1] at hmono; simp [DRCSymbol.layerOrd] at hmono
+        · have := d.prop.2.2 p j hp h1
+          exact absurd (congr_arg Fin.val this) (by simp [j]; omega)
+      -- Now p.val = k-1 and i.val ≠ k-1, so i.val < k-1 < p.val is NOT correct; i.val ≤ k-2 and p.val = k-1.
+      have hi_lt_p : i.val < p.val := by rw [hp_is_kmin1]; have := i.isLt; omega
+      have hmono := d.prop.2.1 ⟨0, by omega⟩ i (Nat.zero_le _)
+      rw [h] at hmono
+      have h_i : d.val i = .r := by
+        rcases d.prop.1 i with h1 | h1 | h1
+        · rw [h1] at hmono; simp [DRCSymbol.layerOrd] at hmono
+        · exact h1
+        · -- d.val i = d, but d at p; i < p, col_d_Q.
+          exfalso
+          have := d.prop.2.2 i p h1 hp
+          exact absurd (congr_arg Fin.val this) (by omega)
+      unfold DSeq_Rd; simp [hi, h_i]
+  · left
+    push_neg at hd_exists
+    apply Subtype.ext; funext i
+    -- d.val(i) ∈ {s, r, d}, no d by hd_exists. So d.val(i) ∈ {s, r}.
+    -- Monotone from 0: d.val(i) ≥ r, so ≠ s. Therefore d.val(i) = r.
+    have hmono := d.prop.2.1 ⟨0, by omega⟩ i (Nat.zero_le _)
+    rw [h] at hmono
+    rcases d.prop.1 i with h1 | h1 | h1
+    · rw [h1] at hmono; simp [DRCSymbol.layerOrd] at hmono
+    · show d.val i = (DSeq_allR (k := k)).val i
+      unfold DSeq_allR; exact h1
+    · exact absurd h1 (hd_exists i)
+
+/-- Key lemma: a DSeq(k) with first entry = d has all d's (only possible for k = 1). -/
+private lemma DSeq_first_d_struct {k : ℕ} (hk : k ≥ 1) (d : DSeq k)
+    (h : d.val ⟨0, by omega⟩ = .d) :
+    k = 1 ∧ d = DSeq_Rd hk := by
+  -- col_d_Q: at most 1 d. Monotone: d.val(i) ≥ d.val(0) = d. So all d's. Need k = 1.
+  have hall_d : ∀ i : Fin k, d.val i = .d := by
+    intro i
+    have hmono := d.prop.2.1 ⟨0, by omega⟩ i (Nat.zero_le _)
+    rw [h] at hmono
+    rcases d.prop.1 i with h1 | h1 | h1
+    · rw [h1] at hmono; simp [DRCSymbol.layerOrd] at hmono
+    · rw [h1] at hmono; simp [DRCSymbol.layerOrd] at hmono
+    · exact h1
+  -- If k ≥ 2, we have at least 2 d's at position 0 and 1. col_d_Q: contradiction.
+  have hk_eq : k = 1 := by
+    by_contra hne
+    have hk2 : k ≥ 2 := by omega
+    have hd0 : d.val ⟨0, by omega⟩ = .d := h
+    have hd1 : d.val ⟨1, by omega⟩ = .d := hall_d ⟨1, by omega⟩
+    have := d.prop.2.2 ⟨0, by omega⟩ ⟨1, by omega⟩ hd0 hd1
+    exact absurd (congr_arg Fin.val this) (by simp)
+  refine ⟨hk_eq, ?_⟩
+  apply Subtype.ext; funext i
+  have hi : i.val = 0 := by have := i.isLt; omega
+  unfold DSeq_Rd; simp
+  have : i.val = k - 1 := by omega
+  rw [if_pos this]
+  rw [show i = ⟨0, by omega⟩ from Fin.ext hi]
+  exact h
+
 /-- |DSeq(k) with first ∈ {r, d}| = 2 uniformly (for k ≥ 1). -/
 private theorem card_DSeq_first_rd {k : ℕ} (hk : k ≥ 1) :
     Fintype.card {d : DSeq k // d.val ⟨0, by omega⟩ = .r ∨ d.val ⟨0, by omega⟩ = .d} = 2 := by
-  sorry
+  -- Show Equiv with Bool via: tt ↦ DSeq_allR, ff ↦ DSeq_Rd.
+  have hDSeq_allR_in : (DSeq_allR (k := k)).val ⟨0, by omega⟩ = .r ∨
+      (DSeq_allR (k := k)).val ⟨0, by omega⟩ = .d := Or.inl (DSeq_allR_first hk)
+  have hDSeq_Rd_in : (DSeq_Rd (k := k) hk).val ⟨0, by omega⟩ = .r ∨
+      (DSeq_Rd (k := k) hk).val ⟨0, by omega⟩ = .d := by
+    by_cases hk2 : k ≥ 2
+    · exact Or.inl (DSeq_Rd_first hk hk2)
+    · have hk1 : k = 1 := by omega
+      subst hk1
+      right
+      show (if (0 : ℕ) = 1 - 1 then DRCSymbol.d else DRCSymbol.r) = .d
+      simp
+  have hne : (⟨DSeq_allR, hDSeq_allR_in⟩ : {d : DSeq k //
+      d.val ⟨0, by omega⟩ = .r ∨ d.val ⟨0, by omega⟩ = .d}) ≠
+    ⟨DSeq_Rd hk, hDSeq_Rd_in⟩ := by
+    intro heq
+    have hsub : (DSeq_allR (k := k)) = DSeq_Rd (k := k) hk := Subtype.ext_iff.mp heq
+    have hval_eq : (DSeq_allR (k := k)).val = (DSeq_Rd (k := k) hk).val :=
+      congrArg Subtype.val hsub
+    have hlast := congr_fun hval_eq ⟨k - 1, by omega⟩
+    have hfalse : (DRCSymbol.r : DRCSymbol) = .d := by
+      have : (DSeq_Rd (k := k) hk).val ⟨k - 1, by omega⟩ = .d := by
+        unfold DSeq_Rd; simp
+      rw [this] at hlast
+      exact hlast
+    exact absurd hfalse (by decide)
+  -- Now use card_eq_two (for Finset or via univ_eq)
+  have : (Finset.univ : Finset {d : DSeq k //
+      d.val ⟨0, by omega⟩ = .r ∨ d.val ⟨0, by omega⟩ = .d}).card = 2 := by
+    apply Finset.card_eq_two.mpr
+    refine ⟨⟨DSeq_allR, hDSeq_allR_in⟩, ⟨DSeq_Rd hk, hDSeq_Rd_in⟩, hne, ?_⟩
+    ext x
+    simp only [Finset.mem_univ, Finset.mem_insert, Finset.mem_singleton, true_iff]
+    rcases x with ⟨d, hd | hd⟩
+    · rcases DSeq_first_r_struct hk d hd with h | h
+      · left; apply Subtype.ext; exact h
+      · right; apply Subtype.ext; exact h
+    · rcases DSeq_first_d_struct hk d hd with ⟨_, h⟩
+      right; apply Subtype.ext; exact h
+  rw [← Finset.card_univ]; exact this
 
 /-- |ValidCol0_B_Qr| = 4k - 2 where k = hQ - hP + 1. -/
 private theorem validCol0_B_Qr_card (hP hQ : ℕ) (hle : hP ≤ hQ)
