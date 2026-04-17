@@ -4158,6 +4158,80 @@ private def ValidCol0_B_Qr (hP hQ : ℕ) :=
 private noncomputable instance (hP hQ : ℕ) : Fintype (ValidCol0_B_Qr hP hQ) := by
   unfold ValidCol0_B_Qr; infer_instance
 
+/-- The all-.r DSeq of length k. -/
+private def DSeq_allR {k : ℕ} : DSeq k :=
+  ⟨fun _ => .r,
+    ⟨fun _ => Or.inr (Or.inl rfl),
+     fun _ _ _ => le_refl _,
+     fun _ _ hi _ => by simp at hi⟩⟩
+
+/-- The DSeq of length k ≥ 1 with r everywhere except d at the last position.
+    For k = 1, this is just [d]. -/
+private def DSeq_Rd {k : ℕ} (hk : k ≥ 1) : DSeq k :=
+  ⟨fun i => if i.val = k - 1 then .d else .r,
+    ⟨fun i => by
+       by_cases h : i.val = k - 1
+       · simp [h]
+       · simp [h],
+     fun i j hij => by
+       by_cases hj : j.val = k - 1
+       · simp only [hj, if_true]
+         by_cases hi : i.val = k - 1
+         · simp [hi]
+         · simp [hi, DRCSymbol.layerOrd]
+       · have hi : i.val ≠ k - 1 := by have := j.isLt; omega
+         simp [hi, hj],
+     fun i j hdi hdj => by
+       have hi : i.val = k - 1 := by by_contra h; simp [h] at hdi
+       have hj : j.val = k - 1 := by by_contra h; simp [h] at hdj
+       exact Fin.ext (hi.trans hj.symm)⟩⟩
+
+/-- DSeq_allR has first = r. -/
+private lemma DSeq_allR_first {k : ℕ} (hk : k ≥ 1) :
+    (DSeq_allR (k := k)).val ⟨0, by omega⟩ = .r := rfl
+
+/-- DSeq_Rd has first = r if k ≥ 2, else first = d (when k = 1). -/
+private lemma DSeq_Rd_first {k : ℕ} (hk : k ≥ 1) (hk2 : k ≥ 2) :
+    (DSeq_Rd (k := k) hk).val ⟨0, by omega⟩ = .r := by
+  unfold DSeq_Rd; simp
+  intro h; omega
+
+/-- |DSeq(k) with first ∈ {r, d}| = 2 uniformly (for k ≥ 1). -/
+private theorem card_DSeq_first_rd {k : ℕ} (hk : k ≥ 1) :
+    Fintype.card {d : DSeq k // d.val ⟨0, by omega⟩ = .r ∨ d.val ⟨0, by omega⟩ = .d} = 2 := by
+  sorry
+
+/-- |ValidCol0_B_Qr| = 4k - 2 where k = hQ - hP + 1. -/
+private theorem validCol0_B_Qr_card (hP hQ : ℕ) (hle : hP ≤ hQ)
+    (k : ℕ) (hk : k = hQ - hP + 1) (hk_pos : k ≥ 1) :
+    Fintype.card (ValidCol0_B_Qr hP hQ) = 4 * k - 2 := by
+  sorry
+
+/-- Upper bound for Qr balanced case: fiber ↪ ValidCol0_B_Qr. -/
+private theorem fiber_le_validCol0_B_Qr {μP μQ : YoungDiagram}
+    (σ : PBPSet .Bplus (μP.shiftLeft) (μQ.shiftLeft))
+    (hle : μP.colLen 0 ≤ μQ.colLen 0)
+    (hP_pos : 0 < μP.colLen 0)
+    (h_hQσ_eq : μQ.shiftLeft.colLen 0 = μP.colLen 0)
+    (h_Qr : σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .r) :
+    Fintype.card (doubleDescent_Bplus_fiber σ) ≤
+    Fintype.card (ValidCol0_B_Qr (μP.colLen 0) (μQ.colLen 0)) := by
+  sorry
+
+/-- Lower bound for Qr balanced case: ValidCol0_B_Qr ↪ fiber. -/
+private theorem validCol0_B_Qr_le_fiber {r₁ r₂ : ℕ} {rest : DualPart} {μP μQ : YoungDiagram}
+    (_hP : μP.colLens = dpartColLensP_B (r₁ :: r₂ :: rest))
+    (_hQ : μQ.colLens = dpartColLensQ_B (r₁ :: r₂ :: rest))
+    (_hsort : (r₁ :: r₂ :: rest).SortedGE)
+    (_heven : ∀ r ∈ (r₁ :: r₂ :: rest), Even r)
+    (_hpos : ∀ r ∈ (r₁ :: r₂ :: rest), 0 < r)
+    (_h_bal : ¬(r₂ > rest.head?.getD 0))
+    (σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft)
+    (_h_Qr : σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .r) :
+    Fintype.card (ValidCol0_B_Qr (μP.colLen 0) (μQ.colLen 0)) ≤
+    Fintype.card (doubleDescent_Bplus_fiber σ) := by
+  sorry
+
 /-- **Per-class fiber size (Q_bot = d)**: In balanced case, a sub-PBP σ with
     Q_bot = d has a fiber of size 4k in the new level.
 
@@ -4281,16 +4355,78 @@ private theorem fiber_card_B_bal_Qd {r₁ r₂ : ℕ} {rest : DualPart}
     **Numerical verification**: 82 dp cases via `tools/verify_all_B_lemmas.py`. -/
 private theorem fiber_card_B_bal_Qr {r₁ r₂ : ℕ} {rest : DualPart}
     {μP μQ : YoungDiagram}
-    (_hP : μP.colLens = dpartColLensP_B (r₁ :: r₂ :: rest))
-    (_hQ : μQ.colLens = dpartColLensQ_B (r₁ :: r₂ :: rest))
-    (_hsort : (r₁ :: r₂ :: rest).SortedGE)
-    (_heven : ∀ r ∈ (r₁ :: r₂ :: rest), Even r)
-    (_hpos : ∀ r ∈ (r₁ :: r₂ :: rest), 0 < r)
-    (_h_bal : ¬(r₂ > rest.head?.getD 0))
+    (hP : μP.colLens = dpartColLensP_B (r₁ :: r₂ :: rest))
+    (hQ : μQ.colLens = dpartColLensQ_B (r₁ :: r₂ :: rest))
+    (hsort : (r₁ :: r₂ :: rest).SortedGE)
+    (heven : ∀ r ∈ (r₁ :: r₂ :: rest), Even r)
+    (hpos : ∀ r ∈ (r₁ :: r₂ :: rest), 0 < r)
+    (h_bal : ¬(r₂ > rest.head?.getD 0))
     (σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft)
-    (_h_Qr : σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .r) :
+    (h_Qr : σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .r) :
     Fintype.card (doubleDescent_Bplus_fiber σ) = 4 * ((r₁ - r₂) / 2 + 1) - 2 := by
-  sorry
+  -- Compute column lengths from dp structure (parallel to fiber_card_B_bal_Qd).
+  have hP0 : μP.colLen 0 = r₂ / 2 :=
+    colLen_0_eq_of_colLens_cons (by rw [hP, dpartColLensP_B_cons₂])
+  have hQ0 : μQ.colLen 0 = r₁ / 2 :=
+    colLen_0_eq_of_colLens_cons (by rw [hQ, dpartColLensQ_B_cons₂])
+  have h_ge := sortedGE_head_ge hsort
+  have hle : μP.colLen 0 ≤ μQ.colLen 0 := by
+    rw [hP0, hQ0]; exact Nat.div_le_div_right h_ge
+  have heven₂ := heven r₂ (by simp)
+  obtain ⟨b, hb⟩ := heven₂
+  have hpos₂ := hpos r₂ (by simp)
+  have hP_pos : 0 < μP.colLen 0 := by rw [hP0, hb]; omega
+  have hk_eq : (r₁ - r₂) / 2 + 1 = μQ.colLen 0 - μP.colLen 0 + 1 := by
+    rw [hP0, hQ0]
+    have heven₁ := heven r₁ (by simp)
+    obtain ⟨a, ha⟩ := heven₁
+    rw [ha, hb]
+    have h1 : (a + a) / 2 = a := by omega
+    have h2 : (b + b) / 2 = b := by omega
+    rw [h1, h2]
+    have h_ge' : a + a ≥ b + b := by rw [← ha, ← hb]; exact h_ge
+    have : (a + a - (b + b)) / 2 = a - b := by omega
+    omega
+  have hk_pos : (r₁ - r₂) / 2 + 1 ≥ 1 := by omega
+  -- Balanced: μQ.shiftLeft.colLen 0 = μP.colLen 0.
+  have h_hQσ_eq : μQ.shiftLeft.colLen 0 = μP.colLen 0 := by
+    push_neg at h_bal
+    rw [hP0]
+    match rest, show μQ.shiftLeft.colLens = dpartColLensQ_B rest from
+      (by rw [YoungDiagram.colLens_shiftLeft, hQ]; simp [dpartColLensQ_B]) with
+    | [], heq => simp at h_bal; omega
+    | [r₃], heq =>
+      simp at h_bal
+      have hr₃_le : r₃ ≤ r₂ := by
+        have hsort' : Antitone (r₁ :: r₂ :: [r₃]).get := hsort
+        have h12 := @hsort' ⟨1, by simp⟩ ⟨2, by simp⟩ (by simp)
+        simpa using h12
+      have hr₂_eq : r₂ = r₃ := le_antisymm (by omega) hr₃_le
+      have hpos₃ := hpos r₃ (by simp)
+      have h : μQ.shiftLeft.colLens = [r₃/2] := by
+        rw [heq]; simp [dpartColLensQ_B, hpos₃]
+      have hcl : μQ.shiftLeft.colLen 0 = r₃/2 := colLen_0_eq_of_colLens_cons h
+      rw [hcl, hr₂_eq]
+    | r₃ :: r₄ :: rest', heq =>
+      simp at h_bal
+      have hr₃_le : r₃ ≤ r₂ := by
+        have hsort' : Antitone (r₁ :: r₂ :: r₃ :: r₄ :: rest').get := hsort
+        have h12 := @hsort' ⟨1, by simp⟩ ⟨2, by simp⟩ (by simp : (⟨1, by simp⟩ : Fin 4) ≤ ⟨2, by simp⟩)
+        simpa using h12
+      have hr₂_eq : r₂ = r₃ := le_antisymm h_bal hr₃_le
+      have h : μQ.shiftLeft.colLens = r₃/2 :: dpartColLensQ_B rest' := by
+        rw [heq, dpartColLensQ_B_cons₂]
+      have hcl : μQ.shiftLeft.colLen 0 = r₃/2 := colLen_0_eq_of_colLens_cons h
+      rw [hcl, hr₂_eq]
+  apply le_antisymm
+  · -- Upper bound: |fiber σ| ≤ |ValidCol0_B_Qr| = 4k - 2.
+    have h_le := fiber_le_validCol0_B_Qr σ hle hP_pos h_hQσ_eq h_Qr
+    have hcard := validCol0_B_Qr_card (μP.colLen 0) (μQ.colLen 0) hle _ hk_eq hk_pos
+    rw [hcard] at h_le; omega
+  · -- Lower bound: |ValidCol0_B_Qr| ≤ |fiber σ|.
+    have h_ge := validCol0_B_Qr_le_fiber hP hQ hsort heven hpos h_bal σ h_Qr
+    have hcard := validCol0_B_Qr_card (μP.colLen 0) (μQ.colLen 0) hle _ hk_eq hk_pos
+    rw [hcard] at h_ge; omega
 
 /-- **Per-class fiber size (Q_bot ∈ {•, s})**: In balanced case, a sub-PBP σ with
     Q_bot.layerOrd ≤ 1 has a fiber of size 2k - 1 in the new level.
