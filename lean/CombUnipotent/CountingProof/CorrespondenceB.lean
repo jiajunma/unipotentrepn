@@ -2156,22 +2156,133 @@ theorem card_B_SS_alpha_eq_countB_ss (dp : DualPart)
   sorry
 
 /-- **γ-swap SS symmetry**: B⁺ and B⁻ have the same number of PBPs with
-    Q column 0 bottom ∈ {•, s}. Follows from γ-swap bijection (card_Bplus_eq_Bminus)
-    specialized to this filter. -/
+    Q column 0 bottom ∈ {•, s}. The swap `swapBplusBminus` preserves P and Q,
+    so the Q_bot predicate is invariant under swap.
+
+    Proof: build an Equiv between the filtered subtypes via `swapBplusBminus`. -/
 private theorem card_Bplus_SS_eq_Bminus_SS (μP μQ : YoungDiagram) :
     (Finset.univ.filter fun σ : PBPSet .Bplus μP μQ =>
       (σ.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd ≤ 1).card =
     (Finset.univ.filter fun σ : PBPSet .Bminus μP μQ =>
       (σ.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd ≤ 1).card := by
+  -- Convert filter.card to subtype card
+  rw [show (Finset.univ.filter fun σ : PBPSet .Bplus μP μQ =>
+        (σ.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd ≤ 1).card =
+      Fintype.card {σ : PBPSet .Bplus μP μQ //
+        (σ.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd ≤ 1} from
+    (Fintype.card_subtype _).symm]
+  rw [show (Finset.univ.filter fun σ : PBPSet .Bminus μP μQ =>
+        (σ.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd ≤ 1).card =
+      Fintype.card {σ : PBPSet .Bminus μP μQ //
+        (σ.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd ≤ 1} from
+    (Fintype.card_subtype _).symm]
+  -- Construct the Equiv via swapBplusBminus
+  apply Fintype.card_congr
+  refine {
+    toFun := fun σ => ⟨⟨σ.val.val.swapBplusBminus (Or.inl σ.val.prop.1),
+        by simp [PBP.swapBplusBminus, σ.val.prop.1],
+        σ.val.prop.2.1, σ.val.prop.2.2⟩, σ.prop⟩
+    invFun := fun σ => ⟨⟨σ.val.val.swapBplusBminus (Or.inr σ.val.prop.1),
+        by simp [PBP.swapBplusBminus, σ.val.prop.1],
+        σ.val.prop.2.1, σ.val.prop.2.2⟩, σ.prop⟩
+    left_inv := fun σ => by
+      apply Subtype.ext; apply Subtype.ext
+      apply PBP_eq_of_data
+      · simp [PBP.swapBplusBminus, σ.val.prop.1]
+      · simp [PBP.swapBplusBminus]
+      · simp [PBP.swapBplusBminus]
+    right_inv := fun σ => by
+      apply Subtype.ext; apply Subtype.ext
+      apply PBP_eq_of_data
+      · simp [PBP.swapBplusBminus, σ.val.prop.1]
+      · simp [PBP.swapBplusBminus]
+      · simp [PBP.swapBplusBminus]
+  }
+
+/-- **Balanced fiber identity**: in balanced case, the total count of
+    new B⁺ ∪ B⁻ PBPs decomposes as a sum over sub-PBPs grouped by their Q_bot:
+    each sub contributes `4k` (if Q_bot=d), `4k-2` (if Q_bot=r), or `2k-1` (if Q_bot.lo≤1).
+
+    Admitted; requires fiber analysis generalizing the primitive case's uniform fiber
+    to the balanced case's Q_bot-dependent fiber. See blueprint. -/
+private theorem card_B_bal_grouped_fiber (r₁ r₂ : ℕ) (rest : DualPart)
+    (μP μQ : YoungDiagram)
+    (hP : μP.colLens = dpartColLensP_B (r₁ :: r₂ :: rest))
+    (hQ : μQ.colLens = dpartColLensQ_B (r₁ :: r₂ :: rest))
+    (hsort : (r₁ :: r₂ :: rest).SortedGE)
+    (heven : ∀ r ∈ (r₁ :: r₂ :: rest), Even r)
+    (hpos : ∀ r ∈ (r₁ :: r₂ :: rest), 0 < r)
+    (h_bal : ¬(r₂ > rest.head?.getD 0)) :
+    Fintype.card (PBPSet .Bplus μP μQ) + Fintype.card (PBPSet .Bminus μP μQ) =
+      let k := (r₁ - r₂) / 2 + 1
+      let q_d_comb := (Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+          σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .d).card +
+        (Finset.univ.filter fun σ : PBPSet .Bminus μP.shiftLeft μQ.shiftLeft =>
+          σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .d).card
+      let q_r_comb := (Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+          σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .r).card +
+        (Finset.univ.filter fun σ : PBPSet .Bminus μP.shiftLeft μQ.shiftLeft =>
+          σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .r).card
+      let q_low_comb := (Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+          (σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0).layerOrd ≤ 1).card +
+        (Finset.univ.filter fun σ : PBPSet .Bminus μP.shiftLeft μQ.shiftLeft =>
+          (σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0).layerOrd ≤ 1).card
+      q_d_comb * (4 * k) + q_r_comb * (4 * k - 2) + q_low_comb * (2 * k - 1) := by
   sorry
 
-/-- **B balanced step identity** — main goal of Task #12.
-    Assuming balanced recursion (r₂ ≤ r₃), the B count formula is
-    `card(B⁺) + card(B⁻) = dd'·4k + rc'·(4k-2)`
-    where `(dd', rc', _) = countPBP_B(rest)` and `k = (r₁-r₂)/2 + 1`.
+/-- **B⁺ set partition**: for σ ∈ B⁺, σ.Q_bot ∈ {•, s, r, d}. So the predicates
+    `Q_bot ≠ d`, `Q_bot.lo ≤ 1`, `Q_bot = r` partition via
+    `|Q_bot ≠ d| = |Q_bot.lo ≤ 1| + |Q_bot = r|`.
 
-    Admitted; will be derived from α-class counts + balanced fiber analysis.
-    See `lean/docs/blueprints/B_balanced_fiber_structure.md`. -/
+    This is a direct DRCSymbol case analysis using `sym_Q` for B⁺. -/
+private theorem card_Bplus_nonD_eq_low_plus_r (μP μQ : YoungDiagram)
+    (hQ_pos : μQ.colLen 0 > 0) :
+    (Finset.univ.filter fun σ : PBPSet .Bplus μP μQ =>
+      σ.val.Q.paint (μQ.colLen 0 - 1) 0 ≠ .d).card =
+    (Finset.univ.filter fun σ : PBPSet .Bplus μP μQ =>
+      (σ.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd ≤ 1).card +
+    (Finset.univ.filter fun σ : PBPSet .Bplus μP μQ =>
+      σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .r).card := by
+  -- Partition |Q_bot ≠ d| = |Q_bot.lo ≤ 1| + |Q_bot = r| for B⁺.
+  -- The two subsets are disjoint and cover Q_bot ≠ d (since Q_bot ∈ {•, s, r, d}).
+  -- Step 1: Split as disjoint union {Q.lo≤1} ∪ {Q=r}
+  have h_union : (Finset.univ.filter fun σ : PBPSet .Bplus μP μQ =>
+      σ.val.Q.paint (μQ.colLen 0 - 1) 0 ≠ .d) =
+    (Finset.univ.filter fun σ : PBPSet .Bplus μP μQ =>
+      (σ.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd ≤ 1) ∪
+    (Finset.univ.filter fun σ : PBPSet .Bplus μP μQ =>
+      σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .r) := by
+    ext σ
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_union]
+    constructor
+    · intro h_ne_d
+      -- σ.val.Q.paint ∈ {•, s, r, d} by sym_Q for B+; ≠ d means ∈ {•, s, r}
+      have hmem : (μQ.colLen 0 - 1, 0) ∈ μQ := by
+        rw [YoungDiagram.mem_iff_lt_colLen]; omega
+      have hmemQ : (μQ.colLen 0 - 1, 0) ∈ σ.val.Q.shape := by
+        rw [σ.prop.2.2]; exact hmem
+      have hsym := σ.val.sym_Q _ _ hmemQ
+      simp [σ.prop.1, DRCSymbol.allowed] at hsym
+      -- hsym: Q_bot = dot ∨ Q_bot = s ∨ Q_bot = r ∨ Q_bot = d
+      rcases hsym with h | h | h | h
+      · left; rw [h]; decide
+      · left; rw [h]; decide
+      · right; exact h
+      · exact absurd h h_ne_d
+    · rintro (h | h)
+      · intro heq; rw [heq] at h; exact absurd h (by decide)
+      · intro heq; rw [heq] at h; exact absurd h (by decide)
+  rw [h_union, Finset.card_union_of_disjoint]
+  rw [Finset.disjoint_filter]
+  intro σ _ hlow heq
+  rw [heq] at hlow
+  exact absurd hlow (by decide)
+
+/-- **B balanced step identity** — Task #12 main goal.
+    Derived from `card_B_bal_grouped_fiber` + A1, A2, A3, γ-swap, B⁺ set partition.
+
+    Algebra: `card(new) = dd'·4k + (rc'-ss')·(4k-2) + 2·ss'·(2k-1)`,
+    and `2·(2k-1) = 4k-2`, so this equals `dd'·4k + rc'·(4k-2)`. -/
 private theorem card_PBPSet_B_balanced_step (r₁ r₂ : ℕ) (rest : DualPart)
     (μP μQ : YoungDiagram)
     (hP : μP.colLens = dpartColLensP_B (r₁ :: r₂ :: rest))
@@ -2184,17 +2295,54 @@ private theorem card_PBPSet_B_balanced_step (r₁ r₂ : ℕ) (rest : DualPart)
       let k := (r₁ - r₂) / 2 + 1
       let (dd', rc', _) := countPBP_B rest
       dd' * (4 * k) + rc' * (4 * k - 2) := by
+  -- Shape info at rest level
+  have hP_sh : μP.shiftLeft.colLens = dpartColLensP_B rest := by
+    rw [YoungDiagram.colLens_shiftLeft, hP]; simp [dpartColLensP_B]
+  have hQ_sh : μQ.shiftLeft.colLens = dpartColLensQ_B rest := by
+    rw [YoungDiagram.colLens_shiftLeft, hQ]; simp [dpartColLensQ_B]
+  have hsort_rest : rest.SortedGE := sorted_tail₂ hsort
+  have heven_rest : ∀ r ∈ rest, Even r :=
+    fun r hr => heven r (List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hr))
+  have hpos_rest : ∀ r ∈ rest, 0 < r :=
+    fun r hr => hpos r (List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hr))
+  -- Q_pos at rest level: rest non-empty (balanced requires r₂ ≤ r₃ with r₃ ∈ rest).
+  have h_rest_pos : rest ≠ [] := by
+    intro h_nil
+    rw [h_nil] at h_bal
+    simp at h_bal
+    have : r₂ > 0 := hpos r₂ (by simp)
+    omega
+  have hQ_sh_pos : μQ.shiftLeft.colLen 0 > 0 := by
+    -- μQ.shiftLeft.colLens = dpartColLensQ_B rest. Rest non-empty + positive ⇒ colLen 0 > 0.
+    obtain ⟨r₃, rest', h_rest_eq⟩ := List.exists_cons_of_ne_nil h_rest_pos
+    have hQs0 : μQ.shiftLeft.colLen 0 = r₃ / 2 := by
+      apply colLen_0_eq_of_colLens_cons (tail := dpartColLensQ_B rest'.tail)
+      rw [hQ_sh, h_rest_eq]
+      cases rest' with
+      | nil =>
+        have h_r₃pos : r₃ > 0 := hpos r₃ (by rw [h_rest_eq]; simp)
+        simp [dpartColLensQ_B, h_r₃pos]
+      | cons r₄ rest'' =>
+        simp [dpartColLensQ_B]
+    rw [hQs0]
+    have h_r₃_even : Even r₃ := heven_rest r₃ (by rw [h_rest_eq]; simp)
+    have h_r₃_pos : r₃ > 0 := hpos_rest r₃ (by rw [h_rest_eq]; simp)
+    obtain ⟨a, ha⟩ := h_r₃_even
+    omega
+  -- Apply fiber identity
+  have h_fiber := card_B_bal_grouped_fiber r₁ r₂ rest μP μQ hP hQ hsort heven hpos h_bal
+  -- A1, A2, A3 at rest level
+  have h_A1 := card_B_DD_alpha_eq_countB_dd rest hP_sh hQ_sh hsort_rest heven_rest hpos_rest hQ_sh_pos
+  have h_A2 := card_B_RC_alpha_eq_countB_rc rest hP_sh hQ_sh hsort_rest heven_rest hpos_rest hQ_sh_pos
+  have h_A3 := card_B_SS_alpha_eq_countB_ss rest hP_sh hQ_sh hsort_rest heven_rest hpos_rest hQ_sh_pos
+  -- γ-swap at rest level
+  have h_swap := card_Bplus_SS_eq_Bminus_SS μP.shiftLeft μQ.shiftLeft
+  -- B+ set partition at rest level
+  have h_part := card_Bplus_nonD_eq_low_plus_r μP.shiftLeft μQ.shiftLeft hQ_sh_pos
+  -- Algebra: combine fiber identity with A1, A2, A3, γ-swap, B⁺ partition.
+  -- The let/have bindings in h_fiber and the goal require careful unpacking.
+  -- Details admitted as a focused algebraic sorry.
   sorry
-
-/-! ## Main theorem: direct induction on dual partition
-
-Unlike the D-type proof which uses a combined induction (total + per-tail-class),
-the B-type proof proceeds by direct structural induction on `dp`.
-
-The empty and singleton cases are already proved.  The two-or-more case splits
-on primitive vs balanced:
-  - **Primitive** (r₂ > r₃): via `card_PBPSet_B_primitive_step`.
-  - **Balanced** (r₂ = r₃): via `card_PBPSet_B_balanced_step` (admitted above). -/
 
 /-- **Proposition 10.11 for B type:**
     card(PBPSet .Bplus μP μQ) + card(PBPSet .Bminus μP μQ) = tripleSum(countPBP_B dp).
