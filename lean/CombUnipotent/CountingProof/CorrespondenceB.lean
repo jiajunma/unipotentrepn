@@ -5682,6 +5682,345 @@ private theorem validCol0_B_Qlow_card (hP hQ : ℕ) (hle : hP ≤ hQ)
     · intro d; rfl
   rw [Fintype.card_congr hequiv, DSeq_card]; omega
 
+/-- |ValidCol0_B_Qlow with topSym = .d| counts DSeq(hQ - hP) with last = .d.
+    For k = 1 (hQ - hP = 0), no DSeq has last = d, giving 0.
+    For k ≥ 2, count = hQ - hP = k - 1 = nu (k - 2). -/
+private theorem validCol0_B_Qlow_card_top_d (hP hQ : ℕ) (hle : hP ≤ hQ)
+    (k : ℕ) (hk : k = hQ - hP + 1) (hk_pos : k ≥ 1) :
+    Fintype.card {v : ValidCol0_B_Qlow hP hQ // topSym_B hP hQ v.val = .d} =
+      (if k ≥ 2 then nu (k - 2) else 0) := by
+  -- ValidCol0_B_Qlow ≃ DSeq(hQ - hP); topSym maps to
+  -- (if hQ - hP ≥ 1 then d.val (hQ - hP - 1) else .dot).
+  have hequiv : {v : ValidCol0_B_Qlow hP hQ // topSym_B hP hQ v.val = .d} ≃
+      {d : DSeq (hQ - hP) //
+        (if h : hQ - hP ≥ 1 then d.val ⟨hQ - hP - 1, by omega⟩ else .dot) = .d} := by
+    refine {
+      toFun := fun ⟨⟨v, hv⟩, htop⟩ => ?_
+      invFun := fun ⟨d, hd⟩ => ⟨⟨Sum.inl d, trivial⟩, ?_⟩
+      left_inv := ?_
+      right_inv := ?_
+    }
+    · -- forward: v is inl d by Qlow constraint.
+      cases v with
+      | inl d => exact ⟨d, by simpa [topSym_B] using htop⟩
+      | inr _ => exact absurd hv (by simp [ValidCol0_B_Qlow])
+    · -- Qlow inv side: topSym_B hP hQ (Sum.inl d) = .d
+      show topSym_B hP hQ (Sum.inl d) = .d
+      simpa [topSym_B] using hd
+    · -- left_inv: ⟨⟨v, hv⟩, htop⟩ from inl d
+      rintro ⟨⟨v, hv⟩, htop⟩
+      cases v with
+      | inl d => rfl
+      | inr _ => exact absurd hv (by simp [ValidCol0_B_Qlow])
+    · rintro ⟨d, hd⟩; rfl
+  rw [Fintype.card_congr hequiv]
+  by_cases hK : hQ - hP ≥ 1
+  · -- k ≥ 2 case.
+    have hk2 : k ≥ 2 := by omega
+    -- Rewrite subtype predicate using dif_pos.
+    have hsub : Fintype.card {d : DSeq (hQ - hP) //
+        (if h : hQ - hP ≥ 1 then d.val ⟨hQ - hP - 1, by omega⟩ else .dot) = .d} =
+        Fintype.card {d : DSeq (hQ - hP) // d.val ⟨hQ - hP - 1, by omega⟩ = .d} := by
+      apply Fintype.card_congr
+      apply Equiv.subtypeEquivRight
+      intro d
+      rw [dif_pos hK]
+    rw [hsub]
+    have : Fintype.card {d : DSeq (hQ - hP) // d.val ⟨hQ - hP - 1, by omega⟩ = .d} = hQ - hP :=
+      card_DSeq_last_d hK
+    rw [this]
+    simp [hk2, nu]; omega
+  · -- k = 1 case: hQ - hP = 0.
+    have hk1 : k = 1 := by omega
+    have hk_not2 : ¬ k ≥ 2 := by omega
+    -- Subtype predicate reduces to .dot = .d, which is false, so card = 0.
+    have h0 : Fintype.card {d : DSeq (hQ - hP) //
+        (if h : hQ - hP ≥ 1 then d.val ⟨hQ - hP - 1, by omega⟩ else .dot) = .d} = 0 := by
+      apply Fintype.card_eq_zero_iff.mpr
+      refine ⟨fun ⟨_, hp⟩ => ?_⟩
+      rw [dif_neg hK] at hp
+      exact absurd hp (by decide)
+    rw [h0]; simp [hk_not2]
+
+/-- |ValidCol0_B_Qr with topSym = .d| = 2 * (if k ≥ 2 then nu (k - 2) else 0).
+    Equivalently: 0 when k = 1, 2*(k-1) when k ≥ 2.
+
+    Derivation via sum decomposition (like `validCol0_B_card_top_d`):
+    - inl side: DSeq(k-1) with last = .d; count = k-1 if k ≥ 2, else 0.
+    - inr side: DSeq(k) with last = .d AND first ∉ {r, d}. Since DSeq only uses {s,r,d},
+      this means first = s. By monotonicity and at-most-one-d, such DSeqs are
+      s^a r^b d with a+b = k-1, a ≥ 1; count = k-1 if k ≥ 2, else 0.
+
+    Sum: 2(k-1) for k ≥ 2, 0 for k = 1, = 2 * (if k ≥ 2 then nu (k-2) else 0). -/
+private theorem validCol0_B_Qr_card_top_d (hP hQ : ℕ) (hle : hP ≤ hQ)
+    (k : ℕ) (hk : k = hQ - hP + 1) (hk_pos : k ≥ 1) :
+    Fintype.card {v : ValidCol0_B_Qr hP hQ // topSym_B hP hQ v.val = .d} =
+      2 * (if k ≥ 2 then nu (k - 2) else 0) := by
+  -- Strategy: direct sum decomposition. ValidCol0_B_Qr restricted to topSym=d
+  -- splits into inl and inr parts.
+  --
+  -- We build A = |ValidCol0_B // topSym = d ∧ Qr-pred|, then
+  -- A = |ValidCol0_B // topSym = d| - |ValidCol0_B // topSym = d ∧ ¬ Qr-pred|,
+  -- where the ¬Qr-pred set has size 1 (just DSeq_Rd) when topSym = d.
+  have hK : hQ - hP + 1 ≥ 1 := by omega
+  -- Build Equiv A ≃ ValidCol0_B top=d  MINUS  the one Qr-excluded element.
+  -- Concretely: A ≃ {v : ValidCol0_B // topSym=d, Qr-pred v}.
+  have hAQr_eq : Fintype.card {v : ValidCol0_B_Qr hP hQ // topSym_B hP hQ v.val = .d} =
+      Fintype.card {v : ValidCol0_B hP hQ //
+        topSym_B hP hQ v = .d ∧
+        (match v with
+          | .inl _ => True
+          | .inr d => ∀ h : hQ - hP + 1 ≥ 1,
+              d.val ⟨0, by omega⟩ ≠ .r ∧ d.val ⟨0, by omega⟩ ≠ .d)} := by
+    apply Fintype.card_congr
+    refine {
+      toFun := fun ⟨⟨v, hqr⟩, htop⟩ => ⟨v, htop, hqr⟩
+      invFun := fun ⟨v, htop, hqr⟩ => ⟨⟨v, hqr⟩, htop⟩
+      left_inv := ?_
+      right_inv := ?_
+    }
+    · rintro ⟨⟨v, hqr⟩, htop⟩; rfl
+    · rintro ⟨v, htop, hqr⟩; rfl
+  rw [hAQr_eq]
+  -- Decompose by inl/inr.
+  have hsplit : Fintype.card {v : ValidCol0_B hP hQ //
+      topSym_B hP hQ v = .d ∧
+      (match v with
+        | .inl _ => True
+        | .inr d => ∀ h : hQ - hP + 1 ≥ 1,
+            d.val ⟨0, by omega⟩ ≠ .r ∧ d.val ⟨0, by omega⟩ ≠ .d)} =
+      Fintype.card {d : DSeq (hQ - hP) // topSym_B hP hQ (Sum.inl d) = .d} +
+      Fintype.card {d : DSeq (hQ - hP + 1) //
+        topSym_B hP hQ (Sum.inr d) = .d ∧
+        (∀ h : hQ - hP + 1 ≥ 1,
+          d.val ⟨0, by omega⟩ ≠ .r ∧ d.val ⟨0, by omega⟩ ≠ .d)} := by
+    have hequiv : {v : ValidCol0_B hP hQ //
+        topSym_B hP hQ v = .d ∧
+        (match v with
+          | .inl _ => True
+          | .inr d => ∀ h : hQ - hP + 1 ≥ 1,
+              d.val ⟨0, by omega⟩ ≠ .r ∧ d.val ⟨0, by omega⟩ ≠ .d)} ≃
+        {d : DSeq (hQ - hP) // topSym_B hP hQ (Sum.inl d) = .d} ⊕
+        {d : DSeq (hQ - hP + 1) //
+          topSym_B hP hQ (Sum.inr d) = .d ∧
+          (∀ h : hQ - hP + 1 ≥ 1,
+            d.val ⟨0, by omega⟩ ≠ .r ∧ d.val ⟨0, by omega⟩ ≠ .d)} := by
+      refine {
+        toFun := fun ⟨v, hv⟩ => ?_
+        invFun := fun v => ?_
+        left_inv := ?_
+        right_inv := ?_
+      }
+      · -- toFun
+        rcases v with a | b
+        · exact Sum.inl ⟨a, hv.1⟩
+        · exact Sum.inr ⟨b, hv.1, hv.2⟩
+      · -- invFun
+        rcases v with ⟨a, ha⟩ | ⟨b, hb, hqr⟩
+        · exact ⟨Sum.inl a, ha, trivial⟩
+        · exact ⟨Sum.inr b, hb, hqr⟩
+      · -- left_inv
+        rintro ⟨v, hv⟩
+        rcases v with a | b <;> rfl
+      · -- right_inv
+        rintro (⟨a, ha⟩ | ⟨b, hb, hqr⟩) <;> rfl
+    rw [Fintype.card_congr hequiv, Fintype.card_sum]
+  rw [hsplit]
+  -- inl side: DSeq(hQ-hP) with topSym_B (Sum.inl d) = d.
+  -- topSym_B (Sum.inl d) = if hQ-hP ≥ 1 then d.val (hQ-hP-1) else .dot.
+  have h_inl_card :
+      Fintype.card {d : DSeq (hQ - hP) // topSym_B hP hQ (Sum.inl d) = .d} =
+      if hQ - hP ≥ 1 then (hQ - hP) else 0 := by
+    by_cases hKm : hQ - hP ≥ 1
+    · -- k ≥ 2 case.
+      have hsub : Fintype.card {d : DSeq (hQ - hP) // topSym_B hP hQ (Sum.inl d) = .d} =
+          Fintype.card {d : DSeq (hQ - hP) // d.val ⟨(hQ - hP) - 1, by omega⟩ = .d} := by
+        apply Fintype.card_congr
+        apply Equiv.subtypeEquivRight
+        intro d
+        show (dite (hQ - hP ≥ 1) (fun h => d.val ⟨hQ - hP - 1, by omega⟩)
+            (fun _ => DRCSymbol.dot)) = .d ↔ d.val ⟨(hQ - hP) - 1, by omega⟩ = .d
+        rw [dif_pos hKm]
+      rw [hsub, card_DSeq_last_d hKm]
+      simp [hKm]
+    · -- k = 1 case.
+      have h0 : Fintype.card {d : DSeq (hQ - hP) // topSym_B hP hQ (Sum.inl d) = .d} = 0 := by
+        apply Fintype.card_eq_zero_iff.mpr
+        refine ⟨fun ⟨_, hp⟩ => ?_⟩
+        simp only [topSym_B] at hp
+        rw [dif_neg hKm] at hp
+        exact absurd hp (by decide)
+      rw [h0]; simp [hKm]
+  -- inr side: {d : DSeq(k) // d.val(k-1) = .d ∧ d.val(0) ≠ r ∧ d.val(0) ≠ d}.
+  -- = |DSeq(k) last=d| - |DSeq(k) last=d ∧ first ∈ {r,d}|.
+  -- The subtracted set has exactly 1 element (DSeq_Rd) — DSeq_allR has last=r ≠ d.
+  have h_inr_card :
+      Fintype.card {d : DSeq (hQ - hP + 1) //
+        topSym_B hP hQ (Sum.inr d) = .d ∧
+        (∀ h : hQ - hP + 1 ≥ 1,
+          d.val ⟨0, by omega⟩ ≠ .r ∧ d.val ⟨0, by omega⟩ ≠ .d)} =
+      if hQ - hP + 1 ≥ 2 then hQ - hP else 0 := by
+    -- Step: equiv with {d // d.val(k-1) = .d ∧ d.val(0) ∉ {r, d}}.
+    have hsub : Fintype.card {d : DSeq (hQ - hP + 1) //
+        topSym_B hP hQ (Sum.inr d) = .d ∧
+        (∀ h : hQ - hP + 1 ≥ 1,
+          d.val ⟨0, by omega⟩ ≠ .r ∧ d.val ⟨0, by omega⟩ ≠ .d)} =
+        Fintype.card {d : DSeq (hQ - hP + 1) //
+          d.val ⟨hQ - hP, by omega⟩ = .d ∧
+          d.val ⟨0, by omega⟩ ≠ .r ∧ d.val ⟨0, by omega⟩ ≠ .d} := by
+      apply Fintype.card_congr
+      apply Equiv.subtypeEquivRight
+      intro d
+      constructor
+      · rintro ⟨htop, hqr⟩
+        exact ⟨htop, (hqr hK).1, (hqr hK).2⟩
+      · rintro ⟨htop, h1, h2⟩
+        exact ⟨htop, fun _ => ⟨h1, h2⟩⟩
+    rw [hsub]
+    -- Case split on k.
+    by_cases hk2 : hQ - hP + 1 ≥ 2
+    · -- k ≥ 2. Subtype = {d // last=d ∧ first=s} (since first ∈ {s,r,d} and ≠ r, ≠ d).
+      -- Rewrite first ≠ r ∧ first ≠ d to first = s.
+      have hsub2 : Fintype.card {d : DSeq (hQ - hP + 1) //
+          d.val ⟨hQ - hP, by omega⟩ = .d ∧
+          d.val ⟨0, by omega⟩ ≠ .r ∧ d.val ⟨0, by omega⟩ ≠ .d} =
+          Fintype.card {d : DSeq (hQ - hP + 1) //
+            d.val ⟨hQ - hP, by omega⟩ = .d ∧ d.val ⟨0, by omega⟩ = .s} := by
+        apply Fintype.card_congr
+        apply Equiv.subtypeEquivRight
+        intro d
+        constructor
+        · rintro ⟨htop, h1, h2⟩
+          refine ⟨htop, ?_⟩
+          rcases d.prop.1 ⟨0, by omega⟩ with h | h | h
+          · exact h
+          · exact absurd h h1
+          · exact absurd h h2
+        · rintro ⟨htop, h⟩
+          exact ⟨htop, by rw [h]; decide, by rw [h]; decide⟩
+      rw [hsub2]
+      -- Now count {d : DSeq(k) // last = d ∧ first = s}. By structure: at-most-one-d
+      -- forces the single d to be at position k-1. So d.val(i) ∈ {s,r} for i < k-1,
+      -- monotone, first = s. These are s^a r^b with a + b = k-1, a ≥ 1. Count = k-1.
+      -- Use the complement: |last=d| - |last=d ∧ first ∈ {r,d}| = k - (excluded).
+      -- But excluded = {DSeq_Rd} (just 1 for k ≥ 2, since DSeq_allR has last=r).
+      -- Because simpler: use |DSeq_last_d| and subtract |DSeq_last_d ∧ first ∈ {r,d}|.
+      -- We use the direct count via complement.
+      -- First ∈ {s, r, d}; first = r gives DSeq_allR (last=r) or DSeq_Rd (last=d);
+      -- first = d gives k=1 contradiction.
+      -- Count {last=d ∧ first=s} = count {last=d} - count {last=d ∧ first ∈ {r,d}}.
+      -- count {last=d ∧ first ∈ {r,d}} = 1 (just DSeq_Rd).
+      -- {d // last=d} has card k. Within it, partition by first=s vs first≠s.
+      -- first ≠ s means first ∈ {r, d}; combined with last=d, this gives exactly 1
+      -- element (DSeq_Rd hK). So first=s count = k - 1.
+      have h_total_last_d : Fintype.card {d : DSeq (hQ - hP + 1) //
+          d.val ⟨hQ - hP, by omega⟩ = .d} = hQ - hP + 1 := by
+        have hcong : Fintype.card {d : DSeq (hQ - hP + 1) //
+            d.val ⟨hQ - hP, by omega⟩ = .d} =
+            Fintype.card {d : DSeq (hQ - hP + 1) //
+              d.val ⟨(hQ - hP + 1) - 1, by omega⟩ = .d} := by
+          apply Fintype.card_congr; apply Equiv.subtypeEquivRight
+          intro d
+          have hfin_eq : (⟨hQ - hP, by omega⟩ : Fin (hQ - hP + 1)) =
+              ⟨(hQ - hP + 1) - 1, by omega⟩ := by
+            apply Fin.ext; show hQ - hP = hQ - hP + 1 - 1; omega
+          rw [hfin_eq]
+        rw [hcong, card_DSeq_last_d hK]
+      -- Key: {d : last=d, first ∈ {r,d}} has exactly 1 element (DSeq_Rd).
+      have h_compl_card : Fintype.card {d : DSeq (hQ - hP + 1) //
+          d.val ⟨hQ - hP, by omega⟩ = .d ∧ ¬ (d.val ⟨0, by omega⟩ = .s)} = 1 := by
+        apply Fintype.card_eq_one_iff.mpr
+        have hRd_top : (DSeq_Rd (k := hQ - hP + 1) hK).val ⟨hQ - hP, by omega⟩ = .d := by
+          show (if (hQ - hP) = (hQ - hP + 1) - 1 then DRCSymbol.d else DRCSymbol.r) = .d
+          rw [if_pos (by omega)]
+        have hRd_first : ¬ (DSeq_Rd (k := hQ - hP + 1) hK).val ⟨0, by omega⟩ = .s := by
+          rw [DSeq_Rd_first hK hk2]; decide
+        refine ⟨⟨DSeq_Rd hK, hRd_top, hRd_first⟩, ?_⟩
+        rintro ⟨d, hdtop, hd0_ne_s⟩
+        apply Subtype.ext
+        show d = DSeq_Rd hK
+        rcases d.prop.1 ⟨0, by omega⟩ with h | h | h
+        · exact absurd h hd0_ne_s
+        · rcases DSeq_first_r_struct hK d h with heq | heq
+          · exfalso
+            rw [heq] at hdtop
+            have : (DSeq_allR (k := hQ - hP + 1)).val ⟨hQ - hP, by omega⟩ = .r := rfl
+            rw [this] at hdtop
+            exact absurd hdtop (by decide)
+          · exact heq
+        · rcases DSeq_first_d_struct hK d h with ⟨hk1, _⟩
+          omega
+      -- Use Fintype.card_subtype_compl with subtype
+      -- {d // last=d ∧ first=s} = {d // last=d} \ {d // last=d ∧ first≠s}.
+      -- Work on the ambient subtype {d // last=d} and split by the secondary predicate.
+      -- Direct approach: use Finset filter cardinalities.
+      -- Goal card = (card of ambient {last=d}) - (card of {last=d, ¬first=s}).
+      -- Use Finset.filter_card_add_filter_neg_card_eq_card.
+      let F := (Finset.univ : Finset (DSeq (hQ - hP + 1))).filter
+        fun d => d.val ⟨hQ - hP, by omega⟩ = .d
+      have hF_card : F.card = hQ - hP + 1 := by
+        show (Finset.univ.filter _).card = _
+        rw [← Fintype.card_subtype]
+        exact h_total_last_d
+      have hFS_card : (F.filter fun d => d.val ⟨0, by omega⟩ = .s).card = hQ - hP := by
+        have hFneg : (F.filter fun d => ¬ d.val ⟨0, by omega⟩ = .s).card = 1 := by
+          have heq : (F.filter fun d => ¬ d.val ⟨0, by omega⟩ = .s).card =
+              Fintype.card {d : DSeq (hQ - hP + 1) //
+                d.val ⟨hQ - hP, by omega⟩ = .d ∧ ¬ (d.val ⟨0, by omega⟩ = .s)} := by
+            rw [Fintype.card_subtype]
+            -- filter on univ by (last=d) then by (¬ first=s) = filter on univ by conj.
+            have : (F.filter fun d => ¬ d.val ⟨0, by omega⟩ = .s) =
+                Finset.univ.filter fun d : DSeq (hQ - hP + 1) =>
+                  d.val ⟨hQ - hP, by omega⟩ = .d ∧ ¬ (d.val ⟨0, by omega⟩ = .s) := by
+              ext d; simp [F, and_comm]
+            rw [this]
+          rw [heq, h_compl_card]
+        have := Finset.filter_card_add_filter_neg_card_eq_card (s := F)
+          (p := fun d => d.val ⟨0, by omega⟩ = .s)
+        rw [hF_card, hFneg] at this
+        omega
+      -- Convert back to Fintype.card.
+      have hgoal : Fintype.card {d : DSeq (hQ - hP + 1) //
+          d.val ⟨hQ - hP, by omega⟩ = .d ∧ d.val ⟨0, by omega⟩ = .s} = hQ - hP := by
+        rw [Fintype.card_subtype]
+        -- {d // P d ∧ Q d} card = (filter P univ).filter Q card.
+        have hfilter_eq : (Finset.univ.filter fun d : DSeq (hQ - hP + 1) =>
+            d.val ⟨hQ - hP, by omega⟩ = .d ∧ d.val ⟨0, by omega⟩ = .s) =
+            F.filter fun d => d.val ⟨0, by omega⟩ = .s := by
+          ext d
+          simp [F]
+        rw [hfilter_eq, hFS_card]
+      rw [hgoal]
+      simp [hk2]
+    · -- k = 1: hQ - hP + 1 = 1.
+      have hk1 : hQ - hP + 1 = 1 := by omega
+      -- Subtype empty: first ∈ {s, r, d}; last = d. For k = 1, first = last position 0.
+      -- first = d case: d.val(0) = d (required by last = d at position 0).
+      -- But first ≠ d is in the predicate. So empty.
+      have h0 : Fintype.card {d : DSeq (hQ - hP + 1) //
+          d.val ⟨hQ - hP, by omega⟩ = .d ∧
+          d.val ⟨0, by omega⟩ ≠ .r ∧ d.val ⟨0, by omega⟩ ≠ .d} = 0 := by
+        apply Fintype.card_eq_zero_iff.mpr
+        refine ⟨fun ⟨d, hdtop, _, h2⟩ => ?_⟩
+        -- Index 0 = Index (hQ-hP) since hQ-hP = 0.
+        have hidx : (⟨0, by omega⟩ : Fin (hQ - hP + 1)) = ⟨hQ - hP, by omega⟩ :=
+          Fin.ext (by omega)
+        rw [hidx] at h2
+        exact absurd hdtop h2
+      rw [h0]; simp [hk2]
+  rw [h_inl_card, h_inr_card]
+  -- Final: (if hQ-hP ≥ 1 then hQ-hP else 0) + (if hQ-hP+1 ≥ 2 then hQ-hP else 0)
+  -- = 2 * (if k ≥ 2 then nu (k-2) else 0).
+  by_cases hk2 : k ≥ 2
+  · have hKm : hQ - hP ≥ 1 := by omega
+    have hKm1 : hQ - hP + 1 ≥ 2 := by omega
+    simp [hKm, hKm1, hk2, nu]
+    omega
+  · have hk1 : k = 1 := by omega
+    have hKm_not : ¬ hQ - hP ≥ 1 := by omega
+    have hKm1_not : ¬ hQ - hP + 1 ≥ 2 := by omega
+    simp [hKm_not, hKm1_not, hk2]
+
 /-- Key admissibility lemma: for τ in fiber of σ with σ.Q_bot.layerOrd ≤ 1,
     ¬ P_col0_has_c τ (i.e., τ.P col 0 is all dots).
 
