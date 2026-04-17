@@ -2398,6 +2398,93 @@ private theorem card_DSeq_last_d {k : ℕ} (hk : k ≥ 1) :
   have h_d_ge := card_DSeq_last_d_ge hk
   omega
 
+/-- The top Q symbol of a ValidCol0_B, i.e., the symbol at row μQ.colLen 0 - 1
+    of the lifted Q col 0. For inl (P all dots), this is the last DSeq entry
+    when the tail is non-empty; otherwise .dot (P extends to the top, forcing
+    Q = dot by dot_match). For inr (P has c), this is always the last DSeq entry. -/
+private noncomputable def topSym_B (hP hQ : ℕ) (v : ValidCol0_B hP hQ) : DRCSymbol :=
+  match v with
+  | .inl d =>
+    if h : hQ - hP ≥ 1 then d.val ⟨hQ - hP - 1, by omega⟩ else .dot
+  | .inr d => d.val ⟨hQ - hP, by omega⟩
+
+/-- Sum decomposition for ValidCol0_B top-symbol subtype card. -/
+private theorem validCol0_B_card_top_split (hP hQ : ℕ) (sym : DRCSymbol) :
+    Fintype.card {v : ValidCol0_B hP hQ // topSym_B hP hQ v = sym} =
+    Fintype.card {v : DSeq (hQ - hP) // topSym_B hP hQ (Sum.inl v) = sym} +
+    Fintype.card {v : DSeq (hQ - hP + 1) // topSym_B hP hQ (Sum.inr v) = sym} := by
+  -- Use Equiv between {v : A ⊕ B // P v} and {v : A // P (inl v)} ⊕ {v : B // P (inr v)}.
+  have : {v : ValidCol0_B hP hQ // topSym_B hP hQ v = sym} ≃
+      {v : DSeq (hQ - hP) // topSym_B hP hQ (Sum.inl v) = sym} ⊕
+      {v : DSeq (hQ - hP + 1) // topSym_B hP hQ (Sum.inr v) = sym} := by
+    refine {
+      toFun := fun ⟨v, hv⟩ => match v, hv with
+        | Sum.inl a, hv => Sum.inl ⟨a, hv⟩
+        | Sum.inr b, hv => Sum.inr ⟨b, hv⟩
+      invFun := fun v => match v with
+        | Sum.inl ⟨a, ha⟩ => ⟨Sum.inl a, ha⟩
+        | Sum.inr ⟨b, hb⟩ => ⟨Sum.inr b, hb⟩
+      left_inv := ?_
+      right_inv := ?_
+    }
+    · rintro ⟨v, hv⟩
+      rcases v with a | b <;> rfl
+    · rintro (⟨a, ha⟩ | ⟨b, hb⟩) <;> rfl
+  rw [Fintype.card_congr this, Fintype.card_sum]
+
+/-- |ValidCol0_B with top Q = d| = 2k - 1, where k = hQ - hP + 1.
+    (Agrees with tDD = `nu(k-1) + (if k≥2 then nu(k-2) else 0)` for k ≥ 1.) -/
+private theorem validCol0_B_card_top_d (hP hQ : ℕ) (hle : hP ≤ hQ)
+    (k : ℕ) (hk : k = hQ - hP + 1) (hk_pos : k ≥ 1) :
+    Fintype.card {v : ValidCol0_B hP hQ // topSym_B hP hQ v = .d} =
+      2 * k - 1 := by
+  -- Sum decomposition.
+  rw [validCol0_B_card_top_split]
+  -- inr side: subtype reformulation.
+  have h_idx_eq : (hQ - hP + 1) - 1 = hQ - hP := by omega
+  have h_inr_eq : Fintype.card
+      {v : DSeq (hQ - hP + 1) // topSym_B hP hQ (Sum.inr v) = .d} =
+      Fintype.card {v : DSeq (hQ - hP + 1) //
+        v.val ⟨(hQ - hP + 1) - 1, by omega⟩ = .d} := by
+    apply Fintype.card_congr
+    apply Equiv.subtypeEquivRight
+    intro v
+    show v.val ⟨hQ - hP, _⟩ = .d ↔ v.val ⟨(hQ - hP + 1) - 1, _⟩ = .d
+    have hfin : (⟨hQ - hP, by omega⟩ : Fin (hQ - hP + 1)) =
+        ⟨(hQ - hP + 1) - 1, by omega⟩ := Fin.ext h_idx_eq.symm
+    rw [hfin]
+  -- inr side card.
+  have h_inr_card := card_DSeq_last_d (k := hQ - hP + 1) (by omega)
+  -- Now case split on k.
+  by_cases h_k_eq_1 : k = 1
+  · -- k = 1: hQ - hP = 0.
+    -- inl side: DSeq(0) with top via dif_neg → .dot ≠ .d → 0.
+    have h_inl_zero : Fintype.card
+        {v : DSeq (hQ - hP) // topSym_B hP hQ (Sum.inl v) = .d} = 0 := by
+      apply Fintype.card_eq_zero_iff.mpr
+      refine ⟨fun ⟨v, hv⟩ => ?_⟩
+      simp only [topSym_B] at hv
+      split_ifs at hv with h
+      · omega
+    rw [h_inl_zero, h_inr_eq, h_inr_card]
+    omega
+  · -- k ≥ 2: hQ - hP ≥ 1.
+    have hKm : hQ - hP ≥ 1 := by omega
+    -- inl: DSeq(hQ-hP) last=d = hQ-hP = k-1.
+    have h_inl_eq : Fintype.card
+        {v : DSeq (hQ - hP) // topSym_B hP hQ (Sum.inl v) = .d} =
+        Fintype.card {v : DSeq (hQ - hP) //
+          v.val ⟨(hQ - hP) - 1, by omega⟩ = .d} := by
+      apply Fintype.card_congr
+      apply Equiv.subtypeEquivRight
+      intro v
+      show (dite (hQ - hP ≥ 1) (fun h => v.val ⟨hQ - hP - 1, by omega⟩)
+          (fun _ => DRCSymbol.dot)) = .d ↔ v.val ⟨(hQ - hP) - 1, by omega⟩ = .d
+      rw [dif_pos hKm]
+    have h_inl_card := card_DSeq_last_d (k := hQ - hP) hKm
+    rw [h_inl_eq, h_inr_eq, h_inl_card, h_inr_card]
+    omega
+
 /-- Transfer between PBPSet .Bminus ⊥ μQ filter and DSeq last-entry filter,
     for a given DRCSymbol constant. -/
 private theorem card_Bminus_Qbot_eq_DSeq_last {μQ : YoungDiagram}
