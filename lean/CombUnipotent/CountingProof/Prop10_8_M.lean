@@ -939,6 +939,62 @@ theorem descentMB_liftBM_naive_P_paint (σ : PBP) (hγ : σ.γ = .Bplus ∨ σ.�
     · rfl
     · exact hτp_dot
 
+/-! ### Helpers for Q_paint -/
+
+/-- Helper: ¬(i < dotScolLen τ.P (j+1)) when (i, j) ∉ σ.P.shape.
+    Because (i, j+1) ∉ μP = τ.P.shape, so (i, j+1) ∉ dotSdiag τ.P either. -/
+private theorem τP_succ_outside_not_dotScolLen (σ : PBP) (hγ : σ.γ = .Bplus ∨ σ.γ = .Bminus)
+    (μP μQ : YoungDiagram) (hPsh : σ.P.shape = YoungDiagram.shiftLeft μP)
+    (hQsh : σ.Q.shape = μQ)
+    (h_sub : μP.shiftLeft ≤ μQ) (h_QleP : μQ ≤ μP)
+    (h_bal_exc : μP.colLen 0 = μQ.colLen 0 → μP.colLen 0 > 0 →
+        (σ.Q.paint (μQ.colLen 0 - 1) 0).layerOrd > 1)
+    {i j : ℕ} (hmemPσ : (i, j) ∉ σ.P.shape) :
+    ¬ (i < PBP.dotScolLen
+      (liftBM_naive σ hγ μP μQ hPsh hQsh h_sub h_QleP h_bal_exc).P (j + 1)) := by
+  set τ := liftBM_naive σ hγ μP μQ hPsh hQsh h_sub h_QleP h_bal_exc with hτ
+  intro hlt
+  have hds_le := PBP.dotScolLen_le_colLen τ.P τ.mono_P (j + 1)
+  have h_mem_τ : (i, j + 1) ∈ τ.P.shape :=
+    YoungDiagram.mem_iff_lt_colLen.mpr (lt_of_lt_of_le hlt hds_le)
+  have h_mem_μP : (i, j + 1) ∈ μP := by
+    simp [hτ, liftBM_naive] at h_mem_τ; exact h_mem_τ
+  rw [hPsh, YoungDiagram.mem_shiftLeft] at hmemPσ
+  exact hmemPσ h_mem_μP
+
+/-- Helper: ¬(i < dotScolLen τ.P (j+1)) when σ.P(i, j) = c.
+    Because τ.P(i, j+1) = c has layerOrd 3 > 1. -/
+private theorem τP_succ_c_not_dotScolLen (σ : PBP) (hγ : σ.γ = .Bplus ∨ σ.γ = .Bminus)
+    (μP μQ : YoungDiagram) (hPsh : σ.P.shape = YoungDiagram.shiftLeft μP)
+    (hQsh : σ.Q.shape = μQ)
+    (h_sub : μP.shiftLeft ≤ μQ) (h_QleP : μQ ≤ μP)
+    (h_bal_exc : μP.colLen 0 = μQ.colLen 0 → μP.colLen 0 > 0 →
+        (σ.Q.paint (μQ.colLen 0 - 1) 0).layerOrd > 1)
+    {i j : ℕ} (hmemμP : (i, j + 1) ∈ μP) (hPc : σ.P.paint i j = .c) :
+    ¬ (i < PBP.dotScolLen
+      (liftBM_naive σ hγ μP μQ hPsh hQsh h_sub h_QleP h_bal_exc).P (j + 1)) := by
+  set τ := liftBM_naive σ hγ μP μQ hPsh hQsh h_sub h_QleP h_bal_exc with hτ
+  have hτp_c : τ.P.paint i (j + 1) = .c := by
+    show liftPaintP_naive σ μP i (j + 1) = .c
+    exact (liftPaintP_naive_succ_c_iff σ μP i j).mpr ⟨hmemμP, hPc⟩
+  intro hlt
+  have hlo := PBP.layerOrd_le_one_of_lt_dotSdiag_colLen τ.P τ.mono_P
+    (by rw [← PBP.dotScolLen_eq_dotSdiag_colLen _ τ.mono_P]; exact hlt)
+  rw [hτp_c, DRCSymbol.layerOrd] at hlo; omega
+
+/-- Helper: (σ.P(i, j) = c) follows from (i, j) ∈ σ.P.shape and σ.Q(i, j) ≠ dot.
+    Uses σ's dot_match contrapositive + B-type P structure. -/
+private theorem σP_c_of_Q_ne_dot (σ : PBP) (hγ : σ.γ = .Bplus ∨ σ.γ = .Bminus)
+    {i j : ℕ} (hmemPσ : (i, j) ∈ σ.P.shape) (hQne_dot : σ.Q.paint i j ≠ .dot) :
+    σ.P.paint i j = .c := by
+  have hPne_dot : σ.P.paint i j ≠ .dot := by
+    intro habs
+    have ⟨_, h_dot⟩ := (σ.dot_match i j).mp ⟨hmemPσ, habs⟩
+    exact hQne_dot h_dot
+  rcases B_P_dot_or_c σ hγ hmemPσ with h | h
+  · exact absurd h hPne_dot
+  · exact h
+
 theorem descentMB_liftBM_naive_Q_paint (σ : PBP) (hγ : σ.γ = .Bplus ∨ σ.γ = .Bminus)
     (μP μQ : YoungDiagram) (hPsh : σ.P.shape = YoungDiagram.shiftLeft μP)
     (hQsh : σ.Q.shape = μQ)
@@ -947,11 +1003,125 @@ theorem descentMB_liftBM_naive_Q_paint (σ : PBP) (hγ : σ.γ = .Bplus ∨ σ.�
         (σ.Q.paint (μQ.colLen 0 - 1) 0).layerOrd > 1) :
     ∀ i j, PBP.descentPaintR_MB
       (liftBM_naive σ hγ μP μQ hPsh hQsh h_sub h_QleP h_bal_exc) i j = σ.Q.paint i j := by
-  -- Strategy: case on σ.Q.paint. Use symmetric structure between σ and τ.
-  -- σ.Q = dot/s: τ.Q = dot, need descent to produce dot/s based on dotScolLen regions.
-  -- σ.Q = r/d: τ.Q = σ.Q, descent returns τ.Q directly.
-  -- Key dotScolLen equality: dotScolLen τ.Q j = dotScolLen σ.Q j (same {dot/s}-boundary).
-  sorry -- TODO: detailed case analysis with dotScolLen reasoning
+  intro i j
+  set τ := liftBM_naive σ hγ μP μQ hPsh hQsh h_sub h_QleP h_bal_exc with hτ
+  simp only [PBP.descentPaintR_MB]
+  -- Case on whether (i, j) ∈ σ.Q.shape.
+  by_cases hmem : (i, j) ∈ σ.Q.shape
+  · -- (i, j) ∈ σ.Q.shape = μQ.
+    have hmemμQ : (i, j) ∈ μQ := hQsh ▸ hmem
+    have hmemτQ : (i, j) ∈ τ.Q.shape := by simp [hτ, liftBM_naive]; exact hmemμQ
+    -- σ.Q ∈ {dot, s, r, d} for B-type.
+    have hsymQ := σ.sym_Q i j hmem
+    have hQcases : σ.Q.paint i j = .dot ∨ σ.Q.paint i j = .s ∨
+                   σ.Q.paint i j = .r ∨ σ.Q.paint i j = .d := by
+      rcases hγ with hγB | hγB <;> rw [hγB] at hsymQ <;>
+        simp [DRCSymbol.allowed] at hsymQ <;> exact hsymQ
+    rcases hQcases with hdot | hs | hr | hd
+    · -- σ.Q(i, j) = dot.
+      -- Via σ.dot_match: (i, j) ∈ σ.P.shape and σ.P(i, j) = dot.
+      obtain ⟨hmemPσ, hPdot⟩ := (σ.dot_match i j).mpr ⟨hmem, hdot⟩
+      have hmemμP : (i, j + 1) ∈ μP := by
+        rw [hPsh, YoungDiagram.mem_shiftLeft] at hmemPσ; exact hmemPσ
+      -- τ.P(i, j+1) ∈ {dot, s} since σ.P(i, j) = dot ≠ c.
+      have hτp_lo : (τ.P.paint i (j + 1)).layerOrd ≤ 1 := by
+        show (liftPaintP_naive σ μP i (j + 1)).layerOrd ≤ 1
+        rw [liftPaintP_naive_succ σ μP i j hmemμP]
+        rw [if_neg (by rw [hPdot]; decide)]
+        split_ifs <;> simp [DRCSymbol.layerOrd]
+      have hmemτP : (i, j + 1) ∈ τ.P.shape := by
+        simp [hτ, liftBM_naive]; exact hmemμP
+      -- i < dotScolLen τ.P (j+1) (Zone 1).
+      have hi_lt : i < PBP.dotScolLen τ.P (j + 1) := by
+        rw [PBP.dotScolLen_eq_dotSdiag_colLen _ τ.mono_P]
+        have : (i, j + 1) ∈ PBP.dotSdiag τ.P τ.mono_P := by
+          simp only [PBP.dotSdiag, YoungDiagram.mem_mk, Finset.mem_filter,
+            YoungDiagram.mem_cells]
+          exact ⟨hmemτP, hτp_lo⟩
+        exact YoungDiagram.mem_iff_lt_colLen.mp this
+      rw [if_pos hi_lt, hdot]
+    · -- σ.Q(i, j) = s.
+      -- First show: ¬ Zone 1, by case on (i, j) ∈ σ.P.shape.
+      have hQne_dot : σ.Q.paint i j ≠ .dot := by rw [hs]; decide
+      have hi_ge_P : ¬ (i < PBP.dotScolLen τ.P (j + 1)) := by
+        by_cases hmemPσ : (i, j) ∈ σ.P.shape
+        · have hPc := σP_c_of_Q_ne_dot σ hγ hmemPσ hQne_dot
+          have hmemμP : (i, j + 1) ∈ μP := by
+            rw [hPsh, YoungDiagram.mem_shiftLeft] at hmemPσ; exact hmemPσ
+          exact τP_succ_c_not_dotScolLen σ hγ μP μQ hPsh hQsh h_sub h_QleP h_bal_exc hmemμP hPc
+        · exact τP_succ_outside_not_dotScolLen σ hγ μP μQ hPsh hQsh h_sub h_QleP h_bal_exc hmemPσ
+      rw [if_neg hi_ge_P]
+      -- Now Zone 2: τ.Q(i, j) = dot (since σ.Q = s has lo = 1 ≤ 1), i < dotScolLen τ.Q j.
+      have hτq_dot : τ.Q.paint i j = .dot := by
+        show liftPaintQ_naive σ i j = .dot
+        apply (liftPaintQ_naive_dot_iff σ i j).mpr
+        right; rw [hs]; decide
+      have hi_lt2 : i < PBP.dotScolLen τ.Q j := by
+        rw [PBP.dotScolLen_eq_dotSdiag_colLen _ τ.mono_Q]
+        have : (i, j) ∈ PBP.dotSdiag τ.Q τ.mono_Q := by
+          simp only [PBP.dotSdiag, YoungDiagram.mem_mk, Finset.mem_filter,
+            YoungDiagram.mem_cells]
+          exact ⟨hmemτQ, by rw [hτq_dot]; decide⟩
+        exact YoungDiagram.mem_iff_lt_colLen.mp this
+      rw [if_pos hi_lt2, hs]
+    · -- σ.Q(i, j) = r.
+      have hQne_dot : σ.Q.paint i j ≠ .dot := by rw [hr]; decide
+      -- ¬ Zone 1.
+      have hi_ge_P : ¬ (i < PBP.dotScolLen τ.P (j + 1)) := by
+        by_cases hmemPσ : (i, j) ∈ σ.P.shape
+        · have hPc := σP_c_of_Q_ne_dot σ hγ hmemPσ hQne_dot
+          have hmemμP : (i, j + 1) ∈ μP := by
+            rw [hPsh, YoungDiagram.mem_shiftLeft] at hmemPσ; exact hmemPσ
+          exact τP_succ_c_not_dotScolLen σ hγ μP μQ hPsh hQsh h_sub h_QleP h_bal_exc hmemμP hPc
+        · exact τP_succ_outside_not_dotScolLen σ hγ μP μQ hPsh hQsh h_sub h_QleP h_bal_exc hmemPσ
+      rw [if_neg hi_ge_P]
+      -- τ.Q(i, j) = r (lo = 2 > 1, so NOT Zone 2).
+      have hτq_r : τ.Q.paint i j = .r := by
+        show liftPaintQ_naive σ i j = .r
+        simp only [liftPaintQ_naive]
+        rw [if_pos ⟨hmem, by rw [hr]; decide⟩]
+        exact hr
+      have hi_ge_Q : ¬ (i < PBP.dotScolLen τ.Q j) := by
+        intro hlt
+        have hlo := PBP.layerOrd_le_one_of_lt_dotSdiag_colLen τ.Q τ.mono_Q
+          (by rw [← PBP.dotScolLen_eq_dotSdiag_colLen _ τ.mono_Q]; exact hlt)
+        rw [hτq_r, DRCSymbol.layerOrd] at hlo; omega
+      rw [if_neg hi_ge_Q, hτq_r, hr]
+    · -- σ.Q(i, j) = d.
+      have hQne_dot : σ.Q.paint i j ≠ .dot := by rw [hd]; decide
+      have hi_ge_P : ¬ (i < PBP.dotScolLen τ.P (j + 1)) := by
+        by_cases hmemPσ : (i, j) ∈ σ.P.shape
+        · have hPc := σP_c_of_Q_ne_dot σ hγ hmemPσ hQne_dot
+          have hmemμP : (i, j + 1) ∈ μP := by
+            rw [hPsh, YoungDiagram.mem_shiftLeft] at hmemPσ; exact hmemPσ
+          exact τP_succ_c_not_dotScolLen σ hγ μP μQ hPsh hQsh h_sub h_QleP h_bal_exc hmemμP hPc
+        · exact τP_succ_outside_not_dotScolLen σ hγ μP μQ hPsh hQsh h_sub h_QleP h_bal_exc hmemPσ
+      rw [if_neg hi_ge_P]
+      have hτq_d : τ.Q.paint i j = .d := by
+        show liftPaintQ_naive σ i j = .d
+        simp only [liftPaintQ_naive]
+        rw [if_pos ⟨hmem, by rw [hd]; decide⟩]
+        exact hd
+      have hi_ge_Q : ¬ (i < PBP.dotScolLen τ.Q j) := by
+        intro hlt
+        have hlo := PBP.layerOrd_le_one_of_lt_dotSdiag_colLen τ.Q τ.mono_Q
+          (by rw [← PBP.dotScolLen_eq_dotSdiag_colLen _ τ.mono_Q]; exact hlt)
+        rw [hτq_d, DRCSymbol.layerOrd] at hlo; omega
+      rw [if_neg hi_ge_Q, hτq_d, hd]
+  · -- (i, j) ∉ σ.Q.shape. σ.Q(i, j) = dot (paint_outside). Need descent = dot.
+    rw [σ.Q.paint_outside i j hmem]
+    have hmemμQ_not : (i, j) ∉ μQ := hQsh ▸ hmem
+    have hmemτQ_not : (i, j) ∉ τ.Q.shape := by simp [hτ, liftBM_naive]; exact hmemμQ_not
+    have hτq_dot : τ.Q.paint i j = .dot := τ.Q.paint_outside i j hmemτQ_not
+    -- Zone 1 gives dot ✓; Zone 2 contradicts (i, j) ∉ τ.Q.shape; Zone 3 gives τ.Q = dot ✓.
+    split_ifs with h1 h2
+    · rfl
+    · exfalso
+      have hds_le := PBP.dotScolLen_le_colLen τ.Q τ.mono_Q j
+      have : (i, j) ∈ τ.Q.shape :=
+        YoungDiagram.mem_iff_lt_colLen.mpr (lt_of_lt_of_le h2 hds_le)
+      exact hmemτQ_not this
+    · exact hτq_dot
 
 /-- The lift τ = liftBM_naive σ satisfies descentMB_PBP(τ) = σ.
     Requires h_pos : μP.colLen 0 > 0 (edge case μP = ⊥ fails for σ.γ = B-). -/
