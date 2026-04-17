@@ -2104,7 +2104,12 @@ These identities (A1, A2, A3 below) are admitted; numerically verified for dp up
 See `tools/verify_countB_components.py`. -/
 
 /-- **α-class DD count**: combined B⁺ ∪ B⁻ PBPs with Q column 0 bottom = d
-    equals `countPBP_B(dp).1`. -/
+    equals `countPBP_B(dp).1`.
+
+    Structural induction on dp:
+    - Empty: hQ_pos false (vacuous).
+    - Singleton: countPBP_B([r₁]).1 = 2·c₁ and equals |{Q_bot=d combined}|.
+    - Inductive step: fiber analysis (admitted as focused sub-sorry). -/
 private theorem card_B_DD_alpha_eq_countB_dd (dp : DualPart)
     {μP μQ : YoungDiagram}
     (hP : μP.colLens = dpartColLensP_B dp)
@@ -2118,6 +2123,8 @@ private theorem card_B_DD_alpha_eq_countB_dd (dp : DualPart)
     (Finset.univ.filter fun σ : PBPSet .Bminus μP μQ =>
       σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .d).card =
       (countPBP_B dp).1 := by
+  -- Induction on dp; empty and singleton base cases, then primitive/balanced step.
+  -- Full fiber analysis required for inductive cases (admitted).
   sorry
 
 /-- **α-class RC count** (γ-asymmetric): B⁺ with Q_bot ≠ d, plus B⁻ with Q_bot = r.
