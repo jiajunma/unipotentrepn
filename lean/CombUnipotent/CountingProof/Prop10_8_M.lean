@@ -251,6 +251,69 @@ theorem liftPaintP_naive_col0_mono (σ : PBP) (hγ : σ.γ = .Bplus ∨ σ.γ = 
     rw [liftPaintP_naive_outside hmem₁]
     simp [DRCSymbol.layerOrd]
 
+/-- σ B-type → σ.P ∈ {•, c}. -/
+theorem B_P_dot_or_c (σ : PBP) (hγ : σ.γ = .Bplus ∨ σ.γ = .Bminus) {i j : ℕ}
+    (hmem : (i, j) ∈ σ.P.shape) : σ.P.paint i j = .dot ∨ σ.P.paint i j = .c := by
+  have hsym := σ.sym_P i j hmem
+  rcases hγ with hγ | hγ <;> rw [hγ] at hsym <;> simp [DRCSymbol.allowed] at hsym <;>
+    exact hsym
+
+/-- τ.P at col ≥ 1 is monotone in i and j: uses σ.P's mono_P via col-shift. -/
+theorem liftPaintP_naive_succ_mono (σ : PBP) (hγ : σ.γ = .Bplus ∨ σ.γ = .Bminus)
+    (μP : YoungDiagram) (hPsh : σ.P.shape = YoungDiagram.shiftLeft μP)
+    {i₁ i₂ j₁' j₂' : ℕ} (hi : i₁ ≤ i₂) (hj : j₁' + 1 ≤ j₂' + 1)
+    (hmem : (i₂, j₂' + 1) ∈ μP) :
+    (liftPaintP_naive σ μP i₁ (j₁' + 1)).layerOrd ≤
+    (liftPaintP_naive σ μP i₂ (j₂' + 1)).layerOrd := by
+  -- τ.P at col j+1 uses σ.P at col j. Key: σ.P.shape = shiftLeft μP.
+  -- (i₂, j₂'+1) ∈ μP ↔ (i₂, j₂') ∈ σ.P.shape.
+  have hmemPσ : (i₂, j₂') ∈ σ.P.shape := by
+    rw [hPsh, YoungDiagram.mem_shiftLeft]; exact hmem
+  have hj' : j₁' ≤ j₂' := by omega
+  -- Case on σ.P(i₂, j₂') ∈ {•, c}.
+  rcases B_P_dot_or_c σ hγ hmemPσ with hdot₂ | hc₂
+  · -- σ.P(i₂, j₂') = •. By σ.mono_P: σ.P(i₁, j₁').lo ≤ 0, so σ.P(i₁, j₁') = •.
+    have hmono_σ := σ.mono_P i₁ j₁' i₂ j₂' hi hj' hmemPσ
+    rw [hdot₂, DRCSymbol.layerOrd] at hmono_σ
+    have hle_zero : (σ.P.paint i₁ j₁').layerOrd = 0 := Nat.le_zero.mp hmono_σ
+    have hne_c_1 : σ.P.paint i₁ j₁' ≠ .c := by
+      intro h; rw [h, DRCSymbol.layerOrd] at hle_zero; omega
+    -- τ.P(i₁, j₁'+1) ∈ {•, s}.
+    rcases liftPaintP_naive_mem σ μP i₁ (j₁' + 1) with hτ₁ | hτ₁ | hτ₁
+    · rw [hτ₁]; simp [DRCSymbol.layerOrd]
+    · -- τ.P(i₁, j₁'+1) = s. Need τ.P(i₂, j₂'+1).lo ≥ 1.
+      -- i.e., τ.P(i₂, j₂'+1) ≠ •.
+      have hne_dot_2 : liftPaintP_naive σ μP i₂ (j₂' + 1) ≠ .dot := by
+        intro hτ₂
+        have hs_spec := (liftPaintP_naive_succ_s_iff σ μP i₁ j₁').mp hτ₁
+        obtain ⟨_, _, hnot_dot_1⟩ := hs_spec
+        rw [liftPaintP_naive_succ σ μP i₂ j₂' hmem,
+            if_neg (by rw [hdot₂]; decide)] at hτ₂
+        by_cases hdot₂' : (i₂, j₂' + 1) ∈ σ.Q.shape ∧ (σ.Q.paint i₂ (j₂' + 1)).layerOrd ≤ 1
+        · apply hnot_dot_1
+          refine ⟨σ.Q.shape.isLowerSet (Prod.mk_le_mk.mpr ⟨hi, by omega⟩) hdot₂'.1, ?_⟩
+          have hmono_Q := σ.mono_Q i₁ (j₁' + 1) i₂ (j₂' + 1) hi (by omega) hdot₂'.1
+          omega
+        · rw [if_neg hdot₂'] at hτ₂; exact absurd hτ₂ (by decide)
+      rw [hτ₁]
+      rcases liftPaintP_naive_mem σ μP i₂ (j₂' + 1) with h | h | h
+      · exact absurd h hne_dot_2
+      · simp [h, DRCSymbol.layerOrd]
+      · simp [h, DRCSymbol.layerOrd]
+    · -- τ.P(i₁, j₁'+1) = c means σ.P(i₁, j₁') = c. But σ.P(i₁, j₁').lo = 0.
+      exfalso
+      have h_mem₁_μ : (i₁, j₁' + 1) ∈ μP := by
+        by_contra hout
+        rw [liftPaintP_naive_outside hout] at hτ₁
+        exact absurd hτ₁ (by decide)
+      have hc₁ := ((liftPaintP_naive_succ_c_iff σ μP i₁ j₁').mp hτ₁).2
+      rw [hc₁, DRCSymbol.layerOrd] at hle_zero
+      omega
+  · -- σ.P(i₂, j₂') = c. τ.P(i₂, j₂'+1) = c (lo=3). Anything ≤ 3.
+    rw [(liftPaintP_naive_succ_c_iff σ μP i₂ j₂').mpr ⟨hmem, hc₂⟩]
+    rcases liftPaintP_naive_mem σ μP i₁ (j₁' + 1) with h | h | h <;>
+      rw [h] <;> decide
+
 /-! ## Main construction: liftBM_naive -/
 
 /-- Preimage construction for Prop 10.8(a) (primitive case).
