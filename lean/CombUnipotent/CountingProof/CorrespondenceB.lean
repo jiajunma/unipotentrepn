@@ -4530,8 +4530,11 @@ private theorem validCol0_B_Qr_card (hP hQ : ℕ) (hle : hP ≤ hQ)
 /-- Key admissibility lemma: for τ in fiber of σ with σ.Q_bot = r and P_col0_has_c τ,
     τ.Q(hP-1, 0) ∉ {r, d}.
 
-    **Status**: admitted (structural fiber analysis, ~60 lines when fully expanded).
-    See blueprint for proof outline using dd_paintR + row_r/mono_Q. -/
+    Proof outline:
+    - τ in fiber of σ: doubleDescent_Bplus_map τ = σ, so σ.Q = doubleDescent_B_paintR τ.
+    - σ.Q(hP-1, 0) = r. By dd_paintR def (≠ dot, ≠ s), τ.Q(hP-1, 1) = r.
+    - τ.mono_Q: τ.Q(hP-1, 0).layerOrd ≤ τ.Q(hP-1, 1).layerOrd = 2, so ≠ d (layerOrd 4).
+    - τ.row_r: τ.Q(hP-1, 0) = r AND τ.Q(hP-1, 1) = r ⇒ 0 = 1, contradiction. So ≠ r. -/
 private theorem fiber_Q_hPm1_nrd_of_Qr {μP μQ : YoungDiagram}
     (σ : PBPSet .Bplus (μP.shiftLeft) (μQ.shiftLeft))
     (hP_pos : 0 < μP.colLen 0)
@@ -4540,7 +4543,35 @@ private theorem fiber_Q_hPm1_nrd_of_Qr {μP μQ : YoungDiagram}
     (τ : doubleDescent_Bplus_fiber σ) (hPc : P_col0_has_c τ.val) :
     τ.val.val.Q.paint (μP.colLen 0 - 1) 0 ≠ .r ∧
     τ.val.val.Q.paint (μP.colLen 0 - 1) 0 ≠ .d := by
-  sorry
+  have hddmap : doubleDescent_Bplus_map μP μQ τ.val = σ := τ.prop
+  have hσ_eq : σ.val = doubleDescent_B_PBP τ.val.val (Or.inl τ.val.prop.1) :=
+    congrArg Subtype.val hddmap.symm
+  have hσ_Q_eq : σ.val.Q.paint (μP.colLen 0 - 1) 0 =
+      PBP.doubleDescent_B_paintR τ.val.val (μP.colLen 0 - 1) 0 := by
+    rw [hσ_eq]; rfl
+  have h_Qr' : σ.val.Q.paint (μP.colLen 0 - 1) 0 = .r := by
+    rw [← h_hQσ_eq]; exact h_Qr
+  have h_paintR : PBP.doubleDescent_B_paintR τ.val.val (μP.colLen 0 - 1) 0 = .r := by
+    rw [← hσ_Q_eq]; exact h_Qr'
+  simp only [PBP.doubleDescent_B_paintR] at h_paintR
+  split_ifs at h_paintR with h1 h2
+  have hτQ1 : τ.val.val.Q.paint (μP.colLen 0 - 1) 1 = .r := h_paintR
+  have hmemQ_1 : (μP.colLen 0 - 1, 1) ∈ τ.val.val.Q.shape := by
+    by_contra hne
+    rw [τ.val.val.Q.paint_outside _ _ hne] at hτQ1
+    exact absurd hτQ1 (by decide)
+  have hmono := τ.val.val.mono_Q (μP.colLen 0 - 1) 0 (μP.colLen 0 - 1) 1
+    le_rfl (by omega) hmemQ_1
+  rw [hτQ1] at hmono
+  refine ⟨?_, ?_⟩
+  · intro hr
+    have := τ.val.val.row_r (μP.colLen 0 - 1) .R .R 0 1
+      (by simp [paintBySide]; exact hr)
+      (by simp [paintBySide]; exact hτQ1)
+    omega
+  · intro hd
+    rw [hd] at hmono
+    simp [DRCSymbol.layerOrd] at hmono
 
 /-- Upper bound for Qr balanced case: fiber ↪ ValidCol0_B_Qr. -/
 private theorem fiber_le_validCol0_B_Qr {μP μQ : YoungDiagram}
