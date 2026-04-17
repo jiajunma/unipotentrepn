@@ -2572,8 +2572,16 @@ private theorem card_B_DD_alpha_eq_countB_dd (dp : DualPart)
     exact this hQ_pos
   | [r₁], hP, hQ, _, heven, hpos, _ =>
     exact singleton_case_B_DD_alpha r₁ hP hQ heven hpos
-  | _ :: _ :: _, _, _, _, _, _, _ =>
-    -- Inductive case: admitted as focused sub-sorry.
+  | r₁ :: r₂ :: rest, hP, hQ, hsort, heven, hpos, hQ_pos =>
+    -- Inductive case: split into primitive (r₂ > r₃) and balanced (r₂ ≤ r₃).
+    -- In both cases, need refined fiber analysis: per sub-PBP σ, determine how many
+    -- of the 4k (primitive) or variable (balanced) fibers have new Q_bot = d.
+    --
+    -- Primitive: `tDD = (k-1)+1 + (k-2)+1 = 2k-1` for k≥2 (else 1). New dd = total · tDD.
+    -- Balanced: `dd_new = dd' · tDD + rc' · scDD` from countPBP_B formula.
+    --
+    -- Both cases require dot-class fiber lemma (subset of grouped_fiber refined
+    -- to Q_bot=d class). Admitted pending fiber-analysis infrastructure.
     sorry
 
 /-- Singleton case helper for `card_B_SS_alpha_eq_countB_ss`.
@@ -2696,9 +2704,18 @@ theorem card_B_SS_alpha_eq_countB_ss (dp : DualPart)
   | [r₁], hP, hQ, _, heven, hpos, _ =>
     -- Singleton case: direct computation via DSeq enumeration.
     exact singleton_case_B_SS_alpha r₁ hP hQ heven hpos
-  | _ :: _ :: _, _, _, _, _, _, _ =>
-    -- Inductive case: primitive uses refined fiber (new sub-sorry),
-    -- balanced uses Phase 3 fiber identity.
+  | r₁ :: r₂ :: rest, hP, hQ, hsort, heven, hpos, hQ_pos =>
+    -- Inductive case: split into primitive (r₂ > r₃) and balanced (r₂ ≤ r₃).
+    -- In both cases, need refined fiber analysis: per sub-PBP σ, determine how many
+    -- of the variable-size new fibers have new Q_bot.lo ≤ 1 (i.e., ∈ {•, s}).
+    --
+    -- Primitive: per sub has 4k fibers; `tSS = 1` of them has Q_bot.lo≤1 (specifically
+    --            the all-s fiber). So ss_new = total_rest · 1 = total_rest.
+    -- Balanced: `ss_new = dd' · tSS + rc' · scSS = dd' · 1 + rc' · 1 = dd' + rc'`.
+    --
+    -- Both cases require the lo≤1-class fiber lemma (subset of grouped_fiber refined
+    -- to Q_bot.lo≤1 class). Admitted pending fiber-analysis infrastructure.
+    -- Cannot be derived from Total + A1 + A2 + γ-swap alone (A2 circularly depends on A3).
     sorry
 
 /-- **γ-swap SS symmetry**: B⁺ and B⁻ have the same number of PBPs with
