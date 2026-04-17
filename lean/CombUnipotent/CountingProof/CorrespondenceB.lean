@@ -3462,6 +3462,32 @@ private theorem fiber_card_B_bal_Qlow {r₁ r₂ : ℕ} {rest : DualPart}
     Fintype.card (doubleDescent_Bplus_fiber σ) = 2 * ((r₁ - r₂) / 2 + 1) - 1 := by
   sorry
 
+/-! ### Target: balanced double descent theorem
+
+The theorem below is the **structural target** that, once proven, closes the three
+`fiber_card_B_bal_*` lemmas uniformly. It mirrors `card_PBPSet_Bplus_primitive_step_top_Q`
+at line ~2040.
+
+**Differences from primitive**:
+1. `hprimQ` is replaced by the balanced-case shape constraint h_bal.
+2. The RHS is a **sum over σ** (not a product), because the fiber size varies by σ.
+3. A per-σ `ValidCol0_B_bal σ sym` subtype replaces the uniform `ValidCol0_B` with topSym.
+
+**Numerical uniformity**: 82 dp cases verify that for any σ₁, σ₂ with the same
+`Q_bot.layerOrd`-class, `|ValidCol0_B_bal σ₁ sym| = |ValidCol0_B_bal σ₂ sym|`. So the
+per-σ sum collapses to (q_d_comb · 4k + q_r_comb · (4k-2) + q_low_comb · (2k-1)) style.
+
+**Infrastructure needed**:
+- `ValidCol0_B_bal σ sym` type (~50 lines, subtype of ValidCol0_B with admissibility).
+- `liftPBP_B_bal σ v h_adm` construction (~400 lines, balanced version of liftPBP_B).
+- Round-trip + injectivity (~300 lines).
+- Per-class card (~300 lines, three instances).
+
+See `lean/docs/blueprints/balanced_double_descent_theorem.md` for full outline.
+
+**Status**: Not yet implemented. The three fiber sorries above (`fiber_card_B_bal_Qd`,
+`fiber_card_B_bal_Qr`, `fiber_card_B_bal_Qlow`) stand in for this theorem. -/
+
 /-- **Balanced fiber identity**: in balanced case, the total count of
     new B⁺ ∪ B⁻ PBPs decomposes as a sum over sub-PBPs grouped by their Q_bot:
     each sub contributes `4k` (if Q_bot=d), `4k-2` (if Q_bot=r), or `2k-1` (if Q_bot.lo≤1).
