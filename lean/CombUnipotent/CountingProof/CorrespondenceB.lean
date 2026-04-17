@@ -4748,16 +4748,72 @@ private theorem fiber_card_B_bal_Qr {r₁ r₂ : ℕ} {rest : DualPart}
     have hcard := validCol0_B_Qr_card (μP.colLen 0) (μQ.colLen 0) hle _ hk_eq hk_pos
     rw [hcard] at h_ge; omega
 
-/-- **Per-class fiber size (Q_bot ∈ {•, s})**: In balanced case, a sub-PBP σ with
-    Q_bot.layerOrd ≤ 1 has a fiber of size 2k - 1 in the new level.
+/-! ### Qlow balanced case: ValidCol0_B_Qlow subtype
 
-    **Closure path**: Parallel to `fiber_card_B_bal_Qd`. Admissibility
-    `(τ.Q col 0 at row < hP_σ).layerOrd ≤ 1` forces ≈ half the ValidCol0_B
-    paintings to be valid (those using only •/s for overlap rows). Count = 2k - 1.
+For Q_bot.layerOrd ≤ 1 (σ.Q_bot ∈ {•, s}), the admissibility constraint on
+v ∈ ValidCol0_B is much stricter:
+- `inl d` (P col 0 all dots): τ.Q(i, 0) = dot for i < hP, layerOrd 0 ≤ σ.Q(i, 0).
+  No admissibility on d. All DSeq(hQ-hP) valid. Count: 2k - 1 (where k = hQ-hP+1).
+- `inr d` (P col 0 has c at bottom): τ.P(hP-1, 0) = c. By mono_P, σ.P(hP-1, 0) ≥ c,
+  so σ.P(hP-1, 0) = c. By dot_match, σ.Q(hP-1, 0) = non-dot. Combined with
+  layerOrd ≤ 1, σ.Q(hP-1, 0) = s. Then τ.Q(hP-1, 0) must satisfy:
+  - layerOrd ≤ σ.Q(hP-1, 0).layerOrd = 1, so τ.Q(hP-1, 0) ∈ {dot, s}.
+  - non-dot (by dot_match at (hP-1, 0) with τ.P = c), so τ.Q(hP-1, 0) = s.
+  - But σ.Q(hP-1, 0) = s too, so by row_s, 0 = 1, contradiction.
+  Hence inr case is entirely excluded.
 
-    **Numerical verification**: 82 dp cases via `tools/verify_all_B_lemmas.py`. -/
-private theorem fiber_card_B_bal_Qlow {r₁ r₂ : ℕ} {rest : DualPart}
-    {μP μQ : YoungDiagram}
+Net count: 2k - 1. -/
+
+/-- ValidCol0_B configs admissible for Qlow case: only `inl d` variants. -/
+private def ValidCol0_B_Qlow (hP hQ : ℕ) :=
+  { v : ValidCol0_B hP hQ //
+    match v with
+    | .inl _ => True
+    | .inr _ => False }
+
+private noncomputable instance (hP hQ : ℕ) : Fintype (ValidCol0_B_Qlow hP hQ) := by
+  unfold ValidCol0_B_Qlow; infer_instance
+
+/-- |ValidCol0_B_Qlow| = 2k - 1 where k = hQ - hP + 1.
+    Reason: only inl branch valid; DSeq(hQ - hP) has 2(hQ - hP) + 1 = 2k - 1 elements. -/
+private theorem validCol0_B_Qlow_card (hP hQ : ℕ) (hle : hP ≤ hQ)
+    (k : ℕ) (hk : k = hQ - hP + 1) (hk_pos : k ≥ 1) :
+    Fintype.card (ValidCol0_B_Qlow hP hQ) = 2 * k - 1 := by
+  -- ValidCol0_B_Qlow ≃ DSeq(hQ - hP): inl branch only.
+  have hequiv : ValidCol0_B_Qlow hP hQ ≃ DSeq (hQ - hP) := by
+    refine {
+      toFun := fun ⟨v, hv⟩ => ?_
+      invFun := fun d => ⟨Sum.inl d, trivial⟩
+      left_inv := ?_
+      right_inv := ?_
+    }
+    · cases v with
+      | inl d => exact d
+      | inr _ => exact absurd hv (by simp [ValidCol0_B_Qlow])
+    · rintro ⟨v, hv⟩
+      cases v with
+      | inl d => rfl
+      | inr _ => exact absurd hv (by simp [ValidCol0_B_Qlow])
+    · intro d; rfl
+  rw [Fintype.card_congr hequiv, DSeq_card]; omega
+
+/-- Upper bound for Qlow balanced case: fiber ↪ ValidCol0_B_Qlow.
+    Reasoning: In Qlow case, every τ ∈ fiber has P col 0 all dots. The proof
+    uses the row_s contradiction from the docblock above. -/
+private theorem fiber_le_validCol0_B_Qlow {μP μQ : YoungDiagram}
+    (σ : PBPSet .Bplus (μP.shiftLeft) (μQ.shiftLeft))
+    (hle : μP.colLen 0 ≤ μQ.colLen 0)
+    (hP_pos : 0 < μP.colLen 0)
+    (h_hQσ_eq : μQ.shiftLeft.colLen 0 = μP.colLen 0)
+    (h_Qlow : (σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0).layerOrd ≤ 1) :
+    Fintype.card (doubleDescent_Bplus_fiber σ) ≤
+    Fintype.card (ValidCol0_B_Qlow (μP.colLen 0) (μQ.colLen 0)) := by
+  sorry
+
+/-- Lower bound for Qlow balanced case: ValidCol0_B_Qlow ↪ fiber.
+    Reasoning: For v = Sum.inl d (ValidCol0_B_Qlow element), the balanced
+    lift produces a valid τ. Injectivity via DSeq distinctness. -/
+private theorem validCol0_B_Qlow_le_fiber {r₁ r₂ : ℕ} {rest : DualPart} {μP μQ : YoungDiagram}
     (_hP : μP.colLens = dpartColLensP_B (r₁ :: r₂ :: rest))
     (_hQ : μQ.colLens = dpartColLensQ_B (r₁ :: r₂ :: rest))
     (_hsort : (r₁ :: r₂ :: rest).SortedGE)
@@ -4766,8 +4822,93 @@ private theorem fiber_card_B_bal_Qlow {r₁ r₂ : ℕ} {rest : DualPart}
     (_h_bal : ¬(r₂ > rest.head?.getD 0))
     (σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft)
     (_h_Qlow : (σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0).layerOrd ≤ 1) :
-    Fintype.card (doubleDescent_Bplus_fiber σ) = 2 * ((r₁ - r₂) / 2 + 1) - 1 := by
+    Fintype.card (ValidCol0_B_Qlow (μP.colLen 0) (μQ.colLen 0)) ≤
+    Fintype.card (doubleDescent_Bplus_fiber σ) := by
   sorry
+
+/-- **Per-class fiber size (Q_bot ∈ {•, s})**: In balanced case, a sub-PBP σ with
+    Q_bot.layerOrd ≤ 1 has a fiber of size 2k - 1 in the new level.
+
+    **Structural closure**: matches `fiber_card_B_bal_Qr` pattern.
+    - Upper bound via `fiber_le_validCol0_B_Qlow`.
+    - Lower bound via `validCol0_B_Qlow_le_fiber`.
+    - Cardinality of `ValidCol0_B_Qlow` = 2k - 1.
+
+    **Numerical verification**: 82 dp cases via `tools/verify_all_B_lemmas.py`. -/
+private theorem fiber_card_B_bal_Qlow {r₁ r₂ : ℕ} {rest : DualPart}
+    {μP μQ : YoungDiagram}
+    (hP : μP.colLens = dpartColLensP_B (r₁ :: r₂ :: rest))
+    (hQ : μQ.colLens = dpartColLensQ_B (r₁ :: r₂ :: rest))
+    (hsort : (r₁ :: r₂ :: rest).SortedGE)
+    (heven : ∀ r ∈ (r₁ :: r₂ :: rest), Even r)
+    (hpos : ∀ r ∈ (r₁ :: r₂ :: rest), 0 < r)
+    (h_bal : ¬(r₂ > rest.head?.getD 0))
+    (σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft)
+    (h_Qlow : (σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0).layerOrd ≤ 1) :
+    Fintype.card (doubleDescent_Bplus_fiber σ) = 2 * ((r₁ - r₂) / 2 + 1) - 1 := by
+  -- Compute column lengths from dp structure (parallel to fiber_card_B_bal_Qd/Qr).
+  have hP0 : μP.colLen 0 = r₂ / 2 :=
+    colLen_0_eq_of_colLens_cons (by rw [hP, dpartColLensP_B_cons₂])
+  have hQ0 : μQ.colLen 0 = r₁ / 2 :=
+    colLen_0_eq_of_colLens_cons (by rw [hQ, dpartColLensQ_B_cons₂])
+  have h_ge := sortedGE_head_ge hsort
+  have hle : μP.colLen 0 ≤ μQ.colLen 0 := by
+    rw [hP0, hQ0]; exact Nat.div_le_div_right h_ge
+  have heven₂ := heven r₂ (by simp)
+  obtain ⟨b, hb⟩ := heven₂
+  have hpos₂ := hpos r₂ (by simp)
+  have hP_pos : 0 < μP.colLen 0 := by rw [hP0, hb]; omega
+  have hk_eq : (r₁ - r₂) / 2 + 1 = μQ.colLen 0 - μP.colLen 0 + 1 := by
+    rw [hP0, hQ0]
+    have heven₁ := heven r₁ (by simp)
+    obtain ⟨a, ha⟩ := heven₁
+    rw [ha, hb]
+    have h1 : (a + a) / 2 = a := by omega
+    have h2 : (b + b) / 2 = b := by omega
+    rw [h1, h2]
+    have h_ge' : a + a ≥ b + b := by rw [← ha, ← hb]; exact h_ge
+    have : (a + a - (b + b)) / 2 = a - b := by omega
+    omega
+  have hk_pos : (r₁ - r₂) / 2 + 1 ≥ 1 := by omega
+  -- Balanced: μQ.shiftLeft.colLen 0 = μP.colLen 0.
+  have h_hQσ_eq : μQ.shiftLeft.colLen 0 = μP.colLen 0 := by
+    push_neg at h_bal
+    rw [hP0]
+    match rest, show μQ.shiftLeft.colLens = dpartColLensQ_B rest from
+      (by rw [YoungDiagram.colLens_shiftLeft, hQ]; simp [dpartColLensQ_B]) with
+    | [], heq => simp at h_bal; omega
+    | [r₃], heq =>
+      simp at h_bal
+      have hr₃_le : r₃ ≤ r₂ := by
+        have hsort' : Antitone (r₁ :: r₂ :: [r₃]).get := hsort
+        have h12 := @hsort' ⟨1, by simp⟩ ⟨2, by simp⟩ (by simp)
+        simpa using h12
+      have hr₂_eq : r₂ = r₃ := le_antisymm (by omega) hr₃_le
+      have hpos₃ := hpos r₃ (by simp)
+      have h : μQ.shiftLeft.colLens = [r₃/2] := by
+        rw [heq]; simp [dpartColLensQ_B, hpos₃]
+      have hcl : μQ.shiftLeft.colLen 0 = r₃/2 := colLen_0_eq_of_colLens_cons h
+      rw [hcl, hr₂_eq]
+    | r₃ :: r₄ :: rest', heq =>
+      simp at h_bal
+      have hr₃_le : r₃ ≤ r₂ := by
+        have hsort' : Antitone (r₁ :: r₂ :: r₃ :: r₄ :: rest').get := hsort
+        have h12 := @hsort' ⟨1, by simp⟩ ⟨2, by simp⟩ (by simp : (⟨1, by simp⟩ : Fin 4) ≤ ⟨2, by simp⟩)
+        simpa using h12
+      have hr₂_eq : r₂ = r₃ := le_antisymm h_bal hr₃_le
+      have h : μQ.shiftLeft.colLens = r₃/2 :: dpartColLensQ_B rest' := by
+        rw [heq, dpartColLensQ_B_cons₂]
+      have hcl : μQ.shiftLeft.colLen 0 = r₃/2 := colLen_0_eq_of_colLens_cons h
+      rw [hcl, hr₂_eq]
+  apply le_antisymm
+  · -- Upper bound: |fiber σ| ≤ |ValidCol0_B_Qlow| = 2k - 1.
+    have h_le := fiber_le_validCol0_B_Qlow σ hle hP_pos h_hQσ_eq h_Qlow
+    have hcard := validCol0_B_Qlow_card (μP.colLen 0) (μQ.colLen 0) hle _ hk_eq hk_pos
+    rw [hcard] at h_le; omega
+  · -- Lower bound: |ValidCol0_B_Qlow| ≤ |fiber σ|.
+    have h_ge := validCol0_B_Qlow_le_fiber hP hQ hsort heven hpos h_bal σ h_Qlow
+    have hcard := validCol0_B_Qlow_card (μP.colLen 0) (μQ.colLen 0) hle _ hk_eq hk_pos
+    rw [hcard] at h_ge; omega
 
 /-! ### Target: balanced double descent theorem
 
