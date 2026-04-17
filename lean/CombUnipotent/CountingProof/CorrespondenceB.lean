@@ -7822,11 +7822,12 @@ private theorem fiber_alpha_topSym_lo_le_one_count_bal_Qr {r₁ r₂ : ℕ} {res
     Q_bot.layerOrd ≤ 1, the sub-subtype of fibers with `(new_Q_bot).layerOrd ≤ 1`
     has size 1.
 
-    Status: Declaration-time elaboration timeout observed at ≥1M heartbeats
-    on the nested subtype `{τ : subfiber // lo≤1}` with embedded pairing
-    against `{v : ValidCol0_B_Qlow // lo≤1}`. Left for follow-up; the 4
-    sibling lemmas suffice for the current balanced-decomposition use site. -/
-/-
+    **Elaboration workaround**: the natural statement `Fintype.card {τ : subfiber //
+    lo≤1} = 1` paired with `{v : ValidCol0_B_Qlow // lo≤1}` (a subtype of a subtype)
+    triggers a `whnf` timeout at declaration elaboration (≥ 1M heartbeats). We restate
+    via `Finset.filter`, and route the proof directly through `DSeq` — bypassing the
+    intermediate `ValidCol0_B_Qlow` subtype entirely. -/
+set_option maxHeartbeats 4000000 in
 private theorem fiber_alpha_topSym_lo_le_one_count_bal_Qlow {r₁ r₂ : ℕ} {rest : DualPart}
     {μP μQ : YoungDiagram}
     (hP : μP.colLens = dpartColLensP_B (r₁ :: r₂ :: rest))
@@ -7837,8 +7838,8 @@ private theorem fiber_alpha_topSym_lo_le_one_count_bal_Qlow {r₁ r₂ : ℕ} {r
     (h_bal : ¬(r₂ > rest.head?.getD 0))
     (σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft)
     (h_Qlow : (σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0).layerOrd ≤ 1) :
-    Fintype.card {τ : doubleDescent_Bplus_fiber σ //
-      (τ.val.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd ≤ 1} = 1 := by
+    (Finset.univ.filter fun τ : doubleDescent_Bplus_fiber σ =>
+      (τ.val.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd ≤ 1).card = 1 := by
   have hP0 : μP.colLen 0 = r₂ / 2 :=
     colLen_0_eq_of_colLens_cons (by rw [hP, dpartColLensP_B_cons₂])
   have hQ0 : μQ.colLen 0 = r₁ / 2 :=
@@ -7898,54 +7899,99 @@ private theorem fiber_alpha_topSym_lo_le_one_count_bal_Qlow {r₁ r₂ : ℕ} {r
     rw [show μQ.colLen 1 = μQ.shiftLeft.colLen 0 from
       (YoungDiagram.colLen_shiftLeft μQ 0).symm] at h1
     omega
-  -- Factor: upper bound directly to DSeq (avoids nested ValidCol0_B_Qlow subtype
-  -- elaboration; we use the Qlow-subtype card only numerically).
-  have h_card_Qlow_lo := validCol0_B_Qlow_card_top_lo_le_one (μP.colLen 0)
-    (μQ.colLen 0) hle _ hk_eq hk_pos
-  rw [show (1 : ℕ) =
-        Fintype.card {v : ValidCol0_B_Qlow (μP.colLen 0) (μQ.colLen 0) //
-          (topSym_B (μP.colLen 0) (μQ.colLen 0) v.val).layerOrd ≤ 1} from
-    h_card_Qlow_lo.symm]
+  -- Convert the Finset.filter statement back to Fintype.card of subtype.
+  rw [← Fintype.card_subtype]
+  -- Helper: card of {d : DSeq // topSym.lo ≤ 1} = 1 (direct, no ValidCol0_B_Qlow routing).
+  have h_dseq_card :
+      Fintype.card {d : DSeq (μQ.colLen 0 - μP.colLen 0) //
+        (topSym_B (μP.colLen 0) (μQ.colLen 0) (Sum.inl d)).layerOrd ≤ 1} = 1 := by
+    by_cases hK : μQ.colLen 0 - μP.colLen 0 ≥ 1
+    · have hsub : Fintype.card {d : DSeq (μQ.colLen 0 - μP.colLen 0) //
+          (topSym_B (μP.colLen 0) (μQ.colLen 0) (Sum.inl d)).layerOrd ≤ 1} =
+          Fintype.card {d : DSeq (μQ.colLen 0 - μP.colLen 0) //
+            d.val ⟨μQ.colLen 0 - μP.colLen 0 - 1, by omega⟩ = .s} := by
+        apply Fintype.card_congr
+        refine {
+          toFun := fun ⟨d, hd⟩ => ⟨d, ?_⟩
+          invFun := fun ⟨d, hs⟩ => ⟨d, ?_⟩
+          left_inv := ?_
+          right_inv := ?_
+        }
+        · simp only [topSym_B] at hd
+          rw [dif_pos hK] at hd
+          rcases d.prop.1 ⟨μQ.colLen 0 - μP.colLen 0 - 1, by omega⟩ with h | h | h
+          · exact h
+          · rw [h, DRCSymbol.layerOrd] at hd; omega
+          · rw [h, DRCSymbol.layerOrd] at hd; omega
+        · show (topSym_B (μP.colLen 0) (μQ.colLen 0) (Sum.inl d)).layerOrd ≤ 1
+          simp only [topSym_B]; rw [dif_pos hK, hs, DRCSymbol.layerOrd]
+        · rintro ⟨d, _⟩; rfl
+        · rintro ⟨d, _⟩; rfl
+      rw [hsub, card_DSeq_last_s hK]
+    · have h_all : ∀ d : DSeq (μQ.colLen 0 - μP.colLen 0),
+          (topSym_B (μP.colLen 0) (μQ.colLen 0) (Sum.inl d)).layerOrd ≤ 1 := by
+        intro d
+        simp only [topSym_B]; rw [dif_neg hK, DRCSymbol.layerOrd]; omega
+      rw [show Fintype.card {d : DSeq (μQ.colLen 0 - μP.colLen 0) //
+          (topSym_B (μP.colLen 0) (μQ.colLen 0) (Sum.inl d)).layerOrd ≤ 1} =
+          Fintype.card (DSeq (μQ.colLen 0 - μP.colLen 0)) from by
+        apply Fintype.card_congr
+        exact {
+          toFun := fun ⟨d, _⟩ => d
+          invFun := fun d => ⟨d, h_all d⟩
+          left_inv := fun ⟨_, _⟩ => rfl
+          right_inv := fun _ => rfl }]
+      rw [DSeq_card]
+      have : μQ.colLen 0 - μP.colLen 0 = 0 := by omega
+      omega
+  -- Target card = 1 via h_dseq_card (establish fiber card ≤ 1 ≤ fiber card).
+  suffices h_bound : Fintype.card
+      {τ : doubleDescent_Bplus_fiber σ //
+        (τ.val.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd ≤ 1} =
+      Fintype.card {d : DSeq (μQ.colLen 0 - μP.colLen 0) //
+        (topSym_B (μP.colLen 0) (μQ.colLen 0) (Sum.inl d)).layerOrd ≤ 1} by
+    rw [h_bound, h_dseq_card]
+  -- Two-sided card bound via an equivalence (use card_le two-sided).
   apply le_antisymm
-  · -- Upper: subfiber ↪ {v : ValidCol0_B_Qlow // lo≤1}.
+  · -- Upper: subfiber ↪ {d : DSeq // topSym.lo ≤ 1} directly (bypassing ValidCol0_B_Qlow).
+    -- Use `extractCol0_B` to pull out a ValidCol0_B, then project its inl branch
+    -- (which exists because P col 0 has no c, via fiber_P_col0_no_c_of_Qlow).
     apply Fintype.card_le_of_injective
       (fun (x : {τ : doubleDescent_Bplus_fiber σ //
           (τ.val.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd ≤ 1}) =>
-        (⟨⟨extractCol0_B x.val.val hle, by
-            unfold extractCol0_B
-            split_ifs with hPc
-            · exact absurd hPc (fiber_P_col0_no_c_of_Qlow σ hP_pos h_hQσ_eq h_Qlow x.val)
-            · trivial⟩, by
-          rw [extractCol0_B_preserves_top_Q x.val.val hle hQ_pos]
-          exact x.prop⟩ :
-          {v : ValidCol0_B_Qlow (μP.colLen 0) (μQ.colLen 0) //
-            (topSym_B (μP.colLen 0) (μQ.colLen 0) v.val).layerOrd ≤ 1}))
+        (⟨extractQtail_B x.val.val hle (μQ.colLen 0 - μP.colLen 0)
+          (by unfold Q_tail_len
+              rw [if_neg (fiber_P_col0_no_c_of_Qlow σ hP_pos h_hQσ_eq h_Qlow x.val)]),
+         by
+          have hno_c : ¬ P_col0_has_c x.val.val :=
+            fiber_P_col0_no_c_of_Qlow σ hP_pos h_hQσ_eq h_Qlow x.val
+          have hext_eq : extractCol0_B x.val.val hle =
+              Sum.inl (extractQtail_B x.val.val hle
+                (μQ.colLen 0 - μP.colLen 0)
+                (by unfold Q_tail_len; rw [if_neg hno_c])) := by
+            unfold extractCol0_B; rw [dif_neg hno_c]
+          have hpres := extractCol0_B_preserves_top_Q x.val.val hle hQ_pos
+          rw [hext_eq] at hpres
+          rw [hpres]; exact x.prop⟩ :
+          {d : DSeq (μQ.colLen 0 - μP.colLen 0) //
+            (topSym_B (μP.colLen 0) (μQ.colLen 0) (Sum.inl d)).layerOrd ≤ 1}))
     intro ⟨⟨τ₁, hτ₁⟩, _⟩ ⟨⟨τ₂, hτ₂⟩, _⟩ heq
-    have hv₁ := Subtype.ext_iff.mp heq
-    have hv := Subtype.ext_iff.mp hv₁
+    have hno_c₁ : ¬ P_col0_has_c τ₁ :=
+      fiber_P_col0_no_c_of_Qlow σ hP_pos h_hQσ_eq h_Qlow ⟨τ₁, hτ₁⟩
+    have hno_c₂ : ¬ P_col0_has_c τ₂ :=
+      fiber_P_col0_no_c_of_Qlow σ hP_pos h_hQσ_eq h_Qlow ⟨τ₂, hτ₂⟩
+    have hd_eq : extractQtail_B τ₁ hle (μQ.colLen 0 - μP.colLen 0)
+          (by unfold Q_tail_len; rw [if_neg hno_c₁]) =
+        extractQtail_B τ₂ hle (μQ.colLen 0 - μP.colLen 0)
+          (by unfold Q_tail_len; rw [if_neg hno_c₂]) :=
+      Subtype.ext_iff.mp heq
+    have hv : extractCol0_B τ₁ hle = extractCol0_B τ₂ hle := by
+      unfold extractCol0_B
+      rw [dif_neg hno_c₁, dif_neg hno_c₂, hd_eq]
     have h_fib_eq : (⟨τ₁, hτ₁⟩ : doubleDescent_Bplus_fiber σ) = ⟨τ₂, hτ₂⟩ :=
       extractCol0_B_injective_on_fiber σ hle hv
     exact Subtype.ext h_fib_eq
-  · -- Lower: {v : ValidCol0_B_Qlow // lo≤1} ↪ subfiber via DSeq route + liftPBP_B_bal_Qlow.
-    have hequiv : {v : ValidCol0_B_Qlow (μP.colLen 0) (μQ.colLen 0) //
-        (topSym_B (μP.colLen 0) (μQ.colLen 0) v.val).layerOrd ≤ 1} ≃
-        {d : DSeq (μQ.colLen 0 - μP.colLen 0) //
-          (topSym_B (μP.colLen 0) (μQ.colLen 0) (Sum.inl d)).layerOrd ≤ 1} := by
-      refine {
-        toFun := fun ⟨⟨v, hv⟩, htop⟩ => ?_
-        invFun := fun ⟨d, hd⟩ => ⟨⟨Sum.inl d, trivial⟩, hd⟩
-        left_inv := ?_
-        right_inv := ?_
-      }
-      · cases v with
-        | inl d => exact ⟨d, htop⟩
-        | inr _ => exact absurd hv (by simp [ValidCol0_B_Qlow])
-      · rintro ⟨⟨v, hv⟩, htop⟩
-        cases v with
-        | inl d => rfl
-        | inr _ => exact absurd hv (by simp [ValidCol0_B_Qlow])
-      · rintro ⟨d, hd⟩; rfl
-    rw [Fintype.card_congr hequiv]
+  · -- Lower: {d : DSeq // topSym.lo ≤ 1} ↪ subfiber via liftPBP_B_bal_Qlow.
     apply Fintype.card_le_of_injective
       (fun (x : {d : DSeq (μQ.colLen 0 - μP.colLen 0) //
           (topSym_B (μP.colLen 0) (μQ.colLen 0) (Sum.inl d)).layerOrd ≤ 1}) =>
@@ -7967,8 +8013,8 @@ private theorem fiber_alpha_topSym_lo_le_one_count_bal_Qlow {r₁ r₂ : ℕ} {r
     have hlift : liftPBP_B_bal_Qlow σ d₁ hle hP_pos h_hQσ_eq h_weak =
                  liftPBP_B_bal_Qlow σ d₂ hle hP_pos h_hQσ_eq h_weak :=
       Subtype.ext_iff.mp hfib
-    exact Subtype.ext (liftPBP_B_bal_Qlow_injective σ hle hP_pos h_hQσ_eq h_weak hlift)
--/
+    exact Subtype.ext
+      (liftPBP_B_bal_Qlow_injective σ hle hP_pos h_hQσ_eq h_weak hlift)
 
 /-! ### Target: balanced double descent theorem
 
