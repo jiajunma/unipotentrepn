@@ -1865,17 +1865,15 @@ private theorem liftBM_card_primitive (r₁ r₂ : ℕ) (rest : DualPart)
   have h_count := card_B_target_eq_tripleSum r₁ r₂ rest μP μQ hP hQ hsort heven hpos
   rw [h_bij, h_count]; simp [tripleSum]
 
-/-- **Key combinatorial identity (admitted).**
-    For B-type shapes derived from a dual partition dp (all even, positive, sorted),
-    the number of B⁻ PBPs whose Q column 0 bottom cell has layerOrd ≤ 1
-    (i.e., dot or s) equals the ss component of countPBP_B(dp).
+/-- **Key combinatorial identity** — delegates to `card_B_SS_alpha_eq_countB_ss`
+    in CorrespondenceB.lean. Renamed alias for this file's naming convention.
+
+    The identity: `|{σ ∈ B⁻ : σ.Q(bottom).lo ≤ 1}| = countPBP_B(dp).2.2`.
 
     This is the "tail-s ⟹ γ=B⁻" identity: by the correction rule
     (x₁ = s only for B⁻ when Q_boundary ∈ {•, s}), SS-class PBPs with tail
     ending in s are exclusively B⁻. Numerically verified for all dual
-    partitions up to size 24 (see tools/verify_ss_identity.py): `ss = |B⁻ SS|`.
-
-    This is the one missing combinatorial step for M balanced counting.
+    partitions up to size 24 (see tools/verify_ss_identity.py).
     Reference: [BMSZb] Proposition 10.11, correction rule for x_τ. -/
 private theorem card_Bminus_bottom_lo_le_one_eq_ss (dp : DualPart)
     {μP μQ : YoungDiagram}
@@ -1887,8 +1885,8 @@ private theorem card_Bminus_bottom_lo_le_one_eq_ss (dp : DualPart)
     (hQ_pos : μQ.colLen 0 > 0) :
     (Finset.univ.filter fun σ : PBPSet .Bminus μP μQ =>
       (σ.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd ≤ 1).card =
-      (countPBP_B dp).2.2 := by
-  sorry
+      (countPBP_B dp).2.2 :=
+  card_B_SS_alpha_eq_countB_ss dp hP hQ hsort heven hpos hQ_pos
 
 private theorem liftBM_card_balanced (r₁ r₂ : ℕ) (rest : DualPart)
     (μP μQ : YoungDiagram)

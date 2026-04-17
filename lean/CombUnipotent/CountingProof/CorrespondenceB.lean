@@ -2091,6 +2091,101 @@ theorem card_PBPSet_B_primitive_step (r₁ r₂ : ℕ) (rest : DualPart)
   rw [Finset.sum_const, Finset.card_univ]
   rfl
 
+/-! ## α-Class Count Identities
+
+Reference: `lean/docs/blueprints/B_balanced_fiber_structure.md`.
+
+For B-type PBPs on dp shape, `countPBP_B(dp) = (dd_α, rc_α, ss_α)` where:
+- `dd_α = |{σ ∈ B⁺ ∪ B⁻ : Q_bot σ = d}|`
+- `rc_α = |{σ ∈ B⁺ : Q_bot σ ≠ d}| + |{σ ∈ B⁻ : Q_bot σ = r}|`
+- `ss_α = |{σ ∈ B⁻ : (Q_bot σ).layerOrd ≤ 1}|`  (i.e., Q_bot ∈ {•, s})
+
+These identities (A1, A2, A3 below) are admitted; numerically verified for dp up to size 24.
+See `tools/verify_countB_components.py`. -/
+
+/-- **α-class DD count**: combined B⁺ ∪ B⁻ PBPs with Q column 0 bottom = d
+    equals `countPBP_B(dp).1`. -/
+private theorem card_B_DD_alpha_eq_countB_dd (dp : DualPart)
+    {μP μQ : YoungDiagram}
+    (hP : μP.colLens = dpartColLensP_B dp)
+    (hQ : μQ.colLens = dpartColLensQ_B dp)
+    (hsort : dp.SortedGE)
+    (heven : ∀ r ∈ dp, Even r)
+    (hpos : ∀ r ∈ dp, 0 < r)
+    (hQ_pos : μQ.colLen 0 > 0) :
+    (Finset.univ.filter fun σ : PBPSet .Bplus μP μQ =>
+      σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .d).card +
+    (Finset.univ.filter fun σ : PBPSet .Bminus μP μQ =>
+      σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .d).card =
+      (countPBP_B dp).1 := by
+  sorry
+
+/-- **α-class RC count** (γ-asymmetric): B⁺ with Q_bot ≠ d, plus B⁻ with Q_bot = r.
+    equals `countPBP_B(dp).2.1`. The asymmetry reflects the tail correction:
+    B⁺ with natural Q_bot ∈ {•, s} gets corrected x_τ = c (RC), while B⁻ stays SS. -/
+private theorem card_B_RC_alpha_eq_countB_rc (dp : DualPart)
+    {μP μQ : YoungDiagram}
+    (hP : μP.colLens = dpartColLensP_B dp)
+    (hQ : μQ.colLens = dpartColLensQ_B dp)
+    (hsort : dp.SortedGE)
+    (heven : ∀ r ∈ dp, Even r)
+    (hpos : ∀ r ∈ dp, 0 < r)
+    (hQ_pos : μQ.colLen 0 > 0) :
+    (Finset.univ.filter fun σ : PBPSet .Bplus μP μQ =>
+      σ.val.Q.paint (μQ.colLen 0 - 1) 0 ≠ .d).card +
+    (Finset.univ.filter fun σ : PBPSet .Bminus μP μQ =>
+      σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .r).card =
+      (countPBP_B dp).2.1 := by
+  sorry
+
+/-- **α-class SS count**: B⁻ PBPs with Q column 0 bottom ∈ {•, s}
+    (i.e., layerOrd ≤ 1) equals `countPBP_B(dp).2.2`.
+    This is the "tail-s ⟹ γ=B⁻" identity.
+    Used by Prop10_8_M.lean's `card_Bminus_bottom_lo_le_one_eq_ss` for M balanced. -/
+theorem card_B_SS_alpha_eq_countB_ss (dp : DualPart)
+    {μP μQ : YoungDiagram}
+    (hP : μP.colLens = dpartColLensP_B dp)
+    (hQ : μQ.colLens = dpartColLensQ_B dp)
+    (hsort : dp.SortedGE)
+    (heven : ∀ r ∈ dp, Even r)
+    (hpos : ∀ r ∈ dp, 0 < r)
+    (hQ_pos : μQ.colLen 0 > 0) :
+    (Finset.univ.filter fun σ : PBPSet .Bminus μP μQ =>
+      (σ.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd ≤ 1).card =
+      (countPBP_B dp).2.2 := by
+  sorry
+
+/-- **γ-swap SS symmetry**: B⁺ and B⁻ have the same number of PBPs with
+    Q column 0 bottom ∈ {•, s}. Follows from γ-swap bijection (card_Bplus_eq_Bminus)
+    specialized to this filter. -/
+private theorem card_Bplus_SS_eq_Bminus_SS (μP μQ : YoungDiagram) :
+    (Finset.univ.filter fun σ : PBPSet .Bplus μP μQ =>
+      (σ.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd ≤ 1).card =
+    (Finset.univ.filter fun σ : PBPSet .Bminus μP μQ =>
+      (σ.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd ≤ 1).card := by
+  sorry
+
+/-- **B balanced step identity** — main goal of Task #12.
+    Assuming balanced recursion (r₂ ≤ r₃), the B count formula is
+    `card(B⁺) + card(B⁻) = dd'·4k + rc'·(4k-2)`
+    where `(dd', rc', _) = countPBP_B(rest)` and `k = (r₁-r₂)/2 + 1`.
+
+    Admitted; will be derived from α-class counts + balanced fiber analysis.
+    See `lean/docs/blueprints/B_balanced_fiber_structure.md`. -/
+private theorem card_PBPSet_B_balanced_step (r₁ r₂ : ℕ) (rest : DualPart)
+    (μP μQ : YoungDiagram)
+    (hP : μP.colLens = dpartColLensP_B (r₁ :: r₂ :: rest))
+    (hQ : μQ.colLens = dpartColLensQ_B (r₁ :: r₂ :: rest))
+    (hsort : (r₁ :: r₂ :: rest).SortedGE)
+    (heven : ∀ r ∈ (r₁ :: r₂ :: rest), Even r)
+    (hpos : ∀ r ∈ (r₁ :: r₂ :: rest), 0 < r)
+    (h_bal : ¬(r₂ > rest.head?.getD 0)) :
+    Fintype.card (PBPSet .Bplus μP μQ) + Fintype.card (PBPSet .Bminus μP μQ) =
+      let k := (r₁ - r₂) / 2 + 1
+      let (dd', rc', _) := countPBP_B rest
+      dd' * (4 * k) + rc' * (4 * k - 2) := by
+  sorry
+
 /-! ## Main theorem: direct induction on dual partition
 
 Unlike the D-type proof which uses a combined induction (total + per-tail-class),
@@ -2098,19 +2193,8 @@ the B-type proof proceeds by direct structural induction on `dp`.
 
 The empty and singleton cases are already proved.  The two-or-more case splits
 on primitive vs balanced:
-  - **Primitive** (r₂ > r₃): all fibers have the same size, so
-      total = total(rest) × tripleSum(tailCoeffs k).1
-    This is already proved as `card_PBPSet_B_primitive_step`.
-  - **Balanced** (r₂ = r₃): fibers depend on the tail class of the base PBP.
-    By Prop 10.9(b), DD sub-PBPs have fiber size = tripleSum(tailCoeffs k).1,
-    RC sub-PBPs have fiber size = tripleSum(tailCoeffs k).2, and SS sub-PBPs
-    have fiber size = 0.  The balanced case therefore requires per-tail-class
-    counts from the IH, which in turn requires the per-tail-class induction
-    machinery that is NOT yet formalized (the old `tailClass_B` definition
-    does not include the α-dependent correction from [BMSZb]).
-
-    This is admitted as a single sorry below, pending the corrected
-    tail-class infrastructure. -/
+  - **Primitive** (r₂ > r₃): via `card_PBPSet_B_primitive_step`.
+  - **Balanced** (r₂ = r₃): via `card_PBPSet_B_balanced_step` (admitted above). -/
 
 /-- **Proposition 10.11 for B type:**
     card(PBPSet .Bplus μP μQ) + card(PBPSet .Bminus μP μQ) = tripleSum(countPBP_B dp).
@@ -2158,16 +2242,39 @@ theorem card_PBPSet_B_eq_tripleSum_countPBP_B (dp : DualPart) (μP μQ : YoungDi
       have := card_PBPSet_B_primitive_step r₁ r₂ rest μP μQ hP hQ hsort heven h_prim
       rw [this, h_ih]
       simp only [countPBP_B, h_prim, ite_true, tripleSum]; ring
-    · -- Balanced case (ADMITTED): fibers depend on tail class of base PBP.
-      -- By Prop 10.9(b) in [BMSZb]:
-      --   DD sub-PBPs: fiber = tripleSum(tailCoeffs k).1  (all 4k tail PBPs)
-      --   RC sub-PBPs: fiber = tripleSum(tailCoeffs k).2  (4k-2 tail PBPs with s/c in P)
-      --   SS sub-PBPs: fiber = 0
-      -- So: total = DD_count × tri₁ + RC_count × tri₂
-      -- This requires per-tail-class counts as IH, which in turn requires
-      -- corrected tail-class definitions with α-dependent corrections.
-      -- Pending formalization of the corrected tailClass_B.
-      sorry
+    · -- Balanced case: delegate to `card_PBPSet_B_balanced_step` (focused sorry).
+      have h_step := card_PBPSet_B_balanced_step r₁ r₂ rest μP μQ hP hQ hsort heven hpos h_prim
+      rw [h_step]
+      -- Unfold tripleSum of countPBP_B's balanced formula
+      simp only [countPBP_B, h_prim, ite_false, tripleSum]
+      rcases h_ct : countPBP_B rest with ⟨dd', rc', ss'⟩
+      simp only [tailCoeffs, nu]
+      -- Show the two forms of the balanced RHS are equal algebraically.
+      -- tailCoeffs(k) entries sum to 4k and 4k-2.
+      set k := (r₁ - r₂) / 2 + 1 with hk_def
+      have hk_pos : k ≥ 1 := by rw [hk_def]; omega
+      by_cases hk : k ≥ 2
+      · simp only [if_pos hk]
+        -- Expand k - 1 + 1 = k, k - 2 + 1 = k - 1
+        have e1 : k - 1 + 1 = k := by omega
+        have e2 : k - 2 + 1 = k - 1 := by omega
+        rw [e1, e2]
+        -- Goal: dd'·4k + rc'·(4k-2) = dd'·(k + (k-1)) + rc'·(2·(k-1)) + (dd'·(2k) + rc'·(k + (k-1))) + (dd'·1 + rc'·1)
+        -- Simplify: dd'·(3k-1+1) + rc'·(2k-2 + k+k-1 + 1) = dd'·4k + rc'·(4k-2)
+        have hk1 : k - 1 + 1 = k := by omega
+        generalize hkm1 : k - 1 = m at *
+        -- Now k = m + 1, m ≥ 1
+        have hk_eq : k = m + 1 := by omega
+        rw [hk_eq]
+        have hm_sub : 4 * (m + 1) - 2 = 4 * m + 2 := by omega
+        rw [hm_sub]
+        ring
+      · simp only [if_neg hk]
+        push_neg at hk
+        have hk1 : k = 1 := by omega
+        rw [hk1]
+        simp
+        ring
 
 /-- Corollary: each of B⁺ and B⁻ has half the total. -/
 theorem card_PBPSet_Bplus_eq (dp : DualPart) (μP μQ : YoungDiagram)
