@@ -1300,13 +1300,55 @@ theorem descent_bijective_primitive {μP μQ : YoungDiagram}
 def isNonSS {μ : YoungDiagram} (σ : PBPSet γ μP' μ) (μ_bottom : ℕ) : Prop :=
   (σ.val.Q.paint (μ_bottom - 1) 0).layerOrd > 1
 
+/-! ### Helpers for descent_image_balanced -/
+
+/-- In the balanced case, liftBM_naive_PBPSet maps non-SS B⁺/B⁻ to M.
+    This is a specialization of liftBM_naive_PBPSet where the h_bal_exc
+    comes from the Subtype-carried non-SS proof. -/
+noncomputable def liftBM_from_nonSS {μP μQ : YoungDiagram}
+    (h_sub : μP.shiftLeft ≤ μQ) (h_QleP : μQ ≤ μP)
+    (σ : {σ : PBPSet .Bplus μP.shiftLeft μQ //
+            (σ.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd > 1} ⊕
+         {σ : PBPSet .Bminus μP.shiftLeft μQ //
+            (σ.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd > 1}) :
+    PBPSet .M μP μQ :=
+  match σ with
+  | .inl σp =>
+    ⟨liftBM_naive σp.val.val (Or.inl σp.val.prop.1) μP μQ
+      σp.val.prop.2.1 σp.val.prop.2.2 h_sub h_QleP
+      (fun _ _ => σp.prop),
+      ⟨rfl, rfl, rfl⟩⟩
+  | .inr σm =>
+    ⟨liftBM_naive σm.val.val (Or.inr σm.val.prop.1) μP μQ
+      σm.val.prop.2.1 σm.val.prop.2.2 h_sub h_QleP
+      (fun _ _ => σm.prop),
+      ⟨rfl, rfl, rfl⟩⟩
+
 /-- **Proposition 10.8(b) for M type (balanced case)**:
     When μP.colLen(0) = μQ.colLen(0) > 0, the M→B descent is injective
     with image = non-SS (i.e., σ.Q.paint(bottom, 0) has layerOrd > 1).
 
     Uses the same Equiv machinery as primitive case, but restricted image.
     The restriction comes from the dot_match constraint at (bottom, 0)
-    in the balanced case: lift requires σ.Q bottom ∈ {r, d}. -/
+    in the balanced case: lift requires σ.Q bottom ∈ {r, d}.
+
+    **STATUS**: Admitted with a scoped sorry.  The `liftBM_from_nonSS` helper
+    gives the backward direction (non-SS σ ↦ M τ) in a total, side-condition
+    free form, and `descentMB_liftBM_naive` together with `descentMB_injective`
+    give the right-inverse and injectivity.  What is missing is the forward
+    direction: the proof that *every* τ ∈ PBPSet .M μP μQ (balanced) descends
+    to a non-SS σ.
+
+    In the strict statement used here (`σ.Q(bottom, 0).lo > 1`), this claim
+    is false when e.g. μP = μQ = single cell [1]: there exists τ ∈ M with
+    τ.P = τ.Q = dot at (0, 0), and descent τ has descent.Q(0, 0) = s
+    (layerOrd 1) via `descentPaintR_MB`'s Zone 2 branch.
+
+    The correct formulation of non-SS for B⁺ requires the B⁺ correction:
+    σ.Q(c₁(ι), 0) ∈ {dot, s} should be treated as c (RC), not SS.
+    See `docs/blueprints/B_tail_symbol_correction.md` for details.
+
+    Reference: [BMSZb] Proposition 10.8(b). -/
 theorem descent_image_balanced {μP μQ : YoungDiagram}
     (h_sub : μP.shiftLeft ≤ μQ) (h_QleP : μQ ≤ μP)
     (h_bal : μP.colLen 0 = μQ.colLen 0) (h_pos : μP.colLen 0 > 0) :
@@ -1315,7 +1357,19 @@ theorem descent_image_balanced {μP μQ : YoungDiagram}
         (σ.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd > 1).card +
       (Finset.univ.filter fun σ : PBPSet .Bminus μP.shiftLeft μQ =>
         (σ.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd > 1).card := by
-  sorry -- TODO: build Equiv PBPSet .M μP μQ ≃ {non-SS σ ⊕ non-SS σ}
+  -- Strategy: build an Equiv between:
+  --   LHS: PBPSet .M μP μQ
+  --   RHS: {σ : PBPSet .Bplus ... // non-SS} ⊕ {σ : PBPSet .Bminus ... // non-SS}
+  -- Then Fintype.card_sum + Fintype.card_subtype gives the filter form.
+  --
+  -- Backward direction (RHS → LHS): use liftBM_from_nonSS (total map above).
+  -- Forward direction (LHS → RHS): use descentMB_sum + proof that descent is non-SS.
+  --
+  -- BLOCKER: The forward direction's non-SS proof is FALSE as stated.
+  -- Counter-example: μP = μQ = single cell [1], τ = M PBP with all-dots.
+  -- descent τ has descent.Q(0, 0) = s (layerOrd 1), failing the filter.
+  sorry -- UNPROVABLE: see docstring for details on why the filter predicate
+        --            needs B⁺/B⁻ correction (not just Q.lo > 1).
 
 /-! ## Shape shifting reduction: Case (1,2) ∈ ℘ → Case (1,2) ∉ ℘
 
