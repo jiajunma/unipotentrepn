@@ -2782,26 +2782,110 @@ of the primitive case's `ValidCol0_B`, parameterized by the boundary Q_bot value
 The primitive case's infrastructure (lines 885-1930) is ~700 lines; the balanced
 refinement would be of comparable size.
 
-**Status**: Per-class fiber lemmas left as focused sorries inside
-`card_B_bal_grouped_fiber`. The combinatorial structure (Finset sum decomposition
-by sym_Q class) is documented in `card_PBPSet_B_balanced_step` (which uses this
-identity downstream).
+**Status**: Per-class fiber lemmas admitted as focused axioms
+(`fiber_card_B_bal_Qd`, `fiber_card_B_bal_Qr`, `fiber_card_B_bal_Qlow`).
+The Phase 3 aggregate theorem `card_B_bal_grouped_fiber` is DERIVED from these
+three fiber lemmas via combinatorial decomposition (Finset.sum split by Q_bot class).
 -/
+
+/-- **γ-swap for Q_bot = r**: B⁺ and B⁻ have the same count of PBPs with `Q_bot = r`.
+    Mirrors `card_Bplus_Qbot_d_eq_Bminus_Qbot_d`; proof is identical modulo the
+    predicate. -/
+private theorem card_Bplus_Qbot_r_eq_Bminus_Qbot_r (μP μQ : YoungDiagram) :
+    (Finset.univ.filter fun σ : PBPSet .Bplus μP μQ =>
+      σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .r).card =
+    (Finset.univ.filter fun σ : PBPSet .Bminus μP μQ =>
+      σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .r).card := by
+  rw [show (Finset.univ.filter fun σ : PBPSet .Bplus μP μQ =>
+        σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .r).card =
+      Fintype.card {σ : PBPSet .Bplus μP μQ //
+        σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .r} from
+    (Fintype.card_subtype _).symm]
+  rw [show (Finset.univ.filter fun σ : PBPSet .Bminus μP μQ =>
+        σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .r).card =
+      Fintype.card {σ : PBPSet .Bminus μP μQ //
+        σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .r} from
+    (Fintype.card_subtype _).symm]
+  apply Fintype.card_congr
+  refine {
+    toFun := fun σ => ⟨⟨σ.val.val.swapBplusBminus (Or.inl σ.val.prop.1),
+        by simp [PBP.swapBplusBminus, σ.val.prop.1],
+        σ.val.prop.2.1, σ.val.prop.2.2⟩, σ.prop⟩
+    invFun := fun σ => ⟨⟨σ.val.val.swapBplusBminus (Or.inr σ.val.prop.1),
+        by simp [PBP.swapBplusBminus, σ.val.prop.1],
+        σ.val.prop.2.1, σ.val.prop.2.2⟩, σ.prop⟩
+    left_inv := fun σ => by
+      apply Subtype.ext; apply Subtype.ext
+      apply PBP_eq_of_data
+      · simp [PBP.swapBplusBminus, σ.val.prop.1]
+      · simp [PBP.swapBplusBminus]
+      · simp [PBP.swapBplusBminus]
+    right_inv := fun σ => by
+      apply Subtype.ext; apply Subtype.ext
+      apply PBP_eq_of_data
+      · simp [PBP.swapBplusBminus, σ.val.prop.1]
+      · simp [PBP.swapBplusBminus]
+      · simp [PBP.swapBplusBminus]
+  }
+
+/-- **Per-class fiber size (Q_bot = d)**: In balanced case, a sub-PBP σ with
+    Q_bot = d has a fiber of size 4k in the new level.
+    Empirically verified for 82 dp cases; requires `ValidCol0_B_balanced_d`
+    refinement of the primitive case machinery. -/
+private theorem fiber_card_B_bal_Qd {r₁ r₂ : ℕ} {rest : DualPart}
+    {μP μQ : YoungDiagram}
+    (_hP : μP.colLens = dpartColLensP_B (r₁ :: r₂ :: rest))
+    (_hQ : μQ.colLens = dpartColLensQ_B (r₁ :: r₂ :: rest))
+    (_hsort : (r₁ :: r₂ :: rest).SortedGE)
+    (_heven : ∀ r ∈ (r₁ :: r₂ :: rest), Even r)
+    (_hpos : ∀ r ∈ (r₁ :: r₂ :: rest), 0 < r)
+    (_h_bal : ¬(r₂ > rest.head?.getD 0))
+    (σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft)
+    (_h_Qd : σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .d) :
+    Fintype.card (doubleDescent_Bplus_fiber σ) = 4 * ((r₁ - r₂) / 2 + 1) := by
+  sorry
+
+/-- **Per-class fiber size (Q_bot = r)**: In balanced case, a sub-PBP σ with
+    Q_bot = r has a fiber of size 4k - 2 in the new level.
+    Empirically verified for 82 dp cases. -/
+private theorem fiber_card_B_bal_Qr {r₁ r₂ : ℕ} {rest : DualPart}
+    {μP μQ : YoungDiagram}
+    (_hP : μP.colLens = dpartColLensP_B (r₁ :: r₂ :: rest))
+    (_hQ : μQ.colLens = dpartColLensQ_B (r₁ :: r₂ :: rest))
+    (_hsort : (r₁ :: r₂ :: rest).SortedGE)
+    (_heven : ∀ r ∈ (r₁ :: r₂ :: rest), Even r)
+    (_hpos : ∀ r ∈ (r₁ :: r₂ :: rest), 0 < r)
+    (_h_bal : ¬(r₂ > rest.head?.getD 0))
+    (σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft)
+    (_h_Qr : σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .r) :
+    Fintype.card (doubleDescent_Bplus_fiber σ) = 4 * ((r₁ - r₂) / 2 + 1) - 2 := by
+  sorry
+
+/-- **Per-class fiber size (Q_bot ∈ {•, s})**: In balanced case, a sub-PBP σ with
+    Q_bot.layerOrd ≤ 1 has a fiber of size 2k - 1 in the new level.
+    Empirically verified for 82 dp cases. -/
+private theorem fiber_card_B_bal_Qlow {r₁ r₂ : ℕ} {rest : DualPart}
+    {μP μQ : YoungDiagram}
+    (_hP : μP.colLens = dpartColLensP_B (r₁ :: r₂ :: rest))
+    (_hQ : μQ.colLens = dpartColLensQ_B (r₁ :: r₂ :: rest))
+    (_hsort : (r₁ :: r₂ :: rest).SortedGE)
+    (_heven : ∀ r ∈ (r₁ :: r₂ :: rest), Even r)
+    (_hpos : ∀ r ∈ (r₁ :: r₂ :: rest), 0 < r)
+    (_h_bal : ¬(r₂ > rest.head?.getD 0))
+    (σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft)
+    (_h_Qlow : (σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0).layerOrd ≤ 1) :
+    Fintype.card (doubleDescent_Bplus_fiber σ) = 2 * ((r₁ - r₂) / 2 + 1) - 1 := by
+  sorry
 
 /-- **Balanced fiber identity**: in balanced case, the total count of
     new B⁺ ∪ B⁻ PBPs decomposes as a sum over sub-PBPs grouped by their Q_bot:
     each sub contributes `4k` (if Q_bot=d), `4k-2` (if Q_bot=r), or `2k-1` (if Q_bot.lo≤1).
 
-    Proof structure (once per-class fiber size lemmas available):
-    1. `card(B⁺_new) = Σ_σ:B⁺_rest |fiber(σ)|` by `card_PBPSet_Bplus_eq_sum_fiber`.
-    2. Split sum by σ.Q_bot class (trichotomy from `sym_Q`: Q ∈ {•, s, r, d}).
-    3. For each class, `|fiber(σ)| = constant` (the three per-class lemmas).
-    4. `Finset.sum_const` + `Finset.card_filter` rewrites sum to
-       `|class| × constant`.
-    5. Mirror for B⁻. Combine.
-
-    Currently admitted as a single sorry pending per-class fiber infrastructure.
-    See blueprint section "Phase 3: Balanced fiber uniform by x_τ". -/
+    Proof: use the B⁺ ↔ B⁻ bijection (card_Bplus_eq_Bminus) and
+    `card_PBPSet_Bplus_eq_sum_fiber` to reduce to a sum over B⁺ sub-PBPs.
+    Split the B⁺ sub-PBPs by Q_bot class (trichotomy from `sym_Q`: ∈ {•, s, r, d}).
+    Apply the three per-class fiber lemmas to each class.
+    Then use γ-swap (B⁺ = B⁻) to reassemble the combined counts. -/
 private theorem card_B_bal_grouped_fiber (r₁ r₂ : ℕ) (rest : DualPart)
     (μP μQ : YoungDiagram)
     (hP : μP.colLens = dpartColLensP_B (r₁ :: r₂ :: rest))
@@ -2825,7 +2909,188 @@ private theorem card_B_bal_grouped_fiber (r₁ r₂ : ℕ) (rest : DualPart)
         (Finset.univ.filter fun σ : PBPSet .Bminus μP.shiftLeft μQ.shiftLeft =>
           (σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0).layerOrd ≤ 1).card
       q_d_comb * (4 * k) + q_r_comb * (4 * k - 2) + q_low_comb * (2 * k - 1) := by
-  sorry
+  -- Unfold the let-bindings and rewrite using γ-swap symmetries.
+  simp only
+  -- Step 1: By γ-swap, B⁻ filtered counts equal B⁺ filtered counts for each class.
+  have h_swap_d := card_Bplus_Qbot_d_eq_Bminus_Qbot_d μP.shiftLeft μQ.shiftLeft
+  have h_swap_r := card_Bplus_Qbot_r_eq_Bminus_Qbot_r μP.shiftLeft μQ.shiftLeft
+  have h_swap_low := card_Bplus_SS_eq_Bminus_SS μP.shiftLeft μQ.shiftLeft
+  -- Step 2: By γ-swap, |B⁻_new| = |B⁺_new|, so LHS = 2 * |B⁺_new|.
+  have h_sym := (card_Bplus_eq_Bminus μP μQ).symm
+  -- Step 3: Decompose |B⁺_new| = Σ_σ |fiber(σ)| (sum over rest B⁺).
+  rw [h_sym, card_PBPSet_Bplus_eq_sum_fiber]
+  -- Now goal: |B⁻_new| + Σ_σ fiber = q_d_comb * 4k + q_r_comb * (4k-2) + q_low_comb * (2k-1)
+  -- where we rewrote the LHS. Actually goal is Σ + Σ = ..., so let's rewrite other summand too.
+  -- Switch LHS to 2 * (Σ)
+  set Bp_d := (Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+    σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .d).card
+  set Bp_r := (Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+    σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .r).card
+  set Bp_low := (Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+    (σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0).layerOrd ≤ 1).card
+  set Bm_d := (Finset.univ.filter fun σ : PBPSet .Bminus μP.shiftLeft μQ.shiftLeft =>
+    σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .d).card
+  set Bm_r := (Finset.univ.filter fun σ : PBPSet .Bminus μP.shiftLeft μQ.shiftLeft =>
+    σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .r).card
+  set Bm_low := (Finset.univ.filter fun σ : PBPSet .Bminus μP.shiftLeft μQ.shiftLeft =>
+    (σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0).layerOrd ≤ 1).card
+  set k := (r₁ - r₂) / 2 + 1 with hk_def
+  -- Now goal: Σ_σ fiber + Σ_σ fiber = (Bp_d + Bm_d)*4k + (Bp_r + Bm_r)*(4k-2) + (Bp_low + Bm_low)*(2k-1)
+  -- Use swap: Bm_d = Bp_d, Bm_r = Bp_r, Bm_low = Bp_low.
+  have hBm_d : Bm_d = Bp_d := h_swap_d.symm
+  have hBm_r : Bm_r = Bp_r := h_swap_r.symm
+  have hBm_low : Bm_low = Bp_low := h_swap_low.symm
+  rw [hBm_d, hBm_r, hBm_low]
+  -- Now goal: Σ_σ fiber + Σ_σ fiber = (Bp_d + Bp_d)*4k + ... = 2·(Bp_d·4k + Bp_r·(4k-2) + Bp_low·(2k-1))
+  -- Suffices to show Σ_σ fiber = Bp_d·4k + Bp_r·(4k-2) + Bp_low·(2k-1), then ring.
+  suffices h : (∑ σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft,
+      Fintype.card (doubleDescent_Bplus_fiber σ)) =
+      Bp_d * (4 * k) + Bp_r * (4 * k - 2) + Bp_low * (2 * k - 1) by
+    rw [h]; ring
+  -- Step 5: Partition sum by Q_bot class using Finset.sum_filter + exhaustive split.
+  -- σ.Q_bot ∈ {•, s, r, d} (allowed for B⁺).
+  -- Q_bot = d: fiber = 4k
+  -- Q_bot = r: fiber = 4k-2
+  -- Q_bot.lo ≤ 1 ({•, s}): fiber = 2k-1
+  -- Partition: Σ = Σ_{Qbot=d} + Σ_{Qbot=r} + Σ_{Qbot.lo≤1}.
+  -- Each partial sum = |class| · constant (per-class fiber lemma).
+  rw [show Bp_d = (Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+      σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .d).card from rfl,
+      show Bp_r = (Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+      σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .r).card from rfl,
+      show Bp_low = (Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+      (σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0).layerOrd ≤ 1).card from rfl]
+  -- Split Finset.univ into three disjoint pieces by Q_bot class.
+  -- Predicate trichotomy (for B+): Q_bot ∈ {•, s, r, d}.
+  -- Note Q=• has layerOrd 0, Q=s has layerOrd 1, Q=r has layerOrd 2, Q=d has layerOrd 4.
+  -- So "low = {•, s}" = "layerOrd ≤ 1" is disjoint from "Q=r" and "Q=d".
+  -- Combined with .r and .d, this is a full partition of Q_bot values.
+  have h_partition : (Finset.univ : Finset (PBPSet .Bplus μP.shiftLeft μQ.shiftLeft)) =
+      (Finset.univ.filter fun σ => σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .d) ∪
+      (Finset.univ.filter fun σ => σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .r) ∪
+      (Finset.univ.filter fun σ =>
+          (σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0).layerOrd ≤ 1) := by
+    ext σ
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_union]
+    -- Show: true ↔ (Q=d ∨ Q=r ∨ Q.lo≤1)
+    constructor
+    · intro _
+      -- Need to establish σ.val.Q.paint ∈ {•, s, r, d} via sym_Q.
+      -- For balanced case, μQ.shiftLeft.colLen 0 > 0 (since rest non-empty).
+      -- But we need this fact. Use the hQ info to derive it.
+      -- Actually, σ is a subtype over the shifted Q; σ's existence already implies
+      -- the shape is valid. But we need to know the (colLen 0 - 1, 0) cell exists in σ's Q shape.
+      -- Here's the subtle point: if μQ.shiftLeft.colLen 0 = 0, then (colLen 0 - 1, 0) = (-1 mod _, 0)
+      -- via Nat subtraction giving 0; the cell may or may not be in the shape.
+      -- If μQ.shiftLeft.colLen 0 = 0, then there's NO cell at row 0 col 0, so Q.paint(0,0) = •
+      -- by paint_outside. So Q_bot = •, which has layerOrd 0 ≤ 1 → Q.lo≤1 branch.
+      by_cases h_Qs_pos : μQ.shiftLeft.colLen 0 > 0
+      · -- Cell exists: use sym_Q.
+        have hmem : (μQ.shiftLeft.colLen 0 - 1, 0) ∈ μQ.shiftLeft := by
+          rw [YoungDiagram.mem_iff_lt_colLen]; omega
+        have hmemQ : (μQ.shiftLeft.colLen 0 - 1, 0) ∈ σ.val.Q.shape := by
+          rw [σ.prop.2.2]; exact hmem
+        have hsym := σ.val.sym_Q _ _ hmemQ
+        rw [σ.prop.1] at hsym
+        simp [DRCSymbol.allowed] at hsym
+        rcases hsym with h | h | h | h
+        · right; rw [h]; decide
+        · right; rw [h]; decide
+        · left; right; exact h
+        · left; left; exact h
+      · -- μQ.shiftLeft.colLen 0 = 0 → cell not in shape → Q.paint = dot → Q.lo ≤ 1.
+        push_neg at h_Qs_pos
+        have h0 : μQ.shiftLeft.colLen 0 = 0 := by omega
+        have hnmem : (μQ.shiftLeft.colLen 0 - 1, 0) ∉ σ.val.Q.shape := by
+          rw [σ.prop.2.2, YoungDiagram.mem_iff_lt_colLen]; omega
+        have hdot : σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .dot :=
+          σ.val.Q.paint_outside _ _ hnmem
+        right; rw [hdot]; decide
+    · intro _; trivial
+  -- The three sets are pairwise disjoint.
+  have h_disj_dr : Disjoint
+      (Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+        σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .d)
+      (Finset.univ.filter fun σ => σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .r) := by
+    rw [Finset.disjoint_filter]
+    intros _ _ h1 h2; rw [h1] at h2; exact DRCSymbol.noConfusion h2
+  have h_disj_dl : Disjoint
+      (Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+        σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .d)
+      (Finset.univ.filter fun σ =>
+        (σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0).layerOrd ≤ 1) := by
+    rw [Finset.disjoint_filter]
+    intros _ _ h1 h2; rw [h1] at h2; simp [DRCSymbol.layerOrd] at h2
+  have h_disj_rl : Disjoint
+      (Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+        σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .r)
+      (Finset.univ.filter fun σ =>
+        (σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0).layerOrd ≤ 1) := by
+    rw [Finset.disjoint_filter]
+    intros _ _ h1 h2; rw [h1] at h2; simp [DRCSymbol.layerOrd] at h2
+  -- Apply partition to the sum.
+  have h_sum_split : (∑ σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft,
+      Fintype.card (doubleDescent_Bplus_fiber σ)) =
+      (∑ σ ∈ Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+          σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .d,
+        Fintype.card (doubleDescent_Bplus_fiber σ)) +
+      (∑ σ ∈ Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+          σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .r,
+        Fintype.card (doubleDescent_Bplus_fiber σ)) +
+      (∑ σ ∈ Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+          (σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0).layerOrd ≤ 1,
+        Fintype.card (doubleDescent_Bplus_fiber σ)) := by
+    conv_lhs => rw [show (Finset.univ : Finset _) =
+      ((Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+          σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .d) ∪
+        (Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+          σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .r)) ∪
+        (Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+            (σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0).layerOrd ≤ 1) from h_partition]
+    rw [Finset.sum_union (by
+      rw [Finset.disjoint_union_left]
+      exact ⟨h_disj_dl, h_disj_rl⟩)]
+    rw [Finset.sum_union h_disj_dr]
+  rw [h_sum_split]
+  -- Apply per-class fiber lemmas to each sum.
+  -- For the Q=d class: all fibers are 4k.
+  have h_sum_d : (∑ σ ∈ Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+        σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .d,
+      Fintype.card (doubleDescent_Bplus_fiber σ)) =
+      (Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+        σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .d).card * (4 * k) := by
+    trans ((Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+        σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .d).sum (fun _ => 4 * k))
+    · apply Finset.sum_congr rfl
+      intros σ hσ
+      simp only [Finset.mem_filter] at hσ
+      exact fiber_card_B_bal_Qd hP hQ hsort heven hpos h_bal σ hσ.2
+    · simp [Finset.sum_const, mul_comm]
+  have h_sum_r : (∑ σ ∈ Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+        σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .r,
+      Fintype.card (doubleDescent_Bplus_fiber σ)) =
+      (Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+        σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .r).card * (4 * k - 2) := by
+    trans ((Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+        σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .r).sum (fun _ => 4 * k - 2))
+    · apply Finset.sum_congr rfl
+      intros σ hσ
+      simp only [Finset.mem_filter] at hσ
+      exact fiber_card_B_bal_Qr hP hQ hsort heven hpos h_bal σ hσ.2
+    · simp [Finset.sum_const, mul_comm]
+  have h_sum_low : (∑ σ ∈ Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+        (σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0).layerOrd ≤ 1,
+      Fintype.card (doubleDescent_Bplus_fiber σ)) =
+      (Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+        (σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0).layerOrd ≤ 1).card * (2 * k - 1) := by
+    trans ((Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+        (σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0).layerOrd ≤ 1).sum (fun _ => 2 * k - 1))
+    · apply Finset.sum_congr rfl
+      intros σ hσ
+      simp only [Finset.mem_filter] at hσ
+      exact fiber_card_B_bal_Qlow hP hQ hsort heven hpos h_bal σ hσ.2
+    · simp [Finset.sum_const, mul_comm]
+  rw [h_sum_d, h_sum_r, h_sum_low]
 
 /-- **B⁺ set partition**: for σ ∈ B⁺, σ.Q_bot ∈ {•, s, r, d}. So the predicates
     `Q_bot ≠ d`, `Q_bot.lo ≤ 1`, `Q_bot = r` partition via
