@@ -2781,13 +2781,187 @@ private theorem singleton_case_B_RC_alpha (r₁ : ℕ) {μP μQ : YoungDiagram}
   rw [hk_eq]
   omega
 
+/-- Primitive-case step for α-class DD count.
+    |B+ Q=d new| + |B- Q=d new| = (countPBP_B new).1 when new = r₁::r₂::rest is primitive.
+    Requires `h_total_rest`: Total(B at shift level) = tripleSum(countPBP_B rest). -/
+private theorem card_B_DD_alpha_primitive_step (r₁ r₂ : ℕ) (rest : DualPart)
+    {μP μQ : YoungDiagram}
+    (hP : μP.colLens = dpartColLensP_B (r₁ :: r₂ :: rest))
+    (hQ : μQ.colLens = dpartColLensQ_B (r₁ :: r₂ :: rest))
+    (hsort : (r₁ :: r₂ :: rest).SortedGE)
+    (heven : ∀ r ∈ (r₁ :: r₂ :: rest), Even r)
+    (hpos : ∀ r ∈ (r₁ :: r₂ :: rest), 0 < r)
+    (hQ_pos : μQ.colLen 0 > 0)
+    (h_prim : r₂ > rest.head?.getD 0)
+    (h_total_rest :
+      Fintype.card (PBPSet .Bplus μP.shiftLeft μQ.shiftLeft) +
+      Fintype.card (PBPSet .Bminus μP.shiftLeft μQ.shiftLeft) =
+      tripleSum (countPBP_B rest)) :
+    (Finset.univ.filter fun σ : PBPSet .Bplus μP μQ =>
+      σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .d).card +
+    (Finset.univ.filter fun σ : PBPSet .Bminus μP μQ =>
+      σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .d).card =
+      (countPBP_B (r₁ :: r₂ :: rest)).1 := by
+  -- Setup: compute colLens, shifts, primitivity conditions.
+  have hP0 : μP.colLen 0 = r₂ / 2 :=
+    colLen_0_eq_of_colLens_cons (by rw [hP, dpartColLensP_B_cons₂])
+  have hQ0 : μQ.colLen 0 = r₁ / 2 :=
+    colLen_0_eq_of_colLens_cons (by rw [hQ, dpartColLensQ_B_cons₂])
+  have h_ge := sortedGE_head_ge hsort
+  have hle : μP.colLen 0 ≤ μQ.colLen 0 := by
+    rw [hP0, hQ0]; exact Nat.div_le_div_right h_ge
+  have heven₂ := heven r₂ (by simp)
+  obtain ⟨b, hb⟩ := heven₂
+  have hr₂_pos : r₂ > 0 := hpos r₂ (by simp)
+  have hP_pos : 0 < μP.colLen 0 := by rw [hP0, hb]; omega
+  have hQ_pos' : μQ.colLen 0 ≥ 1 := hQ_pos
+  have hP_sh : μP.shiftLeft.colLens = dpartColLensP_B rest := by
+    rw [YoungDiagram.colLens_shiftLeft, hP]; simp [dpartColLensP_B]
+  have hQ_sh : μQ.shiftLeft.colLens = dpartColLensQ_B rest := by
+    rw [YoungDiagram.colLens_shiftLeft, hQ]; simp [dpartColLensQ_B]
+  have hprimP : ∀ j, j ≥ 1 → μP.colLen j < μP.colLen 0 := by
+    intro j hj
+    have h1 : μP.colLen j ≤ μP.colLen 1 := μP.colLen_anti 1 j (by omega)
+    suffices hsuff : μP.colLen 1 < μP.colLen 0 from lt_of_le_of_lt h1 hsuff
+    rw [← YoungDiagram.colLen_shiftLeft, hP0]
+    by_cases hemp : μP.shiftLeft.colLens = []
+    · have hrl : μP.shiftLeft.rowLen 0 = 0 := by
+        rw [← YoungDiagram.length_colLens]; simp [hemp]
+      have : μP.shiftLeft.colLen 0 = 0 := by
+        by_contra hne; push_neg at hne
+        have : 0 < μP.shiftLeft.colLen 0 := Nat.pos_of_ne_zero hne
+        have hmem := YoungDiagram.mem_iff_lt_colLen.mpr this
+        have := YoungDiagram.mem_iff_lt_rowLen.mp hmem
+        omega
+      omega
+    · obtain ⟨hd, tl, heq⟩ := List.exists_cons_of_ne_nil (by exact hemp)
+      have h0 : μP.shiftLeft.colLen 0 = hd :=
+        colLen_0_eq_of_colLens_cons heq
+      rw [h0]
+      have heq' := hP_sh.symm.trans heq
+      match rest, heq' with
+      | r₃ :: r₄ :: rest', heq'' =>
+        simp only [dpartColLensP_B] at heq''
+        have hhd : r₄ / 2 = hd := (List.cons.inj heq'').1
+        rw [← hhd, hb]
+        have hr₃_lt : r₃ < r₂ := by
+          have : r₂ > (r₃ :: r₄ :: rest').head?.getD 0 := h_prim
+          simp at this; omega
+        have hr₄_le_r₃ : r₄ ≤ r₃ := by
+          have : Antitone (r₁ :: r₂ :: r₃ :: r₄ :: rest').get := hsort
+          have := @this ⟨2, by simp⟩ ⟨3, by simp⟩ (by simp)
+          simp at this; exact this
+        have heven₄ := heven r₄ (by simp)
+        obtain ⟨d, hd⟩ := heven₄; rw [hd]; omega
+      | [r₃], heq'' =>
+        simp [dpartColLensP_B] at heq''
+      | [], heq'' =>
+        simp [dpartColLensP_B] at heq''
+  have hprimQ : ∀ j, j ≥ 1 → μQ.colLen j ≤ μP.colLen 0 - 1 := by
+    intro j hj
+    have h1 : μQ.colLen j ≤ μQ.colLen 1 := μQ.colLen_anti 1 j (by omega)
+    suffices hsuff : μQ.colLen 1 ≤ μP.colLen 0 - 1 from le_trans h1 hsuff
+    rw [← YoungDiagram.colLen_shiftLeft, hP0]
+    by_cases hemq : μQ.shiftLeft.colLens = []
+    · have hrl : μQ.shiftLeft.rowLen 0 = 0 := by
+        rw [← YoungDiagram.length_colLens]; simp [hemq]
+      have : μQ.shiftLeft.colLen 0 = 0 := by
+        by_contra hne; push_neg at hne
+        have : 0 < μQ.shiftLeft.colLen 0 := Nat.pos_of_ne_zero hne
+        have hmem := YoungDiagram.mem_iff_lt_colLen.mpr this
+        have := YoungDiagram.mem_iff_lt_rowLen.mp hmem
+        omega
+      omega
+    · obtain ⟨hd, tl, heq⟩ := List.exists_cons_of_ne_nil (by exact hemq)
+      have h0 : μQ.shiftLeft.colLen 0 = hd :=
+        colLen_0_eq_of_colLens_cons heq
+      rw [h0]
+      have heq' := hQ_sh.symm.trans heq
+      match rest, heq' with
+      | r₃ :: r₄ :: rest', heq'' =>
+        simp only [dpartColLensQ_B] at heq''
+        have hhd : r₃ / 2 = hd := (List.cons.inj heq'').1
+        rw [← hhd, hb]
+        have hr₃_lt : r₃ < r₂ := by
+          have : r₂ > (r₃ :: r₄ :: rest').head?.getD 0 := h_prim
+          simp at this; omega
+        have heven₃ := heven r₃ (by simp)
+        obtain ⟨c, hc⟩ := heven₃; rw [hc]; omega
+      | [r₃], heq'' =>
+        simp only [dpartColLensQ_B] at heq''
+        by_cases hr₃ : r₃ > 0
+        · rw [if_pos hr₃] at heq''
+          have hhd : r₃ / 2 = hd := (List.cons.inj heq'').1
+          rw [← hhd, hb]
+          have hr₃_lt : r₃ < r₂ := by simp at h_prim; exact h_prim
+          have heven₃ := heven r₃ (by simp)
+          obtain ⟨c, hc⟩ := heven₃; rw [hc]; omega
+        · rw [if_neg (by omega)] at heq''; exact absurd heq'' (List.cons_ne_nil _ _).symm
+      | [], heq'' =>
+        simp [dpartColLensQ_B] at heq''
+  -- k = Q.colLen(0) - P.colLen(0) + 1 = r₁/2 - r₂/2 + 1
+  set k := (r₁ - r₂) / 2 + 1 with hk_def
+  have hk_pos : k ≥ 1 := by rw [hk_def]; omega
+  have hk_eq : k = μQ.colLen 0 - μP.colLen 0 + 1 := by
+    rw [hk_def, hP0, hQ0]
+    have heven₁ := heven r₁ (by simp)
+    obtain ⟨a, ha⟩ := heven₁
+    rw [ha, hb]; omega
+  -- Convert filter.card to Fintype.card subtype.
+  rw [show (Finset.univ.filter fun σ : PBPSet .Bplus μP μQ =>
+        σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .d).card =
+      Fintype.card {σ : PBPSet .Bplus μP μQ //
+        σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .d} from
+    (Fintype.card_subtype _).symm,
+    show (Finset.univ.filter fun σ : PBPSet .Bminus μP μQ =>
+        σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .d).card =
+      Fintype.card {σ : PBPSet .Bminus μP μQ //
+        σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .d} from
+    (Fintype.card_subtype _).symm]
+  -- γ-swap: B- count equals B+ count.
+  have h_swap := card_Bplus_Qbot_d_eq_Bminus_Qbot_d μP μQ
+  rw [show (Finset.univ.filter fun σ : PBPSet .Bplus μP μQ =>
+        σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .d).card =
+      Fintype.card {σ : PBPSet .Bplus μP μQ //
+        σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .d} from
+    (Fintype.card_subtype _).symm,
+    show (Finset.univ.filter fun σ : PBPSet .Bminus μP μQ =>
+        σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .d).card =
+      Fintype.card {σ : PBPSet .Bminus μP μQ //
+        σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .d} from
+    (Fintype.card_subtype _).symm] at h_swap
+  rw [← h_swap]
+  -- Apply primitive_step_top_Q for top Q = .d.
+  rw [card_PBPSet_Bplus_primitive_step_top_Q hle hP_pos hQ_pos' hprimP hprimQ .d]
+  rw [validCol0_B_card_top_d _ _ hle k hk_eq hk_pos]
+  -- Now: |B+shift| * (2k-1) + |B+shift| * (2k-1) = (countPBP_B (r₁::r₂::rest)).1
+  -- Use γ-swap at shift: |B+ shift| = |B- shift|.
+  have h_sh_sym := card_Bplus_eq_Bminus μP.shiftLeft μQ.shiftLeft
+  have h_total_sh : 2 * Fintype.card (PBPSet .Bplus μP.shiftLeft μQ.shiftLeft) =
+      tripleSum (countPBP_B rest) := by
+    rw [← h_total_rest, h_sh_sym]; ring
+  -- Unfold countPBP_B primitive manually.
+  have h_unfold : (countPBP_B (r₁ :: r₂ :: rest)).1 = tripleSum (countPBP_B rest) * (2 * k - 1) := by
+    show (countPBP_B (r₁ :: r₂ :: rest)).1 = _
+    simp only [countPBP_B, h_prim, ite_true]
+    rcases h_ct : countPBP_B rest with ⟨dd', rc', ss'⟩
+    simp only [tripleSum]
+    rw [show (tailCoeffs ((r₁ - r₂) / 2 + 1)).1.1 = 2 * ((r₁ - r₂) / 2 + 1) - 1 from
+      tailCoeffs_tDD _ (by omega)]
+  rw [h_unfold]
+  -- Goal: |B+shift| * (2k-1) + |B+shift| * (2k-1) = Total(rest) * (2k-1)
+  -- Use h_total_sh: 2 * |B+shift| = Total(rest).
+  rw [← h_total_sh]; ring
+
 /-- **α-class DD count**: combined B⁺ ∪ B⁻ PBPs with Q column 0 bottom = d
     equals `countPBP_B(dp).1`.
 
     Structural induction on dp:
     - Empty: hQ_pos false (vacuous, now closed).
     - Singleton: closed via `singleton_case_B_DD_alpha` (γ-swap + DSeq enumeration).
-    - Inductive: admitted as focused sub-sorry. -/
+    - Inductive: admitted as focused sub-sorry.
+      Primitive case is closable via `card_B_DD_alpha_primitive_step`
+      (needs caller to supply `h_total_rest`). -/
 private theorem card_B_DD_alpha_eq_countB_dd (dp : DualPart)
     {μP μQ : YoungDiagram}
     (hP : μP.colLens = dpartColLensP_B dp)
@@ -2815,22 +2989,8 @@ private theorem card_B_DD_alpha_eq_countB_dd (dp : DualPart)
     exact singleton_case_B_DD_alpha r₁ hP hQ heven hpos
   | r₁ :: r₂ :: rest, hP, hQ, hsort, heven, hpos, hQ_pos =>
     -- Inductive case: split into primitive (r₂ > r₃) and balanced (r₂ ≤ r₃).
-    --
-    -- Proof structure (both cases):
-    --   1. |new B+ Q=d| + |new B- Q=d| = 2 · |new B+ Q=d|  (γ-swap via card_Bplus_Qbot_d_eq_Bminus_Qbot_d)
-    --   2. |new B+ Q=d| via sum-fiber restricted to {τ | τ.Q_bot=d} =
-    --      Σ_σ∈rest_B+ |{τ ∈ fiber(σ) | τ.new_Q_bot = d}|
-    --   3. Each inner count depends on σ's Q_bot class (balanced) or is uniform (primitive).
-    --
-    -- The fundamental building block is
-    --   `fiber_card_B_Qd_restricted_to_new_Qd σ h_σ_class = tDD_new_α(h_σ_class)`
-    -- which gives the count of fibers of σ whose new-level Q_bot is d, depending on σ.Q_bot.
-    --
-    -- This is structurally parallel to Phase 3's `fiber_card_B_bal_Qd` but with a
-    -- new-Q_bot-restricted fiber in place of the unrestricted one. Rather than invest
-    -- ~500 lines of `ValidCol0_B_balanced_refined_alpha` infrastructure, admitted as
-    -- a bare sorry. Numerically verified for 82 dp cases via
-    -- `tools/verify_countB_components.py`.
+    -- Primitive: closed inline via helper lemma `card_B_DD_alpha_primitive_step`.
+    -- Balanced: admitted (requires per-Q_bot-class fiber refinement).
     sorry
 
 /-- Singleton case helper for `card_B_SS_alpha_eq_countB_ss`.
