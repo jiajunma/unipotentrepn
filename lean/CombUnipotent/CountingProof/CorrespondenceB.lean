@@ -2103,12 +2103,450 @@ For B-type PBPs on dp shape, `countPBP_B(dp) = (dd_α, rc_α, ss_α)` where:
 These identities (A1, A2, A3 below) are admitted; numerically verified for dp up to size 24.
 See `tools/verify_countB_components.py`. -/
 
+/-! ### γ-swap symmetries for Q_bot predicates
+
+Since `PBP.swapBplusBminus` preserves both P and Q, any predicate on `σ.val.Q`
+is invariant under the swap. This gives bijections on filtered subtypes. -/
+
+/-- **γ-swap for Q_bot = d**: B⁺ and B⁻ have the same count of PBPs with `Q_bot = d`. -/
+private theorem card_Bplus_Qbot_d_eq_Bminus_Qbot_d (μP μQ : YoungDiagram) :
+    (Finset.univ.filter fun σ : PBPSet .Bplus μP μQ =>
+      σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .d).card =
+    (Finset.univ.filter fun σ : PBPSet .Bminus μP μQ =>
+      σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .d).card := by
+  rw [show (Finset.univ.filter fun σ : PBPSet .Bplus μP μQ =>
+        σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .d).card =
+      Fintype.card {σ : PBPSet .Bplus μP μQ //
+        σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .d} from
+    (Fintype.card_subtype _).symm]
+  rw [show (Finset.univ.filter fun σ : PBPSet .Bminus μP μQ =>
+        σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .d).card =
+      Fintype.card {σ : PBPSet .Bminus μP μQ //
+        σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .d} from
+    (Fintype.card_subtype _).symm]
+  apply Fintype.card_congr
+  refine {
+    toFun := fun σ => ⟨⟨σ.val.val.swapBplusBminus (Or.inl σ.val.prop.1),
+        by simp [PBP.swapBplusBminus, σ.val.prop.1],
+        σ.val.prop.2.1, σ.val.prop.2.2⟩, σ.prop⟩
+    invFun := fun σ => ⟨⟨σ.val.val.swapBplusBminus (Or.inr σ.val.prop.1),
+        by simp [PBP.swapBplusBminus, σ.val.prop.1],
+        σ.val.prop.2.1, σ.val.prop.2.2⟩, σ.prop⟩
+    left_inv := fun σ => by
+      apply Subtype.ext; apply Subtype.ext
+      apply PBP_eq_of_data
+      · simp [PBP.swapBplusBminus, σ.val.prop.1]
+      · simp [PBP.swapBplusBminus]
+      · simp [PBP.swapBplusBminus]
+    right_inv := fun σ => by
+      apply Subtype.ext; apply Subtype.ext
+      apply PBP_eq_of_data
+      · simp [PBP.swapBplusBminus, σ.val.prop.1]
+      · simp [PBP.swapBplusBminus]
+      · simp [PBP.swapBplusBminus]
+  }
+
+/-! ### DSeq enumeration helpers for singleton base cases
+
+For k ≥ 1, we count DSeqs of length k by the value at last position. A DSeq is
+a sorted (by layerOrd) sequence in {s, r, d} with at most one d. The counts are:
+- last = .s → all s (by monotonicity), count = 1
+- last = .r → choose the s|r boundary in [0, k], count = k
+- last = .d → d at last (forced by uniqueness + mono), then s|r boundary, count = k
+
+Since `Fintype.card (DSeq k) = 2k+1` and the three classes partition DSeq k
+into disjoint subsets (by last-entry trichotomy in {s, r, d}), and the last=s
+class has card 1 by A3's argument, we can derive the other two counts by
+symmetry if we can establish one directly.
+
+Strategy: exhibit an explicit injection `Fin k ↪ {DSeq k, last = r}` and
+similarly for last = d, then count = 2k gives both = k by the total constraint. -/
+
+/-- Build the specific DSeq v_m (indexed by m ∈ Fin k, k ≥ 1) with
+    - v_m i = .s  if i.val < m.val
+    - v_m i = .r  otherwise.
+    This has last entry .r (since m.val ≤ k-1 < k-1+1 = k, so k-1 ≥ m.val).
+    The hypothesis `hk` is used by downstream lemmas (e.g. `DSeq_sr_last`). -/
+private def DSeq_sr {k : ℕ} (hk : k ≥ 1) (m : Fin k) : DSeq k :=
+  ⟨fun i => if i.val < m.val then .s else .r,
+    ⟨fun i => by by_cases h : i.val < m.val <;> simp [h],
+     fun i j hij => by
+       by_cases hi : i.val < m.val
+       · by_cases hj : j.val < m.val
+         · simp [hi, hj]
+         · simp [hi, hj, DRCSymbol.layerOrd]
+       · have hj : ¬ j.val < m.val := by omega
+         simp [hi, hj],
+     fun i j hdi hdj => by
+       simp only at hdi hdj
+       split_ifs at hdi⟩⟩
+
+/-- Build the specific DSeq w_m (indexed by m ∈ Fin k, k ≥ 1) with
+    - w_m i = .s  if i.val < m.val
+    - w_m i = .r  if m.val ≤ i.val and i.val < k - 1
+    - w_m i = .d  if i.val = k - 1.
+    This has last entry .d. -/
+private def DSeq_srd {k : ℕ} (hk : k ≥ 1) (m : Fin k) : DSeq k :=
+  ⟨fun i =>
+      if i.val = k - 1 then .d
+      else if i.val < m.val then .s
+      else .r,
+    ⟨fun i => by
+       by_cases h₁ : i.val = k - 1
+       · simp [h₁]
+       · by_cases h₂ : i.val < m.val
+         · simp [h₁, h₂]
+         · simp [h₁, h₂],
+     fun i j hij => by
+       by_cases hj : j.val = k - 1
+       · simp only [hj, if_true]
+         by_cases hi : i.val = k - 1
+         · simp [hi, DRCSymbol.layerOrd]
+         · simp only [hi, if_false]
+           by_cases hi_m : i.val < m.val
+           · simp [hi_m, DRCSymbol.layerOrd]
+           · simp [hi_m, DRCSymbol.layerOrd]
+       · have hi : i.val ≠ k - 1 := by have := j.isLt; omega
+         simp only [hi, if_false, hj, if_false]
+         by_cases hi_m : i.val < m.val
+         · by_cases hj_m : j.val < m.val
+           · simp [hi_m, hj_m]
+           · simp [hi_m, hj_m, DRCSymbol.layerOrd]
+         · have hj_m : ¬ j.val < m.val := by omega
+           simp [hi_m, hj_m],
+     fun i j hdi hdj => by
+       have hi : i.val = k - 1 := by
+         by_contra h
+         simp only [h, if_false] at hdi
+         split_ifs at hdi
+       have hj : j.val = k - 1 := by
+         by_contra h
+         simp only [h, if_false] at hdj
+         split_ifs at hdj
+       exact Fin.ext (hi.trans hj.symm)⟩⟩
+
+/-- DSeq_sr m has last entry = .r. -/
+private lemma DSeq_sr_last {k : ℕ} (hk : k ≥ 1) (m : Fin k) :
+    (DSeq_sr hk m).val ⟨k - 1, by omega⟩ = .r := by
+  unfold DSeq_sr
+  simp only
+  have hm := m.isLt
+  split_ifs with h
+  · exact absurd h (by omega)
+  · rfl
+
+/-- DSeq_srd m has last entry = .d. -/
+private lemma DSeq_srd_last {k : ℕ} (hk : k ≥ 1) (m : Fin k) :
+    (DSeq_srd hk m).val ⟨k - 1, by omega⟩ = .d := by
+  unfold DSeq_srd
+  simp
+
+/-- DSeq_sr is injective. -/
+private lemma DSeq_sr_injective {k : ℕ} (hk : k ≥ 1) :
+    Function.Injective (DSeq_sr hk) := by
+  intro m₁ m₂ h
+  -- Extract the underlying function equality.
+  have hfun : (fun i : Fin k => if i.val < m₁.val then DRCSymbol.s else DRCSymbol.r) =
+              (fun i : Fin k => if i.val < m₂.val then DRCSymbol.s else DRCSymbol.r) :=
+    congrArg Subtype.val h
+  -- Show m₁.val = m₂.val by comparing evaluations.
+  apply Fin.ext
+  rcases lt_trichotomy m₁.val m₂.val with hlt | heq | hgt
+  · -- m₁.val < m₂.val: at position ⟨m₁.val, m₁.isLt⟩, LHS = r, RHS = s. Contradiction.
+    exfalso
+    have heval := congrFun hfun ⟨m₁.val, m₁.isLt⟩
+    simp only [lt_irrefl, if_false, hlt, if_true] at heval
+    exact absurd heval (by decide)
+  · exact heq
+  · -- Symmetric: m₂.val < m₁.val. At ⟨m₂.val, m₂.isLt⟩, LHS = s, RHS = r.
+    exfalso
+    have heval := congrFun hfun ⟨m₂.val, m₂.isLt⟩
+    simp only [hgt, if_true, lt_irrefl, if_false] at heval
+    exact absurd heval (by decide)
+
+/-- DSeq_srd is injective. -/
+private lemma DSeq_srd_injective {k : ℕ} (hk : k ≥ 1) :
+    Function.Injective (DSeq_srd hk) := by
+  intro m₁ m₂ h
+  have hfun : (fun i : Fin k => if i.val = k - 1 then DRCSymbol.d
+                                else if i.val < m₁.val then DRCSymbol.s else DRCSymbol.r) =
+              (fun i : Fin k => if i.val = k - 1 then DRCSymbol.d
+                                else if i.val < m₂.val then DRCSymbol.s else DRCSymbol.r) :=
+    congrArg Subtype.val h
+  apply Fin.ext
+  rcases lt_trichotomy m₁.val m₂.val with hlt | heq | hgt
+  · exfalso
+    have hm₁_ne : m₁.val ≠ k - 1 := by have := m₂.isLt; omega
+    have heval := congrFun hfun ⟨m₁.val, m₁.isLt⟩
+    simp only [hm₁_ne, if_false, lt_irrefl, hlt, if_true] at heval
+    exact absurd heval (by decide)
+  · exact heq
+  · exfalso
+    have hm₂_ne : m₂.val ≠ k - 1 := by have := m₁.isLt; omega
+    have heval := congrFun hfun ⟨m₂.val, m₂.isLt⟩
+    simp only [hm₂_ne, if_false, hgt, lt_irrefl, if_true] at heval
+    exact absurd heval (by decide)
+
+/-- All last = .s DSeqs are forced to be constant .s. -/
+private lemma DSeq_last_s_eq {k : ℕ} (hk : k ≥ 1) (d : DSeq k)
+    (hlast : d.val ⟨k - 1, by omega⟩ = .s) : ∀ i, d.val i = .s := by
+  intro i
+  have hi : i.val ≤ k - 1 := by have := i.isLt; omega
+  have hmono := d.prop.2.1 i ⟨k - 1, by omega⟩ hi
+  rw [hlast] at hmono
+  rcases d.prop.1 i with h | h | h
+  · exact h
+  · rw [h, DRCSymbol.layerOrd] at hmono
+    simp [DRCSymbol.layerOrd] at hmono
+  · rw [h, DRCSymbol.layerOrd] at hmono
+    simp [DRCSymbol.layerOrd] at hmono
+
+/-- Constant DSeq .s sequence. -/
+private def DSeq_const_s {k : ℕ} : DSeq k :=
+  ⟨fun _ => .s,
+   ⟨fun _ => Or.inl rfl,
+    fun _ _ _ => le_refl _,
+    fun _ _ hi _ => by simp at hi⟩⟩
+
+/-- Card of DSeqs with last = .s is 1 (all s). -/
+private theorem card_DSeq_last_s {k : ℕ} (hk : k ≥ 1) :
+    Fintype.card {d : DSeq k // d.val ⟨k - 1, by omega⟩ = .s} = 1 := by
+  rw [Fintype.card_eq_one_iff]
+  refine ⟨⟨DSeq_const_s, rfl⟩, ?_⟩
+  rintro ⟨d, hlast⟩
+  apply Subtype.ext
+  apply Subtype.ext
+  funext i
+  exact DSeq_last_s_eq hk d hlast i
+
+/-- DSeq k partitions into last=s, last=r, last=d (using the s/r/d trichotomy
+    from DSeq.prop.1), so |DSeq k| = |last=s| + |last=r| + |last=d|.
+    Uses Finset.card partition into three filters. -/
+private theorem card_DSeq_partition {k : ℕ} (hk : k ≥ 1) :
+    Fintype.card (DSeq k) =
+    Fintype.card {d : DSeq k // d.val ⟨k - 1, by omega⟩ = .s} +
+    Fintype.card {d : DSeq k // d.val ⟨k - 1, by omega⟩ = .r} +
+    Fintype.card {d : DSeq k // d.val ⟨k - 1, by omega⟩ = .d} := by
+  rw [Fintype.card_subtype, Fintype.card_subtype, Fintype.card_subtype]
+  -- Abbreviate the three filter sets.
+  set Fs := (Finset.univ.filter (fun d : DSeq k => d.val ⟨k - 1, by omega⟩ = .s)) with hFs
+  set Fr := (Finset.univ.filter (fun d : DSeq k => d.val ⟨k - 1, by omega⟩ = .r)) with hFr
+  set Fd := (Finset.univ.filter (fun d : DSeq k => d.val ⟨k - 1, by omega⟩ = .d)) with hFd
+  have hcov : (Finset.univ : Finset (DSeq k)) = Fs ∪ Fr ∪ Fd := by
+    ext d
+    simp only [hFs, hFr, hFd, Finset.mem_univ, Finset.mem_union, Finset.mem_filter, true_and,
+      true_iff]
+    rcases d.prop.1 ⟨k - 1, by omega⟩ with h | h | h
+    · exact Or.inl (Or.inl h)
+    · exact Or.inl (Or.inr h)
+    · exact Or.inr h
+  have hdisj_sr : Disjoint Fs Fr := by
+    rw [hFs, hFr, Finset.disjoint_filter]
+    intro d _ h₁ h₂; rw [h₁] at h₂; exact DRCSymbol.noConfusion h₂
+  have hdisj_sd : Disjoint (Fs ∪ Fr) Fd := by
+    rw [Finset.disjoint_union_left]
+    refine ⟨?_, ?_⟩
+    · rw [hFs, hFd, Finset.disjoint_filter]
+      intro d _ h₁ h₂; rw [h₁] at h₂; exact DRCSymbol.noConfusion h₂
+    · rw [hFr, hFd, Finset.disjoint_filter]
+      intro d _ h₁ h₂; rw [h₁] at h₂; exact DRCSymbol.noConfusion h₂
+  rw [show Fintype.card (DSeq k) = (Finset.univ : Finset (DSeq k)).card from
+    (Finset.card_univ).symm, hcov,
+    Finset.card_union_of_disjoint hdisj_sd, Finset.card_union_of_disjoint hdisj_sr]
+
+/-- Count of DSeq of length k with last = .r is ≥ k. -/
+private theorem card_DSeq_last_r_ge {k : ℕ} (hk : k ≥ 1) :
+    k ≤ Fintype.card {d : DSeq k // d.val ⟨k - 1, by omega⟩ = .r} := by
+  have : Fintype.card (Fin k) ≤
+      Fintype.card {d : DSeq k // d.val ⟨k - 1, by omega⟩ = .r} := by
+    apply Fintype.card_le_of_injective
+      (fun m => ⟨DSeq_sr hk m, DSeq_sr_last hk m⟩)
+    intro m₁ m₂ h
+    exact DSeq_sr_injective hk (Subtype.ext_iff.mp h)
+  rw [Fintype.card_fin] at this
+  exact this
+
+/-- Count of DSeq of length k with last = .d is ≥ k. -/
+private theorem card_DSeq_last_d_ge {k : ℕ} (hk : k ≥ 1) :
+    k ≤ Fintype.card {d : DSeq k // d.val ⟨k - 1, by omega⟩ = .d} := by
+  have : Fintype.card (Fin k) ≤
+      Fintype.card {d : DSeq k // d.val ⟨k - 1, by omega⟩ = .d} := by
+    apply Fintype.card_le_of_injective
+      (fun m => ⟨DSeq_srd hk m, DSeq_srd_last hk m⟩)
+    intro m₁ m₂ h
+    exact DSeq_srd_injective hk (Subtype.ext_iff.mp h)
+  rw [Fintype.card_fin] at this
+  exact this
+
+/-- Count of DSeq of length k with last = .r equals k. -/
+private theorem card_DSeq_last_r {k : ℕ} (hk : k ≥ 1) :
+    Fintype.card {d : DSeq k // d.val ⟨k - 1, by omega⟩ = .r} = k := by
+  have htotal := DSeq_card k
+  have hpart := card_DSeq_partition hk
+  have hs := card_DSeq_last_s hk
+  have h_r_ge := card_DSeq_last_r_ge hk
+  have h_d_ge := card_DSeq_last_d_ge hk
+  omega
+
+/-- Count of DSeq of length k with last = .d equals k. -/
+private theorem card_DSeq_last_d {k : ℕ} (hk : k ≥ 1) :
+    Fintype.card {d : DSeq k // d.val ⟨k - 1, by omega⟩ = .d} = k := by
+  have htotal := DSeq_card k
+  have hpart := card_DSeq_partition hk
+  have hs := card_DSeq_last_s hk
+  have h_r_ge := card_DSeq_last_r_ge hk
+  have h_d_ge := card_DSeq_last_d_ge hk
+  omega
+
+/-- Transfer between PBPSet .Bminus ⊥ μQ filter and DSeq last-entry filter,
+    for a given DRCSymbol constant. -/
+private theorem card_Bminus_Qbot_eq_DSeq_last {μQ : YoungDiagram}
+    (hsc : ∀ j, j ≥ 1 → μQ.colLen j = 0) (hk_pos : μQ.colLen 0 ≥ 1) (sym : DRCSymbol) :
+    (Finset.univ.filter fun σ : PBPSet .Bminus ⊥ μQ =>
+      σ.val.Q.paint (μQ.colLen 0 - 1) 0 = sym).card =
+    Fintype.card {d : DSeq (μQ.colLen 0) //
+      d.val ⟨μQ.colLen 0 - 1, by omega⟩ = sym} := by
+  rw [show (Finset.univ.filter fun σ : PBPSet .Bminus ⊥ μQ =>
+        σ.val.Q.paint (μQ.colLen 0 - 1) 0 = sym).card =
+      Fintype.card {σ : PBPSet .Bminus ⊥ μQ //
+        σ.val.Q.paint (μQ.colLen 0 - 1) 0 = sym} from
+    (Fintype.card_subtype _).symm]
+  apply Fintype.card_congr
+  refine {
+    toFun := fun σ => ⟨PBPSet_Bminus_bot_to_DSeq σ.val, ?_⟩
+    invFun := fun d => ⟨DSeq_to_PBP_Bminus hsc d.val, ?_⟩
+    left_inv := fun σ => by
+      apply Subtype.ext; exact DSeq_roundtrip_left hsc σ.val
+    right_inv := fun d => by
+      apply Subtype.ext; exact DSeq_roundtrip_right hsc d.val
+  }
+  · simp only [PBPSet_Bminus_bot_to_DSeq]
+    exact σ.prop
+  · have hi : μQ.colLen 0 - 1 < μQ.colLen 0 := by omega
+    show mkQpaint μQ d.val (μQ.colLen 0 - 1) 0 = sym
+    rw [mkQpaint_col0 hi]
+    exact d.prop
+
+/-- Singleton helper: B⁻ PBPs with Q_bot = d count is c₁ = μQ.colLen 0 = r₁/2. -/
+private theorem singleton_case_B_Bminus_Qbot_d (r₁ : ℕ) {μP μQ : YoungDiagram}
+    (hP : μP.colLens = dpartColLensP_B [r₁])
+    (hQ : μQ.colLens = dpartColLensQ_B [r₁])
+    (heven : ∀ r ∈ [r₁], Even r)
+    (hpos : ∀ r ∈ [r₁], 0 < r) :
+    (Finset.univ.filter fun σ : PBPSet .Bminus μP μQ =>
+      σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .d).card = μQ.colLen 0 := by
+  have hP_nil : μP = ⊥ := yd_of_colLens_nil (by rw [hP]; rfl)
+  subst hP_nil
+  have hr₁ : r₁ > 0 := hpos r₁ (List.mem_singleton.mpr rfl)
+  have hr₁_even : Even r₁ := heven r₁ (List.mem_singleton.mpr rfl)
+  have hsc := dpartColLensQ_B_singleton_singleCol hQ hr₁
+  have hk_eq : μQ.colLen 0 = r₁ / 2 := dpartColLensQ_B_singleton_colLen0 hQ hr₁
+  have hk_pos : μQ.colLen 0 ≥ 1 := by
+    rw [hk_eq]; obtain ⟨m, rfl⟩ := hr₁_even; omega
+  rw [card_Bminus_Qbot_eq_DSeq_last hsc hk_pos .d]
+  exact card_DSeq_last_d hk_pos
+
+/-- Singleton helper: B⁻ PBPs with Q_bot = r count is c₁ = μQ.colLen 0 = r₁/2. -/
+private theorem singleton_case_B_Bminus_Qbot_r (r₁ : ℕ) {μP μQ : YoungDiagram}
+    (hP : μP.colLens = dpartColLensP_B [r₁])
+    (hQ : μQ.colLens = dpartColLensQ_B [r₁])
+    (heven : ∀ r ∈ [r₁], Even r)
+    (hpos : ∀ r ∈ [r₁], 0 < r) :
+    (Finset.univ.filter fun σ : PBPSet .Bminus μP μQ =>
+      σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .r).card = μQ.colLen 0 := by
+  have hP_nil : μP = ⊥ := yd_of_colLens_nil (by rw [hP]; rfl)
+  subst hP_nil
+  have hr₁ : r₁ > 0 := hpos r₁ (List.mem_singleton.mpr rfl)
+  have hr₁_even : Even r₁ := heven r₁ (List.mem_singleton.mpr rfl)
+  have hsc := dpartColLensQ_B_singleton_singleCol hQ hr₁
+  have hk_eq : μQ.colLen 0 = r₁ / 2 := dpartColLensQ_B_singleton_colLen0 hQ hr₁
+  have hk_pos : μQ.colLen 0 ≥ 1 := by
+    rw [hk_eq]; obtain ⟨m, rfl⟩ := hr₁_even; omega
+  rw [card_Bminus_Qbot_eq_DSeq_last hsc hk_pos .r]
+  exact card_DSeq_last_r hk_pos
+
+/-- Singleton helper: A1 for dp = [r₁]. -/
+private theorem singleton_case_B_DD_alpha (r₁ : ℕ) {μP μQ : YoungDiagram}
+    (hP : μP.colLens = dpartColLensP_B [r₁])
+    (hQ : μQ.colLens = dpartColLensQ_B [r₁])
+    (heven : ∀ r ∈ [r₁], Even r)
+    (hpos : ∀ r ∈ [r₁], 0 < r) :
+    (Finset.univ.filter fun σ : PBPSet .Bplus μP μQ =>
+      σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .d).card +
+    (Finset.univ.filter fun σ : PBPSet .Bminus μP μQ =>
+      σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .d).card =
+      (countPBP_B [r₁]).1 := by
+  have hr₁ : r₁ > 0 := hpos r₁ (List.mem_singleton.mpr rfl)
+  have hr₁_even : Even r₁ := heven r₁ (List.mem_singleton.mpr rfl)
+  have hk_eq : μQ.colLen 0 = r₁ / 2 := dpartColLensQ_B_singleton_colLen0 hQ hr₁
+  have hc₁_ge : r₁ / 2 ≥ 1 := by obtain ⟨m, rfl⟩ := hr₁_even; omega
+  -- Use γ-swap to reduce B⁺ count to B⁻ count.
+  rw [card_Bplus_Qbot_d_eq_Bminus_Qbot_d]
+  rw [singleton_case_B_Bminus_Qbot_d r₁ hP hQ heven hpos]
+  -- Goal: μQ.colLen 0 + μQ.colLen 0 = (countPBP_B [r₁]).1
+  -- = 2 * (if c₁ ≥ 1 then nu (c₁ - 1) else 0) = 2 * c₁ when c₁ ≥ 1
+  simp only [countPBP_B, hc₁_ge, ite_true, nu]
+  rw [hk_eq]
+  omega
+
+/-- Singleton helper: A2 for dp = [r₁]. -/
+private theorem singleton_case_B_RC_alpha (r₁ : ℕ) {μP μQ : YoungDiagram}
+    (hP : μP.colLens = dpartColLensP_B [r₁])
+    (hQ : μQ.colLens = dpartColLensQ_B [r₁])
+    (heven : ∀ r ∈ [r₁], Even r)
+    (hpos : ∀ r ∈ [r₁], 0 < r) :
+    (Finset.univ.filter fun σ : PBPSet .Bplus μP μQ =>
+      σ.val.Q.paint (μQ.colLen 0 - 1) 0 ≠ .d).card +
+    (Finset.univ.filter fun σ : PBPSet .Bminus μP μQ =>
+      σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .r).card =
+      (countPBP_B [r₁]).2.1 := by
+  have hP_nil : μP = ⊥ := yd_of_colLens_nil (by rw [hP]; rfl)
+  subst hP_nil
+  have hr₁ : r₁ > 0 := hpos r₁ (List.mem_singleton.mpr rfl)
+  have hr₁_even : Even r₁ := heven r₁ (List.mem_singleton.mpr rfl)
+  have hsc := dpartColLensQ_B_singleton_singleCol hQ hr₁
+  have hk_eq : μQ.colLen 0 = r₁ / 2 := dpartColLensQ_B_singleton_colLen0 hQ hr₁
+  have hc₁_ge : r₁ / 2 ≥ 1 := by obtain ⟨m, rfl⟩ := hr₁_even; omega
+  have hk_pos : μQ.colLen 0 ≥ 1 := by rw [hk_eq]; exact hc₁_ge
+  -- Step 1: |B⁺ Q_bot ≠ d| = |B⁺ total| - |B⁺ Q_bot = d|.
+  -- |B⁺ total| = 2c₁ + 1 (by card_PBPSet_Bminus_bot_singleCol + γ-swap).
+  -- |B⁺ Q_bot = d| = c₁ (by γ-swap and Bminus analysis).
+  -- So |B⁺ Q_bot ≠ d| = 2c₁ + 1 - c₁ = c₁ + 1.
+  have h_Bp_total : Fintype.card (PBPSet .Bplus ⊥ μQ) = 2 * (μQ.colLen 0) + 1 := by
+    rw [card_Bplus_eq_Bminus]
+    exact card_PBPSet_Bminus_bot_singleCol hsc
+  have h_Bp_d : (Finset.univ.filter fun σ : PBPSet .Bplus ⊥ μQ =>
+      σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .d).card = μQ.colLen 0 := by
+    rw [card_Bplus_Qbot_d_eq_Bminus_Qbot_d]
+    exact singleton_case_B_Bminus_Qbot_d r₁ hP hQ heven hpos
+  -- |B⁺ total| = |B⁺ Q_bot = d| + |B⁺ Q_bot ≠ d|
+  have h_Bp_split : Fintype.card (PBPSet .Bplus ⊥ μQ) =
+      (Finset.univ.filter fun σ : PBPSet .Bplus ⊥ μQ =>
+        σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .d).card +
+      (Finset.univ.filter fun σ : PBPSet .Bplus ⊥ μQ =>
+        σ.val.Q.paint (μQ.colLen 0 - 1) 0 ≠ .d).card := by
+    rw [← Finset.card_univ, ← Finset.card_filter_add_card_filter_not
+      (p := fun σ : PBPSet .Bplus ⊥ μQ => σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .d)]
+  have h_Bp_nonD : (Finset.univ.filter fun σ : PBPSet .Bplus ⊥ μQ =>
+      σ.val.Q.paint (μQ.colLen 0 - 1) 0 ≠ .d).card = μQ.colLen 0 + 1 := by
+    have := h_Bp_split
+    rw [h_Bp_total, h_Bp_d] at this
+    omega
+  rw [h_Bp_nonD]
+  -- |B⁻ Q_bot = r| = c₁ via singleton_case_B_Bminus_Qbot_r.
+  rw [singleton_case_B_Bminus_Qbot_r r₁ hP hQ heven hpos]
+  -- Goal: (μQ.colLen 0 + 1) + μQ.colLen 0 = (countPBP_B [r₁]).2.1 = 2c₁ + 1
+  simp only [countPBP_B, hc₁_ge, ite_true, nu]
+  rw [hk_eq]
+  omega
+
 /-- **α-class DD count**: combined B⁺ ∪ B⁻ PBPs with Q column 0 bottom = d
     equals `countPBP_B(dp).1`.
 
     Structural induction on dp:
     - Empty: hQ_pos false (vacuous, now closed).
-    - Singleton + Inductive: fiber analysis (admitted as focused sub-sorry). -/
+    - Singleton: closed via `singleton_case_B_DD_alpha` (γ-swap + DSeq enumeration).
+    - Inductive: admitted as focused sub-sorry. -/
 private theorem card_B_DD_alpha_eq_countB_dd (dp : DualPart)
     {μP μQ : YoungDiagram}
     (hP : μP.colLens = dpartColLensP_B dp)
@@ -2132,13 +2570,20 @@ private theorem card_B_DD_alpha_eq_countB_dd (dp : DualPart)
       have hmem := YoungDiagram.mem_iff_lt_colLen.mpr h
       simp at hmem
     exact this hQ_pos
-  | _, _, _, _, _, _, _ =>
-    -- Singleton or inductive case: admitted as focused sub-sorry.
+  | [r₁], hP, hQ, _, heven, hpos, _ =>
+    exact singleton_case_B_DD_alpha r₁ hP hQ heven hpos
+  | _ :: _ :: _, _, _, _, _, _, _ =>
+    -- Inductive case: admitted as focused sub-sorry.
     sorry
 
 /-- **α-class RC count** (γ-asymmetric): B⁺ with Q_bot ≠ d, plus B⁻ with Q_bot = r.
     equals `countPBP_B(dp).2.1`. The asymmetry reflects the tail correction:
-    B⁺ with natural Q_bot ∈ {•, s} gets corrected x_τ = c (RC), while B⁻ stays SS. -/
+    B⁺ with natural Q_bot ∈ {•, s} gets corrected x_τ = c (RC), while B⁻ stays SS.
+
+    Structural induction on dp:
+    - Empty: hQ_pos false (vacuous, now closed).
+    - Singleton: closed via `singleton_case_B_RC_alpha` (|B⁺| - |B⁺ Q=d| + |B⁻ Q=r|).
+    - Inductive: admitted as focused sub-sorry. -/
 private theorem card_B_RC_alpha_eq_countB_rc (dp : DualPart)
     {μP μQ : YoungDiagram}
     (hP : μP.colLens = dpartColLensP_B dp)
@@ -2162,7 +2607,9 @@ private theorem card_B_RC_alpha_eq_countB_rc (dp : DualPart)
       have hmem := YoungDiagram.mem_iff_lt_colLen.mpr h
       simp at hmem
     exact this hQ_pos
-  | _, _, _, _, _, _, _ =>
+  | [r₁], hP, hQ, _, heven, hpos, _ =>
+    exact singleton_case_B_RC_alpha r₁ hP hQ heven hpos
+  | _ :: _ :: _, _, _, _, _, _, _ =>
     sorry
 
 /-- Singleton case helper for `card_B_SS_alpha_eq_countB_ss`.
