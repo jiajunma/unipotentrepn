@@ -4527,6 +4527,21 @@ private theorem validCol0_B_Qr_card (hP hQ : ℕ) (hle : hP ≤ hQ)
   rw [hDSeq_km1, hneg_card]
   omega
 
+/-- Key admissibility lemma: for τ in fiber of σ with σ.Q_bot = r and P_col0_has_c τ,
+    τ.Q(hP-1, 0) ∉ {r, d}.
+
+    **Status**: admitted (structural fiber analysis, ~60 lines when fully expanded).
+    See blueprint for proof outline using dd_paintR + row_r/mono_Q. -/
+private theorem fiber_Q_hPm1_nrd_of_Qr {μP μQ : YoungDiagram}
+    (σ : PBPSet .Bplus (μP.shiftLeft) (μQ.shiftLeft))
+    (hP_pos : 0 < μP.colLen 0)
+    (h_hQσ_eq : μQ.shiftLeft.colLen 0 = μP.colLen 0)
+    (h_Qr : σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .r)
+    (τ : doubleDescent_Bplus_fiber σ) (hPc : P_col0_has_c τ.val) :
+    τ.val.val.Q.paint (μP.colLen 0 - 1) 0 ≠ .r ∧
+    τ.val.val.Q.paint (μP.colLen 0 - 1) 0 ≠ .d := by
+  sorry
+
 /-- Upper bound for Qr balanced case: fiber ↪ ValidCol0_B_Qr. -/
 private theorem fiber_le_validCol0_B_Qr {μP μQ : YoungDiagram}
     (σ : PBPSet .Bplus (μP.shiftLeft) (μQ.shiftLeft))
@@ -4536,7 +4551,27 @@ private theorem fiber_le_validCol0_B_Qr {μP μQ : YoungDiagram}
     (h_Qr : σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .r) :
     Fintype.card (doubleDescent_Bplus_fiber σ) ≤
     Fintype.card (ValidCol0_B_Qr (μP.colLen 0) (μQ.colLen 0)) := by
-  sorry
+  apply Fintype.card_le_of_injective (fun τ => (⟨extractCol0_B τ.val hle, ?_⟩ :
+    ValidCol0_B_Qr (μP.colLen 0) (μQ.colLen 0)))
+  · intro τ₁ τ₂ heq
+    have := Subtype.ext_iff.mp heq
+    exact extractCol0_B_injective_on_fiber σ hle this
+  · -- Show extractCol0_B τ is in ValidCol0_B_Qr.
+    unfold extractCol0_B
+    split_ifs with hPc
+    · intro hK
+      -- Need: (extractQtail_B τ.val hle ...).val ⟨0, _⟩ ≠ .r ∧ ≠ .d.
+      -- Reduce to τ.Q(hP-1, 0) via Q_tail_start τ = μP.colLen 0 - 1 (from hPc).
+      have hqs : Q_tail_start τ.val = μP.colLen 0 - 1 := by
+        unfold Q_tail_start; rw [if_pos hPc]
+      have hpt : (extractQtail_B τ.val hle (μQ.colLen 0 - μP.colLen 0 + 1)
+          (by simp [Q_tail_len, if_pos hPc])).val ⟨0, by omega⟩ =
+          τ.val.val.Q.paint (μP.colLen 0 - 1) 0 := by
+        show τ.val.val.Q.paint (Q_tail_start τ.val + 0) 0 = _
+        rw [hqs]; simp
+      rw [hpt]
+      exact fiber_Q_hPm1_nrd_of_Qr σ hP_pos h_hQσ_eq h_Qr τ hPc
+    · trivial
 
 /-- Lower bound for Qr balanced case: ValidCol0_B_Qr ↪ fiber. -/
 private theorem validCol0_B_Qr_le_fiber {r₁ r₂ : ℕ} {rest : DualPart} {μP μQ : YoungDiagram}
