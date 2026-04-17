@@ -2639,6 +2639,135 @@ private theorem validCol0_B_card_top_d (hP hQ : ℕ) (hle : hP ≤ hQ)
     rw [h_inl_eq, h_inr_eq, h_inl_card, h_inr_card]
     omega
 
+/-- |ValidCol0_B with top Q = r| = 2k - 1, where k = hQ - hP + 1.
+    Proof mirrors `validCol0_B_card_top_d` but uses `card_DSeq_last_r`. -/
+private theorem validCol0_B_card_top_r (hP hQ : ℕ) (hle : hP ≤ hQ)
+    (k : ℕ) (hk : k = hQ - hP + 1) (hk_pos : k ≥ 1) :
+    Fintype.card {v : ValidCol0_B hP hQ // topSym_B hP hQ v = .r} =
+      2 * k - 1 := by
+  -- Sum decomposition.
+  rw [validCol0_B_card_top_split]
+  -- inr side: subtype reformulation.
+  have h_idx_eq : (hQ - hP + 1) - 1 = hQ - hP := by omega
+  have h_inr_eq : Fintype.card
+      {v : DSeq (hQ - hP + 1) // topSym_B hP hQ (Sum.inr v) = .r} =
+      Fintype.card {v : DSeq (hQ - hP + 1) //
+        v.val ⟨(hQ - hP + 1) - 1, by omega⟩ = .r} := by
+    apply Fintype.card_congr
+    apply Equiv.subtypeEquivRight
+    intro v
+    show v.val ⟨hQ - hP, _⟩ = .r ↔ v.val ⟨(hQ - hP + 1) - 1, _⟩ = .r
+    have hfin : (⟨hQ - hP, by omega⟩ : Fin (hQ - hP + 1)) =
+        ⟨(hQ - hP + 1) - 1, by omega⟩ := Fin.ext h_idx_eq.symm
+    rw [hfin]
+  -- inr side card.
+  have h_inr_card := card_DSeq_last_r (k := hQ - hP + 1) (by omega)
+  -- Now case split on k.
+  by_cases h_k_eq_1 : k = 1
+  · -- k = 1: hQ - hP = 0.
+    -- inl side: DSeq(0) with top via dif_neg → .dot ≠ .r → 0.
+    have h_inl_zero : Fintype.card
+        {v : DSeq (hQ - hP) // topSym_B hP hQ (Sum.inl v) = .r} = 0 := by
+      apply Fintype.card_eq_zero_iff.mpr
+      refine ⟨fun ⟨v, hv⟩ => ?_⟩
+      simp only [topSym_B] at hv
+      split_ifs at hv with h
+      · omega
+    rw [h_inl_zero, h_inr_eq, h_inr_card]
+    omega
+  · -- k ≥ 2: hQ - hP ≥ 1.
+    have hKm : hQ - hP ≥ 1 := by omega
+    -- inl: DSeq(hQ-hP) last=r = hQ-hP = k-1.
+    have h_inl_eq : Fintype.card
+        {v : DSeq (hQ - hP) // topSym_B hP hQ (Sum.inl v) = .r} =
+        Fintype.card {v : DSeq (hQ - hP) //
+          v.val ⟨(hQ - hP) - 1, by omega⟩ = .r} := by
+      apply Fintype.card_congr
+      apply Equiv.subtypeEquivRight
+      intro v
+      show (dite (hQ - hP ≥ 1) (fun h => v.val ⟨hQ - hP - 1, by omega⟩)
+          (fun _ => DRCSymbol.dot)) = .r ↔ v.val ⟨(hQ - hP) - 1, by omega⟩ = .r
+      rw [dif_pos hKm]
+    have h_inl_card := card_DSeq_last_r (k := hQ - hP) hKm
+    rw [h_inl_eq, h_inr_eq, h_inl_card, h_inr_card]
+    omega
+
+/-- |ValidCol0_B with topSym.layerOrd ≤ 1| = 2.
+    Exactly 2 paintings have `topSym ∈ {•, s}`, irrespective of k.
+
+    Derived from `validCol0_B_card` (total = 4k), minus top=r and top=d counts
+    (both 2k-1 via `validCol0_B_card_top_r` and `validCol0_B_card_top_d`):
+    `4k - (2k-1) - (2k-1) = 2`. -/
+private theorem validCol0_B_card_top_lo_le_one (hP hQ : ℕ) (hle : hP ≤ hQ)
+    (k : ℕ) (hk : k = hQ - hP + 1) (hk_pos : k ≥ 1) :
+    Fintype.card {v : ValidCol0_B hP hQ // (topSym_B hP hQ v).layerOrd ≤ 1} = 2 := by
+  -- Partition ValidCol0_B into classes by topSym: .d, .r, lo≤1.
+  have h_total := validCol0_B_card hP hQ hle k hk hk_pos
+  have h_top_d := validCol0_B_card_top_d hP hQ hle k hk hk_pos
+  have h_top_r := validCol0_B_card_top_r hP hQ hle k hk hk_pos
+  -- Convert subtype cards to filter cards.
+  rw [show (Fintype.card {v : ValidCol0_B hP hQ //
+      (topSym_B hP hQ v).layerOrd ≤ 1}) =
+      (Finset.univ.filter fun v : ValidCol0_B hP hQ =>
+        (topSym_B hP hQ v).layerOrd ≤ 1).card from (Fintype.card_subtype _)]
+  rw [show (Fintype.card {v : ValidCol0_B hP hQ // topSym_B hP hQ v = .d}) =
+      (Finset.univ.filter fun v : ValidCol0_B hP hQ =>
+        topSym_B hP hQ v = .d).card from (Fintype.card_subtype _)] at h_top_d
+  rw [show (Fintype.card {v : ValidCol0_B hP hQ // topSym_B hP hQ v = .r}) =
+      (Finset.univ.filter fun v : ValidCol0_B hP hQ =>
+        topSym_B hP hQ v = .r).card from (Fintype.card_subtype _)] at h_top_r
+  rw [show (Fintype.card (ValidCol0_B hP hQ)) =
+      (Finset.univ : Finset (ValidCol0_B hP hQ)).card from Finset.card_univ.symm] at h_total
+  -- The union filter: univ = {top=d} ∪ {top=r} ∪ {top.lo≤1} (pairwise disjoint).
+  have h_union : (Finset.univ : Finset (ValidCol0_B hP hQ)) =
+      (Finset.univ.filter fun v => topSym_B hP hQ v = .d) ∪
+      (Finset.univ.filter fun v => topSym_B hP hQ v = .r) ∪
+      (Finset.univ.filter fun v => (topSym_B hP hQ v).layerOrd ≤ 1) := by
+    ext v
+    simp only [Finset.mem_univ, Finset.mem_union, Finset.mem_filter, true_and, true_iff]
+    -- Show: ∀ v, topSym v = .d ∨ topSym v = .r ∨ topSym v.lo ≤ 1.
+    rcases v with d | d
+    · -- inl case
+      simp only [topSym_B]
+      split_ifs with h
+      · -- k ≥ 1: topSym = d.val ⟨hQ-hP-1, _⟩ ∈ {s, r, d}
+        rcases d.prop.1 ⟨hQ - hP - 1, by omega⟩ with h1 | h1 | h1
+        · right; rw [h1]; decide
+        · left; right; exact h1
+        · left; left; exact h1
+      · -- k = 0: topSym = .dot (layerOrd 0 ≤ 1)
+        right; decide
+    · -- inr case: always d.val ⟨hQ-hP, _⟩ ∈ {s, r, d}
+      simp only [topSym_B]
+      rcases d.prop.1 ⟨hQ - hP, by omega⟩ with h1 | h1 | h1
+      · right; rw [h1]; decide
+      · left; right; exact h1
+      · left; left; exact h1
+  -- Disjointness.
+  have h_disj_dr : Disjoint
+      (Finset.univ.filter fun v : ValidCol0_B hP hQ => topSym_B hP hQ v = .d)
+      (Finset.univ.filter fun v => topSym_B hP hQ v = .r) := by
+    rw [Finset.disjoint_filter]; intros v _ h1 h2; rw [h1] at h2; exact DRCSymbol.noConfusion h2
+  have h_disj_d_lo : Disjoint
+      (Finset.univ.filter fun v : ValidCol0_B hP hQ => topSym_B hP hQ v = .d)
+      (Finset.univ.filter fun v => (topSym_B hP hQ v).layerOrd ≤ 1) := by
+    rw [Finset.disjoint_filter]; intros v _ h1 h2; rw [h1] at h2
+    simp [DRCSymbol.layerOrd] at h2
+  have h_disj_r_lo : Disjoint
+      (Finset.univ.filter fun v : ValidCol0_B hP hQ => topSym_B hP hQ v = .r)
+      (Finset.univ.filter fun v => (topSym_B hP hQ v).layerOrd ≤ 1) := by
+    rw [Finset.disjoint_filter]; intros v _ h1 h2; rw [h1] at h2
+    simp [DRCSymbol.layerOrd] at h2
+  have h_disj_dr_lo : Disjoint
+      ((Finset.univ.filter fun v : ValidCol0_B hP hQ => topSym_B hP hQ v = .d) ∪
+       (Finset.univ.filter fun v => topSym_B hP hQ v = .r))
+      (Finset.univ.filter fun v => (topSym_B hP hQ v).layerOrd ≤ 1) := by
+    rw [Finset.disjoint_union_left]; exact ⟨h_disj_d_lo, h_disj_r_lo⟩
+  -- card univ = card({d} ∪ {r}) + card({lo≤1}) = card{d} + card{r} + card{lo≤1}
+  rw [h_union, Finset.card_union_of_disjoint h_disj_dr_lo,
+    Finset.card_union_of_disjoint h_disj_dr] at h_total
+  omega
+
 /-- Transfer between PBPSet .Bminus ⊥ μQ filter and DSeq last-entry filter,
     for a given DRCSymbol constant. -/
 private theorem card_Bminus_Qbot_eq_DSeq_last {μQ : YoungDiagram}
@@ -4346,11 +4475,57 @@ private theorem card_DSeq_first_rd {k : ℕ} (hk : k ≥ 1) :
       right; apply Subtype.ext; exact h
   rw [← Finset.card_univ]; exact this
 
-/-- |ValidCol0_B_Qr| = 4k - 2 where k = hQ - hP + 1. -/
+/-- |ValidCol0_B_Qr| = 4k - 2 where k = hQ - hP + 1.
+    ValidCol0_B = DSeq(k-1) ⊕ DSeq(k), and ValidCol0_B_Qr restricts `inr d` to d.val(0) ∉ {r,d}.
+    So ValidCol0_B_Qr = DSeq(k-1) + (DSeq(k) \ {first in {r,d}}). Since DSeq(k-1) ≃ first=s side,
+    and DSeq(k) partitions by first s/r/d. -/
 private theorem validCol0_B_Qr_card (hP hQ : ℕ) (hle : hP ≤ hQ)
     (k : ℕ) (hk : k = hQ - hP + 1) (hk_pos : k ≥ 1) :
     Fintype.card (ValidCol0_B_Qr hP hQ) = 4 * k - 2 := by
-  sorry
+  -- Unfold ValidCol0_B_Qr to subtype of sum.
+  -- ValidCol0_B_Qr = {v : DSeq(k-1) ⊕ DSeq(k) // if inr then first not in {r,d}}
+  -- ≃ DSeq(k-1) ⊕ {d : DSeq(k) // d.val 0 ∉ {r, d}}
+  have hK : hQ - hP + 1 ≥ 1 := by omega
+  -- Equiv: ValidCol0_B_Qr hP hQ ≃ DSeq(hQ - hP) ⊕ {d : DSeq(hQ-hP+1) // d.val 0 ∉ {r, d}}
+  have hequiv : ValidCol0_B_Qr hP hQ ≃ DSeq (hQ - hP) ⊕
+      {d : DSeq (hQ - hP + 1) // ¬(d.val ⟨0, by omega⟩ = .r ∨ d.val ⟨0, by omega⟩ = .d)} := by
+    refine {
+      toFun := fun v => match v with
+        | ⟨Sum.inl d, _⟩ => Sum.inl d
+        | ⟨Sum.inr d, hp⟩ => Sum.inr ⟨d, fun h => by
+            have := hp hK
+            rcases h with h | h
+            · exact absurd h this.1
+            · exact absurd h this.2⟩
+      invFun := fun e => match e with
+        | Sum.inl d => ⟨Sum.inl d, trivial⟩
+        | Sum.inr ⟨d, hd⟩ => ⟨Sum.inr d, fun _ => by
+            push_neg at hd
+            exact hd⟩
+      left_inv := ?_
+      right_inv := ?_
+    }
+    · rintro ⟨v, hp⟩
+      cases v <;> rfl
+    · rintro (d | ⟨d, hd⟩) <;> rfl
+  rw [Fintype.card_congr hequiv, Fintype.card_sum]
+  -- Now compute DSeq(k-1) + {d : DSeq(k) // first ∉ {r,d}} = (2(k-1)+1) + (DSeq(k).card - 2)
+  -- DSeq(k-1) = 2k-1 (card from DSeq_card: 2n+1)
+  have hDSeq_km1 : Fintype.card (DSeq (hQ - hP)) = 2 * (hQ - hP) + 1 := DSeq_card _
+  -- DSeq(k) = 2k+1
+  have hDSeq_k : Fintype.card (DSeq (hQ - hP + 1)) = 2 * (hQ - hP + 1) + 1 := DSeq_card _
+  -- {d : DSeq(k) // first ∉ {r,d}} = DSeq(k) - {first ∈ {r,d}}, with card = (2k+1) - 2 = 2k-1
+  have hneg_card : Fintype.card
+      {d : DSeq (hQ - hP + 1) // ¬(d.val ⟨0, by omega⟩ = .r ∨ d.val ⟨0, by omega⟩ = .d)} =
+      2 * (hQ - hP + 1) + 1 - 2 := by
+    have hpos_card : Fintype.card
+        {d : DSeq (hQ - hP + 1) // d.val ⟨0, by omega⟩ = .r ∨ d.val ⟨0, by omega⟩ = .d} = 2 :=
+      card_DSeq_first_rd hK
+    -- Use subtype complement: card({x // ¬ p x}) = card(α) - card({x // p x}).
+    rw [Fintype.card_subtype_compl]
+    rw [hpos_card, hDSeq_k]
+  rw [hDSeq_km1, hneg_card]
+  omega
 
 /-- Upper bound for Qr balanced case: fiber ↪ ValidCol0_B_Qr. -/
 private theorem fiber_le_validCol0_B_Qr {μP μQ : YoungDiagram}
