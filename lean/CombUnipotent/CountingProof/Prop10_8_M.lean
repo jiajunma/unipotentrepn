@@ -885,10 +885,59 @@ theorem descentMB_liftBM_naive_P_paint (σ : PBP) (hγ : σ.γ = .Bplus ∨ σ.�
         (σ.Q.paint (μQ.colLen 0 - 1) 0).layerOrd > 1) :
     ∀ i j, PBP.descentPaintL_MB
       (liftBM_naive σ hγ μP μQ hPsh hQsh h_sub h_QleP h_bal_exc) i j = σ.P.paint i j := by
-  -- Strategy: σ.P ∈ {dot, c} (B type P).
-  -- σ.P = c: τ.P(i, j+1) = c (by succ_c_iff), not in dotScolLen region → descent = c.
-  -- σ.P = dot: τ.P(i, j+1) ∈ {dot, s}, in dotScolLen region → descent = dot.
-  sorry -- TODO: detailed case analysis using succ_c_iff, succ_s_iff, and dotScolLen helpers
+  intro i j
+  set τ := liftBM_naive σ hγ μP μQ hPsh hQsh h_sub h_QleP h_bal_exc with hτ
+  simp only [PBP.descentPaintL_MB]
+  -- Case on whether (i, j) ∈ σ.P.shape.
+  by_cases hmem : (i, j) ∈ σ.P.shape
+  · -- (i, j) ∈ σ.P.shape. Use σ's B-type property.
+    have hmemμP : (i, j + 1) ∈ μP := by
+      rw [hPsh, YoungDiagram.mem_shiftLeft] at hmem; exact hmem
+    rcases B_P_dot_or_c σ hγ hmem with hdot | hc
+    · -- σ.P(i, j) = dot. Need descent to return dot.
+      -- τ.P(i, j+1) ∈ {dot, s} by succ, since σ.P(i, j) = dot ≠ c.
+      -- i < dotScolLen τ.P (j+1) since τ.P(i, j+1) has lo ≤ 1.
+      have hτp_lo : (τ.P.paint i (j + 1)).layerOrd ≤ 1 := by
+        show (liftPaintP_naive σ μP i (j + 1)).layerOrd ≤ 1
+        rw [liftPaintP_naive_succ σ μP i j hmemμP]
+        split_ifs with h1 h2
+        · rw [h1] at hdot; exact absurd hdot (by decide)
+        all_goals simp [DRCSymbol.layerOrd]
+      -- Show i < dotScolLen τ.P (j+1).
+      -- Use that τ.P(i, j+1) has lo ≤ 1 and is in shape → i is in dotSdiag column.
+      have hmemτP : (i, j + 1) ∈ τ.P.shape := by simp [hτ, liftBM_naive]; exact hmemμP
+      have hi_lt : i < PBP.dotScolLen τ.P (j + 1) := by
+        rw [PBP.dotScolLen_eq_dotSdiag_colLen _ τ.mono_P]
+        have : (i, j + 1) ∈ PBP.dotSdiag τ.P τ.mono_P := by
+          simp only [PBP.dotSdiag, YoungDiagram.mem_mk, Finset.mem_filter,
+            YoungDiagram.mem_cells]
+          exact ⟨hmemτP, hτp_lo⟩
+        exact YoungDiagram.mem_iff_lt_colLen.mp this
+      rw [if_pos hi_lt, hdot]
+    · -- σ.P(i, j) = c. Need descent to return c.
+      -- τ.P(i, j+1) = c by succ_c_iff.
+      have hτp_c : τ.P.paint i (j + 1) = .c := by
+        show liftPaintP_naive σ μP i (j + 1) = .c
+        exact (liftPaintP_naive_succ_c_iff σ μP i j).mpr ⟨hmemμP, hc⟩
+      -- ¬(i < dotScolLen τ.P (j+1)): τ.P(i, j+1) = c has lo = 3 > 1.
+      have hi_ge : ¬ (i < PBP.dotScolLen τ.P (j + 1)) := by
+        intro hlt
+        have hlo := PBP.layerOrd_le_one_of_lt_dotSdiag_colLen τ.P τ.mono_P
+          (by rw [← PBP.dotScolLen_eq_dotSdiag_colLen _ τ.mono_P]; exact hlt)
+        rw [hτp_c, DRCSymbol.layerOrd] at hlo; omega
+      rw [if_neg hi_ge, hτp_c, hc]
+  · -- (i, j) ∉ σ.P.shape. σ.P(i, j) = dot. τ.P(i, j+1) = dot (outside μP).
+    rw [σ.P.paint_outside i j hmem]
+    have hmemμP_not : (i, j + 1) ∉ μP := by
+      rw [hPsh, YoungDiagram.mem_shiftLeft] at hmem
+      exact hmem
+    -- τ.P(i, j+1) = dot.
+    have hτp_dot : τ.P.paint i (j + 1) = .dot :=
+      τ.P.paint_outside i (j + 1) (by simp [hτ, liftBM_naive]; exact hmemμP_not)
+    -- Need to show: either dotScolLen gives dot, or τ.P.paint gives dot.
+    split_ifs with h
+    · rfl
+    · exact hτp_dot
 
 theorem descentMB_liftBM_naive_Q_paint (σ : PBP) (hγ : σ.γ = .Bplus ∨ σ.γ = .Bminus)
     (μP μQ : YoungDiagram) (hPsh : σ.P.shape = YoungDiagram.shiftLeft μP)
