@@ -2339,10 +2339,64 @@ private theorem card_PBPSet_B_balanced_step (r₁ r₂ : ℕ) (rest : DualPart)
   have h_swap := card_Bplus_SS_eq_Bminus_SS μP.shiftLeft μQ.shiftLeft
   -- B+ set partition at rest level
   have h_part := card_Bplus_nonD_eq_low_plus_r μP.shiftLeft μQ.shiftLeft hQ_sh_pos
-  -- Algebra: combine fiber identity with A1, A2, A3, γ-swap, B⁺ partition.
-  -- The let/have bindings in h_fiber and the goal require careful unpacking.
-  -- Details admitted as a focused algebraic sorry.
-  sorry
+  -- Destructure countPBP_B rest
+  rcases h_ct : countPBP_B rest with ⟨dd', rc', ss'⟩
+  rw [h_ct] at h_A1 h_A2 h_A3
+  simp only at h_A1 h_A2 h_A3
+  -- Unfold let-bindings in the goal
+  show _ = dd' * (4 * ((r₁ - r₂) / 2 + 1)) + rc' * (4 * ((r₁ - r₂) / 2 + 1) - 2)
+  -- h_fiber's let/have bindings need the same destructuring.
+  -- h_fiber was stated using μQ.shiftLeft forms; let me evaluate it now.
+  have h_fiber' : Fintype.card (PBPSet .Bplus μP μQ) +
+      Fintype.card (PBPSet .Bminus μP μQ) =
+    ((Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+         σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .d).card +
+     (Finset.univ.filter fun σ : PBPSet .Bminus μP.shiftLeft μQ.shiftLeft =>
+         σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .d).card) *
+      (4 * ((r₁ - r₂) / 2 + 1)) +
+    ((Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+         σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .r).card +
+     (Finset.univ.filter fun σ : PBPSet .Bminus μP.shiftLeft μQ.shiftLeft =>
+         σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .r).card) *
+      (4 * ((r₁ - r₂) / 2 + 1) - 2) +
+    ((Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+         (σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0).layerOrd ≤ 1).card +
+     (Finset.univ.filter fun σ : PBPSet .Bminus μP.shiftLeft μQ.shiftLeft =>
+         (σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0).layerOrd ≤ 1).card) *
+      (2 * ((r₁ - r₂) / 2 + 1) - 1) := h_fiber
+  rw [h_fiber']
+  -- Abbreviate card expressions
+  set Bp_d := (Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+    σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .d).card
+  set Bm_d := (Finset.univ.filter fun σ : PBPSet .Bminus μP.shiftLeft μQ.shiftLeft =>
+    σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .d).card
+  set Bp_r := (Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+    σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .r).card
+  set Bm_r := (Finset.univ.filter fun σ : PBPSet .Bminus μP.shiftLeft μQ.shiftLeft =>
+    σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .r).card
+  set Bp_low := (Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+    (σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0).layerOrd ≤ 1).card
+  set Bm_low := (Finset.univ.filter fun σ : PBPSet .Bminus μP.shiftLeft μQ.shiftLeft =>
+    (σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0).layerOrd ≤ 1).card
+  set Bp_nonD := (Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+    σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 ≠ .d).card
+  set k := (r₁ - r₂) / 2 + 1 with hk_def
+  have hk_pos : k ≥ 1 := by rw [hk_def]; omega
+  have h_2km1 : 2 * (2 * k - 1) = 4 * k - 2 := by omega
+  have h_Bp_low_eq : Bp_low = ss' := h_swap.trans h_A3
+  have h_rc_sum : Bp_r + Bm_r + ss' = rc' := by
+    rw [h_Bp_low_eq] at h_part; omega
+  -- Goal: (Bp_d + Bm_d)·4k + (Bp_r + Bm_r)·(4k-2) + (Bp_low + Bm_low)·(2k-1)
+  --       = dd'·4k + rc'·(4k-2)
+  rw [h_A1, h_Bp_low_eq, h_A3]
+  -- Goal: dd'·4k + (Bp_r + Bm_r)·(4k-2) + (ss' + ss')·(2k-1) = dd'·4k + rc'·(4k-2)
+  have h_double : (ss' + ss') * (2 * k - 1) = ss' * (4 * k - 2) := by
+    have : (ss' + ss') * (2 * k - 1) = ss' * (2 * (2 * k - 1)) := by ring
+    rw [this, h_2km1]
+  rw [h_double]
+  have h_combine : (Bp_r + Bm_r) * (4 * k - 2) + ss' * (4 * k - 2) = rc' * (4 * k - 2) := by
+    rw [← Nat.add_mul, h_rc_sum]
+  omega
 
 /-- **Proposition 10.11 for B type:**
     card(PBPSet .Bplus μP μQ) + card(PBPSet .Bminus μP μQ) = tripleSum(countPBP_B dp).
