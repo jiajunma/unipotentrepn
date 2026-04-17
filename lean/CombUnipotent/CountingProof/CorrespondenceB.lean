@@ -4832,9 +4832,24 @@ private theorem validCol0_B_Qlow_card (hP hQ : ℕ) (hle : hP ≤ hQ)
     · intro d; rfl
   rw [Fintype.card_congr hequiv, DSeq_card]; omega
 
+/-- Key admissibility lemma: for τ in fiber of σ with σ.Q_bot.layerOrd ≤ 1,
+    ¬ P_col0_has_c τ (i.e., τ.P col 0 is all dots).
+
+    Reasoning detailed in `ValidCol0_B_Qlow` docblock: inr case leads to
+    row_s contradiction because τ.Q(hP-1, 0) and σ.Q(hP-1, 0) both end up as s,
+    violating row_s uniqueness. -/
+private theorem fiber_P_col0_no_c_of_Qlow {μP μQ : YoungDiagram}
+    (σ : PBPSet .Bplus (μP.shiftLeft) (μQ.shiftLeft))
+    (_hP_pos : 0 < μP.colLen 0)
+    (_h_hQσ_eq : μQ.shiftLeft.colLen 0 = μP.colLen 0)
+    (_h_Qlow : (σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0).layerOrd ≤ 1)
+    (τ : doubleDescent_Bplus_fiber σ) :
+    ¬ P_col0_has_c τ.val := by
+  sorry
+
 /-- Upper bound for Qlow balanced case: fiber ↪ ValidCol0_B_Qlow.
-    Reasoning: In Qlow case, every τ ∈ fiber has P col 0 all dots. The proof
-    uses the row_s contradiction from the docblock above. -/
+    Uses `extractCol0_B` from the primitive-step upper bound, and the Qlow
+    admissibility lemma `fiber_P_col0_no_c_of_Qlow`. -/
 private theorem fiber_le_validCol0_B_Qlow {μP μQ : YoungDiagram}
     (σ : PBPSet .Bplus (μP.shiftLeft) (μQ.shiftLeft))
     (hle : μP.colLen 0 ≤ μQ.colLen 0)
@@ -4843,7 +4858,17 @@ private theorem fiber_le_validCol0_B_Qlow {μP μQ : YoungDiagram}
     (h_Qlow : (σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0).layerOrd ≤ 1) :
     Fintype.card (doubleDescent_Bplus_fiber σ) ≤
     Fintype.card (ValidCol0_B_Qlow (μP.colLen 0) (μQ.colLen 0)) := by
-  sorry
+  apply Fintype.card_le_of_injective (fun τ => (⟨extractCol0_B τ.val hle, ?_⟩ :
+    ValidCol0_B_Qlow (μP.colLen 0) (μQ.colLen 0)))
+  · intro τ₁ τ₂ heq
+    have := Subtype.ext_iff.mp heq
+    exact extractCol0_B_injective_on_fiber σ hle this
+  · -- Show extractCol0_B τ is inl (P col 0 all dots), i.e., in ValidCol0_B_Qlow.
+    unfold extractCol0_B
+    split_ifs with hPc
+    · -- P_col0_has_c τ.val: contradiction via fiber_P_col0_no_c_of_Qlow.
+      exact absurd hPc (fiber_P_col0_no_c_of_Qlow σ hP_pos h_hQσ_eq h_Qlow τ)
+    · trivial
 
 /-- Lower bound for Qlow balanced case: ValidCol0_B_Qlow ↪ fiber.
     Reasoning: For v = Sum.inl d (ValidCol0_B_Qlow element), the balanced
