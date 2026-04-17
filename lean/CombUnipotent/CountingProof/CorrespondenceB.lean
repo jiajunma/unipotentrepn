@@ -2148,7 +2148,11 @@ private theorem card_B_RC_alpha_eq_countB_rc (dp : DualPart)
 /-- **α-class SS count**: B⁻ PBPs with Q column 0 bottom ∈ {•, s}
     (i.e., layerOrd ≤ 1) equals `countPBP_B(dp).2.2`.
     This is the "tail-s ⟹ γ=B⁻" identity.
-    Used by Prop10_8_M.lean's `card_Bminus_bottom_lo_le_one_eq_ss` for M balanced. -/
+    Used by Prop10_8_M.lean's `card_Bminus_bottom_lo_le_one_eq_ss` for M balanced.
+
+    Proof by induction on dp:
+    - Empty: vacuous (hQ_pos requires μQ.colLen 0 > 0, but μQ = ⊥ has 0).
+    - Singleton + Inductive: sub-sorry for fiber refinement. -/
 theorem card_B_SS_alpha_eq_countB_ss (dp : DualPart)
     {μP μQ : YoungDiagram}
     (hP : μP.colLens = dpartColLensP_B dp)
@@ -2160,7 +2164,25 @@ theorem card_B_SS_alpha_eq_countB_ss (dp : DualPart)
     (Finset.univ.filter fun σ : PBPSet .Bminus μP μQ =>
       (σ.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd ≤ 1).card =
       (countPBP_B dp).2.2 := by
-  sorry
+  match dp, hP, hQ, hsort, heven, hpos, hQ_pos with
+  | [], _, hQ, _, _, _, hQ_pos =>
+    -- Empty case: vacuous (μQ = ⊥ has colLen 0 = 0, contradicting hQ_pos).
+    have hQ_bot : μQ = ⊥ := yd_of_colLens_nil (by rw [hQ]; rfl)
+    exfalso
+    rw [hQ_bot] at hQ_pos
+    -- μQ.colLen 0 = 0 for μQ = ⊥, so hQ_pos : 0 < 0 is false.
+    have : ¬ (⊥ : YoungDiagram).colLen 0 > 0 := by
+      intro h
+      have hmem := YoungDiagram.mem_iff_lt_colLen.mpr h
+      simp at hmem
+    exact this hQ_pos
+  | [_], _, _, _, _, _, _ =>
+    -- Singleton case: direct computation via DSeq enumeration.
+    sorry
+  | _ :: _ :: _, _, _, _, _, _, _ =>
+    -- Inductive case: primitive uses refined fiber (new sub-sorry),
+    -- balanced uses Phase 3 fiber identity.
+    sorry
 
 /-- **γ-swap SS symmetry**: B⁺ and B⁻ have the same number of PBPs with
     Q column 0 bottom ∈ {•, s}. The swap `swapBplusBminus` preserves P and Q,
