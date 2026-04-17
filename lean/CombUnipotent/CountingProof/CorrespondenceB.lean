@@ -2107,9 +2107,8 @@ See `tools/verify_countB_components.py`. -/
     equals `countPBP_B(dp).1`.
 
     Structural induction on dp:
-    - Empty: hQ_pos false (vacuous).
-    - Singleton: countPBP_B([r₁]).1 = 2·c₁ and equals |{Q_bot=d combined}|.
-    - Inductive step: fiber analysis (admitted as focused sub-sorry). -/
+    - Empty: hQ_pos false (vacuous, now closed).
+    - Singleton + Inductive: fiber analysis (admitted as focused sub-sorry). -/
 private theorem card_B_DD_alpha_eq_countB_dd (dp : DualPart)
     {μP μQ : YoungDiagram}
     (hP : μP.colLens = dpartColLensP_B dp)
@@ -2123,9 +2122,19 @@ private theorem card_B_DD_alpha_eq_countB_dd (dp : DualPart)
     (Finset.univ.filter fun σ : PBPSet .Bminus μP μQ =>
       σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .d).card =
       (countPBP_B dp).1 := by
-  -- Induction on dp; empty and singleton base cases, then primitive/balanced step.
-  -- Full fiber analysis required for inductive cases (admitted).
-  sorry
+  match dp, hP, hQ, hsort, heven, hpos, hQ_pos with
+  | [], _, hQ, _, _, _, hQ_pos =>
+    have hQ_bot : μQ = ⊥ := yd_of_colLens_nil (by rw [hQ]; rfl)
+    exfalso
+    rw [hQ_bot] at hQ_pos
+    have : ¬ (⊥ : YoungDiagram).colLen 0 > 0 := by
+      intro h
+      have hmem := YoungDiagram.mem_iff_lt_colLen.mpr h
+      simp at hmem
+    exact this hQ_pos
+  | _, _, _, _, _, _, _ =>
+    -- Singleton or inductive case: admitted as focused sub-sorry.
+    sorry
 
 /-- **α-class RC count** (γ-asymmetric): B⁺ with Q_bot ≠ d, plus B⁻ with Q_bot = r.
     equals `countPBP_B(dp).2.1`. The asymmetry reflects the tail correction:
@@ -2143,7 +2152,18 @@ private theorem card_B_RC_alpha_eq_countB_rc (dp : DualPart)
     (Finset.univ.filter fun σ : PBPSet .Bminus μP μQ =>
       σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .r).card =
       (countPBP_B dp).2.1 := by
-  sorry
+  match dp, hP, hQ, hsort, heven, hpos, hQ_pos with
+  | [], _, hQ, _, _, _, hQ_pos =>
+    have hQ_bot : μQ = ⊥ := yd_of_colLens_nil (by rw [hQ]; rfl)
+    exfalso
+    rw [hQ_bot] at hQ_pos
+    have : ¬ (⊥ : YoungDiagram).colLen 0 > 0 := by
+      intro h
+      have hmem := YoungDiagram.mem_iff_lt_colLen.mpr h
+      simp at hmem
+    exact this hQ_pos
+  | _, _, _, _, _, _, _ =>
+    sorry
 
 /-- **α-class SS count**: B⁻ PBPs with Q column 0 bottom ∈ {•, s}
     (i.e., layerOrd ≤ 1) equals `countPBP_B(dp).2.2`.
