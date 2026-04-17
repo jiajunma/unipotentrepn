@@ -8387,7 +8387,17 @@ private theorem card_PBPSet_B_balanced_step (r₁ r₂ : ℕ) (rest : DualPart)
     (h_total_rest :
       Fintype.card (PBPSet .Bplus μP.shiftLeft μQ.shiftLeft) +
       Fintype.card (PBPSet .Bminus μP.shiftLeft μQ.shiftLeft) =
-      tripleSum (countPBP_B rest)) :
+      tripleSum (countPBP_B rest))
+    (h_A1_rest :
+      (Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+        σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .d).card +
+      (Finset.univ.filter fun σ : PBPSet .Bminus μP.shiftLeft μQ.shiftLeft =>
+        σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .d).card =
+        (countPBP_B rest).1)
+    (h_A3_rest :
+      (Finset.univ.filter fun σ : PBPSet .Bminus μP.shiftLeft μQ.shiftLeft =>
+        (σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0).layerOrd ≤ 1).card =
+        (countPBP_B rest).2.2) :
     Fintype.card (PBPSet .Bplus μP μQ) + Fintype.card (PBPSet .Bminus μP μQ) =
       let k := (r₁ - r₂) / 2 + 1
       let (dd', rc', _) := countPBP_B rest
@@ -8428,10 +8438,9 @@ private theorem card_PBPSet_B_balanced_step (r₁ r₂ : ℕ) (rest : DualPart)
     omega
   -- Apply fiber identity
   have h_fiber := card_B_bal_grouped_fiber r₁ r₂ rest μP μQ hP hQ hsort heven hpos h_bal
-  -- A1, A3 at rest level (A2 replaced by Total+partitions+γ-swap derivation).
-  have h_A1 := card_B_DD_alpha_eq_countB_dd rest hP_sh hQ_sh hsort_rest heven_rest hpos_rest
-    hQ_sh_pos h_total_rest
-  have h_A3 := card_B_SS_alpha_eq_countB_ss rest hP_sh hQ_sh hsort_rest heven_rest hpos_rest hQ_sh_pos
+  -- A1, A3 at rest level (passed as explicit hypotheses).
+  have h_A1 := h_A1_rest
+  have h_A3 := h_A3_rest
   -- γ-swap at rest level
   have h_swap := card_Bplus_SS_eq_Bminus_SS μP.shiftLeft μQ.shiftLeft
   have h_swap_d := card_Bplus_Qbot_d_eq_Bminus_Qbot_d μP.shiftLeft μQ.shiftLeft
@@ -8579,8 +8588,38 @@ theorem card_PBPSet_B_eq_tripleSum_countPBP_B (dp : DualPart) (μP μQ : YoungDi
       have := card_PBPSet_B_primitive_step r₁ r₂ rest μP μQ hP hQ hsort heven h_prim
       rw [this, h_ih]
       simp only [countPBP_B, h_prim, ite_true, tripleSum]; ring
-    · -- Balanced case: delegate to `card_PBPSet_B_balanced_step` (focused sorry).
-      have h_step := card_PBPSet_B_balanced_step r₁ r₂ rest μP μQ hP hQ hsort heven hpos h_prim h_ih
+    · -- Balanced case: delegate to `card_PBPSet_B_balanced_step`. We need rest-level
+      -- A1, A3, Total as hypotheses; obtain them from recursive calls to the existing
+      -- A1/A3 theorems and the structural IH (h_ih : Total at rest).
+      -- rest-level Q_pos: derived from rest ≠ [] and evenness (as in balanced_step).
+      have h_rest_pos : rest ≠ [] := by
+        intro h_nil
+        rw [h_nil] at h_prim
+        simp at h_prim
+        have : r₂ > 0 := hpos r₂ (by simp)
+        omega
+      have hQ_sh_pos : μQ.shiftLeft.colLen 0 > 0 := by
+        obtain ⟨r₃, rest', h_rest_eq⟩ := List.exists_cons_of_ne_nil h_rest_pos
+        have hQs0 : μQ.shiftLeft.colLen 0 = r₃ / 2 := by
+          apply colLen_0_eq_of_colLens_cons (tail := dpartColLensQ_B rest'.tail)
+          rw [hQ_sh, h_rest_eq]
+          cases rest' with
+          | nil =>
+            have h_r₃pos : r₃ > 0 := hpos r₃ (by
+              rw [h_rest_eq]; exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ (by simp)))
+            simp [dpartColLensQ_B, h_r₃pos]
+          | cons r₄ rest'' =>
+            simp [dpartColLensQ_B]
+        rw [hQs0]
+        have h_r₃_even : Even r₃ := heven' r₃ (by rw [h_rest_eq]; simp)
+        have h_r₃_pos : r₃ > 0 := hpos' r₃ (by rw [h_rest_eq]; simp)
+        obtain ⟨a, ha⟩ := h_r₃_even
+        omega
+      have h_A1_rest := card_B_DD_alpha_eq_countB_dd rest hP_sh hQ_sh hsort' heven' hpos'
+        hQ_sh_pos h_ih
+      have h_A3_rest := card_B_SS_alpha_eq_countB_ss rest hP_sh hQ_sh hsort' heven' hpos' hQ_sh_pos
+      have h_step := card_PBPSet_B_balanced_step r₁ r₂ rest μP μQ hP hQ hsort heven hpos
+        h_prim h_ih h_A1_rest h_A3_rest
       rw [h_step]
       -- Unfold tripleSum of countPBP_B's balanced formula
       simp only [countPBP_B, h_prim, ite_false, tripleSum]
