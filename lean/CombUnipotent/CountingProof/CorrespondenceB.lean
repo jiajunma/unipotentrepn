@@ -2884,12 +2884,121 @@ Status: all three lemmas admitted as focused sorries. Numerically verified for
 all 82 dp cases up to size 24 via `tools/verify_all_B_lemmas.py`.
 -/
 
+/-! ### Qd balanced case: key helper lemmas
+
+These helper lemmas encode the key insight: when `σ.Q_bot = d` and
+`σ.Q.colLen 0 = μP.colLen 0` (which holds in balanced case, since
+`r₂ = r₃` by SortedGE + balanced), then:
+- `σ.Q(hP-1, j) = .d` for all j with `(hP-1, j) ∈ σ.Q.shape`
+- `σ.P(hP-1, j) = .c` for all j with `(hP-1, j) ∈ σ.P.shape` (assuming shape inclusion)
+
+These make the lift's mono_P, mono_Q, row_s, row_r constraints discharge
+in balanced case without needing `hprimQ` / `hprimP`. -/
+
+/-- Given σ with Q_bot = d at row `hQ_σ - 1 = μP.colLen 0 - 1` (true in balanced),
+    by σ.mono_Q, σ.Q(hP-1, j) = d for any j with (hP-1, j) ∈ σ.Q.shape. -/
+private theorem sigma_Q_eq_d_of_Qbot_d_bal {μP μQ : YoungDiagram}
+    (σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft)
+    (h_hQσ_eq : μQ.shiftLeft.colLen 0 = μP.colLen 0)
+    (h_Qd : σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .d)
+    (j : ℕ) (hmem : (μP.colLen 0 - 1, j) ∈ σ.val.Q.shape) :
+    σ.val.Q.paint (μP.colLen 0 - 1) j = .d := by
+  -- First: rewrite h_Qd to row (μP.colLen 0 - 1)
+  have h_Qd' : σ.val.Q.paint (μP.colLen 0 - 1) 0 = .d := by
+    rw [← h_hQσ_eq]; exact h_Qd
+  -- σ.mono_Q: σ.Q(hP-1, 0).layerOrd ≤ σ.Q(hP-1, j).layerOrd (since 0 ≤ j, same row)
+  have hmono := σ.val.mono_Q (μP.colLen 0 - 1) 0 (μP.colLen 0 - 1) j le_rfl (Nat.zero_le _) hmem
+  rw [h_Qd'] at hmono
+  -- layerOrd(d) = 4, and Q ∈ {•, s, r, d} for B+, layerOrds ∈ {0, 1, 2, 4}
+  have hsym := σ.val.sym_Q (μP.colLen 0 - 1) j hmem
+  rw [σ.prop.1] at hsym
+  simp [DRCSymbol.allowed] at hsym
+  rcases hsym with h | h | h | h
+  · rw [h] at hmono; simp [DRCSymbol.layerOrd] at hmono
+  · rw [h] at hmono; simp [DRCSymbol.layerOrd] at hmono
+  · rw [h] at hmono; simp [DRCSymbol.layerOrd] at hmono
+  · exact h
+
+/-- List-level helper: for a SortedGE list `dp`, `dpartColLensP_B dp` is pointwise
+    ≤ `dpartColLensQ_B dp` at each index. -/
+private theorem dpartColLens_P_le_Q : ∀ (dp : DualPart), dp.SortedGE → ∀ (j : ℕ),
+    (dpartColLensP_B dp).getD j 0 ≤ (dpartColLensQ_B dp).getD j 0
+  | [], _, j => by simp [dpartColLensP_B, dpartColLensQ_B]
+  | [_], _, j => by simp [dpartColLensP_B, dpartColLensQ_B]
+  | r₁ :: r₂ :: rest', hsort, j => by
+    simp only [dpartColLensP_B, dpartColLensQ_B]
+    cases j with
+    | zero =>
+      simp only [List.getD_cons_zero]
+      have h12 : r₁ ≥ r₂ := by
+        have : Antitone (r₁ :: r₂ :: rest').get := hsort
+        have := @this ⟨0, by simp⟩ ⟨1, by simp⟩ (by simp)
+        simp at this; exact this
+      exact Nat.div_le_div_right h12
+    | succ j' =>
+      simp only [List.getD_cons_succ]
+      exact dpartColLens_P_le_Q rest' (sorted_tail₂ hsort) j'
+
+/-- `colLen j = colLens.getD j 0`. -/
+private theorem colLen_eq_getD (μ : YoungDiagram) (j : ℕ) :
+    μ.colLen j = μ.colLens.getD j 0 := by
+  by_cases hj : j < μ.colLens.length
+  · -- In-range: colLens[j] = colLen j by getElem_colLens
+    have h1 : μ.colLens.getD j 0 = μ.colLens[j] := by
+      simp [List.getD, List.getElem?_eq_getElem hj]
+    rw [h1]; exact (YoungDiagram.getElem_colLens hj).symm
+  · push_neg at hj
+    -- Out of range: colLens.getD = 0 by default
+    have h1 : μ.colLens.getD j 0 = 0 := by
+      simp [List.getD, List.getElem?_eq_none hj]
+    rw [h1]
+    rw [YoungDiagram.length_colLens] at hj
+    by_contra hne
+    have hpos : 0 < μ.colLen j := Nat.pos_of_ne_zero hne
+    have hmem : (0, j) ∈ μ := YoungDiagram.mem_iff_lt_colLen.mpr hpos
+    have := YoungDiagram.mem_iff_lt_rowLen.mp hmem
+    omega
+
+/-- Shape inclusion helper: derive `μP.shiftLeft.colLen j ≤ μQ.shiftLeft.colLen j`
+    from the B-type dp structure. -/
+private theorem sigma_shape_inc_of_dp {r₁ r₂ : ℕ} {rest : DualPart}
+    {μP μQ : YoungDiagram}
+    (hP : μP.colLens = dpartColLensP_B (r₁ :: r₂ :: rest))
+    (hQ : μQ.colLens = dpartColLensQ_B (r₁ :: r₂ :: rest))
+    (hsort : (r₁ :: r₂ :: rest).SortedGE)
+    (j : ℕ) : μP.shiftLeft.colLen j ≤ μQ.shiftLeft.colLen j := by
+  have hP_sh : μP.shiftLeft.colLens = dpartColLensP_B rest := by
+    rw [YoungDiagram.colLens_shiftLeft, hP]; simp [dpartColLensP_B]
+  have hQ_sh : μQ.shiftLeft.colLens = dpartColLensQ_B rest := by
+    rw [YoungDiagram.colLens_shiftLeft, hQ]; simp [dpartColLensQ_B]
+  rw [colLen_eq_getD, colLen_eq_getD, hP_sh, hQ_sh]
+  exact dpartColLens_P_le_Q rest (sorted_tail₂ hsort) j
+
+/-- Given σ with Q_bot = d at (hP - 1, 0) (via h_hQσ_eq + h_Qd), and P shape
+    contains (hP-1, j), then σ.P(hP-1, j) = .c. Assumes shape inclusion
+    `σ.P.shape ≤ σ.Q.shape` (provable from dp structure). -/
+private theorem sigma_P_eq_c_of_Qbot_d_bal {μP μQ : YoungDiagram}
+    (σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft)
+    (h_hQσ_eq : μQ.shiftLeft.colLen 0 = μP.colLen 0)
+    (h_shape_inc : ∀ j, μP.shiftLeft.colLen j ≤ μQ.shiftLeft.colLen j)
+    (h_Qd : σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .d)
+    (j : ℕ) (hmemP : (μP.colLen 0 - 1, j) ∈ σ.val.P.shape) :
+    σ.val.P.paint (μP.colLen 0 - 1) j = .c := by
+  -- First derive (hP-1, j) ∈ σ.Q.shape from shape inclusion
+  have hmemQ : (μP.colLen 0 - 1, j) ∈ σ.val.Q.shape := by
+    rw [σ.prop.2.1, YoungDiagram.mem_iff_lt_colLen] at hmemP
+    rw [σ.prop.2.2, YoungDiagram.mem_iff_lt_colLen]
+    exact lt_of_lt_of_le hmemP (h_shape_inc j)
+  have hQd := sigma_Q_eq_d_of_Qbot_d_bal σ h_hQσ_eq h_Qd j hmemQ
+  have hPne : σ.val.P.paint (μP.colLen 0 - 1) j ≠ .dot := by
+    intro hPdot
+    have := (σ.val.dot_match _ _).mp ⟨hmemP, hPdot⟩
+    rw [hQd] at this
+    exact DRCSymbol.noConfusion this.2
+  exact PBP.P_nonDot_eq_c_of_B σ.val (Or.inl σ.prop.1) _ _ hmemP hPne
+
 /-- **Per-class fiber size (Q_bot = d)**: In balanced case, a sub-PBP σ with
     Q_bot = d has a fiber of size 4k in the new level.
-
-    **Closure path**: See the prelude block above. Requires building
-    `ValidCol0_B_bal σ .d` (subtype of `ValidCol0_B hP hQ` with admissibility),
-    showing its card = 4k, and a balanced lift bijection `ValidCol0_B_bal ≃ fiber`.
 
     **Numerical verification**: 82 dp cases via `tools/verify_all_B_lemmas.py`. -/
 private theorem fiber_card_B_bal_Qd {r₁ r₂ : ℕ} {rest : DualPart}
