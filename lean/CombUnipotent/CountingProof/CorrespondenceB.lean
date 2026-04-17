@@ -9020,6 +9020,607 @@ private theorem card_PBPSet_B_balanced_step (r₁ r₂ : ℕ) (rest : DualPart)
     rw [← Nat.add_mul, h_rc_sum]
   omega
 
+/-- **Combined Total + A1 + A3 theorem for B type** — self-recursive induction.
+    Proves Total, A1-when-Q-pos, and A3-when-Q-pos simultaneously by structural
+    induction on `dp`. This resolves the mutual dependency:
+    - Total(new, balanced) needs A1(rest), A3(rest), Total(rest).
+    - A1(new, balanced) needs A1(rest), A3(rest), Total(rest).
+    - A3(new, balanced) needs A1(rest), A3(rest), Total(rest).
+
+    Since all three recurse on `rest` (strictly smaller), we bundle them and
+    prove by joint induction. -/
+private theorem card_B_combined (dp : DualPart)
+    {μP μQ : YoungDiagram}
+    (hP : μP.colLens = dpartColLensP_B dp)
+    (hQ : μQ.colLens = dpartColLensQ_B dp)
+    (hsort : dp.SortedGE)
+    (heven : ∀ r ∈ dp, Even r)
+    (hpos : ∀ r ∈ dp, 0 < r) :
+    (Fintype.card (PBPSet .Bplus μP μQ) + Fintype.card (PBPSet .Bminus μP μQ) =
+      tripleSum (countPBP_B dp)) ∧
+    (∀ (_ : μQ.colLen 0 > 0),
+      ((Finset.univ.filter fun σ : PBPSet .Bplus μP μQ =>
+          σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .d).card +
+       (Finset.univ.filter fun σ : PBPSet .Bminus μP μQ =>
+          σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .d).card =
+        (countPBP_B dp).1) ∧
+      ((Finset.univ.filter fun σ : PBPSet .Bminus μP μQ =>
+          (σ.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd ≤ 1).card =
+        (countPBP_B dp).2.2)) := by
+  match dp, hP, hQ, hsort, heven, hpos with
+  | [], hP, hQ, _, _, _ =>
+    -- Empty: Total via card_PBPSet_bot; A1/A3 vacuous (μQ=⊥ has colLen 0 = 0).
+    have h1 := yd_of_colLens_nil (by rw [hP]; rfl)
+    have h2 := yd_of_colLens_nil (by rw [hQ]; rfl)
+    subst h1; subst h2
+    refine ⟨?_, ?_⟩
+    · simp [card_PBPSet_bot, tripleSum, countPBP_B]
+    · intro hQ_pos
+      exfalso
+      have : ¬ (⊥ : YoungDiagram).colLen 0 > 0 := by
+        intro h
+        have hmem := YoungDiagram.mem_iff_lt_colLen.mpr h
+        simp at hmem
+      exact this hQ_pos
+  | [r₁], hP, hQ, _, heven, hpos =>
+    -- Singleton: Total, A1, A3 via direct computation helpers.
+    refine ⟨?_, ?_⟩
+    · exact card_PBPSet_B_singleton r₁ μP μQ hP hQ
+        (heven r₁ (by simp)) (hpos r₁ (by simp))
+    · intro _
+      refine ⟨?_, ?_⟩
+      · exact singleton_case_B_DD_alpha r₁ hP hQ heven hpos
+      · exact singleton_case_B_SS_alpha r₁ hP hQ heven hpos
+  | r₁ :: r₂ :: rest, hP, hQ, hsort, heven, hpos =>
+    -- Inductive case.
+    have hP_sh : μP.shiftLeft.colLens = dpartColLensP_B rest := by
+      rw [YoungDiagram.colLens_shiftLeft, hP]; simp [dpartColLensP_B]
+    have hQ_sh : μQ.shiftLeft.colLens = dpartColLensQ_B rest := by
+      rw [YoungDiagram.colLens_shiftLeft, hQ]; simp [dpartColLensQ_B]
+    have hsort' := sorted_tail₂ hsort
+    have heven' : ∀ r ∈ rest, Even r :=
+      fun r hr => heven r (List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hr))
+    have hpos' : ∀ r ∈ rest, 0 < r :=
+      fun r hr => hpos r (List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hr))
+    have h_ih := card_B_combined rest hP_sh hQ_sh hsort' heven' hpos'
+    have h_total_rest : Fintype.card (PBPSet .Bplus μP.shiftLeft μQ.shiftLeft) +
+        Fintype.card (PBPSet .Bminus μP.shiftLeft μQ.shiftLeft) =
+        tripleSum (countPBP_B rest) := h_ih.1
+    by_cases h_prim : r₂ > rest.head?.getD 0
+    · -- Primitive case.
+      refine ⟨?_, ?_⟩
+      · -- Total.
+        have h_step := card_PBPSet_B_primitive_step r₁ r₂ rest μP μQ hP hQ hsort heven h_prim
+        rw [h_step, h_total_rest]
+        simp only [countPBP_B, h_prim, ite_true, tripleSum]; ring
+      · intro hQ_pos
+        refine ⟨?_, ?_⟩
+        · exact card_B_DD_alpha_primitive_step r₁ r₂ rest hP hQ hsort heven hpos hQ_pos
+            h_prim h_total_rest
+        · -- A3 primitive: use primitive step_top_Q at {.dot, .s} then sum.
+          -- We need: |B- Q.lo≤1 new| = countPBP_B.2.2 = total_rest.
+          -- By γ-swap: |B- Q.lo≤1 new| = |B+ Q.lo≤1 new| = |B+ Q=.dot new| + |B+ Q=.s new|.
+          -- Each = |B+rest| * |ValidCol0_B with topSym=sym|.
+          -- Sum: |B+rest| * (|top=.dot|+|top=.s|) = |B+rest| * |top.lo≤1| = |B+rest| * 2.
+          -- By γ-swap at rest: 2*|B+rest| = total_rest. ✓
+          --
+          -- Setup: standard primitive-case conditions.
+          have hP0 : μP.colLen 0 = r₂ / 2 :=
+            colLen_0_eq_of_colLens_cons (by rw [hP, dpartColLensP_B_cons₂])
+          have hQ0 : μQ.colLen 0 = r₁ / 2 :=
+            colLen_0_eq_of_colLens_cons (by rw [hQ, dpartColLensQ_B_cons₂])
+          have h_ge := sortedGE_head_ge hsort
+          have hle : μP.colLen 0 ≤ μQ.colLen 0 := by
+            rw [hP0, hQ0]; exact Nat.div_le_div_right h_ge
+          have heven₂ := heven r₂ (by simp)
+          obtain ⟨b, hb⟩ := heven₂
+          have hP_pos : 0 < μP.colLen 0 := by
+            rw [hP0, hb]; have := hpos r₂ (by simp); omega
+          set k := (r₁ - r₂) / 2 + 1 with hk_def
+          have hk_pos : k ≥ 1 := by rw [hk_def]; omega
+          have hk_eq : k = μQ.colLen 0 - μP.colLen 0 + 1 := by
+            rw [hk_def, hP0, hQ0]
+            have heven₁ := heven r₁ (by simp)
+            obtain ⟨a, ha⟩ := heven₁
+            rw [ha, hb]; omega
+          -- Primitive conditions hprimP, hprimQ - reuse the existing primitive_step_top_Q style.
+          -- Actually, since we already have the sub-level data, let's use the compositional identity:
+          -- |B+ filter Q.lo≤1 new| = Σ_σ |{τ in fiber : τ.Q.lo≤1}|  (filtered sum-fiber)
+          -- For primitive, every σ's fiber is uniform 4k, with 2 having topSym.lo≤1.
+          -- But proving fiber bijection to ValidCol0_B requires primitive hprimP/hprimQ.
+          -- Use existing `card_PBPSet_Bplus_primitive_step_top_Q` for each of .dot, .s.
+          have hprimP : ∀ j, j ≥ 1 → μP.colLen j < μP.colLen 0 := by
+            intro j hj
+            have h1 : μP.colLen j ≤ μP.colLen 1 := μP.colLen_anti 1 j (by omega)
+            suffices hsuff : μP.colLen 1 < μP.colLen 0 from lt_of_le_of_lt h1 hsuff
+            rw [← YoungDiagram.colLen_shiftLeft, hP0]
+            by_cases hemp : μP.shiftLeft.colLens = []
+            · have hrl : μP.shiftLeft.rowLen 0 = 0 := by
+                rw [← YoungDiagram.length_colLens]; simp [hemp]
+              have : μP.shiftLeft.colLen 0 = 0 := by
+                by_contra hne; push_neg at hne
+                have : 0 < μP.shiftLeft.colLen 0 := Nat.pos_of_ne_zero hne
+                have hmem := YoungDiagram.mem_iff_lt_colLen.mpr this
+                have := YoungDiagram.mem_iff_lt_rowLen.mp hmem
+                omega
+              omega
+            · obtain ⟨hd, tl, heq⟩ := List.exists_cons_of_ne_nil hemp
+              have h0 : μP.shiftLeft.colLen 0 = hd :=
+                colLen_0_eq_of_colLens_cons heq
+              rw [h0]
+              have heq' := hP_sh.symm.trans heq
+              match rest, heq' with
+              | r₃ :: r₄ :: rest', heq'' =>
+                simp only [dpartColLensP_B] at heq''
+                have hhd : r₄ / 2 = hd := (List.cons.inj heq'').1
+                rw [← hhd, hb]
+                have hr₃_lt : r₃ < r₂ := by
+                  have : r₂ > (r₃ :: r₄ :: rest').head?.getD 0 := h_prim
+                  simp at this; omega
+                have hr₄_le_r₃ : r₄ ≤ r₃ := by
+                  have : Antitone (r₁ :: r₂ :: r₃ :: r₄ :: rest').get := hsort
+                  have := @this ⟨2, by simp⟩ ⟨3, by simp⟩ (by simp)
+                  simp at this; exact this
+                have heven₄ := heven r₄ (by simp)
+                obtain ⟨d, hd⟩ := heven₄; rw [hd]; omega
+              | [r₃], heq'' =>
+                simp [dpartColLensP_B] at heq''
+              | [], heq'' =>
+                simp [dpartColLensP_B] at heq''
+          have hprimQ : ∀ j, j ≥ 1 → μQ.colLen j ≤ μP.colLen 0 - 1 := by
+            intro j hj
+            have h1 : μQ.colLen j ≤ μQ.colLen 1 := μQ.colLen_anti 1 j (by omega)
+            suffices hsuff : μQ.colLen 1 ≤ μP.colLen 0 - 1 from le_trans h1 hsuff
+            rw [← YoungDiagram.colLen_shiftLeft, hP0]
+            by_cases hemq : μQ.shiftLeft.colLens = []
+            · have hrl : μQ.shiftLeft.rowLen 0 = 0 := by
+                rw [← YoungDiagram.length_colLens]; simp [hemq]
+              have : μQ.shiftLeft.colLen 0 = 0 := by
+                by_contra hne; push_neg at hne
+                have : 0 < μQ.shiftLeft.colLen 0 := Nat.pos_of_ne_zero hne
+                have hmem := YoungDiagram.mem_iff_lt_colLen.mpr this
+                have := YoungDiagram.mem_iff_lt_rowLen.mp hmem
+                omega
+              omega
+            · obtain ⟨hd, tl, heq⟩ := List.exists_cons_of_ne_nil hemq
+              have h0 : μQ.shiftLeft.colLen 0 = hd :=
+                colLen_0_eq_of_colLens_cons heq
+              rw [h0]
+              have heq' := hQ_sh.symm.trans heq
+              match rest, heq' with
+              | r₃ :: r₄ :: rest', heq'' =>
+                simp only [dpartColLensQ_B] at heq''
+                have hhd : r₃ / 2 = hd := (List.cons.inj heq'').1
+                rw [← hhd, hb]
+                have hr₃_lt : r₃ < r₂ := by
+                  have : r₂ > (r₃ :: r₄ :: rest').head?.getD 0 := h_prim
+                  simp at this; omega
+                have heven₃ := heven r₃ (by simp)
+                obtain ⟨c, hc⟩ := heven₃; rw [hc]; omega
+              | [r₃], heq'' =>
+                simp only [dpartColLensQ_B] at heq''
+                by_cases hr₃ : r₃ > 0
+                · rw [if_pos hr₃] at heq''
+                  have hhd : r₃ / 2 = hd := (List.cons.inj heq'').1
+                  rw [← hhd, hb]
+                  have hr₃_lt : r₃ < r₂ := by simp at h_prim; exact h_prim
+                  have heven₃ := heven r₃ (by simp)
+                  obtain ⟨c, hc⟩ := heven₃; rw [hc]; omega
+                · rw [if_neg (by omega)] at heq''; exact absurd heq'' (List.cons_ne_nil _ _).symm
+              | [], heq'' =>
+                simp [dpartColLensQ_B] at heq''
+          -- γ-swap to B+.
+          rw [← card_Bplus_SS_eq_Bminus_SS μP μQ]
+          -- Split |B+ Q.lo≤1| = |B+ Q=.dot| + |B+ Q=.s|.
+          rw [show (Finset.univ.filter fun σ : PBPSet .Bplus μP μQ =>
+                (σ.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd ≤ 1).card =
+                (Finset.univ.filter fun σ : PBPSet .Bplus μP μQ =>
+                  σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .dot).card +
+                (Finset.univ.filter fun σ : PBPSet .Bplus μP μQ =>
+                  σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .s).card from ?_]
+          · -- Apply primitive step top_Q for each.
+            rw [show (Finset.univ.filter fun σ : PBPSet .Bplus μP μQ =>
+                σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .dot).card =
+                Fintype.card {σ : PBPSet .Bplus μP μQ //
+                  σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .dot} from
+                (Fintype.card_subtype _).symm]
+            rw [show (Finset.univ.filter fun σ : PBPSet .Bplus μP μQ =>
+                σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .s).card =
+                Fintype.card {σ : PBPSet .Bplus μP μQ //
+                  σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .s} from
+                (Fintype.card_subtype _).symm]
+            rw [card_PBPSet_Bplus_primitive_step_top_Q hle hP_pos hQ_pos hprimP hprimQ .dot]
+            rw [card_PBPSet_Bplus_primitive_step_top_Q hle hP_pos hQ_pos hprimP hprimQ .s]
+            rw [← Nat.mul_add]
+            -- Need: |ValidCol0_B top=.dot| + |ValidCol0_B top=.s| = |ValidCol0_B top.lo≤1| = 2.
+            have h_dot_s_lo : Fintype.card {v : ValidCol0_B (μP.colLen 0) (μQ.colLen 0) //
+                topSym_B (μP.colLen 0) (μQ.colLen 0) v = .dot} +
+                Fintype.card {v : ValidCol0_B (μP.colLen 0) (μQ.colLen 0) //
+                topSym_B (μP.colLen 0) (μQ.colLen 0) v = .s} =
+                Fintype.card {v : ValidCol0_B (μP.colLen 0) (μQ.colLen 0) //
+                (topSym_B (μP.colLen 0) (μQ.colLen 0) v).layerOrd ≤ 1} := by
+              -- Partition {lo≤1} = {=.dot} ∪ {=.s}, disjoint.
+              rw [show (Fintype.card {v : ValidCol0_B (μP.colLen 0) (μQ.colLen 0) //
+                    (topSym_B (μP.colLen 0) (μQ.colLen 0) v).layerOrd ≤ 1}) =
+                  (Finset.univ.filter fun v : ValidCol0_B (μP.colLen 0) (μQ.colLen 0) =>
+                    (topSym_B (μP.colLen 0) (μQ.colLen 0) v).layerOrd ≤ 1).card from
+                  Fintype.card_subtype _]
+              rw [show (Fintype.card {v : ValidCol0_B (μP.colLen 0) (μQ.colLen 0) //
+                    topSym_B (μP.colLen 0) (μQ.colLen 0) v = .dot}) =
+                  (Finset.univ.filter fun v : ValidCol0_B (μP.colLen 0) (μQ.colLen 0) =>
+                    topSym_B (μP.colLen 0) (μQ.colLen 0) v = .dot).card from
+                  Fintype.card_subtype _]
+              rw [show (Fintype.card {v : ValidCol0_B (μP.colLen 0) (μQ.colLen 0) //
+                    topSym_B (μP.colLen 0) (μQ.colLen 0) v = .s}) =
+                  (Finset.univ.filter fun v : ValidCol0_B (μP.colLen 0) (μQ.colLen 0) =>
+                    topSym_B (μP.colLen 0) (μQ.colLen 0) v = .s).card from
+                  Fintype.card_subtype _]
+              have h_union : (Finset.univ.filter fun v : ValidCol0_B (μP.colLen 0) (μQ.colLen 0) =>
+                    (topSym_B (μP.colLen 0) (μQ.colLen 0) v).layerOrd ≤ 1) =
+                  (Finset.univ.filter fun v => topSym_B (μP.colLen 0) (μQ.colLen 0) v = .dot) ∪
+                  (Finset.univ.filter fun v => topSym_B (μP.colLen 0) (μQ.colLen 0) v = .s) := by
+                ext v
+                simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_union]
+                constructor
+                · intro h_lo
+                  -- topSym.lo ≤ 1 ⟹ topSym ∈ {.dot, .s}.
+                  rcases v with d | d
+                  · simp only [topSym_B] at h_lo
+                    split_ifs at h_lo with hk'
+                    · rcases d.prop.1 ⟨μQ.colLen 0 - μP.colLen 0 - 1, by omega⟩ with h | h | h
+                      · right
+                        show topSym_B (μP.colLen 0) (μQ.colLen 0) (Sum.inl d) = .s
+                        simp only [topSym_B]; rw [dif_pos hk']; exact h
+                      · rw [h] at h_lo; simp [DRCSymbol.layerOrd] at h_lo
+                      · rw [h] at h_lo; simp [DRCSymbol.layerOrd] at h_lo
+                    · left
+                      show topSym_B (μP.colLen 0) (μQ.colLen 0) (Sum.inl d) = .dot
+                      simp only [topSym_B]; rw [dif_neg hk']
+                  · simp only [topSym_B] at h_lo
+                    rcases d.prop.1 ⟨μQ.colLen 0 - μP.colLen 0, by omega⟩ with h | h | h
+                    · right
+                      show topSym_B (μP.colLen 0) (μQ.colLen 0) (Sum.inr d) = .s
+                      simp only [topSym_B]; exact h
+                    · rw [h] at h_lo; simp [DRCSymbol.layerOrd] at h_lo
+                    · rw [h] at h_lo; simp [DRCSymbol.layerOrd] at h_lo
+                · rintro (h | h)
+                  · rw [h]; decide
+                  · rw [h]; decide
+              rw [h_union]
+              rw [Finset.card_union_of_disjoint]
+              rw [Finset.disjoint_filter]
+              intros v _ h1 h2; rw [h1] at h2; exact DRCSymbol.noConfusion h2
+            rw [h_dot_s_lo, validCol0_B_card_top_lo_le_one _ _ hle _ hk_eq hk_pos]
+            -- Goal: |B+rest| * 2 = countPBP_B.2.2.
+            -- countPBP_B primitive .2.2 = total_rest * 1 = total_rest.
+            have h_unfold : (countPBP_B (r₁ :: r₂ :: rest)).2.2 = tripleSum (countPBP_B rest) := by
+              simp only [countPBP_B, h_prim, ite_true]
+              rcases h_ct : countPBP_B rest with ⟨dd', rc', ss'⟩
+              simp only [tripleSum, tailCoeffs]; ring
+            rw [h_unfold]
+            -- Goal: |B+rest| * 2 = total_rest
+            -- total_rest = |B+rest| + |B-rest| = 2 * |B+rest| (by γ-swap).
+            have h_sym_sh := card_Bplus_eq_Bminus μP.shiftLeft μQ.shiftLeft
+            rw [← h_total_rest, h_sym_sh, ← two_mul]
+            ring
+          · -- Show union split.
+            rw [show (Finset.univ.filter fun σ : PBPSet .Bplus μP μQ =>
+                  (σ.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd ≤ 1) =
+                (Finset.univ.filter fun σ : PBPSet .Bplus μP μQ =>
+                  σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .dot) ∪
+                (Finset.univ.filter fun σ : PBPSet .Bplus μP μQ =>
+                  σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .s) from ?_]
+            · rw [Finset.card_union_of_disjoint]
+              rw [Finset.disjoint_filter]
+              intros σ _ h1 h2; rw [h1] at h2; exact DRCSymbol.noConfusion h2
+            · ext σ
+              simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_union]
+              constructor
+              · intro h_lo
+                -- σ.Q ∈ {•, s, r, d} (B+ allowed set).
+                -- Q.lo ≤ 1 excludes r, d. So Q ∈ {.dot, .s}.
+                by_cases h_in : (μQ.colLen 0 - 1, 0) ∈ σ.val.Q.shape
+                · have hsym := σ.val.sym_Q _ _ h_in
+                  rw [σ.prop.1] at hsym
+                  simp [DRCSymbol.allowed] at hsym
+                  rcases hsym with h | h | h | h
+                  · left; exact h
+                  · right; exact h
+                  · rw [h] at h_lo; simp [DRCSymbol.layerOrd] at h_lo
+                  · rw [h] at h_lo; simp [DRCSymbol.layerOrd] at h_lo
+                · left; exact σ.val.Q.paint_outside _ _ h_in
+              · rintro (h | h)
+                · rw [h]; decide
+                · rw [h]; decide
+    · -- Balanced case.
+      have h_A1_rest : (Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+          σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .d).card +
+          (Finset.univ.filter fun σ : PBPSet .Bminus μP.shiftLeft μQ.shiftLeft =>
+          σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .d).card =
+          (countPBP_B rest).1 := by
+        -- Use h_ih.2 when μQ.shiftLeft.colLen 0 > 0.
+        have h_rest_pos : rest ≠ [] := by
+          intro h_nil
+          rw [h_nil] at h_prim
+          simp at h_prim
+          have : r₂ > 0 := hpos r₂ (by simp)
+          omega
+        have hQ_sh_pos : μQ.shiftLeft.colLen 0 > 0 := by
+          obtain ⟨r₃, rest', h_rest_eq⟩ := List.exists_cons_of_ne_nil h_rest_pos
+          have hQs0 : μQ.shiftLeft.colLen 0 = r₃ / 2 := by
+            apply colLen_0_eq_of_colLens_cons (tail := dpartColLensQ_B rest'.tail)
+            rw [hQ_sh, h_rest_eq]
+            cases rest' with
+            | nil =>
+              have h_r₃pos : r₃ > 0 := hpos r₃ (by
+                rw [h_rest_eq]; exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ (by simp)))
+              simp [dpartColLensQ_B, h_r₃pos]
+            | cons r₄ rest'' =>
+              simp [dpartColLensQ_B]
+          rw [hQs0]
+          have h_r₃_even : Even r₃ := heven' r₃ (by rw [h_rest_eq]; simp)
+          have h_r₃_pos : r₃ > 0 := hpos' r₃ (by rw [h_rest_eq]; simp)
+          obtain ⟨a, ha⟩ := h_r₃_even
+          omega
+        exact (h_ih.2 hQ_sh_pos).1
+      have h_A3_rest : (Finset.univ.filter fun σ : PBPSet .Bminus μP.shiftLeft μQ.shiftLeft =>
+          (σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0).layerOrd ≤ 1).card =
+          (countPBP_B rest).2.2 := by
+        have h_rest_pos : rest ≠ [] := by
+          intro h_nil
+          rw [h_nil] at h_prim
+          simp at h_prim
+          have : r₂ > 0 := hpos r₂ (by simp)
+          omega
+        have hQ_sh_pos : μQ.shiftLeft.colLen 0 > 0 := by
+          obtain ⟨r₃, rest', h_rest_eq⟩ := List.exists_cons_of_ne_nil h_rest_pos
+          have hQs0 : μQ.shiftLeft.colLen 0 = r₃ / 2 := by
+            apply colLen_0_eq_of_colLens_cons (tail := dpartColLensQ_B rest'.tail)
+            rw [hQ_sh, h_rest_eq]
+            cases rest' with
+            | nil =>
+              have h_r₃pos : r₃ > 0 := hpos r₃ (by
+                rw [h_rest_eq]; exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ (by simp)))
+              simp [dpartColLensQ_B, h_r₃pos]
+            | cons r₄ rest'' =>
+              simp [dpartColLensQ_B]
+          rw [hQs0]
+          have h_r₃_even : Even r₃ := heven' r₃ (by rw [h_rest_eq]; simp)
+          have h_r₃_pos : r₃ > 0 := hpos' r₃ (by rw [h_rest_eq]; simp)
+          obtain ⟨a, ha⟩ := h_r₃_even
+          omega
+        exact (h_ih.2 hQ_sh_pos).2
+      refine ⟨?_, ?_⟩
+      · -- Total balanced.
+        have h_step := card_PBPSet_B_balanced_step r₁ r₂ rest μP μQ hP hQ hsort heven hpos
+          h_prim h_total_rest h_A1_rest h_A3_rest
+        rw [h_step]
+        simp only [countPBP_B, h_prim, ite_false, tripleSum]
+        rcases h_ct : countPBP_B rest with ⟨dd', rc', ss'⟩
+        simp only [tailCoeffs, nu]
+        set k := (r₁ - r₂) / 2 + 1 with hk_def
+        have hk_pos : k ≥ 1 := by rw [hk_def]; omega
+        by_cases hk : k ≥ 2
+        · simp only [if_pos hk]
+          have e1 : k - 1 + 1 = k := by omega
+          have e2 : k - 2 + 1 = k - 1 := by omega
+          rw [e1, e2]
+          have hk1 : k - 1 + 1 = k := by omega
+          generalize hkm1 : k - 1 = m at *
+          have hk_eq : k = m + 1 := by omega
+          rw [hk_eq]
+          have hm_sub : 4 * (m + 1) - 2 = 4 * m + 2 := by omega
+          rw [hm_sub]
+          ring
+        · simp only [if_neg hk]
+          push_neg at hk
+          have hk1 : k = 1 := by omega
+          rw [hk1]
+          simp
+          ring
+      · intro hQ_pos
+        -- A1, A3 at new (balanced).
+        -- A1: use card_B_DD_alpha_bal_grouped_fiber + A1_rest + A3_rest + Total_rest.
+        -- A3: use card_B_SS_alpha_bal_grouped_fiber + A1_rest + A3_rest + Total_rest.
+        refine ⟨?_, ?_⟩
+        · -- A1 balanced.
+          have h_gf := card_B_DD_alpha_bal_grouped_fiber r₁ r₂ rest μP μQ hP hQ hsort heven hpos h_prim
+          -- h_gf gives |B+Q=d|+|B-Q=d| = (Bp_d+Bm_d)*f_d + (Bp_r+Bm_r)*f_r + (Bp_low+Bm_low)*f_lo
+          -- where f_d = 2k-1, f_r = 2*(if k≥2 then k-1 else 0), f_lo = (if k≥2 then k-1 else 0).
+          rcases h_ct : countPBP_B rest with ⟨dd', rc', ss'⟩
+          rw [h_ct] at h_A1_rest h_A3_rest h_total_rest
+          simp only at h_A1_rest h_A3_rest h_total_rest
+          have h_ts : tripleSum (dd', rc', ss') = dd' + rc' + ss' := rfl
+          rw [h_ts] at h_total_rest
+          show _ = (countPBP_B (r₁::r₂::rest)).1
+          have h_unfold : (countPBP_B (r₁ :: r₂ :: rest)).1 =
+              dd' * ((tailCoeffs ((r₁ - r₂) / 2 + 1)).1.1) +
+              rc' * ((tailCoeffs ((r₁ - r₂) / 2 + 1)).2.1) := by
+            simp only [countPBP_B, h_prim, ite_false, h_ct]
+          rw [h_unfold]
+          -- Expand tailCoeffs.1.1 = 2k-1 (tDD) and .2.1 = 2·(if k≥2 then k-1 else 0) (scDD).
+          set k := (r₁ - r₂) / 2 + 1 with hk_def
+          have hk_pos : k ≥ 1 := by rw [hk_def]; omega
+          rw [tailCoeffs_tDD k hk_pos, tailCoeffs_scDD k]
+          -- Now goal: ... = dd'*(2k-1) + rc'*(2*(if k≥2 then k-1 else 0))
+          rw [h_gf]
+          simp only
+          -- Goal: (Bp_d+Bm_d)*(2k-1) + (Bp_r+Bm_r)*(2f) + (Bp_low+Bm_low)*f = dd'*(2k-1) + rc'*(2f)
+          -- where f = if k≥2 then k-1 else 0.
+          set Bp_d := (Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+            σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .d).card with hBp_d
+          set Bm_d := (Finset.univ.filter fun σ : PBPSet .Bminus μP.shiftLeft μQ.shiftLeft =>
+            σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .d).card with hBm_d
+          set Bp_r := (Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+            σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .r).card with hBp_r
+          set Bm_r := (Finset.univ.filter fun σ : PBPSet .Bminus μP.shiftLeft μQ.shiftLeft =>
+            σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .r).card with hBm_r
+          set Bp_low := (Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+            (σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0).layerOrd ≤ 1).card with hBp_low
+          set Bm_low := (Finset.univ.filter fun σ : PBPSet .Bminus μP.shiftLeft μQ.shiftLeft =>
+            (σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0).layerOrd ≤ 1).card with hBm_low
+          -- A1_rest: Bp_d + Bm_d = dd'
+          -- A3_rest: Bm_low = ss'
+          -- γ-swap: Bm_d = Bp_d, Bm_r = Bp_r, Bm_low = Bp_low.
+          have h_swap_d := card_Bplus_Qbot_d_eq_Bminus_Qbot_d μP.shiftLeft μQ.shiftLeft
+          have h_swap_r := card_Bplus_Qbot_r_eq_Bminus_Qbot_r μP.shiftLeft μQ.shiftLeft
+          have h_swap_low := card_Bplus_SS_eq_Bminus_SS μP.shiftLeft μQ.shiftLeft
+          -- Derive Bp_r + Bm_r + ss' = rc' via Total_rest + partitions + A1_rest + A3_rest.
+          have hQ_sh_pos : μQ.shiftLeft.colLen 0 > 0 := by
+            have h_rest_pos : rest ≠ [] := by
+              intro h_nil
+              rw [h_nil] at h_prim
+              simp at h_prim
+              have : r₂ > 0 := hpos r₂ (by simp)
+              omega
+            obtain ⟨r₃, rest', h_rest_eq⟩ := List.exists_cons_of_ne_nil h_rest_pos
+            have hQs0 : μQ.shiftLeft.colLen 0 = r₃ / 2 := by
+              apply colLen_0_eq_of_colLens_cons (tail := dpartColLensQ_B rest'.tail)
+              rw [hQ_sh, h_rest_eq]
+              cases rest' with
+              | nil =>
+                have h_r₃pos : r₃ > 0 := hpos r₃ (by
+                  rw [h_rest_eq]; exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ (by simp)))
+                simp [dpartColLensQ_B, h_r₃pos]
+              | cons r₄ rest'' =>
+                simp [dpartColLensQ_B]
+            rw [hQs0]
+            have h_r₃_even : Even r₃ := heven' r₃ (by rw [h_rest_eq]; simp)
+            have h_r₃_pos : r₃ > 0 := hpos' r₃ (by rw [h_rest_eq]; simp)
+            obtain ⟨a, ha⟩ := h_r₃_even
+            omega
+          have h_part := card_Bplus_nonD_eq_low_plus_r μP.shiftLeft μQ.shiftLeft hQ_sh_pos
+          have h_part_Bm := card_Bminus_partition_Qbot μP.shiftLeft μQ.shiftLeft hQ_sh_pos
+          have h_split_Bp : Fintype.card (PBPSet .Bplus μP.shiftLeft μQ.shiftLeft) =
+              Bp_d +
+              (Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+                σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 ≠ .d).card := by
+            rw [← Finset.card_univ, ← Finset.card_filter_add_card_filter_not
+              (p := fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+                σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .d)]
+          set Bp_nonD := (Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+            σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 ≠ .d).card with hBp_nonD
+          have hBp_low_eq : Bp_low = ss' := h_swap_low.trans h_A3_rest
+          have hBm_low_eq : Bm_low = ss' := h_swap_low.symm.trans hBp_low_eq
+          have h_rc_sum : Bp_r + Bm_r + ss' = rc' := by
+            have h_part' : Bp_nonD = Bp_low + Bp_r := h_part
+            rw [h_part'] at h_split_Bp
+            -- h_part_Bm : |B-_rest| = Bm_d + Bm_r + Bm_low (in Finset.filter.card form)
+            -- Our set defs match these. Use `show` to make goal explicit.
+            have h_split_Bm : Fintype.card (PBPSet .Bminus μP.shiftLeft μQ.shiftLeft) =
+                Bm_d + Bm_r + Bm_low := h_part_Bm
+            rw [h_split_Bp, h_split_Bm] at h_total_rest
+            -- h_total_rest: Bp_d + (Bp_low + Bp_r) + (Bm_d + Bm_r + Bm_low) = dd'+rc'+ss'
+            -- Use Bp_low = ss', Bm_low = ss', Bm_d = Bp_d via swap, h_A1_rest: Bp_d + Bm_d = dd'.
+            rw [hBp_low_eq, hBm_low_eq] at h_total_rest
+            -- h_total_rest: Bp_d + (ss' + Bp_r) + (Bm_d + Bm_r + ss') = dd' + rc' + ss'
+            -- h_A1_rest : Bp_d + Bm_d = dd'
+            omega
+          -- Now close the goal.
+          rw [h_A1_rest]
+          -- Goal: dd'*(2k-1) + (Bp_r+Bm_r)*(2*f) + (Bp_low+Bm_low)*f = dd'*(2k-1) + rc'*(2*f)
+          rw [hBp_low_eq, hBm_low_eq]
+          by_cases hk2 : k ≥ 2
+          · simp only [if_pos hk2]
+            -- Goal: dd'*(2k-1) + (Bp_r+Bm_r)*(2*(k-1)) + (ss'+ss')*(k-1) = dd'*(2k-1) + rc'*(2*(k-1))
+            have h_combined : (Bp_r + Bm_r) * (2 * (k - 1)) + (ss' + ss') * (k - 1) =
+                              rc' * (2 * (k - 1)) := by
+              have : (Bp_r + Bm_r) * (2 * (k - 1)) + (ss' + ss') * (k - 1) =
+                     (Bp_r + Bm_r + ss') * (2 * (k - 1)) := by ring
+              rw [this, h_rc_sum]
+            omega
+          · simp only [if_neg hk2]
+            ring
+        · -- A3 balanced.
+          have h_gf := card_B_SS_alpha_bal_grouped_fiber r₁ r₂ rest μP μQ hP hQ hsort heven hpos h_prim
+          rcases h_ct : countPBP_B rest with ⟨dd', rc', ss'⟩
+          rw [h_ct] at h_A1_rest h_A3_rest h_total_rest
+          simp only at h_A1_rest h_A3_rest h_total_rest
+          have h_ts : tripleSum (dd', rc', ss') = dd' + rc' + ss' := rfl
+          rw [h_ts] at h_total_rest
+          show _ = (countPBP_B (r₁::r₂::rest)).2.2
+          have h_unfold : (countPBP_B (r₁ :: r₂ :: rest)).2.2 =
+              dd' * ((tailCoeffs ((r₁ - r₂) / 2 + 1)).1.2.2) +
+              rc' * ((tailCoeffs ((r₁ - r₂) / 2 + 1)).2.2.2) := by
+            simp only [countPBP_B, h_prim, ite_false, h_ct]
+          rw [h_unfold]
+          rw [tailCoeffs_tSS, tailCoeffs_scSS]
+          -- Goal: LHS = dd'*1 + rc'*1 = dd' + rc'.
+          rw [h_gf]
+          simp only
+          -- Goal: Bp_d*2 + Bp_r*2 + Bp_low*1 = dd'*1 + rc'*1
+          -- i.e., 2*(Bp_d + Bp_r) + Bp_low = dd' + rc'
+          -- We have: 2*Bp_d = dd' (A1_rest + swap); Bp_low = ss' (A3_rest + swap);
+          -- need: 2*Bp_r + ss' = rc'.
+          -- From h_rc_sum above: Bp_r + Bm_r + ss' = rc'; with Bm_r = Bp_r: 2*Bp_r + ss' = rc'.
+          set Bp_d := (Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+            σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .d).card with hBp_d
+          set Bm_d := (Finset.univ.filter fun σ : PBPSet .Bminus μP.shiftLeft μQ.shiftLeft =>
+            σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .d).card with hBm_d
+          set Bp_r := (Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+            σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .r).card with hBp_r
+          set Bm_r := (Finset.univ.filter fun σ : PBPSet .Bminus μP.shiftLeft μQ.shiftLeft =>
+            σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .r).card with hBm_r
+          set Bp_low := (Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+            (σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0).layerOrd ≤ 1).card with hBp_low
+          set Bm_low := (Finset.univ.filter fun σ : PBPSet .Bminus μP.shiftLeft μQ.shiftLeft =>
+            (σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0).layerOrd ≤ 1).card with hBm_low
+          have h_swap_d := card_Bplus_Qbot_d_eq_Bminus_Qbot_d μP.shiftLeft μQ.shiftLeft
+          have h_swap_r := card_Bplus_Qbot_r_eq_Bminus_Qbot_r μP.shiftLeft μQ.shiftLeft
+          have h_swap_low := card_Bplus_SS_eq_Bminus_SS μP.shiftLeft μQ.shiftLeft
+          have hBp_low_eq : Bp_low = ss' := h_swap_low.trans h_A3_rest
+          have hBm_low_eq : Bm_low = ss' := h_swap_low.symm.trans hBp_low_eq
+          have hQ_sh_pos : μQ.shiftLeft.colLen 0 > 0 := by
+            have h_rest_pos : rest ≠ [] := by
+              intro h_nil
+              rw [h_nil] at h_prim
+              simp at h_prim
+              have : r₂ > 0 := hpos r₂ (by simp)
+              omega
+            obtain ⟨r₃, rest', h_rest_eq⟩ := List.exists_cons_of_ne_nil h_rest_pos
+            have hQs0 : μQ.shiftLeft.colLen 0 = r₃ / 2 := by
+              apply colLen_0_eq_of_colLens_cons (tail := dpartColLensQ_B rest'.tail)
+              rw [hQ_sh, h_rest_eq]
+              cases rest' with
+              | nil =>
+                have h_r₃pos : r₃ > 0 := hpos r₃ (by
+                  rw [h_rest_eq]; exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ (by simp)))
+                simp [dpartColLensQ_B, h_r₃pos]
+              | cons r₄ rest'' =>
+                simp [dpartColLensQ_B]
+            rw [hQs0]
+            have h_r₃_even : Even r₃ := heven' r₃ (by rw [h_rest_eq]; simp)
+            have h_r₃_pos : r₃ > 0 := hpos' r₃ (by rw [h_rest_eq]; simp)
+            obtain ⟨a, ha⟩ := h_r₃_even
+            omega
+          have h_part := card_Bplus_nonD_eq_low_plus_r μP.shiftLeft μQ.shiftLeft hQ_sh_pos
+          have h_part_Bm := card_Bminus_partition_Qbot μP.shiftLeft μQ.shiftLeft hQ_sh_pos
+          have h_split_Bp : Fintype.card (PBPSet .Bplus μP.shiftLeft μQ.shiftLeft) =
+              Bp_d +
+              (Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+                σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 ≠ .d).card := by
+            rw [← Finset.card_univ, ← Finset.card_filter_add_card_filter_not
+              (p := fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+                σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .d)]
+          set Bp_nonD := (Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+            σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 ≠ .d).card with hBp_nonD
+          have h_rc_sum : Bp_r + Bm_r + ss' = rc' := by
+            have h_part' : Bp_nonD = Bp_low + Bp_r := h_part
+            rw [h_part'] at h_split_Bp
+            have h_split_Bm : Fintype.card (PBPSet .Bminus μP.shiftLeft μQ.shiftLeft) =
+                Bm_d + Bm_r + Bm_low := h_part_Bm
+            rw [h_split_Bp, h_split_Bm] at h_total_rest
+            rw [hBp_low_eq, hBm_low_eq] at h_total_rest
+            omega
+          -- Goal: Bp_d * 2 + Bp_r * 2 + Bp_low * 1 = dd' * 1 + rc' * 1
+          rw [hBp_low_eq]
+          -- 2*Bp_d + 2*Bp_r + ss' = dd' + rc'.
+          have hBm_r_eq_Bp_r : Bm_r = Bp_r := h_swap_r.symm
+          have h_2Bp_r_plus_ss : 2 * Bp_r + ss' = rc' := by
+            have := h_rc_sum
+            omega
+          omega
+
 /-- **Proposition 10.11 for B type:**
     card(PBPSet .Bplus μP μQ) + card(PBPSet .Bminus μP μQ) = tripleSum(countPBP_B dp).
 
