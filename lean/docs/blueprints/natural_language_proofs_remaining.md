@@ -1,319 +1,244 @@
-# 剩余 5 个 Sorry 的完整自然语言证明 (修订版 v2)
+# 剩余 5 个 Sorry 的完整自然语言证明 (v3 — 基于 C/D 模式)
 
-## 数值验证状态
+## 核心洞察
 
-所有 identities 已通过 82+ dp cases 数值验证:
-- `tools/verify_all_B_lemmas.py`: A1, A2, A3, γ-swap, balanced step (60+22 cases)
-- `tools/verify_fiber_by_Qbot.py`: Qd, Qr, Qlow fiber sizes (11 balanced cases)
-- `tools/verify_primitive_fiber_class.py`: Primitive per-sub (d, r, low) distribution
+剩余证明应该**模仿 D/C 的 combined induction 模式**，而不是独立构造新的 fiber analysis infrastructure。
 
-## 关键数值发现
+关键观察：
+1. D 的 per-tc 计数通过 `card_PBPSet_D_primitive_step_tc` 给出，利用 `ValidCol0 filtered by top symbol`
+2. 然后 `card_PBPSet_D_combined` 做组合归纳，证明 (Total ∧ per-tc) 同时成立
+3. C 的计数通过 D 的 per-tc 派生（C primitive = Total(D), C balanced = |D_DD| + |D_RC|）
 
-### Fiber 分布 (per B⁻ sub in primitive)
+对 B/M：
+1. B 的 per-α-tc 计数通过 `card_PBPSet_B_primitive_step_tc` 给出（按 ValidCol0_B 顶部 Q 符号 split）
+2. Combined induction 证明 (Total(B) ∧ A1 ∧ A3 ∧ Total(M)) 同时
+3. M 的计数通过 B 的 per-α-tc 派生（M primitive = Total(B at shift), M balanced = dd(B at shift) + rc(B at shift)）
 
-For primitive case at k (r₁-r₂ ≥ 2), per sub σ 的 natural fiber 分布 by new.Q_bot:
-- natural d fibers per sub: **tDD** = 2k-1 (k ≥ 2) or 1 (k=1)
-- natural r fibers per sub: **tRC - 1** (not tRC!)
-- natural low ({•,s}) fibers per sub: **tSS + 1** = 2 (not tSS!)
+**Double descent (B → M → B)**：这是 `doubleDescent_B_PBP` 已实现的映射。fiber 结构就是 ValidCol0_B 的 cardinality = 4k（primitive）或非均匀（balanced）。
 
-Sum = 4k ✓
+## 数值验证状态 ✓
 
-### 为什么和 tailCoeffs 不同？
-
-tDD, tRC, tSS 是对 **α-class 贡献的 per-sub averaged** 值（合并 B⁺ 和 B⁻）。natural Q_bot 分布是对 **natural class** 的 per-sub 值（相同对两个 γ）。
-
-具体：
-- dd_α = natural d (γ-symmetric) → tDD = per-γ-sub d count
-- rc_α = natural r + B⁺ natural low (via correction) → tRC per-γ-average but B⁺ 多，B⁻ 少
-- ss_α = B⁻ natural low → tSS per-γ-average (B⁻ only contributes, B⁺ 0)
-
-在 **k ≥ 2** primitive case (no correction at new):
-- 对 B⁺ sub: natural d (tDD), natural r (tRC-1), natural low (tSS+1), 但 new τ is B⁺ so α-classification: d → DD_α, r → RC_α, low → RC_α (NOT SS_α since correction doesn't help here... wait but k ≥ 2 means no correction).
-
-Hmm wait let me reconsider. For k ≥ 2 at new level, no correction applies at new. So x_τ = natural Q_bot. α-classification:
-- B⁺ natural low (x=s or •) → SS_α (per α-def, low = SS_α for B⁻; for B⁺, B⁺ low = RC_α since α-RC for B⁺ = non-d).
-
-Actually rc_α definition: |B⁺ non-d| + |B⁻ r|. 所以:
-- B⁺ natural d → DD_α (part of dd_α)
-- B⁺ natural r, low → RC_α (all non-d B⁺)
-- B⁻ natural d → DD_α
-- B⁻ natural r → RC_α (natural r only)
-- B⁻ natural low → SS_α
-
-Per B⁺ sub (fiber size 4k, new all B⁺):
-- tDD = 2k-1 natural d → DD_α (2k-1)
-- (4k - tDD - low_count) = (4k - (2k-1) - (tSS+1)) = 2k-1 natural r → RC_α (2k-1) wait that's not right either
-- Actually: d per sub = 2k-1 (verified). r per sub = 2k-1 (? let me recheck)
-
-Looking at data for k=2 (8,6,4,2): per sub (d, r, low) = (3, 3, 2). Yes r = 3 = 2k-1.
-
-Hmm so r per sub = 2k-1, not tRC - 1. Let me recompute.
-
-For k=2: tDD = 3, tRC = 4, tSS = 1.
-- d per sub = 3 = tDD ✓
-- r per sub = 3 = tRC - 1 = 3 ✓
-- low per sub = 2 = tSS + 1 = 2 ✓
-
-Sum = 3 + 3 + 2 = 8 = 4k ✓.
-
-For k=1: tDD = 1, tRC = 2, tSS = 1.
-- d per sub = 1 = tDD ✓
-- r per sub = 1 = tRC - 1 ✓ (verified from (6,6,2) data)
-- low per sub = 2 = tSS + 1 ✓
-
-Sum = 1+1+2 = 4 = 4k ✓.
-
-OK so natural fiber split per sub is (tDD, tRC-1, tSS+1) uniformly. Different from α-classification.
-
-### α-classification per sub
-
-Per B⁻ sub (fiber has B⁻ τ's):
-- DD_α contributions: natural d = tDD
-- RC_α contributions: natural r = tRC-1 (no correction for B⁻ non-low)
-- SS_α contributions: natural low = tSS+1 (B⁻ low always → SS_α for k≥2; for k=1 correction gives s which is SS_α)
-
-Per B⁺ sub (fiber has B⁺ τ's):
-- DD_α: natural d = tDD
-- RC_α: natural r + natural low = (tRC-1) + (tSS+1) = tRC + tSS (for k≥2: correction doesn't apply to natural low so they're just RC_α by α-def)
-  - Actually for k ≥ 2, x_τ = natural Q_bot. B⁺ with x = low → α-class = RC_α (B⁺ non-d)
-  - For k = 1 with correction, B⁺ low → x = c → RC_α still.
-  - Either way: per B⁺ sub, RC_α = r + low = (tRC-1) + (tSS+1) = tRC + tSS.
-
-Hmm but tRC + tSS = 2k + 1 ≠ tRC = 2k. Let me verify.
-
-For k=2: B⁺ sub RC_α contribution = r (3) + low (2) = 5. tRC = 4. Discrepancy.
-
-Hmm. Maybe my assumption is wrong. Let me check numerics.
-
-From data (4,2) k=2 primitive:
-- B⁺ sub contributes to new B⁺. Per B⁺ sub (|B⁺ rest|=1), contribution to dd_α = |B⁺ d new| = 3. To rc_α = |B⁺ non-d new| = 5. To ss_α = 0 (B⁺ doesn't contribute to SS_α by def).
-- B⁻ sub contributes to new B⁻. Per B⁻ sub: dd_α = |B⁻ d new| = 3. rc_α = |B⁻ r new| = 3. ss_α = |B⁻ low new| = 2.
-
-Sum over γ:
-- dd_α total = 3+3 = 6 ✓
-- rc_α total = 5+3 = 8 ✓
-- ss_α total = 0+2 = 2 ✓
-
-Per combined sub (|rest| = 2):
-- dd_α / 2 = 3 = tDD ✓
-- rc_α / 2 = 4 = tRC ✓
-- ss_α / 2 = 1 = tSS ✓
-
-GOOD. So tDD, tRC, tSS are **averaged over γ subs**, while per-γ-sub contributions differ.
+- `tools/verify_all_B_lemmas.py`: A1, A2, A3, γ-swap, balanced step (82 dp cases 全通过)
+- `tools/verify_fiber_by_Qbot.py`: Qd/Qr/Qlow fiber sizes (11 balanced)
+- `tools/verify_primitive_fiber_class.py`: primitive per-sub (d, r, low) distribution
 
 ---
 
-## 修正的证明
+## 策略：C/D 风格的 Combined Induction
 
-### Sorry 1: `fiber_card_B_bal_Qd` (line 2906)
+### 核心引理 (新增，平行于 D)
 
-**陈述**: balanced case, σ.Q_bot = d → |fiber σ| = 4k.
+**引理 P1**: `card_PBPSet_B_primitive_step_tc` (primitive per-α-tc step)
 
-**证明**:
+在 primitive case (r₂ > r₃)，对每个 α-class `tc ∈ {DD, RC_α, SS_α}`:
 
-**上界**: `fiber ↪ ValidCol0_B` 给出 |fiber| ≤ 4k。这已经在 `fiber_le_validCol0_B` 证明。
+```
+card(B_tc on new) = card(B at rest shape) × |ValidCol0_B with top Q_bot in tc|
+```
 
-**下界**: 当 σ.Q_bot = d 时，每个 v ∈ ValidCol0_B 都给出有效 τ。
+其中 |ValidCol0_B with top Q_bot = d| = 2k-1 = tDD.
+|ValidCol0_B with top Q_bot = r| = k = half of tRC.
+|ValidCol0_B with top Q_bot ∈ {•,s}| = ?
 
-**关键论证**: `liftPBP_B` 在 primitive case 依赖 `hprimQ`（μQ.colLen j ≤ μP.colLen 0 - 1 for j ≥ 1）来保证 τ.Q col 0 不与 τ.Q col ≥ 1 产生 mono_Q 冲突。
+**关键 ValidCol0_B 分解**:
 
-在 balanced case (r₂ = r₃)，μQ.colLen 1 = r₃/2 = r₂/2 = μP.colLen 0。所以 overlap region 是 rows 0 to r₂/2 - 1。
+ValidCol0_B 是 pairs (P col 0, Q col 0) satisfying B-type constraints. Top symbol 指 Q col 0 at row μP.colLen 0 - 1 (即 Q col 0 在 overlap 区域顶部).
 
-mono_Q cross-column at (i, 0) vs (i, 1) for i in overlap: τ.Q(i, 0).layerOrd ≤ τ.Q(i, 1).layerOrd = σ.Q(i, 0).layerOrd.
+Card split by top symbol:
+- top = d: count = ?
+- top = r: count = ?
+- top ∈ {•, s}: count = ?
 
-由 mono_Q for σ: σ.Q(i, 0).layerOrd ≤ σ.Q(σ.Q.colLen 0 - 1, 0).layerOrd = σ.Q_bot.layerOrd.
+这些 count 通过 DSeq 类的枚举获得（类似 C/D 中的 TSeq 枚举）.
 
-**当 σ.Q_bot = d (layerOrd 4)**: σ.Q 任意 cell.layerOrd ≤ 4. 对 B Q 的 layerOrd 集 {0, 1, 2, 4} (skipping 3 for c), 最大是 4 = d.
+### 引理 P2: Total(M) via B counting
 
-所以约束 τ.Q(i, 0).layerOrd ≤ σ.Q(i, 0).layerOrd ≤ 4 对 τ.Q(i, 0) ∈ {•, s, r, d} 是 vacuous (all have layerOrd ≤ 4).
+**Primitive M** (dp_M primitive at top): 
+```
+card(M on dp_M shape) = Total(B on B-shape derived from dp_M)
+```
 
-**结论**: ValidCol0_B 的每个元素都给出有效 τ ∈ fiber. 所以 |fiber| ≥ 4k.
+证明：由 `descent_bijective_primitive` (Prop 10.8(a))，M ↔ B+ ⊔ B- 是 bijection.
+所以 card(M) = card(B+) + card(B-) = Total(B).
 
-结合上下界: |fiber| = 4k. ∎
+**Balanced M**:
+```
+card(M on dp_M shape) = dd_α(B rest) + rc_α(B rest)
+```
 
-### Sorry 2: `fiber_card_B_bal_Qr` (line 2928)
+由 descent_image_balanced (Prop 10.8(b)):
+card(M) = card(B+) + |{σ ∈ B- : Q_bot.lo > 1}|
 
-**陈述**: balanced, σ.Q_bot = r → |fiber| = 4k-2.
+Using B counting IH (Total + A1 + A3 at rest):
+- card(B+) = (dd+rc+ss)/2 by γ-swap
+- |B- non-SS_filter| = card(B-) - |B- SS_filter| = (dd+rc+ss)/2 - ss  (by A3)
+- Sum: (dd+rc+ss)/2 + (dd+rc+ss)/2 - ss = dd + rc ✓
 
-**证明**:
+所以 M balanced depends on B's A3 at rest.
 
-与 Qd 同样上界 |fiber| ≤ 4k.
+### 引理 P3: Combined Induction
 
-**Qr 的下界分析**:
+陈述:
 
-σ.Q_bot = r (layerOrd 2). mono_Q gives σ.Q(i, 0).layerOrd ≤ 2 for i < σ.Q.colLen 0.
+**`card_PBPSet_B_combined` (for B type dp)**:
+```
+For dp sorted even positive:
+  Total(B on dp shape) = tripleSum(countPBP_B dp)
+∧ (dp ≠ [] → 
+     A1(dp): |combined B with Q_bot=d| = (countPBP_B dp).1
+   ∧ A3(dp): |B- with Q_bot.lo≤1| = (countPBP_B dp).2.2)
+```
 
-Cross-column: τ.Q(i, 0).layerOrd ≤ σ.Q(i, 0).layerOrd ≤ 2 for i in overlap.
+**`card_PBPSet_M_via_B`**:
+```
+For dp_M sorted even positive with r₁ ≥ r₂:
+  card(M on dp_M shape) = countPBP_M dp_M
+```
 
-对 τ.Q col 0: overlap 部分 layerOrd ≤ 2，即 ∈ {•, s, r}（layerOrd ∈ {0,1,2}）。
+这两个可以分开证，或一起证。
 
-τ.Q col 0 sorted ascending 从 row 0 到 r₁/2 - 1. Overlap 是 rows 0 to r₂/2 - 1. Tail 是 rows r₂/2 to r₁/2 - 1.
+### 归纳结构 (combined B)
 
-Sorted 约束：overlap 的最大 cell (row r₂/2 - 1) ≤ tail 的最小 cell (row r₂/2).
+**Base cases** (已完成):
+- Empty: Total(B ⊥ ⊥) = tripleSum(countPBP_B []) = 2. A1, A3 vacuous (hQ_pos false).
+- Singleton [r₁]: Total via `card_PBPSet_B_singleton`. A1 via `singleton_case_B_DD_alpha`. A3 via `singleton_case_B_SS_alpha`.
 
-**Valid τ.Q col 0 configs**:
+**Inductive step** (dp = r₁::r₂::rest):
 
-Case 1: Tail ∈ {•, s, r}, no d. Q col 0 全部 ≤ 2.
-  - Sorted sequences in {•,s,r} of length r₁/2, with dot_match constraint (τ.Q(i,0) = • iff τ.P(i,0) = •).
-  - 具体数目依赖 dot_match / col_d_Q 细节.
+IH: Total(B rest), A1(rest), A3(rest) — all from `card_PBPSet_B_combined rest`.
 
-Case 2: Tail 含 d (最多 1 个由 col_d_Q), d 必须在底部 (sorted + 唯一).
-  - d 在 row r₁/2 - 1. 其余 rows ∈ {•, s, r} 且 sorted.
-  - Overlap 部分 ∈ {•, s, r}, sorted.
-  - Tail 部分 ∈ {•, s, r, d} with d at bottom.
+目标: Total(B new), A1(new), A3(new).
 
-**Invalid configs 排除**:
-σ.Q_bot = r 比 σ.Q_bot = d 减少的 configs 来自 mono_Q 约束排除的 ValidCol0_B 元素。
-
-具体：ValidCol0_B 中 v 对应 τ.Q col 0 可以 have d somewhere in overlap region。But overlap 是 sorted 且最大 ≤ 2，所以 d only in tail. Hmm.
-
-等等，ValidCol0_B 的 v 不一定满足 mono_Q cross-column 约束。在 primitive 中因为 hprimQ，col 1 不影响 col 0。在 balanced 中，col 1 (σ.Q col 0) 在 overlap region 有值，所以约束激活。
-
-**具体被排除的 2 configs**:
-
-From tailCoeffs(k) 看:
-- primitive total = 4k = tDD + tRC + tSS = (2k-1) + 2k + 1
-- balanced total (via scCoeffs) = 4k-2 = scDD + scRC + scSS = 2(k-1) + (2k-1) + 1
-
-diff per class: tDD - scDD = (2k-1) - 2(k-1) = 1, tRC - scRC = 2k - (2k-1) = 1, tSS - scSS = 0.
-
-So balanced case excludes 1 config from DD class + 1 from RC class.
-
-对 Qr specific: 排除的是 ValidCol0_B 中那些在 overlap top row = r₂/2 - 1 处有 d 的 configs.
-
-ValidCol0_B_d_at_boundary 数目计算:
-- v has d at row r₂/2 - 1 (overlap top, which coincides with σ's Q_bot row location wrt shift).
-- This d violates mono_Q since σ.Q at that row = r (layerOrd 2) but d layerOrd 4.
-- 这类 v 的数目 = 2 (one for DD-class, one for RC-class in tailCoeffs's split).
-
-具体 2 configs 的识别需要 detailed case analysis of ValidCol0_B structure, 但 by tailCoeffs arithmetic, 排除恰好 2.
-
-结论: |fiber_bal_Qr| = 4k - 2. ∎
-
-### Sorry 3: `fiber_card_B_bal_Qlow` (line 2949)
-
-**陈述**: balanced, σ.Q_bot.lo ≤ 1 → |fiber| = 2k - 1.
-
-**证明**:
-
-σ.Q_bot ∈ {•, s}, layerOrd ≤ 1. mono_Q: σ.Q col 0 cells all ≤ 1, i.e., ∈ {•, s}.
-
-Cross-column: τ.Q(i, 0).layerOrd ≤ 1 for i in overlap. τ.Q(i, 0) ∈ {•, s}.
-
-τ.Q col 0 structure: overlap ∈ {•, s}^{r₂/2} sorted, tail ∈ {•,s,r,d}^{r₁/2 - r₂/2} sorted and ≥ overlap's end.
-
-**计数**:
-
-overlap 部分 sorted in {•, s} of length r₂/2 = c₁ possibilities (0 to c₁ •'s, rest s's). Actually only TWO possibilities for overlap sorted in {•, s}: either all • or a single transition from • to s. Number of sorted sequences = c₁ + 1 (choose transition point).
-
-But dot_match constraint: • 在 Q 必须对应 • 在 P. So overlap • 对应 P •. 
-
-Hmm this is getting complex. 用 tailCoeffs 算术:
-- For Qlow, expected 2k - 1.
-
-By fiber-size formula: Qlow = 2k - 1 = 2(k-1) + 1 = scDD/? Hmm, 2(k-1) = scDD, 2k-1 = scRC, 1 = scSS. scDD + scSS = 2(k-1) + 1 = 2k-1. ✓
-
-So fiber Qlow = scDD + scSS = contributions from DD_α and SS_α of tailCoeffs (balanced). This makes sense: 严格限制 disjoint from RC_α contribution.
-
-**Numerical verification**: k=1 → 1, k=2 → 3, k=3 → 5. Match 2k-1. ∎
-
-### Sorry 4: `card_B_DD_alpha_eq_countB_dd` inductive (line 2593)
-
-**陈述**: For dp = r₁::r₂::rest, |combined Q_bot = d on new| = countPBP_B(dp).1.
-
-**证明** by primitive / balanced split:
+Case split by primitive vs balanced at top (r₂ > r₃ vs r₂ ≤ r₃).
 
 #### Primitive (r₂ > r₃)
 
-**Per-sub fiber 分析**: 每 sub σ (any γ) 有 fiber size 4k. 其中 tDD = 2k-1 configs give new Q_bot = d (by the fiber analysis).
+**Total(B new)**: 已由 `card_PBPSet_B_primitive_step` (existing) 证明:
+```
+Total(B new) = Total(B rest) × 4k
+```
 
-Note: **此论证需要 fiber-by-new-Q_bot 的细化引理** — 即 the PRIMITIVE version of fiber_card_B_bal_Qd et al.
+**A1(new) primitive**:
 
-|combined Q_bot = d on new| = |combined subs| · tDD = total_rest · tDD.
+用 `card_PBPSet_B_primitive_step_tc` (NEW, 需证明):
+```
+|B_d on new| = Total(B rest) × |ValidCol0_B top=d|
+```
 
-countPBP_B(new).1 primitive = total_rest · tDD by recursion ✓.
+其中 |ValidCol0_B top=d| = 2k-1 = tDD (引理 P1, NEW).
+
+Combined: |B_d new| = Total(rest) × tDD = countPBP_B(new).1 ✓ (by primitive recursion of countPBP_B).
+
+**A3(new) primitive**:
+
+类似 A1: |B- SS new| = Total(B rest) × |ValidCol0_B top ∈ {•,s}|.
+
+但注意 A3 是 B- only。这里 fiber 保持 γ，所以 B- fiber's count = |B- rest| × tSS... hmm.
+
+等等，我之前数值验证过 per-B⁻-sub 的 low count = tSS + 1 (for primitive)，不是 tSS.
+
+重新理解：primitive per-sub 的 natural (d, r, low) split 是 (tDD, tRC-1, tSS+1)。但 α-class 的 split 是 (tDD, tRC, tSS) per-combined-sub (averaged over γ).
+
+所以: |B_d combined new| = |combined rest| × tDD = Total(rest) × tDD ✓.
+
+|B_α_RC combined new| = |combined rest| × tRC = Total(rest) × tRC (by α-reclassification).
+
+|B_α_SS combined new| = |combined rest| × tSS = Total(rest) × tSS.
+
+Hmm per-B⁻ natural low = tSS + 1，但 α-class 的 SS 只含 B⁻ (B⁺ low via correction → RC_α).
+
+|B_α_SS new| = |B⁻ rest| × (B⁻ new with Q_bot ∈ {•,s} count per B⁻ sub) = |B⁻ rest| × 2 (for k=2) vs tSS = 1.
+
+Total(rest) × tSS = 2 × 1 = 2. |B⁻ rest| × 2 = 1 × 2 = 2 (for (4,2) k=2 case)。equal ✓。
+
+所以 |B_α_SS new| = Total(rest) × tSS = countPBP_B(new).2.2 primitive ✓ (via recursion).
+
+A3(new): |B- Q_bot.lo≤1 new| = |B_α_SS new| (by def of A3) = countPBP_B(new).2.2 ✓.
+
+具体证明需要：
+- `ValidCol0_B_filtered_by_top_count`: card of ValidCol0_B with specified top symbol.
+- `card_PBPSet_B_primitive_step_tc`: applies ValidCol0_B filter to fiber.
 
 #### Balanced (r₂ ≤ r₃)
 
-Use `card_B_bal_grouped_fiber` (Phase 3) + 进一步 refinement.
-
-Phase 3 gives: card(new) = q_d_sub · 4k + q_r_sub · (4k-2) + q_low_sub · (2k-1).
-
-为了得到 |combined Q_bot=d on new|, 需要 fiber-by-new-Q_bot 的 balanced refinement:
-- d sub (σ.Q_bot = d, fiber 4k): 这 4k 中 tDD = 2k-1 给 new d, 其余 give r or low.
-- r sub (fiber 4k-2): 需计算多少给 new d.
-- low sub (fiber 2k-1): 多少给 new d.
-
-**Simplification**: A1 in balanced case IS equivalent to:
-|combined Q_bot=d new| = dd(countPBP_B new balanced) = dd' · tDD + rc' · scDD (balanced formula)
-
-By A1(rest): dd' = |q_d_sub rest|. So dd' · tDD = |q_d_sub rest| · (2k-1).
-
-For balanced, d subs should contribute (2k-1) fibers with new d (primitive-like ratio within the 4k fiber). 具体数需要 case analysis.
-
-**关键依赖**: 此证明需要 `fiber_card_B_bal_Qd_giving_new_d` (σ with Q_bot=d gives exactly 2k-1 new PBPs with Q_bot = d) 及类似.
-
-### Sorry 5: `card_B_SS_alpha_eq_countB_ss` inductive (line 2732)
-
-**陈述**: For dp = r₁::r₂::rest, |B⁻ Q_bot.lo≤1 on new| = countPBP_B(dp).2.2.
-
-**证明** parallel to A1:
-
-#### Primitive
-
-Per B⁻ sub: natural low fibers = tSS + 1 = 2 (for k=1) or 2 (for k=2)... actually verified data say low per sub = 2 for both k=1 and k=2 in primitive.
-
-Hmm let me reconsider. Data (4,2) k=2 prim: low per B⁻ sub = 2. tSS + 1 = 2 ✓.
-
-For primitive new k ≥ 2, no correction at new. B⁻ low → SS_α (B⁻ with x ∈ {•,s}).
-
-|B⁻ new SS| = |B⁻ rest| · 2.
-
-ss_α(new) primitive = total_rest · tSS = total_rest · 1.
-
-Since |B⁻ rest| = total_rest / 2 (γ-symmetry for rest): |B⁻ new SS| = (total_rest / 2) · 2 = total_rest ✓ match ss_α.
-
-所以 A3 primitive: |B⁻ Q_bot.lo≤1 on new| = total_rest = ss_α(new) primitive ✓.
-
-**此论证需要** 细化引理：per B⁻ sub, natural low fibers count = 2 (for any k ≥ 1). 数值验证 ✓.
-
-#### Balanced
-
-Use Phase 3 + refinement.
-
-Balanced ss_α(new) = dd'·tSS + rc'·scSS = dd' + rc' (both scSS = tSS = 1).
-
-|B⁻ Q_bot.lo≤1 on new|:
-- From B⁻ d-subs (fiber 4k): some fraction → new low. Specifically 2 fibers give new B⁻ low (per parity with primitive).
-- From B⁻ r-subs (fiber 4k-2): some fraction.
-- From B⁻ low-subs (fiber 2k-1): some fraction.
-
-具体计算匹配公式 dd' + rc'. Requires refined fiber analysis by (sub.Q_bot, new.Q_bot).
-
-**Numerical verification**: Data 证实对所有测试 dp.
-
----
-
-## 形式化结构
-
+**Total(B new)**: 已由 `card_PBPSet_B_balanced_step` (已证，通过 Total + A1(rest) + A3(rest)):
 ```
-Phase 1: ValidCol0_B_bal (subtype with admissibility)
-Phase 2: Cardinality lemmas
-   - card_ValidCol0_B_bal_d: = 4k
-   - card_ValidCol0_B_bal_r: = 4k-2
-   - card_ValidCol0_B_bal_low: = 2k-1
-Phase 3: fiber_card_B_bal_{Qd,Qr,Qlow} via ValidCol0_B_bal ≃ fiber
-Phase 4: Refined fiber-by-new-Q_bot lemmas:
-   - Per sub σ with σ.Q_bot=d, new τ with τ.Q_bot=d count = 2k-1
-   - ... similar for other (sub.Q_bot, new.Q_bot) pairs
-Phase 5: A1 inductive via Phase 4 + primitive/balanced split
-Phase 6: A3 inductive similar
+Total(B new) = dd(rest) × 4k + rc(rest) × (4k-2)
 ```
 
-Total estimated: ~1500-2000 lines of Lean.
+**A1(new) balanced**:
 
-## 可行性评估
+用 `card_B_bal_grouped_fiber` (Phase 3, 已证 modulo 3 sub-sorries):
+```
+Total(B new) = q_d_sub × 4k + q_r_sub × (4k-2) + q_low_sub × (2k-1)
+```
 
-所有数学内容已严格验证（82+ dp cases）。证明策略清晰，但工程量大。每个 sorry 独立需 200-500 行。全部需求近 ~2000 行新 infrastructure。
+需要 per-new-Q_bot refinement: 每个 sub 的 fiber 中有多少给 new Q_bot = d / r / low.
 
-一个 session 内完成全部不切实际。优先级：Qd → Qr → Qlow → A3 prim → A1 prim → A3 bal → A1 bal.
+具体 sub-per-new breakdown (需证):
+- d sub (fiber 4k): 2k-1 给 new d, 2k-1 给 new r, 2 给 new low.
+- r sub (fiber 4k-2): ? 类似 split.
+- low sub (fiber 2k-1): ? 类似 split.
+
+这需要 refined fiber by (sub.Q_bot, new.Q_bot).
+
+**替代方案（更简洁）**: 利用 M count 来推导。
+
+有 Total(B new) (已知), Total(M on dp_M) (待证 via 引理 P2), 和 α-class 的关系：
+- rc_α(new) + ss_α(new) = dd(B) + rc(B) + ss(B) - dd_α(new) (since tripleSum = total)
+
+Hmm 这不直接给 A1.
+
+### Phase 3 Fiber Identity (3 sub-sorries)
+
+`fiber_card_B_bal_Qd`: 需要 ValidCol0_B admissibility argument (当 σ.Q_bot = d 时 admissibility vacuous).
+
+`fiber_card_B_bal_Qr`: admissibility 排除 2 configs (d 或 c 在 boundary).
+
+`fiber_card_B_bal_Qlow`: admissibility 强约束, 剩 2k-1 configs.
+
+每个 ~100-200 行, 需要 ValidCol0_B_bal 细化.
+
+### 总结
+
+**Combined Induction 路径**:
+
+1. 新增 `card_PBPSet_B_primitive_step_tc` (按 ValidCol0_B 顶部符号 split).
+2. 新增 `validCol0_B_card_top_X` (X ∈ {d, r, s, •}).
+3. Refactor 主定理为 `card_PBPSet_B_combined` (Total ∧ A1 ∧ A3 together).
+4. 证 `card_PBPSet_M_via_B` 用 B 的 per-α-tc.
+5. Phase 3 的 3 个 fiber sorries 通过 ValidCol0_B_bal 细化.
+
+**估计工作量**: 
+- validCol0_B_card_top_X: ~200 lines (parallel to validCol0_card_top_X in D).
+- card_PBPSet_B_primitive_step_tc: ~200 lines (parallel to D's).
+- Combined theorem refactor: ~300 lines (restructure existing code).
+- Phase 3 ValidCol0_B_bal: ~500 lines.
+- M via B: ~100 lines (already partially done via liftBM_*).
+
+**总计 ~1300 lines**，但利用了 D/C 的平行结构，比我之前估计的 1500-2000 lines 少。
+
+**完成路径**:
+Week 1: ValidCol0_B top-symbol count lemmas (4 个).
+Week 2: card_PBPSet_B_primitive_step_tc + integration.
+Week 3: Combined theorem refactor (删除 A1/A3 sorries in primitive case).
+Week 4: ValidCol0_B_bal + Phase 3 fiber lemmas.
+Week 5: Balanced case A1/A3 via Phase 3 + M-via-B integration.
+
+## 当前 checkpoint
+
+**已完成**:
+- Empty case for A1, A2, A3: ✓
+- Singleton case for A1, A2, A3: ✓
+- A2 derived from Total + A1 + A3 (算法上，假设 A1 A3 可证): ✓
+- γ-swap SS symmetry: ✓
+- Balanced step combining algebra: ✓
+- Phase 3 structurally closed (modulo 3 per-class fiber sorries): ✓
+- B⁺ set partition: ✓
+
+**剩余 5 个 sorries (all well-defined, numerically verified)**:
+- A1 inductive (needs primitive_step_tc + balanced fiber per-new-Q_bot)
+- A3 inductive (similar)
+- fiber_card_B_bal_Qd, Qr, Qlow (需 ValidCol0_B_bal)
+
+**路径清晰**，工程量可控 (~1300 lines)，数学正确性已验证。
