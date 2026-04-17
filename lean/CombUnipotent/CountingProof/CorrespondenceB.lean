@@ -2610,6 +2610,9 @@ private theorem card_B_RC_alpha_eq_countB_rc (dp : DualPart)
   | [r₁], hP, hQ, _, heven, hpos, _ =>
     exact singleton_case_B_RC_alpha r₁ hP hQ heven hpos
   | _ :: _ :: _, _, _, _, _, _, _ =>
+    -- Inductive case: see `card_B_RC_alpha_inductive_step` at the end of the file.
+    -- A2 can be derived from A1 + A3 + Total + γ-swap + partitions (algebraic).
+    -- We leave sorry here and prove a parallel theorem using Total.
     sorry
 
 /-- Singleton case helper for `card_B_SS_alpha_eq_countB_ss`.
@@ -2860,11 +2863,77 @@ private theorem card_Bplus_nonD_eq_low_plus_r (μP μQ : YoungDiagram)
   rw [heq] at hlow
   exact absurd hlow (by decide)
 
+/-- **B⁻ full partition by Q_bot**: every σ ∈ B⁻ has Q_bot ∈ {•, s, r, d}, so
+    `|B⁻| = |Q_bot = d| + |Q_bot = r| + |Q_bot.lo ≤ 1|` (the three cells are disjoint
+    and exhaustive). -/
+private theorem card_Bminus_partition_Qbot (μP μQ : YoungDiagram)
+    (hQ_pos : μQ.colLen 0 > 0) :
+    Fintype.card (PBPSet .Bminus μP μQ) =
+    (Finset.univ.filter fun σ : PBPSet .Bminus μP μQ =>
+      σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .d).card +
+    (Finset.univ.filter fun σ : PBPSet .Bminus μP μQ =>
+      σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .r).card +
+    (Finset.univ.filter fun σ : PBPSet .Bminus μP μQ =>
+      (σ.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd ≤ 1).card := by
+  -- Step 1: |B⁻| = |B⁻ Q=d| + |B⁻ Q≠d| by filter/not split.
+  have h_split1 : Fintype.card (PBPSet .Bminus μP μQ) =
+      (Finset.univ.filter fun σ : PBPSet .Bminus μP μQ =>
+        σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .d).card +
+      (Finset.univ.filter fun σ : PBPSet .Bminus μP μQ =>
+        σ.val.Q.paint (μQ.colLen 0 - 1) 0 ≠ .d).card := by
+    rw [← Finset.card_univ, ← Finset.card_filter_add_card_filter_not
+      (p := fun σ : PBPSet .Bminus μP μQ =>
+        σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .d)]
+  -- Step 2: |B⁻ Q≠d| = |B⁻ Q=r| + |B⁻ Q.lo≤1| (B⁻ Q ∈ {•,s,r,d}).
+  have h_split2 : (Finset.univ.filter fun σ : PBPSet .Bminus μP μQ =>
+        σ.val.Q.paint (μQ.colLen 0 - 1) 0 ≠ .d).card =
+      (Finset.univ.filter fun σ : PBPSet .Bminus μP μQ =>
+        σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .r).card +
+      (Finset.univ.filter fun σ : PBPSet .Bminus μP μQ =>
+        (σ.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd ≤ 1).card := by
+    -- Mirror of `card_Bplus_nonD_eq_low_plus_r` but for B⁻ with Q=r listed first.
+    have h_union : (Finset.univ.filter fun σ : PBPSet .Bminus μP μQ =>
+        σ.val.Q.paint (μQ.colLen 0 - 1) 0 ≠ .d) =
+      (Finset.univ.filter fun σ : PBPSet .Bminus μP μQ =>
+        σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .r) ∪
+      (Finset.univ.filter fun σ : PBPSet .Bminus μP μQ =>
+        (σ.val.Q.paint (μQ.colLen 0 - 1) 0).layerOrd ≤ 1) := by
+      ext σ
+      simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_union]
+      constructor
+      · intro h_ne_d
+        have hmem : (μQ.colLen 0 - 1, 0) ∈ μQ := by
+          rw [YoungDiagram.mem_iff_lt_colLen]; omega
+        have hmemQ : (μQ.colLen 0 - 1, 0) ∈ σ.val.Q.shape := by
+          rw [σ.prop.2.2]; exact hmem
+        have hsym := σ.val.sym_Q _ _ hmemQ
+        simp [σ.prop.1, DRCSymbol.allowed] at hsym
+        -- hsym: Q_bot ∈ {dot, s, r, d}; ≠ d means ∈ {dot, s, r}
+        rcases hsym with h | h | h | h
+        · right; rw [h]; decide
+        · right; rw [h]; decide
+        · left; exact h
+        · exact absurd h h_ne_d
+      · rintro (h | h)
+        · intro heq; rw [heq] at h; exact absurd h (by decide)
+        · intro heq; rw [heq] at h; exact absurd h (by decide)
+    rw [h_union]
+    rw [Finset.card_union_of_disjoint]
+    rw [Finset.disjoint_filter]
+    intro σ _ heq hlow
+    rw [heq] at hlow
+    exact absurd hlow (by decide)
+  -- Combine.
+  rw [h_split1, h_split2, Nat.add_assoc]
+
 /-- **B balanced step identity** — Task #12 main goal.
-    Derived from `card_B_bal_grouped_fiber` + A1, A2, A3, γ-swap, B⁺ set partition.
+    Derived from `card_B_bal_grouped_fiber` + A1, A3, Total(rest), γ-swap, partitions.
 
     Algebra: `card(new) = dd'·4k + (rc'-ss')·(4k-2) + 2·ss'·(2k-1)`,
-    and `2·(2k-1) = 4k-2`, so this equals `dd'·4k + rc'·(4k-2)`. -/
+    and `2·(2k-1) = 4k-2`, so this equals `dd'·4k + rc'·(4k-2)`.
+
+    Takes `h_total_rest` as a parameter (Total at rest) to derive the RC-class count
+    via partitions instead of A2. -/
 private theorem card_PBPSet_B_balanced_step (r₁ r₂ : ℕ) (rest : DualPart)
     (μP μQ : YoungDiagram)
     (hP : μP.colLens = dpartColLensP_B (r₁ :: r₂ :: rest))
@@ -2872,7 +2941,11 @@ private theorem card_PBPSet_B_balanced_step (r₁ r₂ : ℕ) (rest : DualPart)
     (hsort : (r₁ :: r₂ :: rest).SortedGE)
     (heven : ∀ r ∈ (r₁ :: r₂ :: rest), Even r)
     (hpos : ∀ r ∈ (r₁ :: r₂ :: rest), 0 < r)
-    (h_bal : ¬(r₂ > rest.head?.getD 0)) :
+    (h_bal : ¬(r₂ > rest.head?.getD 0))
+    (h_total_rest :
+      Fintype.card (PBPSet .Bplus μP.shiftLeft μQ.shiftLeft) +
+      Fintype.card (PBPSet .Bminus μP.shiftLeft μQ.shiftLeft) =
+      tripleSum (countPBP_B rest)) :
     Fintype.card (PBPSet .Bplus μP μQ) + Fintype.card (PBPSet .Bminus μP μQ) =
       let k := (r₁ - r₂) / 2 + 1
       let (dd', rc', _) := countPBP_B rest
@@ -2913,18 +2986,31 @@ private theorem card_PBPSet_B_balanced_step (r₁ r₂ : ℕ) (rest : DualPart)
     omega
   -- Apply fiber identity
   have h_fiber := card_B_bal_grouped_fiber r₁ r₂ rest μP μQ hP hQ hsort heven hpos h_bal
-  -- A1, A2, A3 at rest level
+  -- A1, A3 at rest level (A2 replaced by Total+partitions+γ-swap derivation).
   have h_A1 := card_B_DD_alpha_eq_countB_dd rest hP_sh hQ_sh hsort_rest heven_rest hpos_rest hQ_sh_pos
-  have h_A2 := card_B_RC_alpha_eq_countB_rc rest hP_sh hQ_sh hsort_rest heven_rest hpos_rest hQ_sh_pos
   have h_A3 := card_B_SS_alpha_eq_countB_ss rest hP_sh hQ_sh hsort_rest heven_rest hpos_rest hQ_sh_pos
   -- γ-swap at rest level
   have h_swap := card_Bplus_SS_eq_Bminus_SS μP.shiftLeft μQ.shiftLeft
+  have h_swap_d := card_Bplus_Qbot_d_eq_Bminus_Qbot_d μP.shiftLeft μQ.shiftLeft
   -- B+ set partition at rest level
   have h_part := card_Bplus_nonD_eq_low_plus_r μP.shiftLeft μQ.shiftLeft hQ_sh_pos
+  -- B⁻ set partition at rest level: |B⁻_rest| = Bm_d + Bm_r + Bm_low
+  have h_part_Bm := card_Bminus_partition_Qbot μP.shiftLeft μQ.shiftLeft hQ_sh_pos
+  -- B⁺ split by Q=d: |B⁺_rest| = Bp_d + |B⁺_rest Q≠d|
+  have h_split_Bp : Fintype.card (PBPSet .Bplus μP.shiftLeft μQ.shiftLeft) =
+      (Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+        σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .d).card +
+      (Finset.univ.filter fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+        σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 ≠ .d).card := by
+    rw [← Finset.card_univ, ← Finset.card_filter_add_card_filter_not
+      (p := fun σ : PBPSet .Bplus μP.shiftLeft μQ.shiftLeft =>
+        σ.val.Q.paint (μQ.shiftLeft.colLen 0 - 1) 0 = .d)]
   -- Destructure countPBP_B rest
   rcases h_ct : countPBP_B rest with ⟨dd', rc', ss'⟩
-  rw [h_ct] at h_A1 h_A2 h_A3
-  simp only at h_A1 h_A2 h_A3
+  rw [h_ct] at h_A1 h_A3 h_total_rest
+  simp only at h_A1 h_A3 h_total_rest
+  have h_ts : tripleSum (dd', rc', ss') = dd' + rc' + ss' := rfl
+  rw [h_ts] at h_total_rest
   -- Unfold let-bindings in the goal
   show _ = dd' * (4 * ((r₁ - r₂) / 2 + 1)) + rc' * (4 * ((r₁ - r₂) / 2 + 1) - 2)
   -- h_fiber's let/have bindings need the same destructuring.
@@ -2966,8 +3052,32 @@ private theorem card_PBPSet_B_balanced_step (r₁ r₂ : ℕ) (rest : DualPart)
   have hk_pos : k ≥ 1 := by rw [hk_def]; omega
   have h_2km1 : 2 * (2 * k - 1) = 4 * k - 2 := by omega
   have h_Bp_low_eq : Bp_low = ss' := h_swap.trans h_A3
+  -- Derive h_rc_sum from h_total_rest + partitions + γ-swap + A1 + A3 (no A2 needed).
+  -- h_total_rest: |B⁺_rest| + |B⁻_rest| = dd' + rc' + ss'
+  -- h_split_Bp: |B⁺_rest| = Bp_d + Bp_nonD
+  -- h_part: Bp_nonD = Bp_low + Bp_r
+  -- h_part_Bm: |B⁻_rest| = Bm_d + Bm_r + Bm_low
+  -- h_swap_d: Bp_d = Bm_d, hence 2·Bp_d = dd' (from h_A1)
+  -- h_swap: Bp_low = Bm_low = ss' (from h_A3)
+  -- Sum: Bp_d + Bp_low + Bp_r + Bm_d + Bm_r + Bm_low = dd' + rc' + ss'
+  --    = dd' + 2·ss' + Bp_r + Bm_r (using A1, γ-swap, A3)
+  -- So Bp_r + Bm_r = rc' - ss', hence Bp_r + Bm_r + ss' = rc'.
   have h_rc_sum : Bp_r + Bm_r + ss' = rc' := by
-    rw [h_Bp_low_eq] at h_part; omega
+    have h_part' : Bp_nonD = Bp_low + Bp_r := h_part
+    rw [h_part'] at h_split_Bp
+    -- h_split_Bp: |B⁺_rest| = Bp_d + (Bp_low + Bp_r)
+    rw [h_split_Bp, h_part_Bm] at h_total_rest
+    -- h_total_rest: Bp_d + (Bp_low + Bp_r) + (Bm_d + Bm_r + Bm_low) = dd' + rc' + ss'
+    rw [h_Bp_low_eq, h_swap_d] at h_total_rest
+    -- h_total_rest: Bp_d + (ss' + Bp_r) + (Bp_d + Bm_r + Bm_low) = dd' + rc' + ss'
+    -- (Note h_swap_d rewrites Bm_d to Bp_d; Bp_d + Bm_d = 2·Bp_d = dd' by h_A1.)
+    rw [show Bm_low = ss' from h_swap.symm.trans h_Bp_low_eq] at h_total_rest
+    -- h_total_rest: Bp_d + (ss' + Bp_r) + (Bp_d + Bm_r + ss') = dd' + rc' + ss'
+    -- And h_A1: Bp_d + Bm_d = dd', with h_swap_d (Bp_d = Bm_d) gives 2·Bp_d = dd'.
+    -- But we might need it cleaner; let's just use h_A1 directly.
+    -- h_A1 originally: Bp_d + Bm_d = dd'. After rw h_swap_d on h_A1: 2·Bp_d = dd'.
+    -- Actually h_swap_d is symmetric; h_A1 still holds. Use omega with both.
+    omega
   -- Goal: (Bp_d + Bm_d)·4k + (Bp_r + Bm_r)·(4k-2) + (Bp_low + Bm_low)·(2k-1)
   --       = dd'·4k + rc'·(4k-2)
   rw [h_A1, h_Bp_low_eq, h_A3]
@@ -3027,7 +3137,7 @@ theorem card_PBPSet_B_eq_tripleSum_countPBP_B (dp : DualPart) (μP μQ : YoungDi
       rw [this, h_ih]
       simp only [countPBP_B, h_prim, ite_true, tripleSum]; ring
     · -- Balanced case: delegate to `card_PBPSet_B_balanced_step` (focused sorry).
-      have h_step := card_PBPSet_B_balanced_step r₁ r₂ rest μP μQ hP hQ hsort heven hpos h_prim
+      have h_step := card_PBPSet_B_balanced_step r₁ r₂ rest μP μQ hP hQ hsort heven hpos h_prim h_ih
       rw [h_step]
       -- Unfold tripleSum of countPBP_B's balanced formula
       simp only [countPBP_B, h_prim, ite_false, tripleSum]
