@@ -675,11 +675,86 @@ noncomputable def liftBM_naive (σ : PBP) (hγ : σ.γ = .Bplus ∨ σ.γ = .Bmi
     · rw [if_neg c₁]
       simp [DRCSymbol.layerOrd]
   row_s := by
+    intro i s₁ s₂ j₁ j₂ h₁ h₂
     -- s appears only in τ.P (τ.Q ⊆ {•, r, d}).
-    -- Need: at most one s per row in τ.P.
-    -- Case j₁ = 0, j₂ ≥ 1: contradiction via σ's mono_P + σ.Q(i, 0) ∈ {r,d} → σ.P(i, 0) = c → mono_P violation.
-    -- Case j₁, j₂ ≥ 1: Case A (τ.Q ≠ •) → σ.Q ∈ {r,d} → σ.P = c → σ.P(i, j₂-1) = c but = • by hyp. Case B ((i,j₁) ∉ μQ) → (i,j₂-1) ∉ σ.Q contradicting dot_match info.
-    sorry -- TODO
+    have hs₁_L : s₁ = .L := by
+      cases s₁ with
+      | L => rfl
+      | R => exfalso
+             exact liftPaintQ_naive_ne_s σ hγ i j₁ (by simpa [paintBySide] using h₁)
+    have hs₂_L : s₂ = .L := by
+      cases s₂ with
+      | L => rfl
+      | R => exfalso
+             exact liftPaintQ_naive_ne_s σ hγ i j₂ (by simpa [paintBySide] using h₂)
+    subst hs₁_L; subst hs₂_L
+    refine ⟨rfl, ?_⟩
+    simp only [paintBySide] at h₁ h₂
+    change liftPaintP_naive σ μP i j₁ = .s at h₁
+    change liftPaintP_naive σ μP i j₂ = .s at h₂
+    -- Goal: j₁ = j₂. Case on j₁, j₂.
+    -- Helper: j_a=0, j_b≥1 gives contradiction (via dot_match + mono_Q).
+    -- Helper: j_a≥1, j_b≥1, j_a < j_b gives contradiction via Cases A/B.
+    suffices h : ∀ a b : ℕ, a ≤ b → liftPaintP_naive σ μP i a = .s →
+      liftPaintP_naive σ μP i b = .s → a = b by
+      rcases Nat.le_or_ge j₁ j₂ with hle | hle
+      · exact h j₁ j₂ hle h₁ h₂
+      · exact (h j₂ j₁ hle h₂ h₁).symm
+    intro a b hab ha hb
+    by_contra hne
+    have hab' : a < b := lt_of_le_of_ne hab hne
+    -- Case: a = 0, b ≥ 1 (since a < b, b ≥ 1 always).
+    -- Now both h_a and h_b hold. Derive contradiction via σ.
+    -- From h_b : τ.P(i, b) = s and b ≥ 1 (always): σ.P(i, b-1) ≠ c, ¬(Q(i, b).lo ≤ 1).
+    have hb_ge : b ≥ 1 := by omega
+    -- Generate b as b = b' + 1 for some b'.
+    obtain ⟨b', rfl⟩ := Nat.exists_eq_succ_of_ne_zero (by omega : b ≠ 0)
+    have hspec_b := (liftPaintP_naive_succ_s_iff σ μP i b').mp hb
+    obtain ⟨hmem_b, hne_c_b, hnot_dot_b⟩ := hspec_b
+    -- (i, b') ∈ σ.P.shape via shiftLeft.
+    have hmemPσ_b : (i, b') ∈ σ.P.shape := by
+      rw [hPsh, YoungDiagram.mem_shiftLeft]; exact hmem_b
+    -- σ.P(i, b') ≠ c, σ.P ∈ {•, c}, so σ.P(i, b') = •.
+    have hPdot_b : σ.P.paint i b' = .dot := by
+      rcases B_P_dot_or_c σ hγ hmemPσ_b with h | h
+      · exact h
+      · exact absurd h hne_c_b
+    -- By σ's dot_match at (i, b'): (i, b') ∈ σ.Q.shape and σ.Q(i, b') = •.
+    have hQdot_b : σ.Q.paint i b' = .dot ∧ (i, b') ∈ σ.Q.shape := by
+      have ⟨h_mem, h_dot⟩ := (σ.dot_match i b').mp ⟨hmemPσ_b, hPdot_b⟩
+      exact ⟨h_dot, h_mem⟩
+    cases a with
+    | zero =>
+      -- a = 0. τ.P(i, 0) = s → ¬((i, 0) ∈ σ.Q ∧ σ.Q(i, 0).lo ≤ 1).
+      obtain ⟨_, _, hnot_dot_a⟩ := (liftPaintP_naive_col0_s_iff σ μP i).mp ha
+      apply hnot_dot_a
+      -- (i, 0) ∈ σ.Q.shape by lower set from (i, b') (need (i, 0) ≤ (i, b')).
+      have hmemQ_0 : (i, 0) ∈ σ.Q.shape :=
+        σ.Q.shape.isLowerSet (Prod.mk_le_mk.mpr ⟨le_rfl, by omega⟩) hQdot_b.2
+      refine ⟨hmemQ_0, ?_⟩
+      -- σ.Q(i, 0).lo ≤ σ.Q(i, b').lo = 0 via mono_Q.
+      have := σ.mono_Q i 0 i b' le_rfl (by omega) hQdot_b.2
+      rw [hQdot_b.1, DRCSymbol.layerOrd] at this
+      omega
+    | succ a' =>
+      -- a = a' + 1. τ.P(i, a'+1) = s. Similarly σ.P(i, a') = •, σ.Q(i, a') = •.
+      have hspec_a := (liftPaintP_naive_succ_s_iff σ μP i a').mp ha
+      obtain ⟨hmem_a, _hne_c_a, hnot_dot_a⟩ := hspec_a
+      -- Now j₁ = a' + 1 < b' + 1, so a' < b' (but only a' ≤ b' since a < b means a' < b').
+      -- Goal: show (i, a' + 1) ∉ σ.Q.shape OR σ.Q(i, a' + 1).lo > 1.
+      -- Use: σ.Q(i, b').lo = 0 (from hQdot_b). σ.Q(i, a'+1) relates via mono_Q if (i, b') ∈ shape.
+      -- We have (i, b') ∈ σ.Q.shape.
+      apply hnot_dot_a
+      -- We want (i, a'+1) ∈ σ.Q.shape ∧ σ.Q(i, a'+1).lo ≤ 1.
+      have hab'_lt : a' < b' := by omega
+      -- (i, a'+1) ≤ (i, b') since a'+1 ≤ b'.
+      have ha1_le : a' + 1 ≤ b' := by omega
+      have hmemQ_a1 : (i, a' + 1) ∈ σ.Q.shape :=
+        σ.Q.shape.isLowerSet (Prod.mk_le_mk.mpr ⟨le_rfl, ha1_le⟩) hQdot_b.2
+      refine ⟨hmemQ_a1, ?_⟩
+      have := σ.mono_Q i (a' + 1) i b' le_rfl ha1_le hQdot_b.2
+      rw [hQdot_b.1, DRCSymbol.layerOrd] at this
+      omega
   row_r := by
     intro i s₁ s₂ j₁ j₂ h₁ h₂
     -- r appears only in τ.Q (τ.P ⊆ {•, s, c}).
