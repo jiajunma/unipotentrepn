@@ -2957,11 +2957,22 @@ private theorem card_B_DD_alpha_primitive_step (r₁ r₂ : ℕ) (rest : DualPar
     equals `countPBP_B(dp).1`.
 
     Structural induction on dp:
-    - Empty: hQ_pos false (vacuous, now closed).
+    - Empty: hQ_pos false (vacuous, closed).
     - Singleton: closed via `singleton_case_B_DD_alpha` (γ-swap + DSeq enumeration).
-    - Inductive: admitted as focused sub-sorry.
-      Primitive case is closable via `card_B_DD_alpha_primitive_step`
-      (needs caller to supply `h_total_rest`). -/
+    - Inductive:
+      - Primitive (r₂ > rest.head?.getD 0): closed via
+        `card_B_DD_alpha_primitive_step`, supplying `h_total_rest` derived
+        from `h_total` (Total at the current level) through the primitive-step
+        identity `card_PBPSet_B_primitive_step`.
+      - Balanced (r₂ ≤ rest.head?.getD 0): admitted as scoped sorry; requires
+        per-Q_bot-class fiber refinement to relate `new Q_bot = d` to the
+        per-sub-class counts (`dd'`, `rc'`).
+
+    Takes `h_total` as hypothesis (Total at the current level) so the primitive
+    inductive case can derive the shift-level Total needed for
+    `card_B_DD_alpha_primitive_step`. This creates a harmless joint induction
+    with `card_PBPSet_B_eq_tripleSum_countPBP_B`: A1(new, primitive) needs
+    Total(rest); Total(new, balanced) needs A1(rest). -/
 private theorem card_B_DD_alpha_eq_countB_dd (dp : DualPart)
     {μP μQ : YoungDiagram}
     (hP : μP.colLens = dpartColLensP_B dp)
@@ -2969,14 +2980,18 @@ private theorem card_B_DD_alpha_eq_countB_dd (dp : DualPart)
     (hsort : dp.SortedGE)
     (heven : ∀ r ∈ dp, Even r)
     (hpos : ∀ r ∈ dp, 0 < r)
-    (hQ_pos : μQ.colLen 0 > 0) :
+    (hQ_pos : μQ.colLen 0 > 0)
+    (h_total :
+      Fintype.card (PBPSet .Bplus μP μQ) +
+      Fintype.card (PBPSet .Bminus μP μQ) =
+      tripleSum (countPBP_B dp)) :
     (Finset.univ.filter fun σ : PBPSet .Bplus μP μQ =>
       σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .d).card +
     (Finset.univ.filter fun σ : PBPSet .Bminus μP μQ =>
       σ.val.Q.paint (μQ.colLen 0 - 1) 0 = .d).card =
       (countPBP_B dp).1 := by
-  match dp, hP, hQ, hsort, heven, hpos, hQ_pos with
-  | [], _, hQ, _, _, _, hQ_pos =>
+  match dp, hP, hQ, hsort, heven, hpos, hQ_pos, h_total with
+  | [], _, hQ, _, _, _, hQ_pos, _ =>
     have hQ_bot : μQ = ⊥ := yd_of_colLens_nil (by rw [hQ]; rfl)
     exfalso
     rw [hQ_bot] at hQ_pos
@@ -2985,17 +3000,55 @@ private theorem card_B_DD_alpha_eq_countB_dd (dp : DualPart)
       have hmem := YoungDiagram.mem_iff_lt_colLen.mpr h
       simp at hmem
     exact this hQ_pos
-  | [r₁], hP, hQ, _, heven, hpos, _ =>
+  | [r₁], hP, hQ, _, heven, hpos, _, _ =>
     exact singleton_case_B_DD_alpha r₁ hP hQ heven hpos
-  | r₁ :: r₂ :: rest, hP, hQ, hsort, heven, hpos, hQ_pos =>
+  | r₁ :: r₂ :: rest, hP, hQ, hsort, heven, hpos, hQ_pos, h_total =>
     -- Inductive case: split into primitive (r₂ > r₃) and balanced (r₂ ≤ r₃).
-    -- Primitive case is closed by `card_B_DD_alpha_primitive_step` if the caller
-    -- supplies `h_total_rest` (Total at shift level). Since this theorem does not
-    -- receive such a hypothesis, we admit the inductive case here (sorry).
-    -- Callers with Total available should invoke `card_B_DD_alpha_primitive_step`
-    -- directly for the primitive branch.
-    -- Balanced case requires per-Q_bot-class fiber refinement (still open).
-    sorry
+    by_cases h_prim : r₂ > rest.head?.getD 0
+    · -- Primitive branch: derive h_total_rest from h_total and apply primitive step.
+      have h_prim_step :
+          Fintype.card (PBPSet .Bplus μP μQ) +
+          Fintype.card (PBPSet .Bminus μP μQ) =
+          (Fintype.card (PBPSet .Bplus μP.shiftLeft μQ.shiftLeft) +
+           Fintype.card (PBPSet .Bminus μP.shiftLeft μQ.shiftLeft)) *
+          tripleSum (tailCoeffs ((r₁ - r₂) / 2 + 1)).1 :=
+        card_PBPSet_B_primitive_step r₁ r₂ rest μP μQ hP hQ hsort heven h_prim
+      -- Compute tripleSum (tailCoeffs k).1 = 4k, with k ≥ 1.
+      have hk_pos : (r₁ - r₂) / 2 + 1 ≥ 1 := by omega
+      have h_ts := tripleSum_tailCoeffs_fst_eq ((r₁ - r₂) / 2 + 1) hk_pos
+      -- countPBP_B (r₁::r₂::rest) primitive unfold and tripleSum:
+      -- tripleSum(countPBP_B (r₁::r₂::rest)) = tripleSum(countPBP_B rest) * 4k.
+      have h_unfold :
+          tripleSum (countPBP_B (r₁ :: r₂ :: rest)) =
+          tripleSum (countPBP_B rest) *
+          tripleSum (tailCoeffs ((r₁ - r₂) / 2 + 1)).1 := by
+        simp only [countPBP_B, h_prim, ite_true]
+        rcases h_ct : countPBP_B rest with ⟨dd', rc', ss'⟩
+        simp only [tripleSum, tailCoeffs, nu]
+        split <;> ring
+      -- Combine: (|B+sh|+|B-sh|) * 4k = tripleSum(countPBP_B rest) * 4k.
+      have h_eq :
+          (Fintype.card (PBPSet .Bplus μP.shiftLeft μQ.shiftLeft) +
+           Fintype.card (PBPSet .Bminus μP.shiftLeft μQ.shiftLeft)) *
+          tripleSum (tailCoeffs ((r₁ - r₂) / 2 + 1)).1 =
+          tripleSum (countPBP_B rest) *
+          tripleSum (tailCoeffs ((r₁ - r₂) / 2 + 1)).1 := by
+        rw [← h_prim_step, h_total, h_unfold]
+      -- Cancel the common factor 4k > 0.
+      have h_ts_pos : tripleSum (tailCoeffs ((r₁ - r₂) / 2 + 1)).1 > 0 := by
+        rw [h_ts]; omega
+      have h_total_rest :
+          Fintype.card (PBPSet .Bplus μP.shiftLeft μQ.shiftLeft) +
+          Fintype.card (PBPSet .Bminus μP.shiftLeft μQ.shiftLeft) =
+          tripleSum (countPBP_B rest) :=
+        Nat.eq_of_mul_eq_mul_right h_ts_pos h_eq
+      -- Apply the primitive step lemma.
+      exact card_B_DD_alpha_primitive_step r₁ r₂ rest hP hQ hsort heven hpos hQ_pos
+        h_prim h_total_rest
+    · -- Balanced case: requires per-Q_bot-class fiber refinement to relate
+      -- `new Q_bot = d` count to the per-sub-class counts `dd'` and `rc'`.
+      -- Numerically verified via `tools/verify_all_B_lemmas.py` (82 dp cases).
+      sorry
 
 /-- Singleton case helper for `card_B_SS_alpha_eq_countB_ss`.
     For dp = [r₁] with r₁ > 0 Even, the B⁻ PBPs over (⊥, μQ) are in bijection
@@ -4083,6 +4136,28 @@ private theorem validCol0_B_le_fiber_bal_Qd {μP μQ : YoungDiagram}
   exact liftPBP_B_bal_Qd_injective σ hle hP_pos h_weakP h_shape_inc h_hQσ_eq h_weak h_Qd
     (congrArg (fun x => x.val) h)
 
+/-! ### Qr balanced case: ValidCol0_B_Qr subtype
+
+For Q_bot = r, the admissibility constraint on v ∈ ValidCol0_B is:
+- `inl d` (P col 0 all dots): τ.Q(hP-1, 0) = dot, always admissible.
+- `inr d` (P col 0 has c at bottom): τ.Q(hP-1, 0) = d.val(0).
+  By τ.mono_Q (τ.Q(hP-1, 0).layerOrd ≤ τ.Q(hP-1, 1).layerOrd = σ.Q(hP-1, 0).layerOrd = 2),
+  d.val(0).layerOrd ≤ 2. And by τ.row_r (τ.Q(hP-1, 0) = r AND τ.Q(hP-1, 1) = r ⇒ 0 = 1),
+  d.val(0) ≠ r. So d.val(0) ∈ {s} only (since d.val(0) ∈ {s, r, d} by DSeq).
+
+Exclusions: `inr d` with d.val(0) ∈ {r, d}. Count of exclusions = 2 (for k ≥ 1).
+Net count: 4k - 2. -/
+
+/-- ValidCol0_B configs admissible for Qr case: excludes `inr d` with d.val(0) ∈ {r, d}. -/
+private def ValidCol0_B_Qr (hP hQ : ℕ) :=
+  { v : ValidCol0_B hP hQ //
+    match v with
+    | .inl _ => True
+    | .inr d => ∀ h : hQ - hP + 1 ≥ 1, d.val ⟨0, by omega⟩ ≠ .r ∧ d.val ⟨0, by omega⟩ ≠ .d }
+
+private noncomputable instance (hP hQ : ℕ) : Fintype (ValidCol0_B_Qr hP hQ) := by
+  unfold ValidCol0_B_Qr; infer_instance
+
 /-- **Per-class fiber size (Q_bot = d)**: In balanced case, a sub-PBP σ with
     Q_bot = d has a fiber of size 4k in the new level.
 
@@ -4651,7 +4726,8 @@ private theorem card_PBPSet_B_balanced_step (r₁ r₂ : ℕ) (rest : DualPart)
   -- Apply fiber identity
   have h_fiber := card_B_bal_grouped_fiber r₁ r₂ rest μP μQ hP hQ hsort heven hpos h_bal
   -- A1, A3 at rest level (A2 replaced by Total+partitions+γ-swap derivation).
-  have h_A1 := card_B_DD_alpha_eq_countB_dd rest hP_sh hQ_sh hsort_rest heven_rest hpos_rest hQ_sh_pos
+  have h_A1 := card_B_DD_alpha_eq_countB_dd rest hP_sh hQ_sh hsort_rest heven_rest hpos_rest
+    hQ_sh_pos h_total_rest
   have h_A3 := card_B_SS_alpha_eq_countB_ss rest hP_sh hQ_sh hsort_rest heven_rest hpos_rest hQ_sh_pos
   -- γ-swap at rest level
   have h_swap := card_Bplus_SS_eq_Bminus_SS μP.shiftLeft μQ.shiftLeft
@@ -4877,7 +4953,7 @@ theorem card_B_RC_alpha_eq_countB_rc (dp : DualPart)
   -- Derivation: |B⁺ Q≠d| + |B⁻ Q=r| = |B⁺| + |B⁻| - (|B⁺ Q=d| + |B⁻ Q=d|) - |B⁻ Q.lo≤1|
   --            = tripleSum - dd - ss = rc.
   have h_total := card_PBPSet_B_eq_tripleSum_countPBP_B dp μP μQ hP hQ hsort heven hpos
-  have h_A1 := card_B_DD_alpha_eq_countB_dd dp hP hQ hsort heven hpos hQ_pos
+  have h_A1 := card_B_DD_alpha_eq_countB_dd dp hP hQ hsort heven hpos hQ_pos h_total
   have h_A3 := card_B_SS_alpha_eq_countB_ss dp hP hQ hsort heven hpos hQ_pos
   have h_Bp_part := card_Bplus_nonD_eq_low_plus_r μP μQ hQ_pos
   have h_Bm_part := card_Bminus_partition_Qbot μP μQ hQ_pos
