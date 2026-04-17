@@ -3592,11 +3592,8 @@ private noncomputable def liftPBP_B_bal_Qd {μP μQ : YoungDiagram}
             -- (hP-1, j₂) ∈ σ.P.shape because (i₂, j₂+1) ∈ μP.
             have hmem_σP : (μP.colLen 0 - 1, j₂) ∈ σ.val.P.shape := by
               rw [σ.prop.2.1, YoungDiagram.mem_shiftLeft, ← hi₂_eq]; exact hmem₂
-            -- σ.P(hP-1, j₂) = c.
-            rw [hi₂_eq, show σ.val.P.paint (μP.colLen 0 - 1) j₂ =
-              σ.val.P.paint (μP.colLen 0 - 1) j₂ from rfl,
-              sigma_P_eq_c_of_Qbot_d_bal σ h_hQσ_eq h_shape_inc h_Qd j₂ hmem_σP]
-            simp [DRCSymbol.layerOrd]
+            -- σ.P(hP-1, j₂) = c. Rewrite i₂ = hP-1 then use the lemma.
+            rw [hi₂_eq, sigma_P_eq_c_of_Qbot_d_bal σ h_hQσ_eq h_shape_inc h_Qd j₂ hmem_σP]
           · simp [DRCSymbol.layerOrd]
     | succ j₁ =>
       cases j₂ with
@@ -3657,6 +3654,7 @@ private noncomputable def liftPBP_B_bal_Qd {μP μQ : YoungDiagram}
             rw [dif_pos hc]
             rcases d.prop.1 ⟨i₁ - (μP.colLen 0 - 1), by omega⟩ with h | h | h <;>
               simp [h, DRCSymbol.layerOrd]
+          · rw [dif_neg hc]; simp [DRCSymbol.layerOrd]
     | succ j₁ =>
       cases j₂ with
       | zero => omega
@@ -4077,8 +4075,19 @@ private theorem fiber_card_B_bal_Qd {r₁ r₂ : ℕ} {rest : DualPart}
   have hk_eq : (r₁ - r₂) / 2 + 1 = μQ.colLen 0 - μP.colLen 0 + 1 := by
     rw [hP0, hQ0]
     have heven₁ := heven r₁ (by simp)
-    obtain ⟨a, rfl⟩ := heven₁; obtain ⟨c, rfl⟩ := ⟨b, hb⟩
-    simp [Nat.mul_div_cancel_left _ (by omega : 0 < 2)]; omega
+    obtain ⟨a, ha⟩ := heven₁
+    rw [ha, hb]
+    -- r₁ = a + a, r₂ = b + b.
+    -- (a+a - (b+b))/2 + 1 = (a+a)/2 - (b+b)/2 + 1
+    -- Note Even.add_self: a+a = 2*a, (a+a)/2 = a.
+    have : a + a = 2 * a := by ring
+    have : b + b = 2 * b := by ring
+    have h1 : (a + a) / 2 = a := by omega
+    have h2 : (b + b) / 2 = b := by omega
+    rw [h1, h2]
+    have h_ge' : a + a ≥ b + b := by rw [← ha, ← hb]; exact h_ge
+    have : (a + a - (b + b)) / 2 = a - b := by omega
+    omega
   have hk_pos : (r₁ - r₂) / 2 + 1 ≥ 1 := by omega
   -- Shape relations for shiftLeft.
   have hP_sh : μP.shiftLeft.colLens = dpartColLensP_B rest := by
@@ -4100,29 +4109,29 @@ private theorem fiber_card_B_bal_Qd {r₁ r₂ : ℕ} {rest : DualPart}
     | [r₃], heq =>
       -- rest = [r₃]: h_bal says r₂ ≤ r₃. Sort: r₂ ≥ r₃. So r₂ = r₃.
       simp at h_bal
-      have hsort' : Antitone (r₁ :: r₂ :: [r₃]).get := hsort
       have hr₃_le : r₃ ≤ r₂ := by
-        have := @hsort' ⟨1, by simp⟩ ⟨2, by simp⟩ (by simp); simpa using this
+        have hsort' : Antitone (r₁ :: r₂ :: [r₃]).get := hsort
+        have h12 := @hsort' ⟨1, by simp⟩ ⟨2, by simp⟩ (by simp)
+        simpa using h12
       have hr₂_eq : r₂ = r₃ := le_antisymm (by omega) hr₃_le
-      have heven₃ := heven r₃ (by simp)
-      obtain ⟨e, he⟩ := heven₃
       have hpos₃ := hpos r₃ (by simp)
       -- μQ.shiftLeft.colLens = [r₃/2]. colLen 0 = r₃/2 = r₂/2.
       have h : μQ.shiftLeft.colLens = [r₃/2] := by
-        rw [heq]; simp [dpartColLensQ_B]; exact hpos₃
-      have : μQ.shiftLeft.colLen 0 = r₃/2 := colLen_0_eq_of_colLens_cons h
-      rw [this, hr₂_eq]
+        rw [heq]; simp [dpartColLensQ_B, hpos₃]
+      have hcl : μQ.shiftLeft.colLen 0 = r₃/2 := colLen_0_eq_of_colLens_cons h
+      rw [hcl, hr₂_eq]
     | r₃ :: r₄ :: rest', heq =>
       -- rest = r₃ :: r₄ :: rest'. h_bal says r₂ ≤ r₃. Sort: r₂ ≥ r₃. So r₂ = r₃.
       simp at h_bal
-      have hsort' : Antitone (r₁ :: r₂ :: r₃ :: r₄ :: rest').get := hsort
       have hr₃_le : r₃ ≤ r₂ := by
-        have := @hsort' ⟨1, by simp⟩ ⟨2, by simp⟩ (by simp); simpa using this
+        have hsort' : Antitone (r₁ :: r₂ :: r₃ :: r₄ :: rest').get := hsort
+        have h12 := @hsort' ⟨1, by simp⟩ ⟨2, by simp⟩ (by simp : (⟨1, by simp⟩ : Fin 4) ≤ ⟨2, by simp⟩)
+        simpa using h12
       have hr₂_eq : r₂ = r₃ := le_antisymm h_bal hr₃_le
-      have h : μQ.shiftLeft.colLens = r₃/2 :: dpartColLensQ_B (r₄ :: rest') := by
-        rw [heq]; simp [dpartColLensQ_B]
-      have : μQ.shiftLeft.colLen 0 = r₃/2 := colLen_0_eq_of_colLens_cons h
-      rw [this, hr₂_eq]
+      have h : μQ.shiftLeft.colLens = r₃/2 :: dpartColLensQ_B rest' := by
+        rw [heq, dpartColLensQ_B_cons₂]
+      have hcl : μQ.shiftLeft.colLen 0 = r₃/2 := colLen_0_eq_of_colLens_cons h
+      rw [hcl, hr₂_eq]
   -- h_weak: μQ.colLen j ≤ μP.colLen 0 for j ≥ 1, which is μQ.shiftLeft.colLen (j-1) ≤ μP.colLen 0.
   have h_weak : ∀ j, j ≥ 1 → μQ.colLen j ≤ μP.colLen 0 := by
     intro j hj
