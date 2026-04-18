@@ -1867,6 +1867,50 @@ theorem thetaLift_MB_firstColSign (E : ILS) (p q : ℤ)
   simp only [Int.natAbs_of_nonneg h_std.1, Int.natAbs_of_nonneg h_std.2]
   ext <;> simp <;> ring
 
+/-- **firstColSign of thetaLift_DC (standard case)**: for `r` in the single-element
+    output of `thetaLift_DC E n` with standard-case condition,
+    `firstColSign r = (n - sign(E).1, n - sign(E).2)`.
+
+    Note `thetaLift_DC` structure is `[charTwistCM (augment (addp, addn) E) γ]`
+    (charTwistCM OUTSIDE). Since charTwistCM preserves firstColSign,
+    this equals firstColSign of `augment (addp, addn) E` = `((addp, addn) :: E)`. -/
+theorem thetaLift_DC_firstColSign (E : ILS) (n : ℤ)
+    (h_std : n - (sign E).1 - (firstColSign E).2 ≥ 0 ∧
+             n - (sign E).2 - (firstColSign E).1 ≥ 0) :
+    ∀ r ∈ thetaLift_DC E n,
+      firstColSign r = (n - (sign E).1, n - (sign E).2) := by
+  intro r hr
+  simp only [thetaLift_DC] at hr
+  rw [if_pos h_std] at hr
+  simp only [List.mem_singleton] at hr; subst hr
+  rw [charTwistCM_firstColSign]
+  rw [show augment (n - (sign E).1 - (firstColSign E).2,
+                     n - (sign E).2 - (firstColSign E).1) E =
+      (n - (sign E).1 - (firstColSign E).2,
+       n - (sign E).2 - (firstColSign E).1) :: E from rfl]
+  rw [firstColSign_cons]
+  simp only [Int.natAbs_of_nonneg h_std.1, Int.natAbs_of_nonneg h_std.2]
+  ext <;> simp <;> ring
+
+/-- **firstColSign of thetaLift_BM (standard case)** — mirror of DC version. -/
+theorem thetaLift_BM_firstColSign (E : ILS) (n : ℤ)
+    (h_std : n - (sign E).1 - (firstColSign E).2 ≥ 0 ∧
+             n - (sign E).2 - (firstColSign E).1 ≥ 0) :
+    ∀ r ∈ thetaLift_BM E n,
+      firstColSign r = (n - (sign E).1, n - (sign E).2) := by
+  intro r hr
+  simp only [thetaLift_BM] at hr
+  rw [if_pos h_std] at hr
+  simp only [List.mem_singleton] at hr; subst hr
+  rw [charTwistCM_firstColSign]
+  rw [show augment (n - (sign E).1 - (firstColSign E).2,
+                     n - (sign E).2 - (firstColSign E).1) E =
+      (n - (sign E).1 - (firstColSign E).2,
+       n - (sign E).2 - (firstColSign E).1) :: E from rfl]
+  rw [firstColSign_cons]
+  simp only [Int.natAbs_of_nonneg h_std.1, Int.natAbs_of_nonneg h_std.2]
+  ext <;> simp <;> ring
+
 end ILS
 
 /-! ## ACResult-level firstColSign propagation for thetaLift
