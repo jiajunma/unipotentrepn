@@ -28,15 +28,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install TeXLive
+      - name: Install TeXLive and Graphviz
         run: |
           sudo apt-get update
-          sudo apt-get install -y texlive-full graphviz
+          sudo apt-get install -y texlive-full graphviz graphviz-dev libgraphviz-dev pkg-config
 
       - name: Install blueprint tools
         run: |
           python3 -m pip install --upgrade pip
-          python3 -m pip install plasTeX leanblueprint
+          python3 -m pip install pygraphviz plasTeX leanblueprint plastexdepgraph plastexshowmore
 
       - name: Compile PDF (optional — skip on failure)
         working-directory: lean/blueprint
