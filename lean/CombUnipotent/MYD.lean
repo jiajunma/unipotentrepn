@@ -2114,6 +2114,90 @@ theorem AC.step_firstColSign_BD (source : ACResult) (p q : ℤ) (ε_τ ε_wp : F
   · exact AC.step_firstColSign_Bplus source p q ε_τ ε_wp source_sig h_sign h_std
   · exact AC.step_firstColSign_Bminus source p q ε_τ ε_wp source_sig h_sign h_std
 
+/-- AC.step for C target: firstColSign invariant. Pre-twist preserves sign/firstColSign,
+    then theta lift gives `(n - source_sig.1, n - source_sig.2)`. -/
+theorem AC.step_firstColSign_C (source : ACResult) (n : ℤ) (ε_τ ε_wp : Fin 2)
+    (source_sig : ℤ × ℤ)
+    (h_sign : ∀ r ∈ source, ILS.sign r.2 = source_sig)
+    (h_std : ∀ r ∈ source,
+      n - (ILS.sign r.2).1 - (ILS.firstColSign r.2).2 ≥ 0 ∧
+      n - (ILS.sign r.2).2 - (ILS.firstColSign r.2).1 ≥ 0) :
+    ∀ r ∈ AC.step source RootType.C n n ε_τ ε_wp,
+      ILS.firstColSign r.2 = (n - source_sig.1, n - source_sig.2) := by
+  intro r hr
+  simp only [AC.step] at hr
+  simp only [show (RootType.C = RootType.C ∨ RootType.C = RootType.M) from Or.inl rfl,
+    ite_true,
+    show ¬((RootType.C = RootType.Bplus ∨ RootType.C = RootType.Bminus ∨ RootType.C = RootType.D) ∧
+      (ε_τ = 1)) from by intro ⟨h, _⟩; rcases h with h | h | h <;> exact absurd h (by decide),
+    ite_false] at hr
+  -- After pre-twist, source has same sign and firstColSign
+  set twisted := if ε_wp = 1 then source.twistBD (-1) (-1) else source
+  have h_sign_tw : ∀ r ∈ twisted, ILS.sign r.2 = source_sig := by
+    intro r' hr'
+    by_cases hwp : ε_wp = 1
+    · simp only [twisted, hwp, ite_true] at hr'
+      exact ACResult.twistBD_sign _ (-1) (-1) _ (Or.inr rfl) (Or.inr rfl) h_sign r' hr'
+    · simp only [twisted, hwp, ite_false] at hr'
+      exact h_sign r' hr'
+  have h_std_tw : ∀ r ∈ twisted,
+      n - (ILS.sign r.2).1 - (ILS.firstColSign r.2).2 ≥ 0 ∧
+      n - (ILS.sign r.2).2 - (ILS.firstColSign r.2).1 ≥ 0 := by
+    intro r' hr'
+    by_cases hwp : ε_wp = 1
+    · simp only [twisted, hwp, ite_true] at hr'
+      simp only [ACResult.twistBD, List.mem_map] at hr'
+      obtain ⟨⟨c, ils⟩, hmem, rfl⟩ := hr'
+      have := h_std ⟨c, ils⟩ hmem
+      simp only at this ⊢
+      rw [ILS.twistBD_sign _ _ _ (Or.inr rfl) (Or.inr rfl),
+          ILS.twistBD_firstColSign _ _ _ (Or.inr rfl) (Or.inr rfl)]
+      exact this
+    · simp only [twisted, hwp, ite_false] at hr'
+      exact h_std r' hr'
+  exact ACResult.thetaLift_DC_firstColSign twisted n source_sig h_sign_tw h_std_tw r hr
+
+/-- AC.step for M target: firstColSign invariant, mirror of C. -/
+theorem AC.step_firstColSign_M (source : ACResult) (n : ℤ) (ε_τ ε_wp : Fin 2)
+    (source_sig : ℤ × ℤ)
+    (h_sign : ∀ r ∈ source, ILS.sign r.2 = source_sig)
+    (h_std : ∀ r ∈ source,
+      n - (ILS.sign r.2).1 - (ILS.firstColSign r.2).2 ≥ 0 ∧
+      n - (ILS.sign r.2).2 - (ILS.firstColSign r.2).1 ≥ 0) :
+    ∀ r ∈ AC.step source RootType.M n n ε_τ ε_wp,
+      ILS.firstColSign r.2 = (n - source_sig.1, n - source_sig.2) := by
+  intro r hr
+  simp only [AC.step] at hr
+  simp only [show (RootType.M = RootType.C ∨ RootType.M = RootType.M) from Or.inr rfl,
+    ite_true,
+    show ¬((RootType.M = RootType.Bplus ∨ RootType.M = RootType.Bminus ∨ RootType.M = RootType.D) ∧
+      (ε_τ = 1)) from by intro ⟨h, _⟩; rcases h with h | h | h <;> exact absurd h (by decide),
+    ite_false] at hr
+  set twisted := if ε_wp = 1 then source.twistBD (-1) (-1) else source
+  have h_sign_tw : ∀ r ∈ twisted, ILS.sign r.2 = source_sig := by
+    intro r' hr'
+    by_cases hwp : ε_wp = 1
+    · simp only [twisted, hwp, ite_true] at hr'
+      exact ACResult.twistBD_sign _ (-1) (-1) _ (Or.inr rfl) (Or.inr rfl) h_sign r' hr'
+    · simp only [twisted, hwp, ite_false] at hr'
+      exact h_sign r' hr'
+  have h_std_tw : ∀ r ∈ twisted,
+      n - (ILS.sign r.2).1 - (ILS.firstColSign r.2).2 ≥ 0 ∧
+      n - (ILS.sign r.2).2 - (ILS.firstColSign r.2).1 ≥ 0 := by
+    intro r' hr'
+    by_cases hwp : ε_wp = 1
+    · simp only [twisted, hwp, ite_true] at hr'
+      simp only [ACResult.twistBD, List.mem_map] at hr'
+      obtain ⟨⟨c, ils⟩, hmem, rfl⟩ := hr'
+      have := h_std ⟨c, ils⟩ hmem
+      simp only at this ⊢
+      rw [ILS.twistBD_sign _ _ _ (Or.inr rfl) (Or.inr rfl),
+          ILS.twistBD_firstColSign _ _ _ (Or.inr rfl) (Or.inr rfl)]
+      exact this
+    · simp only [twisted, hwp, ite_false] at hr'
+      exact h_std r' hr'
+  exact ACResult.thetaLift_BM_firstColSign twisted n source_sig h_sign_tw h_std_tw r hr
+
 /-! ### Lemma 11.5 — approach
 
 The full Lemma 11.5 requires tracking `firstColSign` through AC.step,
