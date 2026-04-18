@@ -4104,4 +4104,240 @@ theorem prop_11_15_PBP_D_injective_full (τ₁ τ₂ : PBP)
   prop_11_12_PBP_D τ₁ τ₂ hγ₁ hγ₂ L₁ L₂ ε₁ ε₂ h_ne₁ h_ne₂ ε_inner
     h_first₁ h_first₂ hp₁_nn hp₂_nn hq₁_nn hq₂_nn h_nt₁ h_nt₂ h_eq
 
+/-! ## Prop 11.9-11.12 PBP B⁺/B⁻ mirrors
+
+B-type PBP tail-symbol infrastructure (analogues of `tailSig_nonneg_D`,
+`tailSig_fst_zero_iff_tailSymbol_s`, `epsilon_zero_iff_tailSymbol_d`) is not yet
+developed at PBP level. The B⁺/B⁻ mirrors below take the abstract
+`(p_t, q_t)` non-negativity and non-triviality hypotheses directly; these will
+later be specialised once B-type tail-symbol lemmas exist. -/
+
+/-- **Prop 11.9 B⁺/B⁻ abstract numerical core:** Same numerical core as
+    `prop_11_9_PBP_D_numerical` but without the PBP-level specialisation to
+    `tailSymbol_B = d`. Given `p₁ ≥ 1` and `p₂ ≥ 0` with the cross-twist
+    equation `-p₁ = p₂ - 1`, we get `p₂ = 0`.
+    This delegates to `BMSZ.prop_11_9_abstract`. -/
+theorem prop_11_9_PBP_Bplus_abstract (τ₁ τ₂ : PBP)
+    (_hγ₁ : τ₁.γ = .Bplus) (_hγ₂ : τ₂.γ = .Bplus)
+    (hp₁_pos : (PBP.tailSignature_B τ₁).1 ≥ 1)
+    (hp₂_nn : (PBP.tailSignature_B τ₂).1 ≥ 0)
+    (h_eq_p : -(PBP.tailSignature_B τ₁).1 = (PBP.tailSignature_B τ₂).1 - 1) :
+    (PBP.tailSignature_B τ₂).1 = 0 :=
+  BMSZ.prop_11_9_abstract _ _ 0 0 hp₁_pos hp₂_nn h_eq_p
+
+/-- **Prop 11.9 B⁻ abstract numerical core:** Mirror of B⁺ numerical core. -/
+theorem prop_11_9_PBP_Bminus_abstract (τ₁ τ₂ : PBP)
+    (_hγ₁ : τ₁.γ = .Bminus) (_hγ₂ : τ₂.γ = .Bminus)
+    (hp₁_pos : (PBP.tailSignature_B τ₁).1 ≥ 1)
+    (hp₂_nn : (PBP.tailSignature_B τ₂).1 ≥ 0)
+    (h_eq_p : -(PBP.tailSignature_B τ₁).1 = (PBP.tailSignature_B τ₂).1 - 1) :
+    (PBP.tailSignature_B τ₂).1 = 0 :=
+  BMSZ.prop_11_9_abstract _ _ 0 0 hp₁_pos hp₂_nn h_eq_p
+
+/-- **Prop 11.10 at PBP level (B⁺ type):** Same strategy as the D-type version.
+    Given matching first-entry formulas for B⁺, the tail signatures agree. -/
+theorem prop_11_10_PBP_Bplus (τ₁ τ₂ : PBP)
+    (_hγ₁ : τ₁.γ = .Bplus) (_hγ₂ : τ₂.γ = .Bplus)
+    (L : ACResult) (ε : Fin 2) (h_ne : L ≠ [])
+    (h_first₁ : ∀ r ∈ L, ∃ rest,
+      r.2 = ((PBP.tailSignature_B τ₁).1,
+             if ε = 1 then -(PBP.tailSignature_B τ₁).2
+             else (PBP.tailSignature_B τ₁).2) :: rest)
+    (h_first₂ : ∀ r ∈ L, ∃ rest,
+      r.2 = ((PBP.tailSignature_B τ₂).1,
+             if ε = 1 then -(PBP.tailSignature_B τ₂).2
+             else (PBP.tailSignature_B τ₂).2) :: rest) :
+    (PBP.tailSignature_B τ₁).1 = (PBP.tailSignature_B τ₂).1 ∧
+    (PBP.tailSignature_B τ₁).2 = (PBP.tailSignature_B τ₂).2 := by
+  have h_eq := BMSZ.first_entry_eq_of_eq L
+    (PBP.tailSignature_B τ₁).1
+    (if ε = 1 then -(PBP.tailSignature_B τ₁).2 else (PBP.tailSignature_B τ₁).2)
+    (PBP.tailSignature_B τ₂).1
+    (if ε = 1 then -(PBP.tailSignature_B τ₂).2 else (PBP.tailSignature_B τ₂).2)
+    h_ne h_first₁ h_first₂
+  refine ⟨h_eq.1, ?_⟩
+  by_cases hε : ε = 1
+  · rw [if_pos hε, if_pos hε] at h_eq
+    omega
+  · rw [if_neg hε, if_neg hε] at h_eq
+    exact h_eq.2
+
+/-- **Prop 11.10 at PBP level (B⁻ type):** Mirror of B⁺. -/
+theorem prop_11_10_PBP_Bminus (τ₁ τ₂ : PBP)
+    (_hγ₁ : τ₁.γ = .Bminus) (_hγ₂ : τ₂.γ = .Bminus)
+    (L : ACResult) (ε : Fin 2) (h_ne : L ≠ [])
+    (h_first₁ : ∀ r ∈ L, ∃ rest,
+      r.2 = ((PBP.tailSignature_B τ₁).1,
+             if ε = 1 then -(PBP.tailSignature_B τ₁).2
+             else (PBP.tailSignature_B τ₁).2) :: rest)
+    (h_first₂ : ∀ r ∈ L, ∃ rest,
+      r.2 = ((PBP.tailSignature_B τ₂).1,
+             if ε = 1 then -(PBP.tailSignature_B τ₂).2
+             else (PBP.tailSignature_B τ₂).2) :: rest) :
+    (PBP.tailSignature_B τ₁).1 = (PBP.tailSignature_B τ₂).1 ∧
+    (PBP.tailSignature_B τ₁).2 = (PBP.tailSignature_B τ₂).2 := by
+  have h_eq := BMSZ.first_entry_eq_of_eq L
+    (PBP.tailSignature_B τ₁).1
+    (if ε = 1 then -(PBP.tailSignature_B τ₁).2 else (PBP.tailSignature_B τ₁).2)
+    (PBP.tailSignature_B τ₂).1
+    (if ε = 1 then -(PBP.tailSignature_B τ₂).2 else (PBP.tailSignature_B τ₂).2)
+    h_ne h_first₁ h_first₂
+  refine ⟨h_eq.1, ?_⟩
+  by_cases hε : ε = 1
+  · rw [if_pos hε, if_pos hε] at h_eq
+    omega
+  · rw [if_neg hε, if_neg hε] at h_eq
+    exact h_eq.2
+
+/-- **Prop 11.11 at PBP level (B⁺ type):** Same composition as D-type.
+    Uses `BMSZ.no_det_twist_same_sign` with `PBP.tailSignature_B` values. -/
+theorem prop_11_11_PBP_Bplus (τ₁ τ₂ : PBP)
+    (_hγ₁ : τ₁.γ = .Bplus) (_hγ₂ : τ₂.γ = .Bplus)
+    (L₁ L₂ : ACResult) (ε : Fin 2)
+    (h_ne₁ : L₁ ≠ []) (h_ne₂ : L₂ ≠ [])
+    (_h_first₁ : ∀ r ∈ L₁, ∃ rest,
+      r.2 = ((PBP.tailSignature_B τ₁).1,
+             if ε = 1 then -(PBP.tailSignature_B τ₁).2
+             else (PBP.tailSignature_B τ₁).2) :: rest)
+    (_h_first₂ : ∀ r ∈ L₂, ∃ rest,
+      r.2 = ((PBP.tailSignature_B τ₂).1,
+             if ε = 1 then -(PBP.tailSignature_B τ₂).2
+             else (PBP.tailSignature_B τ₂).2) :: rest)
+    (hp₁_nn : (PBP.tailSignature_B τ₁).1 ≥ 0)
+    (hp₂_nn : (PBP.tailSignature_B τ₂).1 ≥ 0)
+    (hq₁_nn : (PBP.tailSignature_B τ₁).2 ≥ 0)
+    (hq₂_nn : (PBP.tailSignature_B τ₂).2 ≥ 0)
+    (h_nontrivial : (PBP.tailSignature_B τ₁).1 > 0 ∨ (PBP.tailSignature_B τ₁).2 ≠ 0) :
+    L₁.twistBD (-1) (-1) ≠ L₂ := by
+  set p₁ := (PBP.tailSignature_B τ₁).1
+  set q₁' := if ε = 1 then -(PBP.tailSignature_B τ₁).2 else (PBP.tailSignature_B τ₁).2 with hq₁'_def
+  set p₂ := (PBP.tailSignature_B τ₂).1
+  set q₂' := if ε = 1 then -(PBP.tailSignature_B τ₂).2 else (PBP.tailSignature_B τ₂).2 with hq₂'_def
+  have hq_sign : (q₁' ≤ 0 ∧ q₂' ≤ 0) ∨ (q₁' ≥ 0 ∧ q₂' ≥ 0) := by
+    by_cases hε : ε = 1
+    · left
+      refine ⟨?_, ?_⟩
+      · simp only [hq₁'_def, hε, if_true]; omega
+      · simp only [hq₂'_def, hε, if_true]; omega
+    · right
+      refine ⟨?_, ?_⟩
+      · simp only [hq₁'_def, hε, if_false]; exact hq₁_nn
+      · simp only [hq₂'_def, hε, if_false]; exact hq₂_nn
+  have h_nontrivial' : p₁ > 0 ∨ q₁' ≠ 0 := by
+    rcases h_nontrivial with h | h
+    · exact Or.inl h
+    · right
+      simp only [hq₁'_def]
+      by_cases hε : ε = 1
+      · rw [if_pos hε]; omega
+      · rw [if_neg hε]; exact h
+  exact BMSZ.no_det_twist_same_sign L₁ L₂ p₁ q₁' p₂ q₂' h_ne₁ h_ne₂
+    _h_first₁ _h_first₂ hp₁_nn hp₂_nn hq_sign h_nontrivial'
+
+/-- **Prop 11.11 at PBP level (B⁻ type):** Mirror of B⁺. -/
+theorem prop_11_11_PBP_Bminus (τ₁ τ₂ : PBP)
+    (_hγ₁ : τ₁.γ = .Bminus) (_hγ₂ : τ₂.γ = .Bminus)
+    (L₁ L₂ : ACResult) (ε : Fin 2)
+    (h_ne₁ : L₁ ≠ []) (h_ne₂ : L₂ ≠ [])
+    (_h_first₁ : ∀ r ∈ L₁, ∃ rest,
+      r.2 = ((PBP.tailSignature_B τ₁).1,
+             if ε = 1 then -(PBP.tailSignature_B τ₁).2
+             else (PBP.tailSignature_B τ₁).2) :: rest)
+    (_h_first₂ : ∀ r ∈ L₂, ∃ rest,
+      r.2 = ((PBP.tailSignature_B τ₂).1,
+             if ε = 1 then -(PBP.tailSignature_B τ₂).2
+             else (PBP.tailSignature_B τ₂).2) :: rest)
+    (hp₁_nn : (PBP.tailSignature_B τ₁).1 ≥ 0)
+    (hp₂_nn : (PBP.tailSignature_B τ₂).1 ≥ 0)
+    (hq₁_nn : (PBP.tailSignature_B τ₁).2 ≥ 0)
+    (hq₂_nn : (PBP.tailSignature_B τ₂).2 ≥ 0)
+    (h_nontrivial : (PBP.tailSignature_B τ₁).1 > 0 ∨ (PBP.tailSignature_B τ₁).2 ≠ 0) :
+    L₁.twistBD (-1) (-1) ≠ L₂ := by
+  set p₁ := (PBP.tailSignature_B τ₁).1
+  set q₁' := if ε = 1 then -(PBP.tailSignature_B τ₁).2 else (PBP.tailSignature_B τ₁).2 with hq₁'_def
+  set p₂ := (PBP.tailSignature_B τ₂).1
+  set q₂' := if ε = 1 then -(PBP.tailSignature_B τ₂).2 else (PBP.tailSignature_B τ₂).2 with hq₂'_def
+  have hq_sign : (q₁' ≤ 0 ∧ q₂' ≤ 0) ∨ (q₁' ≥ 0 ∧ q₂' ≥ 0) := by
+    by_cases hε : ε = 1
+    · left
+      refine ⟨?_, ?_⟩
+      · simp only [hq₁'_def, hε, if_true]; omega
+      · simp only [hq₂'_def, hε, if_true]; omega
+    · right
+      refine ⟨?_, ?_⟩
+      · simp only [hq₁'_def, hε, if_false]; exact hq₁_nn
+      · simp only [hq₂'_def, hε, if_false]; exact hq₂_nn
+  have h_nontrivial' : p₁ > 0 ∨ q₁' ≠ 0 := by
+    rcases h_nontrivial with h | h
+    · exact Or.inl h
+    · right
+      simp only [hq₁'_def]
+      by_cases hε : ε = 1
+      · rw [if_pos hε]; omega
+      · rw [if_neg hε]; exact h
+  exact BMSZ.no_det_twist_same_sign L₁ L₂ p₁ q₁' p₂ q₂' h_ne₁ h_ne₂
+    _h_first₁ _h_first₂ hp₁_nn hp₂_nn hq_sign h_nontrivial'
+
+/-- **Prop 11.12 at PBP level (B⁺ type):** Combines 11.11_Bplus + `BMSZ.injectivity_mod_twist`. -/
+theorem prop_11_12_PBP_Bplus (τ₁ τ₂ : PBP)
+    (hγ₁ : τ₁.γ = .Bplus) (hγ₂ : τ₂.γ = .Bplus)
+    (L₁ L₂ : ACResult) (ε₁ ε₂ : Fin 2)
+    (h_ne₁ : L₁ ≠ []) (h_ne₂ : L₂ ≠ [])
+    (ε_inner : Fin 2)
+    (h_first₁ : ∀ r ∈ L₁, ∃ rest,
+      r.2 = ((PBP.tailSignature_B τ₁).1,
+             if ε_inner = 1 then -(PBP.tailSignature_B τ₁).2
+             else (PBP.tailSignature_B τ₁).2) :: rest)
+    (h_first₂ : ∀ r ∈ L₂, ∃ rest,
+      r.2 = ((PBP.tailSignature_B τ₂).1,
+             if ε_inner = 1 then -(PBP.tailSignature_B τ₂).2
+             else (PBP.tailSignature_B τ₂).2) :: rest)
+    (hp₁_nn : (PBP.tailSignature_B τ₁).1 ≥ 0)
+    (hp₂_nn : (PBP.tailSignature_B τ₂).1 ≥ 0)
+    (hq₁_nn : (PBP.tailSignature_B τ₁).2 ≥ 0)
+    (hq₂_nn : (PBP.tailSignature_B τ₂).2 ≥ 0)
+    (h_nt₁ : (PBP.tailSignature_B τ₁).1 > 0 ∨ (PBP.tailSignature_B τ₁).2 ≠ 0)
+    (h_nt₂ : (PBP.tailSignature_B τ₂).1 > 0 ∨ (PBP.tailSignature_B τ₂).2 ≠ 0)
+    (h_eq : (if ε₁ = 1 then L₁.twistBD (-1) (-1) else L₁) =
+            (if ε₂ = 1 then L₂.twistBD (-1) (-1) else L₂)) :
+    ε₁ = ε₂ ∧ L₁ = L₂ := by
+  have h_no_det : L₁.twistBD (-1) (-1) ≠ L₂ :=
+    prop_11_11_PBP_Bplus τ₁ τ₂ hγ₁ hγ₂ L₁ L₂ ε_inner h_ne₁ h_ne₂ h_first₁ h_first₂
+      hp₁_nn hp₂_nn hq₁_nn hq₂_nn h_nt₁
+  have h_no_det' : L₂.twistBD (-1) (-1) ≠ L₁ :=
+    prop_11_11_PBP_Bplus τ₂ τ₁ hγ₂ hγ₁ L₂ L₁ ε_inner h_ne₂ h_ne₁ h_first₂ h_first₁
+      hp₂_nn hp₁_nn hq₂_nn hq₁_nn h_nt₂
+  exact BMSZ.injectivity_mod_twist L₁ L₂ ε₁ ε₂ h_eq h_no_det h_no_det'
+
+/-- **Prop 11.12 at PBP level (B⁻ type):** Mirror of B⁺. -/
+theorem prop_11_12_PBP_Bminus (τ₁ τ₂ : PBP)
+    (hγ₁ : τ₁.γ = .Bminus) (hγ₂ : τ₂.γ = .Bminus)
+    (L₁ L₂ : ACResult) (ε₁ ε₂ : Fin 2)
+    (h_ne₁ : L₁ ≠ []) (h_ne₂ : L₂ ≠ [])
+    (ε_inner : Fin 2)
+    (h_first₁ : ∀ r ∈ L₁, ∃ rest,
+      r.2 = ((PBP.tailSignature_B τ₁).1,
+             if ε_inner = 1 then -(PBP.tailSignature_B τ₁).2
+             else (PBP.tailSignature_B τ₁).2) :: rest)
+    (h_first₂ : ∀ r ∈ L₂, ∃ rest,
+      r.2 = ((PBP.tailSignature_B τ₂).1,
+             if ε_inner = 1 then -(PBP.tailSignature_B τ₂).2
+             else (PBP.tailSignature_B τ₂).2) :: rest)
+    (hp₁_nn : (PBP.tailSignature_B τ₁).1 ≥ 0)
+    (hp₂_nn : (PBP.tailSignature_B τ₂).1 ≥ 0)
+    (hq₁_nn : (PBP.tailSignature_B τ₁).2 ≥ 0)
+    (hq₂_nn : (PBP.tailSignature_B τ₂).2 ≥ 0)
+    (h_nt₁ : (PBP.tailSignature_B τ₁).1 > 0 ∨ (PBP.tailSignature_B τ₁).2 ≠ 0)
+    (h_nt₂ : (PBP.tailSignature_B τ₂).1 > 0 ∨ (PBP.tailSignature_B τ₂).2 ≠ 0)
+    (h_eq : (if ε₁ = 1 then L₁.twistBD (-1) (-1) else L₁) =
+            (if ε₂ = 1 then L₂.twistBD (-1) (-1) else L₂)) :
+    ε₁ = ε₂ ∧ L₁ = L₂ := by
+  have h_no_det : L₁.twistBD (-1) (-1) ≠ L₂ :=
+    prop_11_11_PBP_Bminus τ₁ τ₂ hγ₁ hγ₂ L₁ L₂ ε_inner h_ne₁ h_ne₂ h_first₁ h_first₂
+      hp₁_nn hp₂_nn hq₁_nn hq₂_nn h_nt₁
+  have h_no_det' : L₂.twistBD (-1) (-1) ≠ L₁ :=
+    prop_11_11_PBP_Bminus τ₂ τ₁ hγ₂ hγ₁ L₂ L₁ ε_inner h_ne₂ h_ne₁ h_first₂ h_first₁
+      hp₂_nn hp₁_nn hq₂_nn hq₁_nn h_nt₂
+  exact BMSZ.injectivity_mod_twist L₁ L₂ ε₁ ε₂ h_eq h_no_det h_no_det'
+
 end PBPInstantiation
