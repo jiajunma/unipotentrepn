@@ -2303,6 +2303,91 @@ theorem AC.lemma_11_6_D_unconditional (source : ACResult) (p q : ℤ) (ε_τ ε_
   -- Step 3: apply postTwist_BD_first_entry
   exact ACResult.postTwist_BD_first_entry _ ε_τ _ _ h_lifted
 
+/-- **Lemma 11.6 (B⁺ type, AC level, unconditional):** mirror of D case.
+
+    For γ = B⁺, `ILS.thetaLift` dispatches to `thetaLift_MB` and the structure
+    is identical to the D case (no C/M pre-twist, same post-twist). -/
+theorem AC.lemma_11_6_Bplus_unconditional (source : ACResult) (p q : ℤ) (ε_τ ε_wp : Fin 2)
+    (source_sig source_fcSig : ℤ × ℤ)
+    (h_sign : ∀ r ∈ source, ILS.sign r.2 = source_sig)
+    (h_fcSign : ∀ r ∈ source, ILS.firstColSign r.2 = source_fcSig)
+    (h_std : ∀ r ∈ source,
+      p - (ILS.sign r.2).1 - (ILS.firstColSign r.2).2 ≥ 0 ∧
+      q - (ILS.sign r.2).2 - (ILS.firstColSign r.2).1 ≥ 0) :
+    ∀ r ∈ AC.step source RootType.Bplus p q ε_τ ε_wp,
+      r.2.head? = some (p - source_sig.1 - source_fcSig.2,
+        if ε_τ = 1 then -(q - source_sig.2 - source_fcSig.1)
+        else (q - source_sig.2 - source_fcSig.1)) := by
+  have h_step_eq : AC.step source RootType.Bplus p q ε_τ ε_wp =
+      if ε_τ = 1 then (source.thetaLift RootType.Bplus p q).twistBD 1 (-1)
+      else source.thetaLift RootType.Bplus p q := by
+    simp only [AC.step]
+    rw [if_neg (by decide : ¬(RootType.Bplus = RootType.C ∨ RootType.Bplus = RootType.M))]
+    by_cases hε : ε_τ = 1
+    · simp [hε]
+    · simp [hε]
+  rw [h_step_eq]
+  have h_lifted : ∀ r ∈ source.thetaLift RootType.Bplus p q,
+      r.2.head? = some (p - source_sig.1 - source_fcSig.2,
+                         q - source_sig.2 - source_fcSig.1) := by
+    intro r hr
+    simp only [ACResult.thetaLift, List.mem_flatMap, List.mem_map] at hr
+    obtain ⟨⟨c, ils⟩, hmem, lifted, hlift, rfl⟩ := hr
+    have hsign_ils := h_sign ⟨c, ils⟩ hmem
+    have hfc_ils := h_fcSign ⟨c, ils⟩ hmem
+    have hstd_ils := h_std ⟨c, ils⟩ hmem
+    simp only at hsign_ils hfc_ils hstd_ils
+    have h_disp : ILS.thetaLift ils RootType.Bplus p q = ILS.thetaLift_MB ils p q := rfl
+    rw [h_disp] at hlift
+    have hstd_rewrite :
+        p - (ILS.sign ils).1 - (ILS.firstColSign ils).2 ≥ 0 ∧
+        q - (ILS.sign ils).2 - (ILS.firstColSign ils).1 ≥ 0 := hstd_ils
+    have hf := ILS.thetaLift_MB_first_entry ils p q hstd_rewrite lifted hlift
+    simp only [Prod.snd]
+    rw [hf, hsign_ils, hfc_ils]
+  exact ACResult.postTwist_BD_first_entry _ ε_τ _ _ h_lifted
+
+/-- **Lemma 11.6 (B⁻ type, AC level, unconditional):** mirror of B⁺ case. -/
+theorem AC.lemma_11_6_Bminus_unconditional (source : ACResult) (p q : ℤ) (ε_τ ε_wp : Fin 2)
+    (source_sig source_fcSig : ℤ × ℤ)
+    (h_sign : ∀ r ∈ source, ILS.sign r.2 = source_sig)
+    (h_fcSign : ∀ r ∈ source, ILS.firstColSign r.2 = source_fcSig)
+    (h_std : ∀ r ∈ source,
+      p - (ILS.sign r.2).1 - (ILS.firstColSign r.2).2 ≥ 0 ∧
+      q - (ILS.sign r.2).2 - (ILS.firstColSign r.2).1 ≥ 0) :
+    ∀ r ∈ AC.step source RootType.Bminus p q ε_τ ε_wp,
+      r.2.head? = some (p - source_sig.1 - source_fcSig.2,
+        if ε_τ = 1 then -(q - source_sig.2 - source_fcSig.1)
+        else (q - source_sig.2 - source_fcSig.1)) := by
+  have h_step_eq : AC.step source RootType.Bminus p q ε_τ ε_wp =
+      if ε_τ = 1 then (source.thetaLift RootType.Bminus p q).twistBD 1 (-1)
+      else source.thetaLift RootType.Bminus p q := by
+    simp only [AC.step]
+    rw [if_neg (by decide : ¬(RootType.Bminus = RootType.C ∨ RootType.Bminus = RootType.M))]
+    by_cases hε : ε_τ = 1
+    · simp [hε]
+    · simp [hε]
+  rw [h_step_eq]
+  have h_lifted : ∀ r ∈ source.thetaLift RootType.Bminus p q,
+      r.2.head? = some (p - source_sig.1 - source_fcSig.2,
+                         q - source_sig.2 - source_fcSig.1) := by
+    intro r hr
+    simp only [ACResult.thetaLift, List.mem_flatMap, List.mem_map] at hr
+    obtain ⟨⟨c, ils⟩, hmem, lifted, hlift, rfl⟩ := hr
+    have hsign_ils := h_sign ⟨c, ils⟩ hmem
+    have hfc_ils := h_fcSign ⟨c, ils⟩ hmem
+    have hstd_ils := h_std ⟨c, ils⟩ hmem
+    simp only at hsign_ils hfc_ils hstd_ils
+    have h_disp : ILS.thetaLift ils RootType.Bminus p q = ILS.thetaLift_MB ils p q := rfl
+    rw [h_disp] at hlift
+    have hstd_rewrite :
+        p - (ILS.sign ils).1 - (ILS.firstColSign ils).2 ≥ 0 ∧
+        q - (ILS.sign ils).2 - (ILS.firstColSign ils).1 ≥ 0 := hstd_ils
+    have hf := ILS.thetaLift_MB_first_entry ils p q hstd_rewrite lifted hlift
+    simp only [Prod.snd]
+    rw [hf, hsign_ils, hfc_ils]
+  exact ACResult.postTwist_BD_first_entry _ ε_τ _ _ h_lifted
+
 /-- AC.step for M target: firstColSign invariant, mirror of C. -/
 theorem AC.step_firstColSign_M (source : ACResult) (n : ℤ) (ε_τ ε_wp : Fin 2)
     (source_sig : ℤ × ℤ)
