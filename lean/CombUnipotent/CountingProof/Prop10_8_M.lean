@@ -184,12 +184,6 @@ theorem liftPaintQ_naive_dot_iff (σ : PBP) (i j : ℕ) :
     · right; exact h hm
     · left; exact hm
 
-/-- dotScolLen equality between τ.P col j+1 and σ.P col j.
-    Placeholder — exact formulation depends on how τ.P is accessed. -/
-theorem dotScolLen_liftBM_P_zero_placeholder : True := trivial
-
-theorem dotScolLen_liftBM_Q_placeholder : True := trivial
-
 /-! ## Helper: τ.P col 0 layerOrd structure -/
 
 /-- layerOrd of τ.P at col 0 is at most 3 (since τ.P ∈ {•, s, c}). -/
