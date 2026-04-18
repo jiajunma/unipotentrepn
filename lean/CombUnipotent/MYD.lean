@@ -3581,6 +3581,57 @@ theorem prop_11_8_PBP_Bminus_closed (τ : PBP) (hγ : τ.γ = .Bminus)
   have h_cons := ACResult.head_some_to_cons _ _ _ h_head'
   exact BMSZ.prop_11_8 _ _ _ _ h_ne hq_nn h_cons
 
+/-! ### Prop 11.9 at PBP level (no cross-twist) -/
+
+/-- **Prop 11.9 at PBP level (D type), numerical core:**
+
+    Suppose τ₁, τ₂ : PBP are D-type with the paper's cross-twist equation
+    (11.16) imposing the first-entry constraint
+      (-p_{(τ₁)_t}, -(q_{(τ₁)_t} - 1)) = (p_{(τ₂)_t} - 1, ±q_{(τ₂)_t})
+    on the second entry of the augmented-twisted chain.
+
+    From `x_{τ_1} = d` (so p_{τ_1_t} ≥ 1, q_{τ_1_t} ≥ 1) and the non-negativity
+    `p_{τ_2_t} ≥ 0`, we conclude `p_{τ_2_t} = 0`, and hence by Lemma 11.3(b)
+    `x_{τ_2} = s`. This contradicts `L_{τ_2}^+ ≠ 0` which requires `x_{τ_2} ≠ s`.
+
+    This is the numerical heart of the cross-twist obstruction. -/
+theorem prop_11_9_PBP_D_numerical (τ₁ τ₂ : PBP)
+    (hγ₁ : τ₁.γ = .D) (hγ₂ : τ₂.γ = .D)
+    (h_tail₁ : τ₁.Q.shape.colLen 0 < τ₁.P.shape.colLen 0)
+    (h_tail₂ : τ₂.Q.shape.colLen 0 < τ₂.P.shape.colLen 0)
+    -- x_{τ_1} = d ⟹ p,q ≥ 1
+    (hx₁ : PBP.tailSymbol_D τ₁ = .d)
+    -- Cross-twist first-component equation: -p₁_t = p₂_t - 1
+    (h_eq_p : -(PBP.tailSignature_D τ₁).1 = (PBP.tailSignature_D τ₂).1 - 1)
+    -- L_{τ_2}^+ ≠ 0 semantics: x_{τ_2} ≠ s
+    (hx₂_ne_s : PBP.tailSymbol_D τ₂ ≠ .s) :
+    False := by
+  -- Step 1: x_{τ₁} = d implies p_{τ_1_t} ≥ 1
+  have hnn₁ := tailSig_nonneg_D τ₁ hγ₁
+  have hnn₂ := tailSig_nonneg_D τ₂ hγ₂
+  -- p_{τ_1_t} > 0 since x_{τ_1} = d (not s)
+  have hp₁_pos : (PBP.tailSignature_D τ₁).1 > 0 := by
+    by_contra h_le; push_neg at h_le
+    have h0 : (PBP.tailSignature_D τ₁).1 = 0 := by omega
+    have hx_s := (tailSig_fst_zero_iff_tailSymbol_s τ₁ hγ₁ h_tail₁).mp h0
+    rw [hx₁] at hx_s; exact DRCSymbol.noConfusion hx_s
+  -- Step 2: from h_eq_p: p_{τ_2_t} = 1 - p_{τ_1_t} ≤ 0
+  have hp₂_zero : (PBP.tailSignature_D τ₂).1 = 0 := by omega
+  -- Step 3: p_{τ_2_t} = 0 ⟹ x_{τ_2} = s (Lemma 11.3)
+  have hx₂_s := (tailSig_fst_zero_iff_tailSymbol_s τ₂ hγ₂ h_tail₂).mp hp₂_zero
+  -- Step 4: contradicts hx₂_ne_s
+  exact hx₂_ne_s hx₂_s
+
+/-- **Prop 11.9 (abstract AC-level):** If two ACResults L₁, L₂ have uniform first
+    entries and the cross-twist first-entry constraint from paper's (11.16)
+    forces `p₁ ≥ 1` while `p₂ ≤ 0`, yet `p₂ ≥ 0`, we get `p₂ = 0`. This is the
+    abstract numerical obstruction; combined with PBP-level Lemma 11.3 it gives
+    the paper's contradiction. -/
+theorem BMSZ.prop_11_9_abstract (p₁ p₂ q₁ q₂ : ℤ)
+    (hp₁ : p₁ ≥ 1) (hp₂_nn : p₂ ≥ 0)
+    (h_eq : -p₁ = p₂ - 1) : p₂ = 0 := by
+  omega
+
 /-! ### Prop 11.12 + 11.13 at PBP level -/
 
 /-- **Prop 11.12 at PBP level:** If L_{τ₁} ⊗ (ε₁,ε₁) = L_{τ₂} ⊗ (ε₂,ε₂),
