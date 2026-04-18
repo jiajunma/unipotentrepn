@@ -2627,6 +2627,91 @@ theorem prop_11_5_D_unconditional (E : ILS) (n_inner n_prev p q p_t q_t : ℤ)
 -- PBP-level signature identity: p - 2p' + q'' = p_tail.
 -- Connects D-type, C-type descent, and double descent signatures.
 
+/-! ### Lemma 11.5 shape-identity reduction (D-type)
+
+The two PBP-level identities `h_pt`, `h_qt` of `prop_11_5_D_unconditional`
+both reduce to a **single** shape-level identity
+
+  `2 * n_inner = c_2(O) + p_prev + q_prev`
+
+when combined with Proposition 11.4 (signature decomposition). This follows
+because under Prop 11.4 (`p = c_2 + p_prev + p_t`, `q = c_2 + q_prev + q_t`)
+and `(sign E).1 = p_prev`, `(sign E).2 = q_prev`, we have:
+
+  `h_pt ⟺ p - p_t = 2 * n_inner - q_prev ⟺ c_2 + p_prev = 2 * n_inner - q_prev`
+  `     ⟺ 2 * n_inner = c_2 + p_prev + q_prev`
+
+and similarly for `h_qt`, with identical conclusion. The formal reduction
+theorem below takes the single shape identity and produces both `h_pt` and
+`h_qt`, completing the Lemma 11.5 discharge at the PBP level. -/
+
+/-- **Lemma 11.5 PBP shape-identity reduction (D-type primitive case):**
+
+    Under Prop 11.4 (signature decomposition for primitive D):
+      `p = c_2 + p_prev + p_t`, `q = c_2 + q_prev + q_t`
+    and the identification `(sign E).1 = p_prev`, `(sign E).2 = q_prev`,
+    the single shape identity `2 * n_inner = c_2 + p_prev + q_prev` is
+    equivalent to the pair `(h_pt, h_qt)` used in `prop_11_5_D_unconditional`. -/
+theorem ILS.lemma_11_5_D_shape_identity_bridge
+    (E : ILS) (n_inner c₂ p_prev q_prev p q p_t q_t : ℤ)
+    (h_sign : ILS.sign E = (p_prev, q_prev))
+    -- Prop 11.4 signature decomposition (primitive case)
+    (h_prop_11_4_p : p = c₂ + p_prev + p_t)
+    (h_prop_11_4_q : q = c₂ + q_prev + q_t)
+    -- The shape-level identity (the content of Lemma 11.5 shape arithmetic)
+    (h_shape : 2 * n_inner = c₂ + p_prev + q_prev) :
+    p - 2 * n_inner + (ILS.sign E).2 = p_t ∧
+    q - 2 * n_inner + (ILS.sign E).1 = q_t := by
+  refine ⟨?_, ?_⟩
+  · -- p - 2*n_inner + q_prev = p_t
+    rw [h_sign]; simp only
+    omega
+  · -- q - 2*n_inner + p_prev = q_t
+    rw [h_sign]; simp only
+    omega
+
+/-- **Lemma 11.5 D-type via PBP shape identity:** full discharge of Lemma 11.5
+    under the Prop 11.4 outputs + the single shape identity. Eliminates both
+    `h_pt` and `h_qt` in favor of the cleaner mathematical hypothesis. -/
+theorem ILS.lemma_11_5_D_via_shape_identity
+    (E : ILS) (n_inner n_prev c₂ p_prev q_prev p q p_t q_t : ℤ)
+    (h_fc : firstColSign E = ((sign E).1 - n_prev, (sign E).2 - n_prev))
+    (h_n₀ : n_inner - (sign E).1 - (sign E).2 + n_prev ≥ 0)
+    (h_sign : ILS.sign E = (p_prev, q_prev))
+    (h_prop_11_4_p : p = c₂ + p_prev + p_t)
+    (h_prop_11_4_q : q = c₂ + q_prev + q_t)
+    (h_shape : 2 * n_inner = c₂ + p_prev + q_prev)
+    (γ₁ : ℤ) :
+    let n₀ := n_inner - (sign E).1 - (sign E).2 + n_prev
+    let inner := charTwistCM (augment (n₀, n₀) E) γ₁
+    p - (sign inner).1 - (firstColSign inner).2 = p_t ∧
+    q - (sign inner).2 - (firstColSign inner).1 = q_t := by
+  obtain ⟨h_pt, h_qt⟩ := lemma_11_5_D_shape_identity_bridge E n_inner c₂ p_prev q_prev
+    p q p_t q_t h_sign h_prop_11_4_p h_prop_11_4_q h_shape
+  exact lemma_11_5_D_unconditional E n_inner n_prev p q p_t q_t h_fc h_n₀ h_pt h_qt γ₁
+
+/-- **Proposition 11.5 (D-type, shape-identity form):** named wrapper expressing
+    the full Lemma 11.5 statement with the single shape-level identity
+    `2 * n_inner = c_2 + p_prev + q_prev` replacing the pair `(h_pt, h_qt)`.
+
+    This is the cleanest form of Proposition 11.5 for PBP-level integration:
+    all PBP-level content is concentrated in `h_prop_11_4_*` (Prop 11.4, proved
+    in this file) and `h_shape` (a single shape arithmetic identity). -/
+theorem prop_11_5_D_shape (E : ILS) (n_inner n_prev c₂ p_prev q_prev p q p_t q_t : ℤ)
+    (h_fc : ILS.firstColSign E = ((ILS.sign E).1 - n_prev, (ILS.sign E).2 - n_prev))
+    (h_n₀ : n_inner - (ILS.sign E).1 - (ILS.sign E).2 + n_prev ≥ 0)
+    (h_sign : ILS.sign E = (p_prev, q_prev))
+    (h_prop_11_4_p : p = c₂ + p_prev + p_t)
+    (h_prop_11_4_q : q = c₂ + q_prev + q_t)
+    (h_shape : 2 * n_inner = c₂ + p_prev + q_prev)
+    (γ₁ : ℤ) :
+    let n₀ := n_inner - (ILS.sign E).1 - (ILS.sign E).2 + n_prev
+    let inner := ILS.charTwistCM (ILS.augment (n₀, n₀) E) γ₁
+    p - (ILS.sign inner).1 - (ILS.firstColSign inner).2 = p_t ∧
+    q - (ILS.sign inner).2 - (ILS.firstColSign inner).1 = q_t :=
+  ILS.lemma_11_5_D_via_shape_identity E n_inner n_prev c₂ p_prev q_prev p q p_t q_t
+    h_fc h_n₀ h_sign h_prop_11_4_p h_prop_11_4_q h_shape γ₁
+
 /-! ### Proposition 11.5 (named wrapper)
 
 The two-step AC composition formula. `ILS.lemma_11_5_D` above is the core algebraic
