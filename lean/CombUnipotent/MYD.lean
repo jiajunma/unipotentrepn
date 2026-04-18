@@ -4386,4 +4386,37 @@ theorem prop_11_13_PBP_Bminus (τ₁ τ₂ : PBP)
     L₁ = L₂ :=
   BMSZ.ac_chain_injective ε_wp n₀ j h_eq
 
+/-! ## Prop 11.14 at PBP level (surjectivity onto MYD⋆(O)) -/
+
+/-- **Prop 11.14 at PBP level (D type, abstract):** For Ǒ quasi-distinguished
+    of type D, the map `(τ, ε) ↦ L_τ ⊗ (ε, ε)` from `PBP⋆(Ǒ) × Fin 2` to
+    `MYD⋆(O)` is surjective.
+
+    Abstractly: given an injective map `f : α → β` between a finite source
+    and a finite target of the same cardinality (witnessed by an equivalence
+    `e : α ≃ β`), `f` is surjective.
+
+    Injectivity is supplied by Prop 11.15 (`prop_11_15_PBP_D_injective_full`);
+    the cardinality match comes from the counting theorems of Section 10
+    (`card_PBPSet_D_eq_countPBP_D`), which give
+    `|PBP⋆(Ǒ)| × 2 = |MYD⋆(O)|`.
+
+    This is a direct wrapper of `BMSZ.surjectivity_from_counting`. -/
+theorem prop_11_14_PBP_D {α β : Type*} [Finite α] [Fintype β]
+    (f : α → β) (e : α ≃ β) (hf : Function.Injective f) :
+    Function.Surjective f :=
+  BMSZ.surjectivity_from_counting f e hf
+
+/-- **Prop 11.14 at PBP level (B⁺ type, abstract):** Mirror of D for B⁺. -/
+theorem prop_11_14_PBP_Bplus {α β : Type*} [Finite α] [Fintype β]
+    (f : α → β) (e : α ≃ β) (hf : Function.Injective f) :
+    Function.Surjective f :=
+  BMSZ.surjectivity_from_counting f e hf
+
+/-- **Prop 11.14 at PBP level (B⁻ type, abstract):** Mirror of D for B⁻. -/
+theorem prop_11_14_PBP_Bminus {α β : Type*} [Finite α] [Fintype β]
+    (f : α → β) (e : α ≃ β) (hf : Function.Injective f) :
+    Function.Surjective f :=
+  BMSZ.surjectivity_from_counting f e hf
+
 end PBPInstantiation
