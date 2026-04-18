@@ -2157,6 +2157,15 @@ theorem AC.step_firstColSign_C (source : ACResult) (n : ℤ) (ε_τ ε_wp : Fin 
       exact h_std r' hr'
   exact ACResult.thetaLift_DC_firstColSign twisted n source_sig h_sign_tw h_std_tw r hr
 
+/-- **AC.base firstColSign = sign**: At the base case, every component has
+    `firstColSign = sign`. -/
+theorem AC.base_firstColSign_eq_sign (γ : RootType) :
+    ∀ r ∈ AC.base γ, ILS.firstColSign r.2 = ILS.sign r.2 := by
+  intro r hr
+  cases γ <;> simp [AC.base] at hr <;> subst hr <;>
+    simp [ILS.firstColSign, ILS.sign, ILS.firstColSignAux, ILS.signAux,
+          ILS.firstColSignRow, ILS.signRow]
+
 /-- AC.step for M target: firstColSign invariant, mirror of C. -/
 theorem AC.step_firstColSign_M (source : ACResult) (n : ℤ) (ε_τ ε_wp : Fin 2)
     (source_sig : ℤ × ℤ)
