@@ -329,9 +329,29 @@
 </li>
   <li><p>\(p_{\tau _t} = 0 \iff x_\tau = s\). </p>
 </li>
-  <li><p>\(q_{\tau _t} = 0 \iff x_\tau = r\). </p>
-</li>
 </ol>
+<div class="remark_thmwrapper theorem-style-remark" id="a0000000103">
+  <div class="remark_thmheading">
+    <span class="remark_thmcaption">
+    Remark
+    </span>
+    <span class="remark_thmlabel">88</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0029.html#a0000000103">#</a>
+    
+    
+    
+        </div>
+  </div>
+  <div class="remark_thmcontent">
+  <p>The converse-parity claim “\(q_{\tau _t} = 0 \iff x_\tau = r\)” from the paper is <em>not</em> formalized here. The tail contributions \(\mathrm{tailContrib}(c) = (1, 1)\) and \(\mathrm{tailContrib}(d) = (1, 1)\) have \(q\)-component&#160;\(\geq 1\), so \(q_{\tau _t} = 0\) can fail even when \(x_\tau \in \{ c, d\} \); the full iff requires additional structure beyond what the other two parts establish. </p>
+
+  </div>
+</div>
 
   </div>
 </div>
@@ -345,7 +365,6 @@
   <div class="proof_content">
   <p>By layer monotonicity, a symbol \(d\) (layerOrd&#160;4) can only appear at the bottom of column&#160;0. Conversely, \(\varepsilon _\tau = 0\) iff \(d\) is present in column&#160;0, which forces it to the bottom. </p>
 <p>For (2): if \(x_\tau = s\), layer monotonicity bounds all tail-cell \(\mathrm{layerOrd} \leq 1\), so each is \(\bullet \) or \(s\). The non-\(\bullet \) ones are forced to be \(s\) by the non-dot condition at the boundary. By the row-\(s\) constraint, each row has at most one \(s\), so the full tail is \(s\) with \(\mathrm{tailContrib} = (0, 2)\) each; summed \(p\)-component is \(0\). Conversely, if \(x_\tau \neq s\), the bottom cell contributes \(\geq 1\) to \(p\) (since \(r \mapsto (2, 0)\), \(c \mapsto (1, 1)\), \(d \mapsto (1, 1)\)). </p>
-<p>(3) is symmetric. </p>
 
   </div>
 </div>
