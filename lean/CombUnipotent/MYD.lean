@@ -4029,4 +4029,43 @@ theorem prop_11_11_PBP_D (τ₁ τ₂ : PBP)
   exact BMSZ.no_det_twist_same_sign L₁ L₂ p₁ q₁' p₂ q₂' h_ne₁ h_ne₂
     h_first₁ h_first₂ hp₁_nn hp₂_nn hq_sign h_nontrivial'
 
+/-! ### Prop 11.12 PBP level (D-type, via Task 4 det-twist) -/
+
+/-- **Prop 11.12 at PBP level (D type, full composition):** Given PBP-level
+    hypotheses: L₁, L₂ are the D-type AC results with first-entry formula,
+    and the twisted-with-ε equality holds. Then ε₁ = ε₂ and L₁ = L₂.
+
+    Uses `prop_11_11_PBP_D` (Task 4) to discharge the no-det-twist hypothesis. -/
+theorem prop_11_12_PBP_D (τ₁ τ₂ : PBP)
+    (hγ₁ : τ₁.γ = .D) (hγ₂ : τ₂.γ = .D)
+    (L₁ L₂ : ACResult) (ε₁ ε₂ : Fin 2)
+    (h_ne₁ : L₁ ≠ []) (h_ne₂ : L₂ ≠ [])
+    -- same ε for tail-signature first-entry formula
+    (ε_inner : Fin 2)
+    (h_first₁ : ∀ r ∈ L₁, ∃ rest,
+      r.2 = ((PBP.tailSignature_D τ₁).1,
+             if ε_inner = 1 then -(PBP.tailSignature_D τ₁).2
+             else (PBP.tailSignature_D τ₁).2) :: rest)
+    (h_first₂ : ∀ r ∈ L₂, ∃ rest,
+      r.2 = ((PBP.tailSignature_D τ₂).1,
+             if ε_inner = 1 then -(PBP.tailSignature_D τ₂).2
+             else (PBP.tailSignature_D τ₂).2) :: rest)
+    (hp₁_nn : (PBP.tailSignature_D τ₁).1 ≥ 0)
+    (hp₂_nn : (PBP.tailSignature_D τ₂).1 ≥ 0)
+    (hq₁_nn : (PBP.tailSignature_D τ₁).2 ≥ 0)
+    (hq₂_nn : (PBP.tailSignature_D τ₂).2 ≥ 0)
+    (h_nt₁ : (PBP.tailSignature_D τ₁).1 > 0 ∨ (PBP.tailSignature_D τ₁).2 ≠ 0)
+    (h_nt₂ : (PBP.tailSignature_D τ₂).1 > 0 ∨ (PBP.tailSignature_D τ₂).2 ≠ 0)
+    -- Main outer equality
+    (h_eq : (if ε₁ = 1 then L₁.twistBD (-1) (-1) else L₁) =
+            (if ε₂ = 1 then L₂.twistBD (-1) (-1) else L₂)) :
+    ε₁ = ε₂ ∧ L₁ = L₂ := by
+  have h_no_det : L₁.twistBD (-1) (-1) ≠ L₂ :=
+    prop_11_11_PBP_D τ₁ τ₂ hγ₁ hγ₂ L₁ L₂ ε_inner h_ne₁ h_ne₂ h_first₁ h_first₂
+      hp₁_nn hp₂_nn hq₁_nn hq₂_nn h_nt₁
+  have h_no_det' : L₂.twistBD (-1) (-1) ≠ L₁ :=
+    prop_11_11_PBP_D τ₂ τ₁ hγ₂ hγ₁ L₂ L₁ ε_inner h_ne₂ h_ne₁ h_first₂ h_first₁
+      hp₂_nn hp₁_nn hq₂_nn hq₁_nn h_nt₂
+  exact BMSZ.injectivity_mod_twist L₁ L₂ ε₁ ε₂ h_eq h_no_det h_no_det'
+
 end PBPInstantiation
