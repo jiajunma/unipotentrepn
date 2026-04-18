@@ -26,6 +26,7 @@ Reference: [BMSZ] Prop~11.8 (non-vanishing), 11.9--11.12 (injectivity),
 \end{lemma}
 
 \begin{proof}
+  \leanok
   \uses{lem:11_1_a_empty, def:AC_base, def:AC_step, thm:AC_step_sign_all}
   Apply AC.step once to the empty base. For single-row ILS, $\Sign$ on row~0 gives $(|p|, |q|)$ exactly, so the post-twist by $\eps_\tau$ produces the claimed form.
 \end{proof}
@@ -74,6 +75,7 @@ Reference: [BMSZ] Prop~11.8 (non-vanishing), 11.9--11.12 (injectivity),
 \end{proposition}
 
 \begin{proof}
+  \leanok
   \uses{lem:11_3, lem:11_6_D}
   By case on $x_\tau$. From Lem~\ref{lem:11_6_D}:
   $\mathcal{E}(1) = (p_{\tau_t}, (-1)^{\eps_\tau} q_{\tau_t})$.
@@ -136,6 +138,7 @@ Reference: [BMSZ] Prop~11.8 (non-vanishing), 11.9--11.12 (injectivity),
 \end{lemma}
 
 \begin{proof}
+  \leanok
   \uses{prop:11_8_ac}
   The $\otimes(1, 1)$ twist negates the first entry: $(\mathcal{L}_{\tau_1} \otimes (1, 1))^+ = 0$ always. So $\mathcal{L}_{\tau_2}^+ = 0$, forcing $x_{\tau_2} = s$ (Prop~\ref{prop:11_8_ac}(b)). But then $(\mathcal{L}_{\tau_1} \otimes (1, 1))^- \neq 0$ while $\mathcal{L}_{\tau_2}^- = 0$: contradiction.
 \end{proof}
