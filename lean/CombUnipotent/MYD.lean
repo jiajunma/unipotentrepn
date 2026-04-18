@@ -2237,6 +2237,72 @@ theorem ACResult.postTwist_BD_first_entry (ac : ACResult) (ε_τ : Fin 2) (a b :
   · simp only [hε, ite_false] at hr ⊢
     exact h_first r hr
 
+/-! ### Lemma 11.6 (first-entry formula after AC.step for B/D targets)
+
+For γ ∈ {D, B⁺, B⁻} (no C/M pre-twist), starting from a source ACResult
+with uniform `sign = source_sig` and uniform `firstColSign = source_fcSig`
+satisfying the standard-case condition, every output of `AC.step` has
+first entry
+
+    `(p - source_sig.1 - source_fcSig.2,
+      (-1)^{ε_τ} · (q - source_sig.2 - source_fcSig.1))`.
+
+This is Lemma 11.6 at the AC level: the first entry of `L_τ` before the
+PBP-level signature decomposition reduces to `(p_τt, (-1)^{ε_τ} · q_τt)`
+via Proposition 11.4. -/
+
+/-- **Lemma 11.6 (D type, AC level, unconditional):** first entry of `AC.step` for γ = D.
+
+    Strategy:
+    1. `AC.step source .D p q ε_τ ε_wp = if ε_τ = 1 then lifted.twistBD 1 (-1) else lifted`
+       where `lifted = source.thetaLift .D p q` (no C/M pre-twist for D).
+    2. Every `lifted` component has first entry `(addp, addn)` via
+       `ILS.thetaLift_CD_first_entry` with the standard-case hypothesis.
+    3. Apply `ACResult.postTwist_BD_first_entry` to propagate through the twist. -/
+theorem AC.lemma_11_6_D_unconditional (source : ACResult) (p q : ℤ) (ε_τ ε_wp : Fin 2)
+    (source_sig source_fcSig : ℤ × ℤ)
+    (h_sign : ∀ r ∈ source, ILS.sign r.2 = source_sig)
+    (h_fcSign : ∀ r ∈ source, ILS.firstColSign r.2 = source_fcSig)
+    (h_std : ∀ r ∈ source,
+      p - (ILS.sign r.2).1 - (ILS.firstColSign r.2).2 ≥ 0 ∧
+      q - (ILS.sign r.2).2 - (ILS.firstColSign r.2).1 ≥ 0) :
+    ∀ r ∈ AC.step source RootType.D p q ε_τ ε_wp,
+      r.2.head? = some (p - source_sig.1 - source_fcSig.2,
+        if ε_τ = 1 then -(q - source_sig.2 - source_fcSig.1)
+        else (q - source_sig.2 - source_fcSig.1)) := by
+  -- Step 1: reduce AC.step to post-twist of lifted
+  have h_step_eq : AC.step source RootType.D p q ε_τ ε_wp =
+      if ε_τ = 1 then (source.thetaLift RootType.D p q).twistBD 1 (-1)
+      else source.thetaLift RootType.D p q := by
+    simp only [AC.step]
+    rw [if_neg (by decide : ¬(RootType.D = RootType.C ∨ RootType.D = RootType.M))]
+    by_cases hε : ε_τ = 1
+    · simp [hε]
+    · simp [hε]
+  rw [h_step_eq]
+  -- Step 2: show every lifted element has the expected first entry
+  have h_lifted : ∀ r ∈ source.thetaLift RootType.D p q,
+      r.2.head? = some (p - source_sig.1 - source_fcSig.2,
+                         q - source_sig.2 - source_fcSig.1) := by
+    intro r hr
+    simp only [ACResult.thetaLift, List.mem_flatMap, List.mem_map] at hr
+    obtain ⟨⟨c, ils⟩, hmem, lifted, hlift, rfl⟩ := hr
+    have hsign_ils := h_sign ⟨c, ils⟩ hmem
+    have hfc_ils := h_fcSign ⟨c, ils⟩ hmem
+    have hstd_ils := h_std ⟨c, ils⟩ hmem
+    simp only at hsign_ils hfc_ils hstd_ils
+    -- ILS.thetaLift for target .D dispatches to thetaLift_CD
+    have h_disp : ILS.thetaLift ils RootType.D p q = ILS.thetaLift_CD ils p q := rfl
+    rw [h_disp] at hlift
+    have hstd_rewrite :
+        p - (ILS.sign ils).1 - (ILS.firstColSign ils).2 ≥ 0 ∧
+        q - (ILS.sign ils).2 - (ILS.firstColSign ils).1 ≥ 0 := hstd_ils
+    have hf := ILS.thetaLift_CD_first_entry ils p q hstd_rewrite lifted hlift
+    simp only [Prod.snd]
+    rw [hf, hsign_ils, hfc_ils]
+  -- Step 3: apply postTwist_BD_first_entry
+  exact ACResult.postTwist_BD_first_entry _ ε_τ _ _ h_lifted
+
 /-- AC.step for M target: firstColSign invariant, mirror of C. -/
 theorem AC.step_firstColSign_M (source : ACResult) (n : ℤ) (ε_τ ε_wp : Fin 2)
     (source_sig : ℤ × ℤ)
