@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
 """
-Strip plastex-generated phantom nodes (id matching aXXXXXXX) from the
-dep_graph_document.html file.
+Strip plastex-generated phantom NODES from dep_graph_document.html.
 
-These phantoms come from a plasTeX parser quirk that creates empty
-definition_thmwrapper / lemma_thmwrapper divs around \begin{cases} display
-math inside theorem environments. They have no real content and pollute
-the dependency graph.
+A "phantom node" is one that appears as a NODE DECLARATION in the
+embedded graphviz dot source (e.g. `aXXXXXXX [color=blue, ...]`) but has
+no real semantic content (empty thm wrapper from a plasTeX parser quirk).
 
-Usage:
-    python3 tools/strip_phantom_nodes.py <path_to_dep_graph_document.html>
+Important: only strip aXXXX IDs that appear as graph node declarations.
+Many other aXXXX IDs are legitimate plasTeX-assigned IDs for displaymath,
+list items, etc. — those must NOT be removed (they're the click targets).
 """
 import re
 import sys
@@ -17,43 +16,29 @@ from pathlib import Path
 
 
 def strip(html: str) -> tuple[str, int]:
-    # Remove the inline graphviz `dot` source — nodes referenced by phantom IDs.
-    # Pattern: a0000000NN [color=...,...,shape=...]; possibly with edges
-    phantom_pat = re.compile(r'a0000000\d+')
+    # 1. Find IDs that appear as NODE DECLARATIONS in the dot source.
+    #    These have form `aXXXXXXX [color=...,shape=...]` inside a renderDot string.
+    node_decl_pat = re.compile(r'\b(a\d{8,})\s+\[color=\w+[^\]]*shape=(?:ellipse|box)[^\]]*\]')
+    phantom_ids = sorted(set(node_decl_pat.findall(html)))
 
-    # Find all phantom IDs first
-    phantoms = sorted(set(phantom_pat.findall(html)))
-    if not phantoms:
+    if not phantom_ids:
         return html, 0
 
     out = html
     removed = 0
 
-    # 1) Remove phantom node declarations from the digraph string
-    #    e.g.  a0000000065 [color=blue, fillcolor=...]
-    for pid in phantoms:
-        # Match `pid [...]` (node decl) — within graphviz dot text
-        decl_pat = re.compile(rf'\b{re.escape(pid)}\s+\[[^\]]*\]\s*;?', re.MULTILINE)
+    # 2. For each phantom ID, remove its NODE DECLARATION from the dot source.
+    for pid in phantom_ids:
+        decl_pat = re.compile(rf'\b{re.escape(pid)}\s+\[[^\]]*\]\s*;?')
         n = len(decl_pat.findall(out))
         out = decl_pat.sub('', out)
         removed += n
 
-    # 2) Remove phantom modal containers (the off-screen divs)
-    for pid in phantoms:
-        # Match the entire <div ... id="pid_modal">...</div> block (greedy until matching close)
-        # Easier: regex the modal-container with class hint
-        modal_pat = re.compile(
-            rf'<div class="modal-container"[^>]*\bid="{re.escape(pid)}_modal"[\s\S]*?</div>\s*</div>\s*</div>',
-            re.IGNORECASE,
-        )
-        out = modal_pat.sub('', out)
-
-        # Also remove <div class="thm" id="pid" style="display: none">...</div>
-        thm_pat = re.compile(
-            rf'<div class="thm" id="{re.escape(pid)}"[\s\S]*?</div>\s*</div>\s*</div>\s*</div>',
-            re.IGNORECASE,
-        )
-        out = thm_pat.sub('', out)
+        # Also remove edges referencing this id, e.g. "X -> pid" or "pid -> Y"
+        edge_pat = re.compile(rf'\s*"?[^"]+"?\s*->\s*{re.escape(pid)}\s*\[[^\]]*\]\s*;?', re.MULTILINE)
+        out = edge_pat.sub('', out)
+        edge_pat2 = re.compile(rf'\s*{re.escape(pid)}\s*->\s*"?[^"]+"?\s*\[[^\]]*\]\s*;?', re.MULTILINE)
+        out = edge_pat2.sub('', out)
 
     return out, removed
 
@@ -67,9 +52,9 @@ def main() -> int:
     new, count = strip(html)
     if count:
         p.write_text(new, encoding='utf-8')
-        print(f'[strip_phantom_nodes] removed {count} phantom node declarations from {p}')
+        print(f'[strip_phantom_nodes] removed {count} phantom node decl(s) from {p}')
     else:
-        print(f'[strip_phantom_nodes] no phantom nodes in {p}')
+        print(f'[strip_phantom_nodes] no phantom node decls in {p}')
     return 0
 
 
