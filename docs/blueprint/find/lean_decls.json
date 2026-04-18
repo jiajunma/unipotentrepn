@@ -102,202 +102,202 @@
     "YoungDiagram.length_colLens": {
       "name": "YoungDiagram.length_colLens",
       "file": "lean/CombUnipotent/CountingProof/Basic.lean",
-      "line": 35
+      "line": 34
     },
     "YoungDiagram.getElem_colLens": {
       "name": "YoungDiagram.getElem_colLens",
       "file": "lean/CombUnipotent/CountingProof/Basic.lean",
-      "line": 40
+      "line": 38
     },
     "YoungDiagram.colLens_sorted": {
       "name": "YoungDiagram.colLens_sorted",
       "file": "lean/CombUnipotent/CountingProof/Basic.lean",
-      "line": 46
+      "line": 44
     },
     "YoungDiagram.pos_of_mem_colLens": {
       "name": "YoungDiagram.pos_of_mem_colLens",
       "file": "lean/CombUnipotent/CountingProof/Basic.lean",
-      "line": 50
+      "line": 48
     },
     "YoungDiagram.ofColLens": {
       "name": "YoungDiagram.ofColLens",
       "file": "lean/CombUnipotent/CountingProof/Basic.lean",
-      "line": 56
+      "line": 54
     },
     "YoungDiagram.ofColLens_colLens": {
       "name": "YoungDiagram.ofColLens_colLens",
       "file": "lean/CombUnipotent/CountingProof/Basic.lean",
-      "line": 60
+      "line": 58
     },
     "YoungDiagram.colLens_ofColLens": {
       "name": "YoungDiagram.colLens_ofColLens",
       "file": "lean/CombUnipotent/CountingProof/Basic.lean",
-      "line": 65
+      "line": 63
     },
     "YoungDiagram.colLen_ofColLens": {
       "name": "YoungDiagram.colLen_ofColLens",
       "file": "lean/CombUnipotent/CountingProof/Basic.lean",
-      "line": 71
+      "line": 69
     },
     "dpartColLensP_D": {
       "name": "dpartColLensP_D",
       "file": "lean/CombUnipotent/CountingProof/Basic.lean",
-      "line": 103
+      "line": 101
     },
     "dpartColLensQ_D": {
       "name": "dpartColLensQ_D",
       "file": "lean/CombUnipotent/CountingProof/Basic.lean",
-      "line": 111
+      "line": 109
     },
     "dpartColLensP_C": {
       "name": "dpartColLensP_C",
       "file": "lean/CombUnipotent/CountingProof/Basic.lean",
-      "line": 126
+      "line": 124
     },
     "dpartColLensQ_C": {
       "name": "dpartColLensQ_C",
       "file": "lean/CombUnipotent/CountingProof/Basic.lean",
-      "line": 131
+      "line": 129
     },
     "dpartColLensP_D_cons₂": {
       "name": "dpartColLensP_D_cons₂",
       "file": "lean/CombUnipotent/CountingProof/Basic.lean",
-      "line": 169
+      "line": 167
     },
     "dpartColLensQ_D_cons₂": {
       "name": "dpartColLensQ_D_cons₂",
       "file": "lean/CombUnipotent/CountingProof/Basic.lean",
-      "line": 173
+      "line": 171
     },
     "TailClass": {
       "name": "TailClass",
       "file": "lean/CombUnipotent/CountingProof/Basic.lean",
-      "line": 215
+      "line": 213
     },
     "tailClass_D": {
       "name": "tailClass_D",
       "file": "lean/CombUnipotent/CountingProof/Basic.lean",
-      "line": 229
+      "line": 227
     },
     "YoungDiagram.mem_shiftLeft_aux": {
       "name": "YoungDiagram.mem_shiftLeft_aux",
       "file": "lean/CombUnipotent/CountingProof/Basic.lean",
-      "line": 245
+      "line": 243
     },
     "YoungDiagram.shiftLeft": {
       "name": "YoungDiagram.shiftLeft",
       "file": "lean/CombUnipotent/CountingProof/Basic.lean",
-      "line": 258
+      "line": 256
     },
     "YoungDiagram.mem_shiftLeft": {
       "name": "YoungDiagram.mem_shiftLeft",
       "file": "lean/CombUnipotent/CountingProof/Basic.lean",
-      "line": 267
+      "line": 265
     },
     "YoungDiagram.colLen_shiftLeft": {
       "name": "YoungDiagram.colLen_shiftLeft",
       "file": "lean/CombUnipotent/CountingProof/Basic.lean",
-      "line": 272
+      "line": 270
     },
     "doubleDescent_D_paintL_dot": {
       "name": "doubleDescent_D_paintL_dot",
       "file": "lean/CombUnipotent/CountingProof/Basic.lean",
-      "line": 305
+      "line": 303
     },
     "doubleDescent_D_paintL_nondot_tail": {
       "name": "doubleDescent_D_paintL_nondot_tail",
       "file": "lean/CombUnipotent/CountingProof/Basic.lean",
-      "line": 316
+      "line": 314
     },
     "dpartColLensP_B": {
       "name": "dpartColLensP_B",
       "file": "lean/CombUnipotent/CountingProof/Basic.lean",
-      "line": 364
+      "line": 362
     },
     "dpartColLensQ_B": {
       "name": "dpartColLensQ_B",
       "file": "lean/CombUnipotent/CountingProof/Basic.lean",
-      "line": 372
+      "line": 370
     },
     "dpartColLensP_B_cons₂": {
       "name": "dpartColLensP_B_cons₂",
       "file": "lean/CombUnipotent/CountingProof/Basic.lean",
-      "line": 397
+      "line": 395
     },
     "dpartColLensQ_B_cons₂": {
       "name": "dpartColLensQ_B_cons₂",
       "file": "lean/CombUnipotent/CountingProof/Basic.lean",
-      "line": 401
+      "line": 399
     },
     "dpartColLensP_M": {
       "name": "dpartColLensP_M",
       "file": "lean/CombUnipotent/CountingProof/Basic.lean",
-      "line": 414
+      "line": 412
     },
     "dpartColLensQ_M": {
       "name": "dpartColLensQ_M",
       "file": "lean/CombUnipotent/CountingProof/Basic.lean",
-      "line": 417
+      "line": 415
     },
     "dpartColLensP_M_eq": {
       "name": "dpartColLensP_M_eq",
       "file": "lean/CombUnipotent/CountingProof/Basic.lean",
-      "line": 431
+      "line": 429
     },
     "dpartColLensQ_M_eq": {
       "name": "dpartColLensQ_M_eq",
       "file": "lean/CombUnipotent/CountingProof/Basic.lean",
-      "line": 434
+      "line": 432
     },
     "dpartColLensP_M_nil": {
       "name": "dpartColLensP_M_nil",
       "file": "lean/CombUnipotent/CountingProof/Basic.lean",
-      "line": 437
+      "line": 435
     },
     "dpartColLensP_M_singleton": {
       "name": "dpartColLensP_M_singleton",
       "file": "lean/CombUnipotent/CountingProof/Basic.lean",
-      "line": 439
+      "line": 437
     },
     "dpartColLensP_M_cons₂": {
       "name": "dpartColLensP_M_cons₂",
       "file": "lean/CombUnipotent/CountingProof/Basic.lean",
-      "line": 442
+      "line": 440
     },
     "dpartColLensQ_M_nil": {
       "name": "dpartColLensQ_M_nil",
       "file": "lean/CombUnipotent/CountingProof/Basic.lean",
-      "line": 445
+      "line": 443
     },
     "dpartColLensQ_M_singleton": {
       "name": "dpartColLensQ_M_singleton",
       "file": "lean/CombUnipotent/CountingProof/Basic.lean",
-      "line": 447
+      "line": 445
     },
     "dpartColLensQ_M_cons₂": {
       "name": "dpartColLensQ_M_cons₂",
       "file": "lean/CombUnipotent/CountingProof/Basic.lean",
-      "line": 450
+      "line": 448
     },
     "dpartColLensQ_B_eq_dpartColLensP_B_cons": {
       "name": "dpartColLensQ_B_eq_dpartColLensP_B_cons",
       "file": "lean/CombUnipotent/CountingProof/Basic.lean",
-      "line": 455
+      "line": 453
     },
     "dpartColLensP_M_cons₂_eq_cons_dpartColLensP_B": {
       "name": "dpartColLensP_M_cons₂_eq_cons_dpartColLensP_B",
       "file": "lean/CombUnipotent/CountingProof/Basic.lean",
-      "line": 470
+      "line": 468
     },
     "dpartColLensQ_M_cons₂_eq_dpartColLensQ_B": {
       "name": "dpartColLensQ_M_cons₂_eq_dpartColLensQ_B",
       "file": "lean/CombUnipotent/CountingProof/Basic.lean",
-      "line": 478
+      "line": 476
     },
     "tailClass_B": {
       "name": "tailClass_B",
       "file": "lean/CombUnipotent/CountingProof/Basic.lean",
-      "line": 490
+      "line": 488
     },
     "YoungDiagram.rowLen_zero_shiftLeft": {
       "name": "YoungDiagram.rowLen_zero_shiftLeft",
@@ -5617,62 +5617,62 @@
     "length_colLens": {
       "name": "YoungDiagram.length_colLens",
       "file": "lean/CombUnipotent/CountingProof/Basic.lean",
-      "line": 35
+      "line": 34
     },
     "getElem_colLens": {
       "name": "YoungDiagram.getElem_colLens",
       "file": "lean/CombUnipotent/CountingProof/Basic.lean",
-      "line": 40
+      "line": 38
     },
     "colLens_sorted": {
       "name": "YoungDiagram.colLens_sorted",
       "file": "lean/CombUnipotent/CountingProof/Basic.lean",
-      "line": 46
+      "line": 44
     },
     "pos_of_mem_colLens": {
       "name": "YoungDiagram.pos_of_mem_colLens",
       "file": "lean/CombUnipotent/CountingProof/Basic.lean",
-      "line": 50
+      "line": 48
     },
     "ofColLens": {
       "name": "YoungDiagram.ofColLens",
       "file": "lean/CombUnipotent/CountingProof/Basic.lean",
-      "line": 56
+      "line": 54
     },
     "ofColLens_colLens": {
       "name": "YoungDiagram.ofColLens_colLens",
       "file": "lean/CombUnipotent/CountingProof/Basic.lean",
-      "line": 60
+      "line": 58
     },
     "colLens_ofColLens": {
       "name": "YoungDiagram.colLens_ofColLens",
       "file": "lean/CombUnipotent/CountingProof/Basic.lean",
-      "line": 65
+      "line": 63
     },
     "colLen_ofColLens": {
       "name": "YoungDiagram.colLen_ofColLens",
       "file": "lean/CombUnipotent/CountingProof/Basic.lean",
-      "line": 71
+      "line": 69
     },
     "mem_shiftLeft_aux": {
       "name": "YoungDiagram.mem_shiftLeft_aux",
       "file": "lean/CombUnipotent/CountingProof/Basic.lean",
-      "line": 245
+      "line": 243
     },
     "shiftLeft": {
       "name": "YoungDiagram.shiftLeft",
       "file": "lean/CombUnipotent/CountingProof/Basic.lean",
-      "line": 258
+      "line": 256
     },
     "mem_shiftLeft": {
       "name": "YoungDiagram.mem_shiftLeft",
       "file": "lean/CombUnipotent/CountingProof/Basic.lean",
-      "line": 267
+      "line": 265
     },
     "colLen_shiftLeft": {
       "name": "YoungDiagram.colLen_shiftLeft",
       "file": "lean/CombUnipotent/CountingProof/Basic.lean",
-      "line": 272
+      "line": 270
     },
     "rowLen_zero_shiftLeft": {
       "name": "YoungDiagram.rowLen_zero_shiftLeft",
