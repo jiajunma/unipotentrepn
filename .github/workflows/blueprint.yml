@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - lean
     paths:
       - 'lean/blueprint/src/**'
       - '.github/workflows/blueprint.yml'
@@ -23,27 +22,49 @@ jobs:
       - name: Install TeXLive and Graphviz
         run: |
           sudo apt-get update
-          sudo apt-get install -y texlive-latex-base texlive-latex-extra texlive-fonts-recommended texlive-science graphviz graphviz-dev libgraphviz-dev pkg-config
+          sudo apt-get install -y \
+            texlive-latex-base texlive-latex-extra texlive-fonts-recommended \
+            texlive-science latexmk graphviz graphviz-dev libgraphviz-dev \
+            pkg-config
 
       - name: Install blueprint tools
         run: |
           python3 -m pip install --upgrade pip
-          python3 -m pip install pygraphviz plasTeX leanblueprint plastexdepgraph plastexshowmore
+          python3 -m pip install pygraphviz plasTeX leanblueprint \
+            plastexdepgraph plastexshowmore jinja2
+
+      - name: Compile PDF (best effort)
+        working-directory: lean/blueprint/src
+        run: |
+          latexmk -pdf -halt-on-error print.tex || true
+          mkdir -p ../print && cp -f print.pdf ../print/print.pdf 2>/dev/null || true
 
       - name: Compile web version
         working-directory: lean/blueprint/src
         run: |
           plastex -c plastex.cfg web.tex
 
+      - name: List produced files
+        run: |
+          echo "--- lean/blueprint/web ---"
+          ls lean/blueprint/web/ | head -40
+
       - name: Sync HTML to docs/blueprint
         run: |
+          # Preserve the find/ redirect page we host for Lean decl links.
+          if [ -f docs/blueprint/find/index.html ]; then
+            cp docs/blueprint/find/index.html /tmp/find-index.html
+          fi
           mkdir -p docs/blueprint
           rm -rf docs/blueprint/*
           cp -R lean/blueprint/web/* docs/blueprint/
+          if [ -f /tmp/find-index.html ]; then
+            mkdir -p docs/blueprint/find
+            cp /tmp/find-index.html docs/blueprint/find/index.html
+          fi
           touch docs/.nojekyll
 
-      - name: Commit updated blueprint (if changed, main only)
-        if: github.ref_name == 'main'
+      - name: Commit updated blueprint (if changed)
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
