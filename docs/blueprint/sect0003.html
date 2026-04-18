@@ -18,6 +18,8 @@
 <link rel="up" href="chap-section10.html" title="PBP Counting (BMSZb Section 10)" />
 <link rel="stylesheet" href="styles/theme-white.css" />
 <link rel="stylesheet" href="styles/amsthm.css" />
+<link rel="stylesheet" href="styles/showmore.css" />
+<link rel="stylesheet" href="styles/blueprint.css" />
 <link rel="stylesheet" href="styles/extra_styles.css" />
 </head>
 
@@ -114,6 +116,7 @@
 
   </ul>
  </li>
+<li ><a href="dep_graph_document.html">Dependency graph</a></li>
 </ul>
 </nav>
 
@@ -130,9 +133,60 @@
     </span>
     <span class="definition_thmlabel">2.2.1</span>
     <span class="definition_thmtitle">Shape shift M</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0003.html#def:shapeShiftM">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0002.html#def:PBP">Definition 2.1.1</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://jiajunma.github.io/unipotentrepn/docs//find/#doc/shapeShiftM" class="lean_decl">shapeShiftM</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
   </div>
   <div class="definition_thmcontent">
-  <p>  shapeShiftM def:PBP For \(\star = M\), the shape-shift operation swaps col 0 between \(\iota _{\wp }\) and \(\jmath_ {\wp }\) and translates paint symbols via \(r \leftrightarrow s\), \(c \leftrightarrow d\). </p>
+  <p>    For \(\star = M\), the shape-shift operation swaps col 0 between \(\iota _{\wp }\) and \(\jmath_ {\wp }\) and translates paint symbols via \(r \leftrightarrow s\), \(c \leftrightarrow d\). </p>
 
   </div>
 </div>
@@ -143,9 +197,65 @@
     </span>
     <span class="lemma_thmlabel">2.2.2</span>
     <span class="lemma_thmtitle">Lemma 10.3 M: shape-shift involution</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0003.html#lem:10_3_M">#</a>
+    
+    <a class="icon proof" href="sect0003.html#a0000000024"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0003.html#def:shapeShiftM">Definition 2.2.1</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://jiajunma.github.io/unipotentrepn/docs//find/#doc/shapeShiftM_involution" class="lean_decl">shapeShiftM_involution</a></li>
+          
+          <li><a href="https://jiajunma.github.io/unipotentrepn/docs//find/#doc/lemma_10_3_M" class="lean_decl">lemma_10_3_M</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
   </div>
   <div class="lemma_thmcontent">
-  <p>  shapeShiftM_involution, lemma_10_3_M def:shapeShiftM Applying \(\text{shapeShiftM}\) twice returns the original PBP. </p>
+  <p>    Applying \(\text{shapeShiftM}\) twice returns the original PBP. </p>
 
   </div>
 </div>
@@ -154,7 +264,7 @@
     <span class="proof_caption">
     Proof
     </span>
-    <span class="expand-proof">▼</span>
+    <span class="expand-proof">▶</span>
   </div>
   <div class="proof_content">
   <p>By direct computation on the paint translation (involutive on each symbol). </p>
@@ -168,9 +278,62 @@
     </span>
     <span class="lemma_thmlabel">2.2.3</span>
     <span class="lemma_thmtitle">Lemma 10.3 C: shape-shift for C type</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0003.html#lem:10_3_C">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0002.html#def:PBP">Definition 2.1.1</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://jiajunma.github.io/unipotentrepn/docs//find/#doc/shapeShiftC_id_eq" class="lean_decl">shapeShiftC_id_eq</a></li>
+          
+          <li><a href="https://jiajunma.github.io/unipotentrepn/docs//find/#doc/lemma_10_3_C" class="lean_decl">lemma_10_3_C</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
   </div>
   <div class="lemma_thmcontent">
-  <p>  shapeShiftC_id_eq, lemma_10_3_C def:PBP For \(\star = C\), the identity shape-shift returns the original PBP. The general C-type shape-shift (Case a.1 / a.2 / b.1 / b.2) is parameterized by a col-0 paint function and formalized in ShapeShiftC.lean. </p>
+  <p>    For \(\star = C\), the identity shape-shift returns the original PBP. The general C-type shape-shift (Case a.1 / a.2 / b.1 / b.2) is parameterized by a col-0 paint function and formalized in ShapeShiftC.lean. </p>
 
   </div>
 </div>
@@ -181,9 +344,62 @@
     </span>
     <span class="proposition_thmlabel">2.2.4</span>
     <span class="proposition_thmtitle">Prop 10.2 M: PBP count independent of \(\wp \)</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0003.html#prop:10_2_M">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0003.html#lem:10_3_M">Lemma 2.2.2</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://jiajunma.github.io/unipotentrepn/docs//find/#doc/card_PBPSet_M_shapeShift" class="lean_decl">card_PBPSet_M_shapeShift</a></li>
+          
+          <li><a href="https://jiajunma.github.io/unipotentrepn/docs//find/#doc/prop_10_2_PBP_M" class="lean_decl">prop_10_2_PBP_M</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
   </div>
   <div class="proposition_thmcontent">
-  <p>  card_PBPSet_M_shapeShift, prop_10_2_PBP_M lem:10_3_M For any shapes \((\mu _P', \mu _Q')\) related to \((\mu _P, \mu _Q)\) by col-0 swap, \(|\mathrm{PBP}_M(\mu _P, \mu _Q)| = |\mathrm{PBP}_M(\mu _P', \mu _Q')|\). </p>
+  <p>    For any shapes \((\mu _P', \mu _Q')\) related to \((\mu _P, \mu _Q)\) by col-0 swap, \(|\mathrm{PBP}_M(\mu _P, \mu _Q)| = |\mathrm{PBP}_M(\mu _P', \mu _Q')|\). </p>
 
   </div>
 </div>
@@ -194,6 +410,10 @@
 </div> <!-- wrapper -->
 
 <nav class="prev_up_next">
+  <svg  id="showmore-minus" class="icon icon-eye-minus showmore"><use xlink:href="symbol-defs.svg#icon-eye-minus"></use></svg>
+
+  <svg  id="showmore-plus" class="icon icon-eye-plus showmore"><use xlink:href="symbol-defs.svg#icon-eye-plus"></use></svg>
+
   <a href="sect0002.html" title="PBP and Shape Conventions"><svg  class="icon icon-arrow-left "><use xlink:href="symbol-defs.svg#icon-arrow-left"></use></svg>
 </a>
   <a href="chap-section10.html" title="PBP Counting (BMSZb Section 10)"><svg  class="icon icon-arrow-up "><use xlink:href="symbol-defs.svg#icon-arrow-up"></use></svg>
@@ -205,5 +425,7 @@
 <script type="text/javascript" src="js/jquery.min.js"></script>
 <script type="text/javascript" src="js/plastex.js"></script>
 <script type="text/javascript" src="js/svgxuse.js"></script>
+<script type="text/javascript" src="js/js.cookie.min.js"></script>
+<script type="text/javascript" src="js/showmore.js"></script>
 </body>
 </html>
