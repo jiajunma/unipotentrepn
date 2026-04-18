@@ -1917,6 +1917,35 @@ theorem ILS.lemma_11_5_D (E : ILS) (n₀ n_inner p q p_t q_t : ℤ)
 
 -- PBP-level signature identity: p - 2p' + q'' = p_tail.
 -- Connects D-type, C-type descent, and double descent signatures.
+
+/-! ### Proposition 11.5 (named wrapper)
+
+The two-step AC composition formula. `ILS.lemma_11_5_D` above is the core algebraic
+version taking the PBP identity as an explicit hypothesis (`h_pt`, `h_qt`). The
+paper's Lemma 11.5 corresponds to this algebraic identity combined with the
+PBP-level identity `p_τ - 2·p_{τ'} + q_{τ''} = p_{τ_t}` (and similar for q).
+
+That PBP identity follows from iterating Prop 11.4's signature decomposition:
+- Outer Sign(τ) = c₂(O) + Sign(∇²τ) + Sign(τ_t)
+- Inner Sign(τ') decomposes similarly relative to ∇²τ' = ∇²τ (for D↔C descent)
+- Combining and eliminating common terms gives the identity.
+
+The PBP-level discharge is in `Tail.lean` via `ddescent_inj_D` plus sign tracking. -/
+
+/-- **Proposition 11.5 (D-type)** — named wrapper for `ILS.lemma_11_5_D`.
+    Given the algebraic + PBP-identity hypotheses, the outer C→D lift augmentation
+    parameters equal the tail signature (p_t, q_t). -/
+theorem prop_11_5_D (E : ILS) (n₀ n_inner p q p_t q_t : ℤ)
+    (h_n₀ : n₀ ≥ 0)
+    (h_inner_p : n_inner - (ILS.sign E).1 - (ILS.firstColSign E).2 = n₀)
+    (h_inner_q : n_inner - (ILS.sign E).2 - (ILS.firstColSign E).1 = n₀)
+    (h_pt : p - 2 * n_inner + (ILS.sign E).2 = p_t)
+    (h_qt : q - 2 * n_inner + (ILS.sign E).1 = q_t)
+    (γ₁ : ℤ) :
+    let inner := ILS.charTwistCM (ILS.augment (n₀, n₀) E) γ₁
+    p - (ILS.sign inner).1 - (ILS.firstColSign inner).2 = p_t ∧
+    q - (ILS.sign inner).2 - (ILS.firstColSign inner).1 = q_t :=
+  ILS.lemma_11_5_D E n₀ n_inner p q p_t q_t h_n₀ h_inner_p h_inner_q h_pt h_qt γ₁
 -- Computationally verified for all D-type test orbits.
 -- The PBP-level identity p - 2p' + q'' = p_tail is verified computationally
 -- for all D-type orbits. Its formal proof requires connecting PBP.signature
