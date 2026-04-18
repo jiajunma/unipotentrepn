@@ -93,7 +93,7 @@ theorem countCol0_zero (paint : ℕ → ℕ → DRCSymbol) (σ : DRCSymbol) (a :
 -- The following four are pure List.range/filter/length lemmas.
 -- Mathematically trivial; proof requires Lean 4 List API details.
 
-@[simp] theorem countCol0_split (paint : ℕ → ℕ → DRCSymbol) (σ : DRCSymbol)
+theorem countCol0_split (paint : ℕ → ℕ → DRCSymbol) (σ : DRCSymbol)
     (a m n : ℕ) (hmn : m ≤ n) :
     countCol0 paint σ a n = countCol0 paint σ a m + countCol0 paint σ (a + m) (n - m) := by
   simp only [countCol0]

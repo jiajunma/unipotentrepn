@@ -31,12 +31,10 @@ theorem colLens_eq_transpose_rowLens (μ : YoungDiagram) :
     μ.colLens = μ.transpose.rowLens := rfl
 
 /-- Length of `colLens` equals `rowLen 0` (the number of columns). -/
-@[simp]
 theorem length_colLens (μ : YoungDiagram) : μ.colLens.length = μ.rowLen 0 := by
   simp [colLens, rowLens]
 
 /-- The j-th entry of `colLens` equals `colLen j`. -/
-@[simp]
 theorem getElem_colLens {μ : YoungDiagram} {j : ℕ} (h : j < μ.colLens.length) :
     μ.colLens[j] = μ.colLen j := by
   simp only [colLens, rowLens, List.getElem_map, List.getElem_range]
@@ -428,10 +426,10 @@ def dpartColLensQ_M : DualPart → DualPart := dpartColLensP_B
 #eval dpartColLensP_M [4, 2]  -- [2]
 #eval dpartColLensQ_M [4, 2]  -- [1]
 
-@[simp] theorem dpartColLensP_M_eq (dp : DualPart) :
+theorem dpartColLensP_M_eq (dp : DualPart) :
     dpartColLensP_M dp = dpartColLensQ_B dp := rfl
 
-@[simp] theorem dpartColLensQ_M_eq (dp : DualPart) :
+theorem dpartColLensQ_M_eq (dp : DualPart) :
     dpartColLensQ_M dp = dpartColLensP_B dp := rfl
 
 theorem dpartColLensP_M_nil : dpartColLensP_M [] = [] := rfl

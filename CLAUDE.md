@@ -119,3 +119,20 @@ gen_lift_graph((5, 5, 2, 2), rtype='M', format='pdf')
 - `test_dpart2drcLS` uses `test=False` for type B (det-disjointness not yet fully verified).
 - The `rich` library overrides `print` in `drc.py` and `drclift.py` for styled Jupyter output.
 - `FrozenMultiset` from the `multiset` package shadows the builtin `frozenset` in several modules.
+
+## Lean coding conventions (this project)
+
+- **Do NOT use `@[simp]` on project-local declarations.** Project-local
+  `@[simp]` lemmas turn into hidden dependencies for any `simp` call across
+  the codebase, which defeats programmatic dependency analysis (every theorem
+  appears to depend on every `@[simp]` lemma in scope, even when the proof
+  doesn't actually need it). Mathlib `@[simp]` lemmas are fine — they are
+  documented and stable.
+  - **Allowed**: `simp` (using only Mathlib's `@[simp]` set), `simp only [...]`
+    (explicit lemmas), `simp only [Nat.add_zero, my_local_lemma]` (mix).
+  - **Disallowed**: `@[simp] theorem my_local_lemma ...` (any new attribute on
+    a project-local declaration). Existing `@[simp]` declarations are being
+    converted to plain theorems incrementally.
+- For consistency with `tools/extract_lean_deps.py`, prefer explicit
+  `apply`/`exact`/`rw [...]`/`simp only [...]` over tactics that hide their
+  rewrite set.

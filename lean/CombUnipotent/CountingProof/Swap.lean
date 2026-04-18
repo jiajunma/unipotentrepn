@@ -139,7 +139,7 @@ def swappedPaint (b : ℕ) (newS : DRCSymbol) (paint : ℕ → ℕ → DRCSymbol
     ℕ → ℕ → DRCSymbol :=
   fun i j => if j = 0 then (if i = b then newS else paint i j) else paint i j
 
-@[simp] lemma swappedPaint_at_b0 (b : ℕ) (newS : DRCSymbol) (paint : ℕ → ℕ → DRCSymbol) :
+lemma swappedPaint_at_b0 (b : ℕ) (newS : DRCSymbol) (paint : ℕ → ℕ → DRCSymbol) :
     swappedPaint b newS paint b 0 = newS := by
   simp [swappedPaint]
 
