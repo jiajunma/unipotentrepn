@@ -2978,3 +2978,55 @@ theorem surjectivity_from_counting {α β : Type*} [Finite α] [Fintype β]
   hf.surjective_of_fintype e
 
 end BMSZ
+
+/-! ## Section 11 — named wrappers (Prop/Lemma 11.8–11.17)
+
+Named aliases for the abstract (ACResult/ILS-level) proofs inside `namespace BMSZ`.
+These make the paper-number → Lean-theorem mapping explicit. -/
+
+/-- **Prop 11.8(a)** — nonzero preservation. Alias for `BMSZ.AC.step_nonzero_BD`. -/
+theorem prop_11_8_nonzero (source : ACResult) (p q : ℤ) (ε_τ ε_wp : Fin 2)
+    (γ : RootType) (hγ : γ = .Bplus ∨ γ = .Bminus ∨ γ = .D)
+    (h_ne : source.Nonzero)
+    (h_lift_ok : ∀ (c : ℤ) (ils : ILS), (c, ils) ∈ source →
+      ILS.thetaLift ils γ p q ≠ []) :
+    (AC.step source γ p q ε_τ ε_wp).Nonzero :=
+  BMSZ.AC.step_nonzero_BD source p q ε_τ ε_wp γ hγ h_ne h_lift_ok
+
+/-- **Prop 11.11** — no det twist (same-sign version). -/
+theorem prop_11_11_no_det (L₁ L₂ : ACResult) (p₁ q₁ p₂ q₂ : ℤ)
+    (h_ne₁ : L₁ ≠ []) (h_ne₂ : L₂ ≠ [])
+    (hf₁ : ∀ r ∈ L₁, ∃ rest, r.2 = (p₁, q₁) :: rest)
+    (hf₂ : ∀ r ∈ L₂, ∃ rest, r.2 = (p₂, q₂) :: rest)
+    (hp₁ : p₁ ≥ 0) (hp₂ : p₂ ≥ 0)
+    (hq_sign : (q₁ ≤ 0 ∧ q₂ ≤ 0) ∨ (q₁ ≥ 0 ∧ q₂ ≥ 0))
+    (h_nontrivial : p₁ > 0 ∨ q₁ ≠ 0) :
+    L₁.twistBD (-1) (-1) ≠ L₂ :=
+  BMSZ.no_det_twist_same_sign L₁ L₂ p₁ q₁ p₂ q₂ h_ne₁ h_ne₂ hf₁ hf₂ hp₁ hp₂ hq_sign h_nontrivial
+
+/-- **Prop 11.12** — injectivity modulo twist. -/
+theorem prop_11_12 (L₁ L₂ : ACResult) (ε₁ ε₂ : Fin 2)
+    (h_eq : (if ε₁ = 1 then L₁.twistBD (-1) (-1) else L₁) =
+            (if ε₂ = 1 then L₂.twistBD (-1) (-1) else L₂))
+    (h_no_det : L₁.twistBD (-1) (-1) ≠ L₂)
+    (h_no_det' : L₂.twistBD (-1) (-1) ≠ L₁) :
+    ε₁ = ε₂ ∧ L₁ = L₂ :=
+  BMSZ.injectivity_mod_twist L₁ L₂ ε₁ ε₂ h_eq h_no_det h_no_det'
+
+/-- **Prop 11.15** — main bijection for B/D. -/
+theorem prop_11_15 (L₁ L₂ : ACResult) (ε₁ ε₂ : Fin 2)
+    (h_eq : (if ε₁ = 1 then L₁.twistBD (-1) (-1) else L₁) =
+            (if ε₂ = 1 then L₂.twistBD (-1) (-1) else L₂))
+    (h_no_det : L₁.twistBD (-1) (-1) ≠ L₂)
+    (h_no_det' : L₂.twistBD (-1) (-1) ≠ L₁) :
+    ε₁ = ε₂ ∧ L₁ = L₂ :=
+  BMSZ.prop_11_15_injectivity L₁ L₂ ε₁ ε₂ h_eq h_no_det h_no_det'
+
+/-- **Prop 11.17** — main result for C/C̃. -/
+theorem prop_11_17 (L₁ L₂ : ACResult) (ε_wp₁ ε_wp₂ : Fin 2)
+    (h_eq : (if ε_wp₁ = 1 then L₁.twistBD (-1) (-1) else L₁) =
+            (if ε_wp₂ = 1 then L₂.twistBD (-1) (-1) else L₂))
+    (h_no_det : L₁.twistBD (-1) (-1) ≠ L₂)
+    (h_no_det' : L₂.twistBD (-1) (-1) ≠ L₁) :
+    ε_wp₁ = ε_wp₂ ∧ L₁ = L₂ :=
+  BMSZ.prop_11_17_injectivity L₁ L₂ ε_wp₁ ε_wp₂ h_eq h_no_det h_no_det'
