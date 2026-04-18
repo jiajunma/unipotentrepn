@@ -3632,6 +3632,45 @@ theorem BMSZ.prop_11_9_abstract (p₁ p₂ q₁ q₂ : ℤ)
     (h_eq : -p₁ = p₂ - 1) : p₂ = 0 := by
   omega
 
+/-! ### Prop 11.10 at PBP level (tail signature from L equality) -/
+
+/-- **Prop 11.10 at PBP level (D type):** If two D-type PBPs τ₁, τ₂ have equal
+    AC results (L_{τ₁} = L_{τ₂}) with matching ε and both nonempty, and the
+    first-entry formula of Lemma 11.6 holds for each, then the tail signatures
+    agree: (p_{τ₁_t}, q_{τ₁_t}) = (p_{τ₂_t}, q_{τ₂_t}).
+
+    Proof: Apply `BMSZ.first_entry_eq_of_eq` to the first entries
+    (p_{τ_i_t}, (-1)^ε · q_{τ_i_t}) obtained from Lemma 11.6 applied to both
+    sides; the common L gives direct first-entry equality; modulo the shared
+    sign on q, the components match. -/
+theorem prop_11_10_PBP_D (τ₁ τ₂ : PBP)
+    (hγ₁ : τ₁.γ = .D) (hγ₂ : τ₂.γ = .D)
+    (L : ACResult) (ε : Fin 2) (h_ne : L ≠ [])
+    (h_first₁ : ∀ r ∈ L, ∃ rest,
+      r.2 = ((PBP.tailSignature_D τ₁).1,
+             if ε = 1 then -(PBP.tailSignature_D τ₁).2
+             else (PBP.tailSignature_D τ₁).2) :: rest)
+    (h_first₂ : ∀ r ∈ L, ∃ rest,
+      r.2 = ((PBP.tailSignature_D τ₂).1,
+             if ε = 1 then -(PBP.tailSignature_D τ₂).2
+             else (PBP.tailSignature_D τ₂).2) :: rest) :
+    (PBP.tailSignature_D τ₁).1 = (PBP.tailSignature_D τ₂).1 ∧
+    (PBP.tailSignature_D τ₁).2 = (PBP.tailSignature_D τ₂).2 := by
+  -- Apply BMSZ.first_entry_eq_of_eq
+  have h_eq := BMSZ.first_entry_eq_of_eq L
+    (PBP.tailSignature_D τ₁).1
+    (if ε = 1 then -(PBP.tailSignature_D τ₁).2 else (PBP.tailSignature_D τ₁).2)
+    (PBP.tailSignature_D τ₂).1
+    (if ε = 1 then -(PBP.tailSignature_D τ₂).2 else (PBP.tailSignature_D τ₂).2)
+    h_ne h_first₁ h_first₂
+  refine ⟨h_eq.1, ?_⟩
+  -- Recover q-component equality modulo sign
+  by_cases hε : ε = 1
+  · rw [if_pos hε, if_pos hε] at h_eq
+    omega
+  · rw [if_neg hε, if_neg hε] at h_eq
+    exact h_eq.2
+
 /-! ### Prop 11.12 + 11.13 at PBP level -/
 
 /-- **Prop 11.12 at PBP level:** If L_{τ₁} ⊗ (ε₁,ε₁) = L_{τ₂} ⊗ (ε₂,ε₂),
