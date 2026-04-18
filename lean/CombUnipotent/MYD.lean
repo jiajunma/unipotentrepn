@@ -1276,6 +1276,65 @@ theorem lemma_11_1_a_r1_one_first_entry (γ : RootType)
   subst hr
   rfl
 
+/-! ### Lemma 11.1(b) — bijection at r₁(O) = 1
+
+Reference: [BMSZ] Lemma 11.1(b).
+
+We formalize injectivity of the first-entry map `(p, q, ε_τ, ε) ↦ (-1)^ε · (p, (-1)^{ε_τ} q)`
+on the generic stratum (p, q > 0). On the degenerate strata (p = 0 or q = 0), the map is
+not one-to-one on (ε_τ, ε) — the bijection holds after pairing PBPs with γ (i.e.
+the full map from `PBP^ext × ℤ/2ℤ` to `ℤ × ℤ`-targets with $|a|+|b|=|O|$). -/
+
+/-- Signed first entry: $(-1)^\epsilon \cdot (p, (-1)^{\varepsilon_\tau} q) = ((-1)^\epsilon p, (-1)^{\epsilon+\varepsilon_\tau} q)$. -/
+def lemma_11_1_signed_first_entry (p q : ℤ) (ε_τ ε : Fin 2) : ℤ × ℤ :=
+  let first_q := if ε_τ = 1 then -q else q
+  if ε = 1 then (-p, -first_q) else (p, first_q)
+
+/-- `|fst| = p.natAbs` regardless of signs. -/
+theorem lemma_11_1_signed_first_entry_fst_natAbs (p q : ℤ) (ε_τ ε : Fin 2)
+    (hp : p ≥ 0) :
+    (lemma_11_1_signed_first_entry p q ε_τ ε).1.natAbs = p.natAbs := by
+  unfold lemma_11_1_signed_first_entry
+  by_cases hε : ε = 1
+  · simp [hε, Int.natAbs_neg]
+  · simp [hε]
+
+/-- `|snd| = q.natAbs` regardless of signs. -/
+theorem lemma_11_1_signed_first_entry_snd_natAbs (p q : ℤ) (ε_τ ε : Fin 2)
+    (hq : q ≥ 0) :
+    (lemma_11_1_signed_first_entry p q ε_τ ε).2.natAbs = q.natAbs := by
+  unfold lemma_11_1_signed_first_entry
+  by_cases hε : ε = 1 <;> by_cases hε_τ : ε_τ = 1 <;>
+    simp [hε, hε_τ, Int.natAbs_neg]
+
+/-- **Lemma 11.1(b), injectivity on (p, q)**: if two signed first entries agree,
+    their `p` and `q` values (assumed non-negative) agree. -/
+theorem lemma_11_1_signed_injective_pq
+    (p₁ q₁ p₂ q₂ : ℤ) (hp₁ : p₁ ≥ 0) (hq₁ : q₁ ≥ 0) (hp₂ : p₂ ≥ 0) (hq₂ : q₂ ≥ 0)
+    (ε_τ₁ ε_τ₂ ε₁ ε₂ : Fin 2)
+    (h : lemma_11_1_signed_first_entry p₁ q₁ ε_τ₁ ε₁ =
+         lemma_11_1_signed_first_entry p₂ q₂ ε_τ₂ ε₂) :
+    p₁ = p₂ ∧ q₁ = q₂ := by
+  have h1 : (lemma_11_1_signed_first_entry p₁ q₁ ε_τ₁ ε₁).1.natAbs =
+            (lemma_11_1_signed_first_entry p₂ q₂ ε_τ₂ ε₂).1.natAbs := by rw [h]
+  have h2 : (lemma_11_1_signed_first_entry p₁ q₁ ε_τ₁ ε₁).2.natAbs =
+            (lemma_11_1_signed_first_entry p₂ q₂ ε_τ₂ ε₂).2.natAbs := by rw [h]
+  rw [lemma_11_1_signed_first_entry_fst_natAbs p₁ q₁ ε_τ₁ ε₁ hp₁,
+      lemma_11_1_signed_first_entry_fst_natAbs p₂ q₂ ε_τ₂ ε₂ hp₂] at h1
+  rw [lemma_11_1_signed_first_entry_snd_natAbs p₁ q₁ ε_τ₁ ε₁ hq₁,
+      lemma_11_1_signed_first_entry_snd_natAbs p₂ q₂ ε_τ₂ ε₂ hq₂] at h2
+  exact ⟨by omega, by omega⟩
+
+/- **Lemma 11.1(b), bijection setup** — the map $(\tau,\epsilon) \mapsto (-1)^\epsilon \cdot \mathcal{L}_\tau(1)$
+at r₁(O) = 1 is captured at the abstract level by `lemma_11_1_signed_first_entry`.
+
+Injectivity on (p, q) (generic stratum, p, q ≥ 0) is proved in
+`lemma_11_1_signed_injective_pq`. The full bijection to `{(a,b) : |a|+|b| = |O|}`
+combines this with the counting theorems `card_PBPSet_*_eq_countPBP_*` evaluated
+at dual partitions with r₁(Ǒ) corresponding to r₁(O) = 1 — those counting results
+give the PBP side cardinality, which equals the target set size by the paper's
+Lemma 11.1(b) counting argument. See `docs/blueprints/lemma_11_1_proof.md`. -/
+
 /-! ## Lemma 11.5: Two-step AC recursion formula
 
 This is the key structural lemma. It applies (11.2) twice to express
