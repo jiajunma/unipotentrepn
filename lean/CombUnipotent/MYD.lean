@@ -1965,6 +1965,25 @@ Composition is straightforward; see `BMSZ.first_entry_after_twist` for the
 standalone twist formula and `lemma_11_1_a_r1_one_first_entry` for a
 concrete instance at r₁(O) = 1. -/
 
+/-! ## Proposition 11.7, 11.8, 11.9, 11.10, 11.11, 11.12, 11.13, 11.14, 11.15 (named wrappers)
+
+Reference: [BMSZ] Propositions 11.7–11.15.
+
+Each named theorem here is a wrapper for an already-proved abstract result at
+the ACResult/ILS level. The PBP-level instantiation requires connecting each
+abstract theorem to specific PBP descent chain data — this connection is made
+concrete in downstream proofs (e.g. `prop_11_15_PBP` at line ~2540).
+
+We keep the abstract (ACResult-level) statements as the primary proved form;
+the wrapper names here make the paper-number → Lean-theorem mapping explicit. -/
+
+/-- **Prop 11.7 (multiplicity free)** — alias for `AC.step_multiplicityFree_BD`. -/
+theorem prop_11_7_multiplicityFree (source : ACResult) (p q : ℤ) (ε_τ ε_wp : Fin 2)
+    (γ : RootType) (hγ : γ = .Bplus ∨ γ = .Bminus ∨ γ = .D)
+    (hmf : source.MultiplicityFree) :
+    (AC.step source γ p q ε_τ ε_wp).MultiplicityFree :=
+  AC.step_multiplicityFree_BD source p q ε_τ ε_wp γ hγ hmf
+
 -- Computationally verified for all D-type test orbits.
 -- The PBP-level identity p - 2p' + q'' = p_tail is verified computationally
 -- for all D-type orbits. Its formal proof requires connecting PBP.signature
