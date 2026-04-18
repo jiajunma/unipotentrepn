@@ -52,7 +52,7 @@ Reference: [BMSZ] Prop~11.8 (non-vanishing), 11.9--11.12 (injectivity),
 
 \begin{lemma}[Lemma 11.1(b) — abstract bijection]
   \label{lem:11_1_b_abstract}
-  \lean{lemma_11_1_b_bijection, lemma_11_1_b_bijection_concrete}
+  \lean{lemma_11_1_b_bijection, lemma_11_1_b_bijection_concrete, lemma_11_1_signed_first_entry, lemma_11_1_signed_first_entry_fst_natAbs, lemma_11_1_signed_first_entry_snd_natAbs, lemma_11_1_signed_first_entry_mem_SignTargetSet, lemma_11_1_signed_injective_pq}
   \leanok
   \uses{lem:11_1_a_r1}
   Abstract form: given finite types $\alpha \simeq \beta$ of equal cardinality and an injection $f : \alpha \to \beta$, $f$ is a bijection.
@@ -122,7 +122,7 @@ Reference: [BMSZ] Prop~11.8 (non-vanishing), 11.9--11.12 (injectivity),
 
 \begin{lemma}[Prop 11.9 D — numerical constraint on cross-twist]
   \label{prop:11_9_D}
-  \lean{prop_11_9_PBP_D_numerical}
+  \lean{prop_11_9_PBP_D_numerical, prop_11_9_abstract}
   \leanok
   \uses{def:tailSymbol, def:tailSignature, prop:11_8_ac, lem:11_3, lem:tailSig_nonneg}
   Assume $\tau_1, \tau_2 \in \PBP_D$ with $h_{\mathrm{tail}}$ satisfied, $x_{\tau_1} = d$, and the cross-twist first-component equation
@@ -152,7 +152,7 @@ Reference: [BMSZ] Prop~11.8 (non-vanishing), 11.9--11.12 (injectivity),
 
 \begin{lemma}[Prop 11.10 — tail signatures equal from equal AC]
   \label{prop:11_10_D}
-  \lean{prop_11_10_PBP_D}
+  \lean{prop_11_10_PBP_D, prop_11_10_PBP_Bplus, prop_11_10_PBP_Bminus}
   \leanok
   \uses{lem:11_6_D}
   If $L_1 = L_2 \in \mathrm{ACResult}$ are non-empty with each branch having the
@@ -195,7 +195,7 @@ Reference: [BMSZ] Prop~11.8 (non-vanishing), 11.9--11.12 (injectivity),
 
 \begin{proposition}[Prop 11.13 — chain injectivity]
   \label{prop:11_13}
-  \lean{prop_11_13_PBP_D, prop_11_13_PBP_Bplus, prop_11_13_PBP_Bminus, BMSZ.ac_chain_injective}
+  \lean{prop_11_13_PBP_D, prop_11_13_PBP_Bplus, prop_11_13_PBP_Bminus, BMSZ.ac_chain_injective, lemma_11_13_PBP}
   \leanok
   \uses{prop:11_12}
   Full AC.fold chain injectivity: equal outputs $\Rightarrow$ equal chains $\Rightarrow$ equal input PBPs.
