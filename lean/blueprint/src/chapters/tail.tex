@@ -61,8 +61,15 @@ internal blueprint \texttt{tail\_definition.md}, \texttt{lemma\_11\_5\_PBP\_iden
   \begin{enumerate}
     \item $\eps_\tau = 0 \iff x_\tau = d$.
     \item $p_{\tau_t} = 0 \iff x_\tau = s$.
-    \item $q_{\tau_t} = 0 \iff x_\tau = r$.
   \end{enumerate}
+  \begin{remark}
+    The converse-parity claim ``$q_{\tau_t} = 0 \iff x_\tau = r$'' from the
+    paper is \emph{not} formalized here. The tail contributions
+    $\mathrm{tailContrib}(c) = (1, 1)$ and $\mathrm{tailContrib}(d) = (1, 1)$
+    have $q$-component~$\geq 1$, so $q_{\tau_t} = 0$ can fail even when
+    $x_\tau \in \{c, d\}$; the full iff requires additional structure beyond
+    what the other two parts establish.
+  \end{remark}
 \end{lemma}
 
 \begin{proof}
@@ -78,8 +85,6 @@ internal blueprint \texttt{tail\_definition.md}, \texttt{lemma\_11\_5\_PBP\_iden
   $\mathrm{tailContrib} = (0, 2)$ each; summed $p$-component is $0$.
   Conversely, if $x_\tau \neq s$, the bottom cell contributes $\geq 1$ to $p$
   (since $r \mapsto (2, 0)$, $c \mapsto (1, 1)$, $d \mapsto (1, 1)$).
-
-  (3) is symmetric.
 \end{proof}
 
 \section{Signature sum and residual identity}
