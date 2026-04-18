@@ -1805,6 +1805,54 @@ theorem firstColSign_cons (pq : ℤ × ℤ) (E : ILS) :
   simp only [firstColSignAux, firstColSignRow, show (0 : ℕ) % 2 = 0 from rfl, ite_true]
   rw [firstColSignAux_swap E 0]
 
+/-- **firstColSign of thetaLift_CD (standard case)**: for `r` in the single-element
+    output of `thetaLift_CD E p q` with standard-case condition,
+    `firstColSign r = (p - sign(E).1, q - sign(E).2)`.
+
+    Derivation:
+    - `r = (addp, addn) :: charTwistCM E γ` with `addp, addn ≥ 0`
+    - `firstColSign r = (|addp| + firstColSign(charTwistCM E γ).2,
+                         |addn| + firstColSign(charTwistCM E γ).1)` [firstColSign_cons]
+    - `= (addp + firstColSign(E).2, addn + firstColSign(E).1)` [charTwistCM_firstColSign]
+    - `addp = p - sign(E).1 - firstColSign(E).2`, `addn = q - sign(E).2 - firstColSign(E).1`
+    - Substituting: `firstColSign r = (p - sign(E).1, q - sign(E).2)`. -/
+theorem thetaLift_CD_firstColSign (E : ILS) (p q : ℤ)
+    (h_std : p - (sign E).1 - (firstColSign E).2 ≥ 0 ∧
+             q - (sign E).2 - (firstColSign E).1 ≥ 0) :
+    ∀ r ∈ thetaLift_CD E p q,
+      firstColSign r = (p - (sign E).1, q - (sign E).2) := by
+  intro r hr
+  simp only [thetaLift_CD] at hr
+  rw [if_pos h_std] at hr
+  simp only [List.mem_singleton] at hr; subst hr
+  rw [show augment (p - (sign E).1 - (firstColSign E).2,
+                     q - (sign E).2 - (firstColSign E).1)
+        (charTwistCM E _) =
+      (p - (sign E).1 - (firstColSign E).2,
+       q - (sign E).2 - (firstColSign E).1) :: charTwistCM E _ from rfl]
+  rw [firstColSign_cons, charTwistCM_firstColSign]
+  simp only [Int.natAbs_of_nonneg h_std.1, Int.natAbs_of_nonneg h_std.2]
+  ext <;> simp <;> ring
+
+/-- **firstColSign of thetaLift_MB (standard case)** — mirror of CD version. -/
+theorem thetaLift_MB_firstColSign (E : ILS) (p q : ℤ)
+    (h_std : p - (sign E).1 - (firstColSign E).2 ≥ 0 ∧
+             q - (sign E).2 - (firstColSign E).1 ≥ 0) :
+    ∀ r ∈ thetaLift_MB E p q,
+      firstColSign r = (p - (sign E).1, q - (sign E).2) := by
+  intro r hr
+  simp only [thetaLift_MB] at hr
+  rw [if_pos h_std] at hr
+  simp only [List.mem_singleton] at hr; subst hr
+  rw [show augment (p - (sign E).1 - (firstColSign E).2,
+                     q - (sign E).2 - (firstColSign E).1)
+        (charTwistCM E _) =
+      (p - (sign E).1 - (firstColSign E).2,
+       q - (sign E).2 - (firstColSign E).1) :: charTwistCM E _ from rfl]
+  rw [firstColSign_cons, charTwistCM_firstColSign]
+  simp only [Int.natAbs_of_nonneg h_std.1, Int.natAbs_of_nonneg h_std.2]
+  ext <;> simp <;> ring
+
 end ILS
 
 /-! ### Lemma 11.5 — approach
