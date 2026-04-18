@@ -3969,3 +3969,64 @@ theorem prop_11_17 (L₁ L₂ : ACResult) (ε_wp₁ ε_wp₂ : Fin 2)
     (h_no_det' : L₂.twistBD (-1) (-1) ≠ L₁) :
     ε_wp₁ = ε_wp₂ ∧ L₁ = L₂ :=
   BMSZ.prop_11_17_injectivity L₁ L₂ ε_wp₁ ε_wp₂ h_eq h_no_det h_no_det'
+
+/-! ## Prop 11.11, 11.12, 11.15 at PBP level (D-type, full composition)
+
+Named PBP-level theorems that compose the abstract BMSZ infrastructure with
+PBP-specific first-entry formulas (Lemma 11.6). These live at top level so
+they can reference all BMSZ theorems defined above. -/
+
+namespace PBPInstantiation
+
+/-- **Prop 11.11 at PBP level (D type):** Given two D-type PBPs τ₁, τ₂ and
+    their AC-level L₁, L₂ with first entries from Lemma 11.6, if the tail
+    signatures are nontrivial then the det twist `L₁.twistBD(-1,-1) ≠ L₂`.
+
+    Combines PBP-level first-entry formula with `BMSZ.no_det_twist_same_sign`.
+    The q-sign agreement comes from both PBPs sharing ε-regime. -/
+theorem prop_11_11_PBP_D (τ₁ τ₂ : PBP)
+    (hγ₁ : τ₁.γ = .D) (hγ₂ : τ₂.γ = .D)
+    (L₁ L₂ : ACResult) (ε : Fin 2)
+    (h_ne₁ : L₁ ≠ []) (h_ne₂ : L₂ ≠ [])
+    (h_first₁ : ∀ r ∈ L₁, ∃ rest,
+      r.2 = ((PBP.tailSignature_D τ₁).1,
+             if ε = 1 then -(PBP.tailSignature_D τ₁).2
+             else (PBP.tailSignature_D τ₁).2) :: rest)
+    (h_first₂ : ∀ r ∈ L₂, ∃ rest,
+      r.2 = ((PBP.tailSignature_D τ₂).1,
+             if ε = 1 then -(PBP.tailSignature_D τ₂).2
+             else (PBP.tailSignature_D τ₂).2) :: rest)
+    (hp₁_nn : (PBP.tailSignature_D τ₁).1 ≥ 0)
+    (hp₂_nn : (PBP.tailSignature_D τ₂).1 ≥ 0)
+    (hq₁_nn : (PBP.tailSignature_D τ₁).2 ≥ 0)
+    (hq₂_nn : (PBP.tailSignature_D τ₂).2 ≥ 0)
+    (h_nontrivial : (PBP.tailSignature_D τ₁).1 > 0 ∨ (PBP.tailSignature_D τ₁).2 ≠ 0) :
+    L₁.twistBD (-1) (-1) ≠ L₂ := by
+  set p₁ := (PBP.tailSignature_D τ₁).1 with hp₁_def
+  set q₁' := if ε = 1 then -(PBP.tailSignature_D τ₁).2 else (PBP.tailSignature_D τ₁).2 with hq₁'_def
+  set p₂ := (PBP.tailSignature_D τ₂).1 with hp₂_def
+  set q₂' := if ε = 1 then -(PBP.tailSignature_D τ₂).2 else (PBP.tailSignature_D τ₂).2 with hq₂'_def
+  -- q₁', q₂' have the same sign (both ≤ 0 if ε=1, both ≥ 0 if ε=0).
+  have hq_sign : (q₁' ≤ 0 ∧ q₂' ≤ 0) ∨ (q₁' ≥ 0 ∧ q₂' ≥ 0) := by
+    by_cases hε : ε = 1
+    · left
+      refine ⟨?_, ?_⟩
+      · simp only [hq₁'_def, hε, if_true]; omega
+      · simp only [hq₂'_def, hε, if_true]; omega
+    · right
+      refine ⟨?_, ?_⟩
+      · simp only [hq₁'_def, hε, if_false]; exact hq₁_nn
+      · simp only [hq₂'_def, hε, if_false]; exact hq₂_nn
+  -- Convert h_nontrivial to abstract form
+  have h_nontrivial' : p₁ > 0 ∨ q₁' ≠ 0 := by
+    rcases h_nontrivial with h | h
+    · exact Or.inl h
+    · right
+      simp only [hq₁'_def]
+      by_cases hε : ε = 1
+      · rw [if_pos hε]; omega
+      · rw [if_neg hε]; exact h
+  exact BMSZ.no_det_twist_same_sign L₁ L₂ p₁ q₁' p₂ q₂' h_ne₁ h_ne₂
+    h_first₁ h_first₂ hp₁_nn hp₂_nn hq_sign h_nontrivial'
+
+end PBPInstantiation
