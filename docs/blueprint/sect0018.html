@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+  MathJax = { 
+    tex: {
+		    inlineMath: [['$','$'], ['\\(','\\)']]
+	} }
+</script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+</script>
+<meta name="generator" content="plasTeX" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Main Bijection (Propositions 11.14, 11.15, 11.17)</title>
+<link rel="next" href="sect0019.html" title="Lemma 11.1: Base cases" />
+<link rel="prev" href="sect0017.html" title="Propositions 11.9–11.13: Injectivity Lemmas" />
+<link rel="up" href="chap-section11.html" title="Associated Cycles (BMSZ Section 11)" />
+<link rel="stylesheet" href="styles/theme-white.css" />
+<link rel="stylesheet" href="styles/amsthm.css" />
+<link rel="stylesheet" href="styles/extra_styles.css" />
+</head>
+
+<body>
+<header>
+<svg  id="toc-toggle" class="icon icon-list-numbered "><use xlink:href="symbol-defs.svg#icon-list-numbered"></use></svg>
+<h1 id="doc_title"><a href="index.html">Associated Cycles of Special Unipotent Representations: Blueprint</a></h1>
+</header>
+
+<div class="wrapper">
+<nav class="toc">
+<ul class="sub-toc-0">
+<li class="">
+  <a href="sect0001.html"><span class="toc_ref">1</span> <span class="toc_entry">Introduction</span></a>
+ </li>
+<li class="">
+  <a href="chap-section10.html"><span class="toc_ref">2</span> <span class="toc_entry">PBP Counting (BMSZb Section 10)</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sect0002.html"><span class="toc_ref">2.1</span> <span class="toc_entry">PBP and Shape Conventions</span></a>
+ </li>
+<li class="">
+  <a href="sect0003.html"><span class="toc_ref">2.2</span> <span class="toc_entry">Shape-Shifting (Lemma 10.3)</span></a>
+ </li>
+<li class="">
+  <a href="sect0004.html"><span class="toc_ref">2.3</span> <span class="toc_entry">Descent Uniqueness (Lemmas 10.4, 10.5)</span></a>
+ </li>
+<li class="">
+  <a href="sect0005.html"><span class="toc_ref">2.4</span> <span class="toc_entry">Descent Cardinality (Proposition 10.8)</span></a>
+ </li>
+<li class="">
+  <a href="sect0006.html"><span class="toc_ref">2.5</span> <span class="toc_entry">Double Descent Injectivity (Propositions 10.9, 10.10)</span></a>
+ </li>
+<li class="">
+  <a href="sect0007.html"><span class="toc_ref">2.6</span> <span class="toc_entry">Main Counting Formulas (Propositions 10.11, 10.12)</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class=" active">
+  <a href="chap-section11.html"><span class="toc_ref">3</span> <span class="toc_entry">Associated Cycles (BMSZ Section 11)</span></a>
+  <span class="expand-toc">▼</span>
+  <ul class="sub-toc-1 active">
+     <li class="">
+  <a href="sect0008.html"><span class="toc_ref">3.1</span> <span class="toc_entry">MYD Operations (Section 9.4)</span></a>
+ </li>
+<li class="">
+  <a href="sect0009.html"><span class="toc_ref">3.2</span> <span class="toc_entry">Theta Lift on MYD (Sections 9.5, 11.1–11.4)</span></a>
+ </li>
+<li class="">
+  <a href="sect0010.html"><span class="toc_ref">3.3</span> <span class="toc_entry">AC Recursion (Equation 11.2)</span></a>
+ </li>
+<li class="">
+  <a href="sect0011.html"><span class="toc_ref">3.4</span> <span class="toc_entry">Lemma 11.3: Tail Properties</span></a>
+ </li>
+<li class="">
+  <a href="sect0012.html"><span class="toc_ref">3.5</span> <span class="toc_entry">Proposition 11.4: Signature Decomposition</span></a>
+ </li>
+<li class="">
+  <a href="sect0013.html"><span class="toc_ref">3.6</span> <span class="toc_entry">Lemma 11.5: Two-Step AC Formula</span></a>
+ </li>
+<li class="">
+  <a href="sect0014.html"><span class="toc_ref">3.7</span> <span class="toc_entry">Lemma 11.6: First Entry</span></a>
+ </li>
+<li class="">
+  <a href="sect0015.html"><span class="toc_ref">3.8</span> <span class="toc_entry">Proposition 11.7: Multiplicity Free</span></a>
+ </li>
+<li class="">
+  <a href="sect0016.html"><span class="toc_ref">3.9</span> <span class="toc_entry">Proposition 11.8: Non-empty and PBP Wrappers</span></a>
+ </li>
+<li class="">
+  <a href="sect0017.html"><span class="toc_ref">3.10</span> <span class="toc_entry">Propositions 11.9–11.13: Injectivity Lemmas</span></a>
+ </li>
+<li class=" active current">
+  <a href="sect0018.html"><span class="toc_ref">3.11</span> <span class="toc_entry">Main Bijection (Propositions 11.14, 11.15, 11.17)</span></a>
+ </li>
+<li class="">
+  <a href="sect0019.html"><span class="toc_ref">3.12</span> <span class="toc_entry">Lemma 11.1: Base cases</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0020.html"><span class="toc_ref">4</span> <span class="toc_entry">Status Summary</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sect0021.html"><span class="toc_ref">4.1</span> <span class="toc_entry">Formal status</span></a>
+ </li>
+<li class="">
+  <a href="sect0022.html"><span class="toc_ref">4.2</span> <span class="toc_entry">Skipped</span></a>
+ </li>
+
+  </ul>
+ </li>
+</ul>
+</nav>
+
+<div class="content">
+<div class="content-wrapper">
+
+
+<div class="main-text">
+<h1 id="a0000000019">3.11 Main Bijection (Propositions 11.14, 11.15, 11.17)</h1>
+<div class="proposition_thmwrapper theorem-style-plain" id="prop:11_14">
+  <div class="proposition_thmheading">
+    <span class="proposition_thmcaption">
+    Proposition
+    </span>
+    <span class="proposition_thmlabel">3.11.1</span>
+    <span class="proposition_thmtitle">Prop 11.14 surjectivity from counting</span>
+  </div>
+  <div class="proposition_thmcontent">
+  <p>  prop_11_14_PBP_D, prop_11_14_PBP_Bplus, prop_11_14_PBP_Bminus prop:11_12 Given \(\alpha \simeq \beta \) (equal cardinality) and an injective \(f : \alpha \to \beta \), \(f\) is surjective. </p>
+
+  </div>
+</div>
+<div class="proposition_thmwrapper theorem-style-plain" id="prop:11_15_D">
+  <div class="proposition_thmheading">
+    <span class="proposition_thmcaption">
+    Proposition
+    </span>
+    <span class="proposition_thmlabel">3.11.2</span>
+    <span class="proposition_thmtitle">Prop 11.15 D: main bijection</span>
+  </div>
+  <div class="proposition_thmcontent">
+  <p>  prop_11_15_PBP_D_complete prop:11_14 The map \((\tau , \varepsilon ) \mapsto \mathcal{L}_\tau \otimes (\varepsilon , \varepsilon )\) is bijective onto \(\mathbf{MYD}_D(\mathcal{O})\). </p>
+
+  </div>
+</div>
+<div class="proposition_thmwrapper theorem-style-plain" id="prop:11_15_B">
+  <div class="proposition_thmheading">
+    <span class="proposition_thmcaption">
+    Proposition
+    </span>
+    <span class="proposition_thmlabel">3.11.3</span>
+    <span class="proposition_thmtitle">Prop 11.15 B±: main bijection</span>
+  </div>
+  <div class="proposition_thmcontent">
+  <p>  prop_11_15_PBP_Bplus_complete, prop_11_15_PBP_Bminus_complete prop:11_14 Mirror for \(B^\pm \) types. </p>
+
+  </div>
+</div>
+<div class="proposition_thmwrapper theorem-style-plain" id="prop:11_17">
+  <div class="proposition_thmheading">
+    <span class="proposition_thmcaption">
+    Proposition
+    </span>
+    <span class="proposition_thmlabel">3.11.4</span>
+    <span class="proposition_thmtitle">Prop 11.17 C/M: main bijection</span>
+  </div>
+  <div class="proposition_thmcontent">
+  <p>  prop_11_17_PBP_C, prop_11_17_PBP_M prop:11_12 For \(\star \in \{ C, \tilde{C}\} \): \(\tau \mapsto \mathcal{L}_\tau \) is bijective onto \(\mathbf{MYD}_\star (\mathcal{O})\). </p>
+
+  </div>
+</div>
+
+</div> <!--main-text -->
+</div> <!-- content-wrapper -->
+</div> <!-- content -->
+</div> <!-- wrapper -->
+
+<nav class="prev_up_next">
+  <a href="sect0017.html" title="Propositions 11.9–11.13: Injectivity Lemmas"><svg  class="icon icon-arrow-left "><use xlink:href="symbol-defs.svg#icon-arrow-left"></use></svg>
+</a>
+  <a href="chap-section11.html" title="Associated Cycles (BMSZ Section 11)"><svg  class="icon icon-arrow-up "><use xlink:href="symbol-defs.svg#icon-arrow-up"></use></svg>
+</a>
+  <a href="sect0019.html" title="Lemma 11.1: Base cases"><svg  class="icon icon-arrow-right "><use xlink:href="symbol-defs.svg#icon-arrow-right"></use></svg>
+</a>
+</nav>
+
+<script type="text/javascript" src="js/jquery.min.js"></script>
+<script type="text/javascript" src="js/plastex.js"></script>
+<script type="text/javascript" src="js/svgxuse.js"></script>
+</body>
+</html>
