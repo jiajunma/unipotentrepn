@@ -1210,33 +1210,71 @@ theorem lemma_11_1_a_empty_first_entry (γ : RootType) :
   intro r hr
   cases γ <;> simp [AC.base] at hr <;> subst hr <;> rfl
 
-/-
-**Lemma 11.1(a), r₁(O) = 1 case** — not yet formalized.
+/-- **Lemma 11.1(a), r₁(O) = 1 case** (one descent step to empty):
 
-After one descent step from r₁(O) = 1, we reach the empty-orbit case (Case 1).
-Apply induction formula (11.2) once: L_τ = θ̂(L_{τ'}) ⊗ (0, ε_τ).
-The theta lift at the single step augments by (addp, addn) where, by signature
-decomposition (Prop 11.4 at this boundary), (addp, addn) = (p_τ, q_τ). Then
-the sign twist ⊗(0, ε_τ) gives (p_τ, (-1)^{ε_τ} q_τ).
+    For γ ∈ {B⁺, B⁻, D}, with p ≥ 0 and q ≥ 0 (the signature of τ is non-negative
+    for an r₁ = 1 PBP by Lemma 11.3), one AC step from the empty base equals
+    `[(1, [(p, (-1)^{ε_τ} · q)])]`.
 
-Requires connecting PBP.signature to AC.step parameters — see blueprint
-`docs/blueprints/lemma_11_1_proof.md` Section "证明 (a) Case 2".
+    Derivation:
+    1. For γ ∈ {B⁺, B⁻, D}, `AC.base (if γ = D then C else M) = [(1, [])]`.
+    2. Since γ ∉ {C, M}, the pre-twist step is the identity.
+    3. For γ ∈ {B⁺, B⁻} use `thetaLift_MB`; for γ = D use `thetaLift_CD`.
+       Both have `sign [] = (0, 0)` and `firstColSign [] = (0, 0)`, so
+       `addp = p ≥ 0`, `addn = q ≥ 0` — standard case triggers.
+    4. Standard case: `augment (p, q) (charTwistCM [] _) = [(p, q)]`
+       (since `charTwistCM [] j = []`).
+    5. Post-twist for ε_τ = 1: `twistBD 1 (-1)` on `[(p, q)]` — index 0
+       corresponds to length-1 row (odd), giving `(p, -q)`. -/
+theorem lemma_11_1_a_r1_one (γ : RootType) (hγ : γ = .Bplus ∨ γ = .Bminus ∨ γ = .D)
+    (p q : ℤ) (hp : p ≥ 0) (hq : q ≥ 0) (ε_τ : Fin 2) (ε_wp : Fin 2) :
+    AC.step (AC.base (if γ = .D then .C else .M)) γ p q ε_τ ε_wp =
+      [(1, [(p, if ε_τ = 1 then -q else q)])] := by
+  rcases hγ with rfl | rfl | rfl
+  -- Case γ = Bplus
+  · simp only [show (.Bplus : RootType) ≠ .D from by decide, if_false]
+    unfold AC.step AC.base ACResult.thetaLift
+    simp only [show ¬(RootType.Bplus = RootType.C ∨ RootType.Bplus = RootType.M)
+      from by decide, if_false]
+    unfold ILS.thetaLift ILS.thetaLift_MB
+    simp [ILS.sign, ILS.firstColSign, ILS.augment, ILS.charTwistCM, hp, hq]
+    split
+    · simp_all [ACResult.twistBD, ILS.twistBD, ILS.twistBDRow]
+    · simp_all
+  -- Case γ = Bminus
+  · simp only [show (.Bminus : RootType) ≠ .D from by decide, if_false]
+    unfold AC.step AC.base ACResult.thetaLift
+    simp only [show ¬(RootType.Bminus = RootType.C ∨ RootType.Bminus = RootType.M)
+      from by decide, if_false]
+    unfold ILS.thetaLift ILS.thetaLift_MB
+    simp [ILS.sign, ILS.firstColSign, ILS.augment, ILS.charTwistCM, hp, hq]
+    split
+    · simp_all [ACResult.twistBD, ILS.twistBD, ILS.twistBDRow]
+    · simp_all
+  -- Case γ = D
+  · simp only
+    unfold AC.step AC.base ACResult.thetaLift
+    simp only [show ¬(RootType.D = RootType.C ∨ RootType.D = RootType.M)
+      from by decide, if_false]
+    unfold ILS.thetaLift ILS.thetaLift_CD
+    simp [ILS.sign, ILS.firstColSign, ILS.augment, ILS.charTwistCM, hp, hq]
+    split
+    · simp_all [ACResult.twistBD, ILS.twistBD, ILS.twistBDRow]
+    · simp_all
 
-  theorem lemma_11_1_a_r1_one (τ : PBP) ... : AC.fold γ_base [step_data_of τ] = ...
--/
-
-/-
-**Lemma 11.1(b), bijection at r₁(O) = 1** — not yet formalized.
-
-From (a): each τ corresponds to L_τ(1) = (p_τ, (-1)^{ε_τ} q_τ).
-Map (τ, ε) ↦ (-1)^ε · L_τ(1) is injective (Sign and ε determine τ up to γ)
-and surjective (counting matches).
-
-Requires: (1) `lemma_11_1_a_r1_one` for the formula, (2) counting via
-`card_PBPSet_*_eq_countPBP_*` at r₁ = 1.
-
-  theorem lemma_11_1_b_bijection ... : Function.Bijective ...
--/
+/-- **Lemma 11.1(a), r₁(O) = 1 case, first-entry formula**:
+    the unique MYD entry of `AC.step (AC.base _) γ p q ε_τ ε_wp` is
+    `(p, (-1)^{ε_τ} · q)` — direct corollary of `lemma_11_1_a_r1_one`. -/
+theorem lemma_11_1_a_r1_one_first_entry (γ : RootType)
+    (hγ : γ = .Bplus ∨ γ = .Bminus ∨ γ = .D)
+    (p q : ℤ) (hp : p ≥ 0) (hq : q ≥ 0) (ε_τ : Fin 2) (ε_wp : Fin 2) :
+    ∀ r ∈ AC.step (AC.base (if γ = .D then .C else .M)) γ p q ε_τ ε_wp,
+      r.2.head? = some (p, if ε_τ = 1 then -q else q) := by
+  rw [lemma_11_1_a_r1_one γ hγ p q hp hq ε_τ ε_wp]
+  intro r hr
+  simp at hr
+  subst hr
+  rfl
 
 /-! ## Lemma 11.5: Two-step AC recursion formula
 
