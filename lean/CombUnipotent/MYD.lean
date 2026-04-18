@@ -1875,6 +1875,51 @@ theorem SignTargetFinset_card (N : ℕ) :
   · simp only [hN, ↓reduceIte]
     exact SignTargetFinset_card_pos (Nat.pos_of_ne_zero hN)
 
+/-! ### `Fintype` instance and `Fintype.card` for `SignTargetSet`
+
+Promote the `Finset`-level results to the `Set`-level `Fintype` instance
+and `Fintype.card`. This is what callers of `lemma_11_1_b_bijection` need:
+the target type `SignTargetSet |O|` must be a `Fintype` to apply
+`Function.Injective.surjective_of_finite`. -/
+
+/-- Equivalence between the Set view and the Finset Subtype view of
+    the target set. Used to bridge `Fintype` instances. -/
+def SignTargetSet_equiv_finset (N : ℕ) :
+    SignTargetSet N ≃ {p // p ∈ SignTargetFinset N} where
+  toFun := fun ⟨p, hp⟩ => ⟨p, by
+    rw [mem_SignTargetFinset]
+    rw [SignTargetSet, Set.mem_setOf_eq] at hp
+    exact hp⟩
+  invFun := fun ⟨p, hp⟩ => ⟨p, by
+    rw [SignTargetSet, Set.mem_setOf_eq]
+    rw [mem_SignTargetFinset] at hp
+    exact hp⟩
+  left_inv := fun _ => rfl
+  right_inv := fun _ => rfl
+
+/-- `Fintype` instance for `SignTargetSet N` derived from `SignTargetFinset N`. -/
+instance SignTargetSet_fintype (N : ℕ) : Fintype (SignTargetSet N) :=
+  Fintype.ofEquiv _ (SignTargetSet_equiv_finset N).symm
+
+/-- `Fintype.card` of `SignTargetSet N` matches the `SignTargetFinset` count. -/
+theorem SignTargetSet_card (N : ℕ) :
+    Fintype.card (SignTargetSet N) = if N = 0 then 1 else 4 * N := by
+  rw [← SignTargetFinset_card N]
+  rw [Fintype.card_congr (SignTargetSet_equiv_finset N)]
+  exact Fintype.card_coe _
+
+/-- **Lemma 11.1(b) cardinality bridge**: the cardinality of the target
+    set `SignTargetSet N` equals `4 * N` for `N > 0`. This is the form
+    that the bijection theorem `lemma_11_1_b_bijection` consumes. -/
+theorem SignTargetSet_card_pos {N : ℕ} (hN : 0 < N) :
+    Fintype.card (SignTargetSet N) = 4 * N := by
+  rw [SignTargetSet_card]
+  simp [Nat.ne_of_gt hN]
+
+/-- **Lemma 11.1(b) cardinality bridge** (zero case). -/
+theorem SignTargetSet_card_zero : Fintype.card (SignTargetSet 0) = 1 := by
+  rw [SignTargetSet_card]; rfl
+
 /-! ## Lemma 11.5: Two-step AC recursion formula
 
 This is the key structural lemma. It applies (11.2) twice to express
