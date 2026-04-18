@@ -270,7 +270,7 @@
 
     <a class="icon proof" href="sect0033.html#lem:11_5_D_ILS">#</a>
     
-    <a class="icon proof" href="sect0033.html#a0000000111"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+    <a class="icon proof" href="sect0033.html#a0000000143"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
 </a>
     
     
@@ -350,22 +350,22 @@
   </div>
   <div class="lemma_thmcontent">
   <p>    Given an ILS \(E\) (intended as \(\mathcal{L}_{\tau ''}\)) with the firstColSign invariant </p>
-<div class="displaymath" id="a0000000112">
+<div class="displaymath" id="a0000000144">
   \[  \mathrm{fcSign}(E) = (\mathrm{Sign}(E).1 - n_{\mathrm{prev}},\  \mathrm{Sign}(E).2 - n_{\mathrm{prev}})  \]
 </div>
 <p> and target tail signature \((p_t, q_t)\) satisfying </p>
-<div class="displaymath" id="a0000000113">
+<div class="displaymath" id="a0000000145">
   \[  p_\tau - 2 n_{\mathrm{inner}} + \mathrm{Sign}(E).2 = p_t,\quad q_\tau - 2 n_{\mathrm{inner}} + \mathrm{Sign}(E).1 = q_t,  \]
 </div>
 <p> define \(n_0 := n_{\mathrm{inner}} - \mathrm{Sign}(E).1 - \mathrm{Sign}(E).2 + n_{\mathrm{prev}}\) and \(E_{\mathrm{inner}} := T^{\gamma _1}\big(E \oplus (n_0, n_0)\big)\). Then: </p>
-<div class="displaymath" id="a0000000114">
+<div class="displaymath" id="a0000000146">
   \begin{align*}  p_\tau - \mathrm{Sign}(E_{\mathrm{inner}}).1 - \mathrm{fcSign}(E_{\mathrm{inner}}).2 & = p_t, \\ q_\tau - \mathrm{Sign}(E_{\mathrm{inner}}).2 - \mathrm{fcSign}(E_{\mathrm{inner}}).1 & = q_t. \end{align*}
 </div>
 <p> These are the “outer augment” parameters consumed by the outer C\(\to \)D or M\(\to \)B lift. </p>
 
   </div>
 </div>
-<div class="proof_wrapper" id="a0000000111">
+<div class="proof_wrapper" id="a0000000143">
   <div class="proof_heading">
     <span class="proof_caption">
     Proof
@@ -374,12 +374,12 @@
   </div>
   <div class="proof_content">
   <p> <b class="bfseries">Step 1 — unfold sign and fcSign of \(E_{\mathrm{inner}}\).</b> \(T^\gamma \) preserves both sign and fcSign (Lem&#160;<a href="sect0022.html#lem:twist_sign">64</a>, <a href="sect0022.html#lem:twist_fcSign">65</a>), so we may work with \(F := E \oplus (n_0, n_0) = (n_0, n_0) :: E\). By Lem&#160;<a href="sect0022.html#lem:augment_sign">66</a> (for \(n_0 \geq 0\)): </p>
-<div class="displaymath" id="a0000000115">
+<div class="displaymath" id="a0000000147">
   \begin{align*}  \mathrm{Sign}(F) & = (n_0 + \mathrm{Sign}(E).1 + \mathrm{fcSign}(E).2,\  n_0 + \mathrm{Sign}(E).2 + \mathrm{fcSign}(E).1). \\ \mathrm{fcSign}(F) & = (n_0 + \mathrm{fcSign}(E).2,\  n_0 + \mathrm{fcSign}(E).1) \end{align*}
 </div>
 <p> using the cons formula for fcSign (the swap is due to parity index shift, Eq.&#160;(9.12)). </p>
 <p>Substituting \(\mathrm{fcSign}(E) = (\mathrm{Sign}(E).1 - n_{\mathrm{prev}},\  \mathrm{Sign}(E).2 - n_{\mathrm{prev}})\): </p>
-<div class="displaymath" id="a0000000116">
+<div class="displaymath" id="a0000000148">
   \begin{align*}  \mathrm{Sign}(F).1 & = n_0 + \mathrm{Sign}(E).1 + \mathrm{Sign}(E).2 - n_{\mathrm{prev}} = n_{\mathrm{inner}} \\ \mathrm{fcSign}(F).2 & = n_0 + \mathrm{Sign}(E).1 - n_{\mathrm{prev}} = n_{\mathrm{inner}} - \mathrm{Sign}(E).2. \end{align*}
 </div>
 <p> where we used the definition \(n_0 = n_{\mathrm{inner}} - \mathrm{Sign}(E).1 - \mathrm{Sign}(E).2 + n_{\mathrm{prev}}\). </p>

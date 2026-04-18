@@ -271,7 +271,7 @@
 
     <a class="icon proof" href="sect0026.html#thm:fcSign_diff">#</a>
     
-    <a class="icon proof" href="sect0026.html#a0000000095"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+    <a class="icon proof" href="sect0026.html#a0000000123"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
 </a>
     
     
@@ -323,17 +323,17 @@
   </div>
   <div class="theorem_thmcontent">
   <p>    Let \(\mathcal{L}_\tau = \mathrm{AC.fold}\, \gamma \, (\mathrm{descent\  chain})\), with the descent chain producing signatures \(\mathrm{Sign}(\mathcal{L}_\tau )\) and \(\mathrm{Sign}(\mathcal{L}_{\tau ''})\) at successive levels. Then </p>
-<div class="displaymath" id="a0000000096">
+<div class="displaymath" id="a0000000124">
   \[  \mathrm{fcSign}(\mathcal{L}_\tau ) = \mathrm{Sign}(\mathcal{L}_\tau ) - \mathrm{Sign}(\mathcal{L}_{\tau ''}).  \]
 </div>
 <p> Equivalently: </p>
-<div class="displaymath" id="a0000000097">
+<div class="displaymath" id="a0000000125">
   \[  \mathrm{fcSign}(\mathcal{L}_\tau ) = (p_\tau - p_{\tau ''},\  q_\tau - q_{\tau ''}).  \]
 </div>
 
   </div>
 </div>
-<div class="proof_wrapper" id="a0000000095">
+<div class="proof_wrapper" id="a0000000123">
   <div class="proof_heading">
     <span class="proof_caption">
     Proof
@@ -342,7 +342,7 @@
   </div>
   <div class="proof_content">
   <p>By induction on the descent chain length. Base: \(\mathrm{fcSign}(\mathrm{AC.base}) = \mathrm{Sign}(\mathrm{AC.base})\) (<span class="ttfamily">AC.base_firstColSign_eq_sign</span>). Step: Given \(\mathrm{fcSign}(\text{prev}) = \mathrm{Sign}(\text{prev}) - \mathrm{Sign}(\text{prev}')\), the post-twist and theta-lift formulas (Thm&#160;<a href="sect0023.html#thm:thetaLift_fcSign">69</a>, Lem&#160;<a href="sect0022.html#lem:twist_fcSign">65</a>) give </p>
-<div class="displaymath" id="a0000000098">
+<div class="displaymath" id="a0000000126">
   \[  \mathrm{fcSign}(\text{curr}) = (\text{current } p - \mathrm{Sign}(\text{prev}).1,\  \text{current } q - \mathrm{Sign}(\text{prev}).2)  \]
 </div>
 <p> \(= (p_\tau - p_{\tau ''},\  q_\tau - q_{\tau ''})\) since the current parameters are \(\mathrm{Sign}(\tau ) = (p_\tau , q_\tau )\) and the previous source has \(\mathrm{Sign}= \mathrm{Sign}(\tau '')\) by IH. </p>
@@ -364,6 +364,9 @@
     <div class="thm_header_hidden_extras">
 
     <a class="icon proof" href="sect0026.html#thm:AC_step_fcSign">#</a>
+    
+    <a class="icon proof" href="sect0026.html#a0000000127"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
     
     
     <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
@@ -423,6 +426,18 @@
 
   </div>
 </div>
+<div class="proof_wrapper" id="a0000000127">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>See the Lean formalization referenced on the statement. </p>
+
+  </div>
+</div>
 <div class="theorem_thmwrapper theorem-style-plain" id="thm:postTwist_first_entry">
   <div class="theorem_thmheading">
     <span class="theorem_thmcaption">
@@ -438,6 +453,9 @@
     <div class="thm_header_hidden_extras">
 
     <a class="icon proof" href="sect0026.html#thm:postTwist_first_entry">#</a>
+    
+    <a class="icon proof" href="sect0026.html#a0000000128"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
     
     
     <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
@@ -486,6 +504,18 @@
   </div>
   <div class="theorem_thmcontent">
   <p>    After the B/D post-twist \(\otimes (1, -1)\) (when \(\varepsilon _\tau = 1\)), the first entry of every branch transforms by \((a, b) \mapsto (a, -b)\). </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000128">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>See the Lean formalization referenced on the statement. </p>
 
   </div>
 </div>

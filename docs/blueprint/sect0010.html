@@ -255,14 +255,14 @@
 <div class="main-text">
 <h1 id="a0000000011">3.2 Shape-shift for C type (case analysis)</h1>
 <p>The C-type shape shift is more delicate: it modifies only column&#160;0 of \(\mathcal{P}\) (the roles of \(\mathcal{P}\) and \(\mathcal{Q}\) do <em>not</em> swap, unlike M type). The construction depends on the value of \(\mathcal{P}_\tau (\mathbf{c}_1(\iota _\wp ), 1)\), giving four sub-cases. </p>
-<h2 id="a0000000058">3.2.1 Setup</h2>
+<h2 id="a0000000059">3.2.1 Setup</h2>
 <p>Let \(\tau \in \mathrm{PBP}_C(\check{\mathcal{O}}, \wp )\) with \((1, 2) \in \mathrm{PP}_\star (\check{\mathcal{O}})\) and \((1, 2) \notin \wp \). Set </p>
-<div class="displaymath" id="a0000000059">
+<div class="displaymath" id="a0000000060">
   \[  k := \mathbf{c}_1(\iota _\wp ),\qquad k_\uparrow := \mathbf{c}_1(\iota _{\wp _\uparrow }),  \]
 </div>
 <p> where \(\wp _\uparrow := \wp \cup \{ (1, 2)\} \). By the PP assumption, \(k_\uparrow {\gt} k \geq 1\). </p>
 <p>Since \(\)\(\) is unchanged, \(\)τ_.Q(i, j) := τ.Q(i, j)\(\) for all \((i, j)\). </p>
-<h2 id="a0000000060">3.2.2 Case analysis for \(\tau _\uparrow .\mathcal{P}\)</h2>
+<h2 id="a0000000061">3.2.2 Case analysis for \(\tau _\uparrow .\mathcal{P}\)</h2>
 <div class="definition_thmwrapper theorem-style-definition" id="def:shapeShiftC_paint">
   <div class="definition_thmheading">
     <span class="definition_thmcaption">
@@ -328,16 +328,16 @@
   <p>    There are four sub-cases, based on \(\mathcal{P}_\tau (k, 1)\): </p>
 <p><b class="bfseries">Case (a):</b> \(\mathcal{P}_\tau (k, 1) \neq \bullet \). Set \(\alpha _0 := \mathcal{P}_\tau (k, 1) \in \{ s, r, c, d\} \). </p>
 <p><b class="bfseries">Sub-case (a.1):</b> \(k \geq 2\) and \(\mathcal{P}_\tau (k - 1, 1) = c\). </p>
-<div class="displaymath" id="a0000000061">
+<div class="displaymath" id="a0000000062">
   \[  \tau _\uparrow .\mathcal{P}(i, j) = \begin{cases}  r &  j = 1,\  k - 1 \leq i \leq k_\uparrow - 2 \\ c &  (i, j) = (k_\uparrow - 1, 1) \\ d &  (i, j) = (k_\uparrow , 1) \\ \mathcal{P}_\tau (i, j) &  \text{otherwise} \end{cases}  \]
 </div>
 <p><b class="bfseries">Sub-case (a.2):</b> otherwise. </p>
-<div class="displaymath" id="a0000000062">
+<div class="displaymath" id="a0000000063">
   \[  \tau _\uparrow .\mathcal{P}(i, j) = \begin{cases}  r &  j = 1,\  k \leq i \leq k_\uparrow - 1 \\ \alpha _0 &  (i, j) = (k_\uparrow , 1) \\ \mathcal{P}_\tau (i, j) &  \text{otherwise} \end{cases}  \]
 </div>
 <p><b class="bfseries">Case (b):</b> \(\mathcal{P}_\tau (k, 1) = \bullet \). </p>
 <p><b class="bfseries">Sub-case (b.1):</b> \(\mathbf{c}_2(\iota _\wp ) = k\) and \(\mathcal{P}_\tau (k, 2) = r\). </p>
-<div class="displaymath" id="a0000000063">
+<div class="displaymath" id="a0000000064">
   \[  \tau _\uparrow .\mathcal{P}(i, j) = \begin{cases}  r &  j = 1,\  k \leq i \leq k_\uparrow - 1 \\ c &  (i, j) = (\mathbf{c}_2(\iota _\wp ), 2) \\ d &  (i, j) = (k_\uparrow , 1) \\ \mathcal{P}_\tau (i, j) &  \text{otherwise} \end{cases}  \]
 </div>
 <p> (Case b.1 modifies column&#160;1 of \(\)</p>
@@ -345,9 +345,9 @@
   </div>
 </div>
 <p>\(\)-reachable cells; formalization of this case is deferred.) 
-<b class="bfseries">Sub-case (b.2):</b> otherwise. <div class="displaymath" id="a0000000064">
+<b class="bfseries">Sub-case (b.2):</b> otherwise. <div class="displaymath" id="a0000000065">
   \[  \tau _\uparrow .\mathcal{P}(i, j) = \begin{cases}  r &  j = 1,\  k \leq i \leq k_\uparrow - 2 \\ c &  (i, j) = (k - 1, 1) \\ d &  (i, j) = (k_\uparrow , 1) \\ \mathcal{P}_\tau (i, j) &  \text{otherwise} \end{cases}  \]
-</div> <div class="definition_thmwrapper theorem-style-definition" id="a0000000065">
+</div> <div class="definition_thmwrapper theorem-style-definition" id="a0000000066">
   <div class="definition_thmheading">
     <span class="definition_thmcaption">
     Definition
@@ -357,7 +357,7 @@
         </div>
     <div class="thm_header_hidden_extras">
 
-    <a class="icon proof" href="sect0010.html#a0000000065">#</a>
+    <a class="icon proof" href="sect0010.html#a0000000066">#</a>
     
     
     
@@ -367,7 +367,7 @@
   
   </div>
 </div> 
-<h2 id="a0000000066">3.2.3 Validity and bijectivity</h2>
+<h2 id="a0000000067">3.2.3 Validity and bijectivity</h2>
 <div class="lemma_thmwrapper theorem-style-plain" id="lem:shapeShiftC_valid">
   <div class="lemma_thmheading">
     <span class="lemma_thmcaption">
@@ -390,8 +390,7 @@
   
   </div>
 </div>
-τ_\(\) is a valid PBP]  </p>
-<p> The painted diagram \(\tau _\uparrow \) produced by any of the four sub-cases satisfies all PBP axioms: </p>
+τ_\(\) is a valid PBP]    The painted diagram \(\tau _\uparrow \) produced by any of the four sub-cases satisfies all PBP axioms: </p>
 <ul class="itemize">
   <li><p><b class="bfseries">sym_P</b>: new paint is in \(\{ \bullet , s, r, c, d\} \) (the C-type \(\mathcal{P}\)-allowed set); </p>
 </li>
@@ -403,7 +402,7 @@
 </li>
 </ul>
 <p> Verification is by case analysis; see [BMSZb] p.&#160;66 and the Lean proof. </p>
-<div class="lemma_thmwrapper theorem-style-plain" id="a0000000067">
+<div class="lemma_thmwrapper theorem-style-plain" id="a0000000068">
   <div class="lemma_thmheading">
     <span class="lemma_thmcaption">
     Lemma
@@ -413,7 +412,7 @@
         </div>
     <div class="thm_header_hidden_extras">
 
-    <a class="icon proof" href="sect0010.html#a0000000067">#</a>
+    <a class="icon proof" href="sect0010.html#a0000000068">#</a>
     
     
     
@@ -421,6 +420,18 @@
   </div>
   <div class="lemma_thmcontent">
   
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000069">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>See the Lean formalization referenced on the statement. </p>
+
   </div>
 </div>
 <div class="lemma_thmwrapper theorem-style-plain" id="lem:shapeShiftC_id">
@@ -438,6 +449,9 @@
     <div class="thm_header_hidden_extras">
 
     <a class="icon proof" href="sect0010.html#lem:shapeShiftC_id">#</a>
+    
+    <a class="icon proof" href="sect0010.html#a0000000070"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
     
     
     <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
@@ -489,6 +503,18 @@
 
   </div>
 </div>
+<div class="proof_wrapper" id="a0000000070">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>See the Lean formalization referenced on the statement. </p>
+
+  </div>
+</div>
 <div class="lemma_thmwrapper theorem-style-plain" id="lem:10_3_C">
   <div class="lemma_thmheading">
     <span class="lemma_thmcaption">
@@ -504,6 +530,9 @@
     <div class="thm_header_hidden_extras">
 
     <a class="icon proof" href="sect0010.html#lem:10_3_C">#</a>
+    
+    <a class="icon proof" href="sect0010.html#a0000000071"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
     
     
     <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
@@ -554,9 +583,21 @@
   </div>
   <div class="lemma_thmcontent">
   <p>    For shapes \((\mu _P', \mu _Q')\) reachable via C-type shape shift from \((\mu _P, \mu _Q)\): </p>
-<div class="displaymath" id="a0000000068">
+<div class="displaymath" id="a0000000072">
   \[  |\mathrm{PBP}_C(\mu _P, \mu _Q)| = |\mathrm{PBP}_C(\mu _P', \mu _Q')|.  \]
 </div>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000071">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>See the Lean formalization referenced on the statement. </p>
 
   </div>
 </div>
@@ -575,6 +616,9 @@
     <div class="thm_header_hidden_extras">
 
     <a class="icon proof" href="sect0010.html#prop:10_2_C">#</a>
+    
+    <a class="icon proof" href="sect0010.html#a0000000073"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
     
     
     <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
@@ -621,6 +665,18 @@
   </div>
   <div class="proposition_thmcontent">
   
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000073">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>See the Lean formalization referenced on the statement. </p>
 
   </div>
 </div>
