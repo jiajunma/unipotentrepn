@@ -209,6 +209,31 @@ theorem cor_10_10_D {μP μQ : YoungDiagram}
     τ₁ = τ₂ :=
   doubleDescent_D_injective_on_PBPSet τ₁ τ₂ hdd hsig heps
 
+/-- **Corollary 10.10 (B type)** — on `PBPSet .γ μP μQ` for γ ∈ {Bplus, Bminus},
+    the map `τ ↦ (∇²τ, signature τ, epsilon τ)` is injective.
+
+    PBPSet-level wrapper of `ddescent_inj_B`. -/
+theorem cor_10_10_B {μP μQ : YoungDiagram} (γ : RootType) (hγ : γ = .Bplus ∨ γ = .Bminus)
+    (τ₁ τ₂ : PBPSet γ μP μQ)
+    (hinterl₁ : ∀ j, PBP.dotScolLen τ₁.val.P j ≥ PBP.dotScolLen τ₁.val.Q (j + 1))
+    (hinterl₂ : ∀ j, PBP.dotScolLen τ₂.val.P j ≥ PBP.dotScolLen τ₂.val.Q (j + 1))
+    (hddL : ∀ i j, PBP.doubleDescent_B_paintL τ₁.val i j = PBP.doubleDescent_B_paintL τ₂.val i j)
+    (hddR : ∀ i j, PBP.doubleDescent_B_paintR τ₁.val i j = PBP.doubleDescent_B_paintR τ₂.val i j)
+    (hsig : PBP.signature τ₁.val = PBP.signature τ₂.val)
+    (heps : PBP.epsilon τ₁.val = PBP.epsilon τ₂.val) :
+    τ₁ = τ₂ := by
+  have hγ₁ : τ₁.val.γ = .Bplus ∨ τ₁.val.γ = .Bminus := by rw [τ₁.prop.1]; exact hγ
+  have hγ_eq : τ₁.val.γ = τ₂.val.γ := by rw [τ₁.prop.1, τ₂.prop.1]
+  have hshapeP : τ₁.val.P.shape = τ₂.val.P.shape := by
+    rw [τ₁.prop.2.1, τ₂.prop.2.1]
+  have hshapeQ : τ₁.val.Q.shape = τ₂.val.Q.shape := by
+    rw [τ₁.prop.2.2, τ₂.prop.2.2]
+  have ⟨hPeq, hQeq⟩ := PBP.ddescent_inj_B τ₁.val τ₂.val hγ₁ hγ_eq hshapeP hshapeQ
+    hinterl₁ hinterl₂ hddL hddR hsig heps
+  exact Subtype.ext (PBP.ext'' hγ_eq
+    (PaintedYoungDiagram.ext' hshapeP (funext fun i => funext (hPeq i)))
+    (PaintedYoungDiagram.ext' hshapeQ (funext fun i => funext (hQeq i))))
+
 /-! ## Proposition 10.11 — counting (B, D) -/
 
 /-- **Proposition 10.11 (B type)** — for any valid B-type dual partition `dp`,
