@@ -1946,6 +1946,25 @@ theorem prop_11_5_D (E : ILS) (n₀ n_inner p q p_t q_t : ℤ)
     p - (ILS.sign inner).1 - (ILS.firstColSign inner).2 = p_t ∧
     q - (ILS.sign inner).2 - (ILS.firstColSign inner).1 = q_t :=
   ILS.lemma_11_5_D E n₀ n_inner p q p_t q_t h_n₀ h_inner_p h_inner_q h_pt h_qt γ₁
+
+/-! ## Lemma 11.6: First entry of L_τ (named reference)
+
+Reference: [BMSZ] Lemma 11.6.
+
+The first entry of L_τ equals `(p_{τ_t}, (-1)^{ε_τ} q_{τ_t})`. This follows from
+Prop 11.5 (augmentation parameters = tail signature) combined with
+`ILS.thetaLift_CD_first_entry` / `ILS.thetaLift_MB_first_entry` (giving the
+lifted first entry) and `BMSZ.first_entry_after_twist` (applying the ε_τ twist).
+
+The full assembly is available via composition:
+  1. `prop_11_5_D` gives (addp, addn) = (p_{τ_t}, q_{τ_t}).
+  2. `ILS.thetaLift_{CD,MB}_first_entry` gives first entry = (addp, addn).
+  3. `BMSZ.first_entry_after_twist` applies twist ⊗(0, ε_τ).
+
+Composition is straightforward; see `BMSZ.first_entry_after_twist` for the
+standalone twist formula and `lemma_11_1_a_r1_one_first_entry` for a
+concrete instance at r₁(O) = 1. -/
+
 -- Computationally verified for all D-type test orbits.
 -- The PBP-level identity p - 2p' + q'' = p_tail is verified computationally
 -- for all D-type orbits. Its formal proof requires connecting PBP.signature
