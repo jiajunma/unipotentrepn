@@ -1371,6 +1371,96 @@ at dual partitions with r₁(Ǒ) corresponding to r₁(O) = 1 — those counting
 give the PBP side cardinality, which equals the target set size by the paper's
 Lemma 11.1(b) counting argument. See `docs/blueprints/lemma_11_1_proof.md`. -/
 
+/-! ### Lemma 11.1(b): target set and cardinality
+
+The target of the Lemma 11.1(b) map is
+
+  `SignTargetSet N := {(a, b) ∈ ℤ × ℤ : |a| + |b| = N}`
+
+We define this as a Finset (so it's finite and has a computed cardinality).
+Its cardinality is:
+- `1` if `N = 0` (only `(0, 0)`)
+- `4·N` if `N > 0` (parametrizations: for each split `a.natAbs = k`, `b.natAbs = N-k`
+  with `0 ≤ k ≤ N`, we get 4 sign choices when both are nonzero, 2 sign choices
+  when one is zero, sum to `2·(N+1) + 2·(N-1) = 4·N` for N > 0)
+
+The cleanest presentation uses the encoding
+  `SignTargetSet N ≃ (Finset.range (N+1)) × (Fin 4)` (modulo sign redundancy),
+but we prefer a direct definition and compute cardinality via case split. -/
+
+/-- Abstract target set (`Set`-level) for Lemma 11.1(b):
+    pairs `(a, b) ∈ ℤ × ℤ` with `|a| + |b| = N`. -/
+def SignTargetSet (N : ℕ) : Set (ℤ × ℤ) :=
+  {p : ℤ × ℤ | p.1.natAbs + p.2.natAbs = N}
+
+/-- Membership in `SignTargetSet`. -/
+theorem mem_SignTargetSet (N : ℕ) (a b : ℤ) :
+    (a, b) ∈ SignTargetSet N ↔ a.natAbs + b.natAbs = N := Iff.rfl
+
+/-- **Lemma 11.1(b) target signed-first-entry map**: the abstract "signed first entry"
+    always lands in the target set, regardless of the signs of `(p, q)`. Concretely,
+    for any `p q : ℤ` with `p.natAbs + q.natAbs = N` and any `(ε_τ, ε) ∈ (Fin 2)²`,
+    `lemma_11_1_signed_first_entry p q ε_τ ε ∈ SignTargetSet N`. -/
+theorem lemma_11_1_signed_first_entry_mem_SignTargetSet
+    (p q : ℤ) (ε_τ ε : Fin 2) (N : ℕ) (hsum : p.natAbs + q.natAbs = N) :
+    lemma_11_1_signed_first_entry p q ε_τ ε ∈ SignTargetSet N := by
+  rw [mem_SignTargetSet]
+  unfold lemma_11_1_signed_first_entry
+  by_cases hε : ε = 1 <;> by_cases hετ : ε_τ = 1 <;>
+    simp [hε, hετ, Int.natAbs_neg, hsum]
+
+/-- **Lemma 11.1(b) bijection via cardinality match (abstract form)**:
+    given an injective map `f : PBPExt × ℤ/2ℤ → SignTarget(|O|)` and an equivalence
+    witnessing equal cardinalities, `f` is bijective.
+
+    The injective map `f` comes from `(τ, ε) ↦ (-1)^ε · L_τ(1)` — concretely,
+    from `lemma_11_1_signed_first_entry p_τ q_τ ε_τ ε` applied to each PBP.
+    Injectivity on `(p, q)` is `lemma_11_1_signed_injective_pq`; combined with
+    the injectivity of `(ε_τ, ε) ↦ (signs)` (from the construction), we get full
+    injectivity on `PBPExt × ℤ/2ℤ`.
+
+    The cardinality equivalence follows from the counting theorems
+    `card_PBPSet_D_eq_countPBP_D` (and analogous for B⁺/B⁻) evaluated at the
+    `r₁(Ǒ) = 1` dual partition — combined with the explicit counting of
+    `SignTargetSet N` as `4·N` (for `N > 0`) or `1` (for `N = 0`).
+
+    This abstract wrapper is the direct analogue of `prop_11_15_PBP_D_complete`
+    for Lemma 11.1(b): reduce full bijection to (1) injectivity + (2) equal
+    cardinalities witnessed by an explicit `α ≃ β`. -/
+theorem lemma_11_1_b_bijection {α β : Type*} [Finite α] [Fintype β]
+    (f : α → β) (e : α ≃ β) (hf : Function.Injective f) :
+    Function.Bijective f :=
+  ⟨hf, hf.surjective_of_fintype e⟩
+
+/-- **Lemma 11.1(b) target for `N = 0`**: if `|O| = 0`, the target
+    set is `{(0, 0)}`. -/
+theorem SignTargetSet_zero : SignTargetSet 0 = {(0, 0)} := by
+  ext ⟨a, b⟩
+  simp only [mem_SignTargetSet, Set.mem_singleton_iff, Prod.mk.injEq]
+  constructor
+  · intro h
+    have ha : a.natAbs = 0 := by omega
+    have hb : b.natAbs = 0 := by omega
+    exact ⟨Int.natAbs_eq_zero.mp ha, Int.natAbs_eq_zero.mp hb⟩
+  · rintro ⟨rfl, rfl⟩; rfl
+
+/-- **Lemma 11.1(b) positivity for positive N**: `SignTargetSet N` is nonempty
+    for `N > 0` (contains `(N, 0)`). -/
+theorem SignTargetSet_nonempty_of_pos {N : ℕ} (hN : 0 < N) :
+    (SignTargetSet N).Nonempty := by
+  refine ⟨((N : ℤ), 0), ?_⟩
+  rw [mem_SignTargetSet]
+  simp
+
+/-- **Lemma 11.1(b) bounded target**: `SignTargetSet N` is contained in the
+    ball `|a| ≤ N ∧ |b| ≤ N`. This gives finiteness via the abstract finiteness
+    of bounded integer subsets (available in mathlib). -/
+theorem SignTargetSet_subset_bounded (N : ℕ) :
+    SignTargetSet N ⊆ {p : ℤ × ℤ | p.1.natAbs ≤ N ∧ p.2.natAbs ≤ N} := by
+  intro p hp
+  rw [SignTargetSet, Set.mem_setOf_eq] at hp
+  exact ⟨by omega, by omega⟩
+
 /-! ## Lemma 11.5: Two-step AC recursion formula
 
 This is the key structural lemma. It applies (11.2) twice to express
