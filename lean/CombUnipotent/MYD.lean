@@ -2000,6 +2000,28 @@ theorem AC.step_firstColSign_Bminus (source : ACResult) (p q : ℤ) (ε_τ ε_wp
   · exact ACResult.twistBD_firstColSign _ 1 (-1) _ (Or.inl rfl) (Or.inr rfl) h_lifted_fc r hr
   · exact h_lifted_fc r hr
 
+/-! ### Lemma 11.5 firstColSign invariant (B/D-level)
+
+Combining the results above: after one AC.step for γ ∈ {D, B⁺, B⁻}, the outer
+firstColSign equals (p_new - p_source, q_new - q_source). This is the invariant
+that discharges the PBP-level identity in `ILS.lemma_11_5_D`'s hypotheses. -/
+
+/-- **Unified firstColSign invariant after one AC.step (B/D)**: for γ ∈ {D, B⁺, B⁻},
+    every output r has `firstColSign r.2 = (p - source_sig.1, q - source_sig.2)`. -/
+theorem AC.step_firstColSign_BD (source : ACResult) (p q : ℤ) (ε_τ ε_wp : Fin 2)
+    (γ : RootType) (hγ : γ = .D ∨ γ = .Bplus ∨ γ = .Bminus)
+    (source_sig : ℤ × ℤ)
+    (h_sign : ∀ r ∈ source, ILS.sign r.2 = source_sig)
+    (h_std : ∀ r ∈ source,
+      p - (ILS.sign r.2).1 - (ILS.firstColSign r.2).2 ≥ 0 ∧
+      q - (ILS.sign r.2).2 - (ILS.firstColSign r.2).1 ≥ 0) :
+    ∀ r ∈ AC.step source γ p q ε_τ ε_wp,
+      ILS.firstColSign r.2 = (p - source_sig.1, q - source_sig.2) := by
+  rcases hγ with rfl | rfl | rfl
+  · exact AC.step_firstColSign_D source p q ε_τ ε_wp source_sig h_sign h_std
+  · exact AC.step_firstColSign_Bplus source p q ε_τ ε_wp source_sig h_sign h_std
+  · exact AC.step_firstColSign_Bminus source p q ε_τ ε_wp source_sig h_sign h_std
+
 /-! ### Lemma 11.5 — approach
 
 The full Lemma 11.5 requires tracking `firstColSign` through AC.step,
