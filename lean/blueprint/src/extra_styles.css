@@ -24,3 +24,33 @@ div.proof_content {
 	border-left: .08rem solid grey;
 }
 
+/* Fix: dep-graph node modal popup gets cut off at bottom of viewport.
+ * The default .dep-modal-container has no max-height, so when the content
+ * (statement + Lean buttons + uses + proof links) exceeds the viewport
+ * height, the bottom buttons are clipped.
+ *
+ * Solution: bound the container height so the inner .dep-modal-content
+ * overflow:auto can take effect → user gets a scrollable modal.
+ */
+div.dep-modal-container {
+  max-height: calc(100vh - 6rem);
+  display: flex;
+  flex-direction: column;
+}
+
+div.dep-modal-content {
+  overflow-y: auto !important;
+  max-height: calc(100vh - 7rem);
+}
+
+/* Same fix for plain .modal-container (used by lean_link buttons inside thm headers). */
+div.modal-container {
+  max-height: calc(100vh - 6rem);
+  overflow-y: auto;
+}
+
+div.modal-content {
+  max-height: calc(100vh - 7rem);
+  overflow-y: auto;
+}
+

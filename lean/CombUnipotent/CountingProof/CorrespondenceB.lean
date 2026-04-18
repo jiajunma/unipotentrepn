@@ -3083,7 +3083,10 @@ private theorem card_B_DD_alpha_primitive_step (r₁ r₂ : ℕ) (rest : DualPar
   rw [← h_total_sh]; ring
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 -- `card_B_DD_alpha_eq_countB_dd` is now defined in the mutual block at the end of
 -- this file (together with A3 and Total) so the balanced case can invoke
 -- `card_B_SS_alpha_eq_countB_ss` and `card_PBPSet_B_eq_tripleSum_countPBP_B` on
