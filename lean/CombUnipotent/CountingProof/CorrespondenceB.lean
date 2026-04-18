@@ -3082,17 +3082,10 @@ private theorem card_B_DD_alpha_primitive_step (r₁ r₂ : ℕ) (rest : DualPar
   -- Use h_total_sh: 2 * |B+shift| = Total(rest).
   rw [← h_total_sh]; ring
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
 -- `card_B_DD_alpha_eq_countB_dd` is now defined in the mutual block at the end of
 -- this file (together with A3 and Total) so the balanced case can invoke
 -- `card_B_SS_alpha_eq_countB_ss` and `card_PBPSet_B_eq_tripleSum_countPBP_B` on
 -- rest-level. See the `mutual ... end` block after all infrastructure.
-
->>>>>>> Stashed changes
 /-- Singleton case helper for `card_B_SS_alpha_eq_countB_ss`.
     For dp = [r₁] with r₁ > 0 Even, the B⁻ PBPs over (⊥, μQ) are in bijection
     with DSeq(μQ.colLen 0) (single-column Q). The filter {σ | Q col-0 bottom
