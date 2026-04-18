@@ -3127,6 +3127,52 @@ theorem prop_11_5_D_pbp_reduced
     (p + q) h_fc h_n₀ h_sign h_prop_11_4_p h_prop_11_4_q
     h_n_inner h_sum h_residual γ₁
 
+/-- The descent cell-count combined with the D-type signature-sum invariant:
+    `h_n_inner : 2 n_inner = (p + q) - 2 c₁` follows from the two atomic facts
+    - `h_dsum : p + q = 2 * tau_card`  (D-type signature sum)
+    - `h_descent : n_inner = tau_card - c₁`  (single descent removes P col 0)
+    -/
+theorem ILS.n_inner_eq_from_descent
+    (n_inner tau_card c₁ p q : ℤ)
+    (h_dsum : p + q = 2 * tau_card)
+    (h_descent : n_inner = tau_card - c₁) :
+    2 * n_inner = (p + q) - 2 * c₁ := by
+  omega
+
+/-- **Proposition 11.5 (D-type, atomic PBP form):** the most reduced form of
+    Lemma 11.5, taking only the truly primitive PBP-level facts:
+
+    - `h_dsum : p + q = 2 * tau_card`           (D-type signature sum invariant)
+    - `h_descent : n_inner = tau_card - c₁`     (single descent cell count)
+    - `h_residual : p_t + q_t = 2 * c₁ - c₂`    (RES, the only residual identity)
+
+    Plus the standard AC.step invariants and Prop 11.4 components.
+
+    Reduces the entire shape arithmetic of Lemma 11.5 to **three primitive
+    PBP cell-count facts**, of which two (sig-sum and descent count) are
+    direct counting identities that can be discharged by structural induction
+    on the painted Young diagrams, leaving only the residual `(RES)` as the
+    non-trivial shape arithmetic content. -/
+theorem prop_11_5_D_atomic
+    (E : ILS) (n_inner n_prev tau_card c₁ c₂ p_prev q_prev p q p_t q_t : ℤ)
+    (h_fc : ILS.firstColSign E = ((ILS.sign E).1 - n_prev, (ILS.sign E).2 - n_prev))
+    (h_n₀ : n_inner - (ILS.sign E).1 - (ILS.sign E).2 + n_prev ≥ 0)
+    (h_sign : ILS.sign E = (p_prev, q_prev))
+    (h_prop_11_4_p : p = c₂ + p_prev + p_t)
+    (h_prop_11_4_q : q = c₂ + q_prev + q_t)
+    (h_dsum : p + q = 2 * tau_card)
+    (h_descent : n_inner = tau_card - c₁)
+    (h_residual : p_t + q_t = 2 * c₁ - c₂)
+    (γ₁ : ℤ) :
+    let n₀ := n_inner - (ILS.sign E).1 - (ILS.sign E).2 + n_prev
+    let inner := ILS.charTwistCM (ILS.augment (n₀, n₀) E) γ₁
+    p - (ILS.sign inner).1 - (ILS.firstColSign inner).2 = p_t ∧
+    q - (ILS.sign inner).2 - (ILS.firstColSign inner).1 = q_t := by
+  have h_n_inner : 2 * n_inner = (p + q) - 2 * c₁ :=
+    ILS.n_inner_eq_from_descent n_inner tau_card c₁ p q h_dsum h_descent
+  exact prop_11_5_D_pbp_reduced E n_inner n_prev c₁ c₂ p_prev q_prev p q p_t q_t
+    h_fc h_n₀ h_sign h_prop_11_4_p h_prop_11_4_q h_n_inner h_residual γ₁
+
 /-! ### Proposition 11.5 (named wrapper)
 
 The two-step AC composition formula. `ILS.lemma_11_5_D` above is the core algebraic
