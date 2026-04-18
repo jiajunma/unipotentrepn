@@ -270,7 +270,7 @@
 
     <a class="icon proof" href="sect0017.html#prop:10_11_B">#</a>
     
-    <a class="icon proof" href="sect0017.html#a0000000096"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+    <a class="icon proof" href="sect0017.html#a0000000097"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
 </a>
     
     
@@ -328,13 +328,13 @@
   </div>
   <div class="proposition_thmcontent">
   <p>    For any valid B-type dual partition \(dp\) with shape \((\mu _P, \mu _Q)\) derived from \(dp\): </p>
-<div class="displaymath" id="a0000000097">
+<div class="displaymath" id="a0000000098">
   \[  |\mathrm{PBP}_{B^+}(\mu _P, \mu _Q)| + |\mathrm{PBP}_{B^-}(\mu _P, \mu _Q)| = \mathrm{tripleSum}\big(\mathrm{countPBP\_ B}(dp)\big).  \]
 </div>
 
   </div>
 </div>
-<div class="proof_wrapper" id="a0000000096">
+<div class="proof_wrapper" id="a0000000097">
   <div class="proof_heading">
     <span class="proof_caption">
     Proof
@@ -362,7 +362,7 @@
 
     <a class="icon proof" href="sect0017.html#prop:10_11_D">#</a>
     
-    <a class="icon proof" href="sect0017.html#a0000000098"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+    <a class="icon proof" href="sect0017.html#a0000000099"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
 </a>
     
     
@@ -414,13 +414,13 @@
   </div>
   <div class="proposition_thmcontent">
   <p>    For any valid D-type dual partition \(dp\): </p>
-<div class="displaymath" id="a0000000099">
+<div class="displaymath" id="a0000000100">
   \[  |\mathrm{PBP}_D(\mu _P, \mu _Q)| = \mathrm{tripleSum}\big(\mathrm{countPBP\_ D}(dp)\big).  \]
 </div>
 
   </div>
 </div>
-<div class="proof_wrapper" id="a0000000098">
+<div class="proof_wrapper" id="a0000000099">
   <div class="proof_heading">
     <span class="proof_caption">
     Proof
@@ -428,7 +428,7 @@
     <span class="expand-proof">▶</span>
   </div>
   <div class="proof_content">
-  <p>See the Lean formalization referenced on the statement. </p>
+  <p>By induction on \(dp\). Base \(dp = []\): both sides zero. Inductive step: split \(\mathrm{PBP}_D\) along the first-column structure; each sub-class (DD/RC/SS) has a bijection to a lower-level count via the double-descent recursion, which by IH equals \(\mathrm{tripleSum}(\mathrm{countPBP\_ D}(\mathrm{tail}(dp)))\). </p>
 
   </div>
 </div>
@@ -448,7 +448,7 @@
 
     <a class="icon proof" href="sect0017.html#prop:10_12_C">#</a>
     
-    <a class="icon proof" href="sect0017.html#a0000000100"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+    <a class="icon proof" href="sect0017.html#a0000000101"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
 </a>
     
     
@@ -506,13 +506,13 @@
   </div>
   <div class="proposition_thmcontent">
   <p>    For any valid C-type dual partition \(dp\) (with \(dp \neq []\)): </p>
-<div class="displaymath" id="a0000000101">
+<div class="displaymath" id="a0000000102">
   \[  |\mathrm{PBP}_C(\mu _P, \mu _Q)| = \mathrm{countPBP\_ C}(dp).  \]
 </div>
 
   </div>
 </div>
-<div class="proof_wrapper" id="a0000000100">
+<div class="proof_wrapper" id="a0000000101">
   <div class="proof_heading">
     <span class="proof_caption">
     Proof
@@ -520,7 +520,7 @@
     <span class="expand-proof">▶</span>
   </div>
   <div class="proof_content">
-  <p>See the Lean formalization referenced on the statement. </p>
+  <p>For \(\mu _Q.\mathrm{colLen}(0) \geq \mu _P.\mathrm{colLen}(0)\): apply Prop.&#160;<a href="sect0015.html#prop:10_8_C_prim">38</a> to reduce to \(\mathrm{PBP}_D\); then invoke Prop.&#160;<a href="sect0017.html#prop:10_11_D">51</a>. For balanced: Prop.&#160;<a href="sect0015.html#prop:10_8_C_bal">39</a> gives \(\mathrm{DD} + \mathrm{RC}\) of the next-level D count. </p>
 
   </div>
 </div>
@@ -540,7 +540,7 @@
 
     <a class="icon proof" href="sect0017.html#prop:10_12_M">#</a>
     
-    <a class="icon proof" href="sect0017.html#a0000000102"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+    <a class="icon proof" href="sect0017.html#a0000000103"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
 </a>
     
     
@@ -598,13 +598,13 @@
   </div>
   <div class="proposition_thmcontent">
   <p>    For any valid M-type dual partition \(dp\): </p>
-<div class="displaymath" id="a0000000103">
+<div class="displaymath" id="a0000000104">
   \[  |\mathrm{PBP}_M(\mu _P, \mu _Q)| = \mathrm{countPBP\_ M}(dp).  \]
 </div>
 
   </div>
 </div>
-<div class="proof_wrapper" id="a0000000102">
+<div class="proof_wrapper" id="a0000000103">
   <div class="proof_heading">
     <span class="proof_caption">
     Proof
@@ -612,7 +612,7 @@
     <span class="expand-proof">▶</span>
   </div>
   <div class="proof_content">
-  <p>See the Lean formalization referenced on the statement. </p>
+  <p>For \(\mu _P.\mathrm{colLen}(0) {\gt} \mu _Q.\mathrm{colLen}(0)\): Prop.&#160;<a href="sect0015.html#prop:10_8_M_prim">40</a> reduces to \(B^+ + B^-\), both settled by Prop.&#160;<a href="sect0017.html#prop:10_11_B">50</a>. Balanced: Prop.&#160;<a href="sect0015.html#prop:10_8_M_bal">41</a>. </p>
 
   </div>
 </div>

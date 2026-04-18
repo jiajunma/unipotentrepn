@@ -271,7 +271,7 @@
 
     <a class="icon proof" href="sect0015.html#prop:10_8_C_prim">#</a>
     
-    <a class="icon proof" href="sect0015.html#a0000000084"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+    <a class="icon proof" href="sect0015.html#a0000000085"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
 </a>
     
     
@@ -321,13 +321,13 @@
   </div>
   <div class="proposition_thmcontent">
   <p>    If \(\mu _Q.\mathrm{colLen}(0) \geq \mu _P.\mathrm{colLen}(0)\) (<em>primitive case</em>), then </p>
-<div class="displaymath" id="a0000000085">
+<div class="displaymath" id="a0000000086">
   \[  |\mathrm{PBP}_C(\mu _P, \mu _Q)| = |\mathrm{PBP}_D(\mu _P, \mathrm{shiftLeft}(\mu _Q))|.  \]
 </div>
 
   </div>
 </div>
-<div class="proof_wrapper" id="a0000000084">
+<div class="proof_wrapper" id="a0000000085">
   <div class="proof_heading">
     <span class="proof_caption">
     Proof
@@ -335,7 +335,7 @@
     <span class="expand-proof">▶</span>
   </div>
   <div class="proof_content">
-  <p>See the Lean formalization referenced on the statement. </p>
+  <p>Under \(\mu _Q.\mathrm{colLen}(0) \geq \mu _P.\mathrm{colLen}(0)\), every D-type on \((\mu _P, \mathrm{shiftLeft}(\mu _Q))\) is in the image of the C\(\to \)D descent; injectivity from Lemma&#160;<a href="sect0014.html#lem:10_4_C">34</a>. </p>
 
   </div>
 </div>
@@ -355,7 +355,7 @@
 
     <a class="icon proof" href="sect0015.html#prop:10_8_C_bal">#</a>
     
-    <a class="icon proof" href="sect0015.html#a0000000086"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+    <a class="icon proof" href="sect0015.html#a0000000087"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
 </a>
     
     
@@ -405,13 +405,13 @@
   </div>
   <div class="proposition_thmcontent">
   <p>    If \(\mu _P.\mathrm{colLen}(0) = \mu _Q.\mathrm{colLen}(0) + 1\) (<em>balanced case</em>), the C\(\to \)D descent image is \(\{ \sigma \in \mathrm{PBP}_D \mid \mathrm{tailClass}(\sigma ) \in \{ \mathrm{DD}, \mathrm{RC}\} \} \): </p>
-<div class="displaymath" id="a0000000087">
+<div class="displaymath" id="a0000000088">
   \[  |\mathrm{PBP}_C(\mu _P, \mu _Q)| = \# \{ \mathrm{DD}\}  + \# \{ \mathrm{RC}\} .  \]
 </div>
 
   </div>
 </div>
-<div class="proof_wrapper" id="a0000000086">
+<div class="proof_wrapper" id="a0000000087">
   <div class="proof_heading">
     <span class="proof_caption">
     Proof
@@ -419,7 +419,7 @@
     <span class="expand-proof">▶</span>
   </div>
   <div class="proof_content">
-  <p>See the Lean formalization referenced on the statement. </p>
+  <p>The image of the C\(\to \)D descent in the balanced case consists exactly of the D-type PBPs with tail class \(\mathrm{DD}\) or \(\mathrm{RC}\): a \(\mathrm{DD}\) tail corresponds to lifted \(c\) in \(\mathcal{P}\) col&#160;0, \(\mathrm{RC}\) to lifted \(r\). Summing cardinalities gives the claim. </p>
 
   </div>
 </div>
@@ -439,7 +439,7 @@
 
     <a class="icon proof" href="sect0015.html#prop:10_8_M_prim">#</a>
     
-    <a class="icon proof" href="sect0015.html#a0000000088"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+    <a class="icon proof" href="sect0015.html#a0000000089"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
 </a>
     
     
@@ -489,13 +489,13 @@
   </div>
   <div class="proposition_thmcontent">
   <p>    If \(\mu _P.\mathrm{colLen}(0) {\gt} \mu _Q.\mathrm{colLen}(0)\) (<em>primitive</em>): </p>
-<div class="displaymath" id="a0000000089">
+<div class="displaymath" id="a0000000090">
   \[  |\mathrm{PBP}_M(\mu _P, \mu _Q)| = |\mathrm{PBP}_{B^+}(\mathrm{shiftLeft}(\mu _P), \mu _Q)| + |\mathrm{PBP}_{B^-}(\mathrm{shiftLeft}(\mu _P), \mu _Q)|.  \]
 </div>
 
   </div>
 </div>
-<div class="proof_wrapper" id="a0000000088">
+<div class="proof_wrapper" id="a0000000089">
   <div class="proof_heading">
     <span class="proof_caption">
     Proof
@@ -503,7 +503,7 @@
     <span class="expand-proof">▶</span>
   </div>
   <div class="proof_content">
-  <p>See the Lean formalization referenced on the statement. </p>
+  <p>Descending M\(\to \)B at a primitive step splits into \(B^+\) and \(B^-\) branches according to the bottom-\(\mathcal{Q}\) paint. Injectivity of each branch combined with the disjoint branches gives the sum. </p>
 
   </div>
 </div>
@@ -523,7 +523,7 @@
 
     <a class="icon proof" href="sect0015.html#prop:10_8_M_bal">#</a>
     
-    <a class="icon proof" href="sect0015.html#a0000000090"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+    <a class="icon proof" href="sect0015.html#a0000000091"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
 </a>
     
     
@@ -573,13 +573,13 @@
   </div>
   <div class="proposition_thmcontent">
   <p>    If \(\mu _P.\mathrm{colLen}(0) = \mu _Q.\mathrm{colLen}(0) {\gt} 0\): </p>
-<div class="displaymath" id="a0000000091">
+<div class="displaymath" id="a0000000092">
   \[  |\mathrm{PBP}_M(\mu _P, \mu _Q)| = |\mathrm{PBP}_{B^+}(\cdots )| + |\{ \sigma \in \mathrm{PBP}_{B^-}(\cdots ) : \mathrm{layerOrd}(\sigma .\mathcal{Q}(c_2 - 1, 0)) {\gt} 1\} |.  \]
 </div>
 
   </div>
 </div>
-<div class="proof_wrapper" id="a0000000090">
+<div class="proof_wrapper" id="a0000000091">
   <div class="proof_heading">
     <span class="proof_caption">
     Proof
@@ -587,7 +587,7 @@
     <span class="expand-proof">▶</span>
   </div>
   <div class="proof_content">
-  <p>See the Lean formalization referenced on the statement. </p>
+  <p>The balanced case image restricts \(B^-\) to those with \(\mathrm{layerOrd}(\sigma .\mathcal{Q}(c_2 - 1, 0)) {\gt} 1\) (otherwise the descent produces a layer conflict); \(B^+\) is unrestricted. Summing gives the card. </p>
 
   </div>
 </div>
