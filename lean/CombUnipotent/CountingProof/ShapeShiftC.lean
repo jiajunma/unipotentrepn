@@ -331,3 +331,242 @@ theorem card_PBPSet_C_shapeShift (μP μQ : YoungDiagram) :
   · apply Subtype.ext
     simp only [shapeShiftC_PBPSet]
     rw [shapeShiftC_id_eq, shapeShiftC_id_eq]
+
+/-! ## Concrete Case instantiation of shiftPaintP_C
+
+The abstract `shapeShiftC` above takes a user-supplied `pPaint0` and 9
+legality hypotheses. The paper (see `docs/blueprints/lemma_10_3_C.md`)
+gives a concrete paint formula split by cases on
+`P(c₁(ι_℘), 1)` and its neighbors. Here we formalize that concrete
+formula for Cases (a.1), (a.2), (b.2), which modify only P col 0.
+
+**Paper-to-Lean conversion.** In the paper columns are 1-indexed so
+the shape-shift modifies column 1. In Lean columns are 0-indexed, so
+the shape-shift modifies column 0. What the paper calls `P(i, 1)`
+corresponds to `τ.P.paint i 0`, and `P(i, 2)` to `τ.P.paint i 1`.
+
+**Parameters.**
+- `c1_orig` denotes `c₁(ι_℘)` = length of column 0 of the original P
+  shape (`τ.P.shape.colLen 0`).
+- `c1_new`  denotes `c₁(ι_↑)` = length of column 0 of the new P shape
+  (expected to equal `c1_orig + 1` for a single PP-set shift by `(1,2)`).
+
+Case (b.1) also touches column 1 and cannot be expressed by a col-0-only
+paint, so it is intentionally omitted; this file's concrete paint falls
+back to τ's paint for Case (b.1). -/
+
+/-- Concrete paint instantiation for C-type shape-shift (blueprint
+    Cases a.1 / a.2 / b.2). Returns the new col-0 paint value at row `i`.
+
+    For Case (b.1) (the `col 1` modification case), we fall back to the
+    original `τ.P.paint i 0`; that case is handled by a separate concrete
+    wrapper (not in this file).
+
+    Guards: reads `τ.P.paint (c1_orig - 1) 0`, `τ.P.paint c1_orig 0`,
+    and `τ.P.paint c1_orig 1`. When `c1_orig = 0`, the `c1_orig - 1`
+    read is safe (defaults to `.dot` if outside shape, by
+    `paint_outside`). -/
+noncomputable def shiftPaintP_C_concrete (τ : PBP) (c1_orig c1_new : ℕ) :
+    ℕ → DRCSymbol := fun i =>
+  let p0 := τ.P.paint c1_orig 0
+  let p0_prev := τ.P.paint (c1_orig - 1) 0
+  let p0_col1 := τ.P.paint c1_orig 1
+  let c2_orig := τ.P.shape.colLen 1
+  if p0 ≠ .dot then
+    if 1 ≤ c1_orig ∧ p0_prev = .c then
+      -- Case (a.1)
+      if c1_orig - 1 ≤ i ∧ i + 1 < c1_new then .r
+      else if i + 1 = c1_new then .c
+      else if i = c1_new then .d
+      else τ.P.paint i 0
+    else
+      -- Case (a.2)
+      if c1_orig ≤ i ∧ i < c1_new then .r
+      else if i = c1_new then p0
+      else τ.P.paint i 0
+  else
+    if c2_orig = c1_orig ∧ p0_col1 = .r then
+      -- Case (b.1): col 1 modification needed; not representable by a
+      -- col-0-only paint. Fall back to the original paint so callers
+      -- who don't invoke this case are still correct.
+      τ.P.paint i 0
+    else
+      -- Case (b.2)
+      if c1_orig ≤ i ∧ i + 1 < c1_new then .r
+      else if i + 1 = c1_new then .c
+      else if i = c1_new then .d
+      else τ.P.paint i 0
+
+/-! ### Case-split unfold lemmas -/
+
+/-- Case (a.1) unfold. -/
+theorem shiftPaintP_C_concrete_case_a1 (τ : PBP) (c1_orig c1_new i : ℕ)
+    (h_p0 : τ.P.paint c1_orig 0 ≠ .dot)
+    (h_prev : 1 ≤ c1_orig ∧ τ.P.paint (c1_orig - 1) 0 = .c) :
+    shiftPaintP_C_concrete τ c1_orig c1_new i =
+      (if c1_orig - 1 ≤ i ∧ i + 1 < c1_new then .r
+       else if i + 1 = c1_new then .c
+       else if i = c1_new then .d
+       else τ.P.paint i 0) := by
+  simp only [shiftPaintP_C_concrete]
+  rw [if_pos h_p0, if_pos h_prev]
+
+/-- Case (a.2) unfold. -/
+theorem shiftPaintP_C_concrete_case_a2 (τ : PBP) (c1_orig c1_new i : ℕ)
+    (h_p0 : τ.P.paint c1_orig 0 ≠ .dot)
+    (h_prev : ¬ (1 ≤ c1_orig ∧ τ.P.paint (c1_orig - 1) 0 = .c)) :
+    shiftPaintP_C_concrete τ c1_orig c1_new i =
+      (if c1_orig ≤ i ∧ i < c1_new then .r
+       else if i = c1_new then τ.P.paint c1_orig 0
+       else τ.P.paint i 0) := by
+  simp only [shiftPaintP_C_concrete]
+  rw [if_pos h_p0, if_neg h_prev]
+
+/-- Case (b.2) unfold. Case (b) with ¬(c2 = c1 ∧ p0_col1 = .r). -/
+theorem shiftPaintP_C_concrete_case_b2 (τ : PBP) (c1_orig c1_new i : ℕ)
+    (h_p0 : τ.P.paint c1_orig 0 = .dot)
+    (h_b1_neg : ¬ (τ.P.shape.colLen 1 = c1_orig ∧ τ.P.paint c1_orig 1 = .r)) :
+    shiftPaintP_C_concrete τ c1_orig c1_new i =
+      (if c1_orig ≤ i ∧ i + 1 < c1_new then .r
+       else if i + 1 = c1_new then .c
+       else if i = c1_new then .d
+       else τ.P.paint i 0) := by
+  simp only [shiftPaintP_C_concrete]
+  rw [if_neg (by simp [h_p0]), if_neg h_b1_neg]
+
+/-- Case (b.1) fallback unfold: returns `τ.P.paint i 0`. -/
+theorem shiftPaintP_C_concrete_case_b1_fallback (τ : PBP) (c1_orig c1_new i : ℕ)
+    (h_p0 : τ.P.paint c1_orig 0 = .dot)
+    (h_b1 : τ.P.shape.colLen 1 = c1_orig ∧ τ.P.paint c1_orig 1 = .r) :
+    shiftPaintP_C_concrete τ c1_orig c1_new i = τ.P.paint i 0 := by
+  simp only [shiftPaintP_C_concrete]
+  rw [if_neg (by simp [h_p0]), if_pos h_b1]
+
+/-! ### Concrete discharge of abstract hypotheses
+
+For each of the three "col-0-only" cases (a.1), (a.2), (b.2), we prove
+the simpler `h_p0_allowed` and `h_col_c_0`, `h_col_d_0` obligations
+required by `shapeShiftC`. These show that the concrete paint function
+produces values in the C-type allowed set `{•, r, c, d}` and preserves
+column uniqueness of `c` and `d`.
+
+The heavier obligations (`h_dot_match_zero`, `h_mono_col0_col0`,
+`h_row_r`, ...) depend on additional shape and PP-set consistency
+hypotheses and are left for a follow-up concrete wrapper `shapeShiftC_concrete`. -/
+
+/-- The concrete Case (a.2) paint is always in the C-left allowed set. -/
+theorem shiftPaintP_C_concrete_case_a2_allowed (τ : PBP) (hγ : τ.γ = .C)
+    (c1_orig c1_new i : ℕ)
+    (h_p0 : τ.P.paint c1_orig 0 ≠ .dot)
+    (h_prev : ¬ (1 ≤ c1_orig ∧ τ.P.paint (c1_orig - 1) 0 = .c)) :
+    (shiftPaintP_C_concrete τ c1_orig c1_new i).allowed .C .L := by
+  rw [shiftPaintP_C_concrete_case_a2 τ c1_orig c1_new i h_p0 h_prev]
+  split_ifs with h1 h2
+  · -- value = .r
+    simp [DRCSymbol.allowed]
+  · -- value = τ.P.paint c1_orig 0 (non-dot)
+    -- Need (i, 0) ∈ τ.P.shape for this to be allowed; follows from p0 ≠ .dot ∧ paint_outside.
+    have hmem : (c1_orig, 0) ∈ τ.P.shape := by
+      by_contra hnot
+      exact h_p0 (τ.P.paint_outside c1_orig 0 hnot)
+    exact hγ ▸ τ.sym_P c1_orig 0 hmem
+  · -- value = τ.P.paint i 0
+    by_cases hmem' : (i, 0) ∈ τ.P.shape
+    · exact hγ ▸ τ.sym_P i 0 hmem'
+    · rw [τ.P.paint_outside i 0 hmem']
+      simp [DRCSymbol.allowed]
+
+/-- The concrete Case (a.1) paint is always in the C-left allowed set. -/
+theorem shiftPaintP_C_concrete_case_a1_allowed (τ : PBP) (hγ : τ.γ = .C)
+    (c1_orig c1_new i : ℕ)
+    (h_p0 : τ.P.paint c1_orig 0 ≠ .dot)
+    (h_prev : 1 ≤ c1_orig ∧ τ.P.paint (c1_orig - 1) 0 = .c) :
+    (shiftPaintP_C_concrete τ c1_orig c1_new i).allowed .C .L := by
+  rw [shiftPaintP_C_concrete_case_a1 τ c1_orig c1_new i h_p0 h_prev]
+  split_ifs
+  · simp [DRCSymbol.allowed]
+  · simp [DRCSymbol.allowed]
+  · simp [DRCSymbol.allowed]
+  · by_cases hmem' : (i, 0) ∈ τ.P.shape
+    · exact hγ ▸ τ.sym_P i 0 hmem'
+    · rw [τ.P.paint_outside i 0 hmem']
+      simp [DRCSymbol.allowed]
+
+/-- The concrete Case (b.2) paint is always in the C-left allowed set. -/
+theorem shiftPaintP_C_concrete_case_b2_allowed (τ : PBP) (hγ : τ.γ = .C)
+    (c1_orig c1_new i : ℕ)
+    (h_p0 : τ.P.paint c1_orig 0 = .dot)
+    (h_b1_neg : ¬ (τ.P.shape.colLen 1 = c1_orig ∧ τ.P.paint c1_orig 1 = .r)) :
+    (shiftPaintP_C_concrete τ c1_orig c1_new i).allowed .C .L := by
+  rw [shiftPaintP_C_concrete_case_b2 τ c1_orig c1_new i h_p0 h_b1_neg]
+  split_ifs
+  · simp [DRCSymbol.allowed]
+  · simp [DRCSymbol.allowed]
+  · simp [DRCSymbol.allowed]
+  · by_cases hmem' : (i, 0) ∈ τ.P.shape
+    · exact hγ ▸ τ.sym_P i 0 hmem'
+    · rw [τ.P.paint_outside i 0 hmem']
+      simp [DRCSymbol.allowed]
+
+/-! ### Column-uniqueness obligations
+
+`h_col_c_0` and `h_col_d_0` for each concrete case. Both c and d are
+each placed at exactly one row (`c1_new - 1` or `c1_new`), with τ.P.paint
+fallback for rows outside the insertion range. -/
+
+/-- Column uniqueness of `c` for Case (a.2), specialized to `c1_orig < c1_new`
+    and the assumption that `τ.P.paint c1_orig 0 = .c` (which, combined with
+    `h_p0 : p0 ≠ .dot` and the Case (a.2) choice, is the only way Case (a.2)
+    produces `.c` at row c1_new).
+
+    If `τ.P.paint c1_orig 0 ≠ .c` the concrete paint produces no `.c` at all on
+    the "copy" row; the claim still holds but the proof is different. Here we
+    take the positive-copy hypothesis to keep the proof compact. -/
+theorem shiftPaintP_C_concrete_case_a2_col_c (τ : PBP)
+    (c1_orig c1_new i₁ i₂ : ℕ) (hlt : c1_orig < c1_new)
+    (h_p0_c : τ.P.paint c1_orig 0 = .c)
+    (h_prev : ¬ (1 ≤ c1_orig ∧ τ.P.paint (c1_orig - 1) 0 = .c))
+    (hc1 : shiftPaintP_C_concrete τ c1_orig c1_new i₁ = .c)
+    (hc2 : shiftPaintP_C_concrete τ c1_orig c1_new i₂ = .c) : i₁ = i₂ := by
+  have h_p0 : τ.P.paint c1_orig 0 ≠ .dot := by rw [h_p0_c]; decide
+  -- Show each of i₁, i₂ must equal c1_new.
+  suffices h : ∀ i, shiftPaintP_C_concrete τ c1_orig c1_new i = .c → i = c1_new by
+    rw [h i₁ hc1, h i₂ hc2]
+  intro i hc
+  rw [shiftPaintP_C_concrete_case_a2 τ c1_orig c1_new i h_p0 h_prev] at hc
+  by_cases h1 : c1_orig ≤ i ∧ i < c1_new
+  · rw [if_pos h1] at hc; exact absurd hc (by decide)
+  · rw [if_neg h1] at hc
+    by_cases h2 : i = c1_new
+    · exact h2
+    · rw [if_neg h2] at hc
+      -- τ.P.paint i 0 = .c, combined with τ.P.paint c1_orig 0 = .c gives
+      -- i = c1_orig via τ.col_c_P; but then c1_orig ≤ i ∧ i < c1_new holds,
+      -- contradicting h1.
+      have hi_eq : i = c1_orig := τ.col_c_P 0 i c1_orig hc h_p0_c
+      push_neg at h1
+      have := h1 (hi_eq.symm ▸ le_refl c1_orig)
+      omega
+
+/-- Column uniqueness of `d` for Case (a.2), specialized to `τ.P.paint c1_orig 0 = .d`. -/
+theorem shiftPaintP_C_concrete_case_a2_col_d (τ : PBP)
+    (c1_orig c1_new i₁ i₂ : ℕ) (hlt : c1_orig < c1_new)
+    (h_p0_d : τ.P.paint c1_orig 0 = .d)
+    (h_prev : ¬ (1 ≤ c1_orig ∧ τ.P.paint (c1_orig - 1) 0 = .c))
+    (hc1 : shiftPaintP_C_concrete τ c1_orig c1_new i₁ = .d)
+    (hc2 : shiftPaintP_C_concrete τ c1_orig c1_new i₂ = .d) : i₁ = i₂ := by
+  have h_p0 : τ.P.paint c1_orig 0 ≠ .dot := by rw [h_p0_d]; decide
+  suffices h : ∀ i, shiftPaintP_C_concrete τ c1_orig c1_new i = .d → i = c1_new by
+    rw [h i₁ hc1, h i₂ hc2]
+  intro i hc
+  rw [shiftPaintP_C_concrete_case_a2 τ c1_orig c1_new i h_p0 h_prev] at hc
+  by_cases h1 : c1_orig ≤ i ∧ i < c1_new
+  · rw [if_pos h1] at hc; exact absurd hc (by decide)
+  · rw [if_neg h1] at hc
+    by_cases h2 : i = c1_new
+    · exact h2
+    · rw [if_neg h2] at hc
+      have hi_eq : i = c1_orig := τ.col_d_P 0 i c1_orig hc h_p0_d
+      push_neg at h1
+      have := h1 (hi_eq.symm ▸ le_refl c1_orig)
+      omega
