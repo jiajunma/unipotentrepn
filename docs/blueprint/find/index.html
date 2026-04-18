@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Finding declaration…</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  body { font-family: -apple-system, system-ui, sans-serif; max-width: 42rem; margin: 4rem auto; padding: 0 1rem; line-height: 1.6; }
+  code { background: #f4f4f4; padding: 0.1em 0.4em; border-radius: 3px; }
+  .note { color: #666; font-size: 0.9em; }
+  a.btn { display: inline-block; margin-right: 1em; padding: 0.5em 1em; background: #0366d6; color: #fff; text-decoration: none; border-radius: 4px; }
+  a.btn.secondary { background: #586069; }
+  .file-info { margin: 1em 0; padding: 0.8em 1em; background: #f6f8fa; border-left: 3px solid #0366d6; border-radius: 3px; }
+</style>
+</head>
+<body>
+<h1>Finding Lean declaration…</h1>
+<p id="status">Loading decl table…</p>
+<div id="file-box"></div>
+<div id="links"></div>
+<p class="note" id="note" style="display:none;">
+This project does not host full <code>doc-gen4</code> documentation (Mathlib
+docs are too large to mirror). Declarations are linked directly to their
+source file and line on GitHub.
+</p>
+
+<script>
+  const repo = 'jiajunma/unipotentrepn';
+  const branch = 'main';
+  const hash = window.location.hash;
+  const m = hash.match(/^#doc\/(.+)$/);
+  const status = document.getElementById('status');
+  const fileBox = document.getElementById('file-box');
+  const links = document.getElementById('links');
+  const note = document.getElementById('note');
+
+  if (!m) {
+    status.innerHTML = 'No declaration name in URL. Expected <code>#doc/&lt;name&gt;</code>.';
+    note.style.display = 'block';
+  } else {
+    const name = decodeURIComponent(m[1]);
+    status.innerHTML = 'Looking up <code>' + name + '</code>…';
+    fetch('./lean_decls.json')
+      .then(r => r.ok ? r.json() : Promise.reject(r.statusText))
+      .then(data => {
+        const decl = data.decls[name];
+        if (decl) {
+          const url = 'https://github.com/' + repo + '/blob/' + branch + '/' + decl.file + '#L' + decl.line;
+          status.innerHTML = 'Found <code>' + name + '</code> — redirecting to source…';
+          fileBox.innerHTML = '<div class="file-info"><strong>File:</strong> <code>' + decl.file + '</code> &nbsp;·&nbsp; <strong>Line:</strong> ' + decl.line + '</div>';
+          links.innerHTML = '<p><a class="btn" href="' + url + '">Open in GitHub</a></p>';
+          setTimeout(() => { window.location.replace(url); }, 400);
+        } else {
+          status.innerHTML = 'Declaration <code>' + name + '</code> not found in lookup table.';
+          const searchUrl = 'https://github.com/' + repo + '/search?q=' + encodeURIComponent('"' + name + '"') + '&type=code';
+          links.innerHTML = '<p><a class="btn" href="' + searchUrl + '">Search in repo</a></p>';
+          note.style.display = 'block';
+        }
+      })
+      .catch(err => {
+        status.innerHTML = 'Could not load lookup table: ' + err + '. Falling back to GitHub search.';
+        const searchUrl = 'https://github.com/' + repo + '/search?q=' + encodeURIComponent('"' + name + '"') + '&type=code';
+        links.innerHTML = '<p><a class="btn" href="' + searchUrl + '">Search in repo</a></p>';
+      });
+  }
+</script>
+</body>
+</html>
