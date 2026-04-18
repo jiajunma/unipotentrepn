@@ -837,18 +837,8 @@ theorem ACResult.twistBD_firstColSign (ac : ACResult) (tp tn : ℤ) (fcSig : ℤ
   simp only; rw [ILS.twistBD_firstColSign ils tp tn htp htn]
   exact h ⟨c, ils⟩ hmem
 
-/-- thetaLift on ACResult: firstColSign propagation. If every source ILS has a specific
-    sign and firstColSign, then every result ILS has firstColSign = (p - source_sign.1, q - source_sign.2). -/
-theorem ACResult.thetaLift_firstColSign_CD (ac : ACResult) (p q : ℤ) (source_sig : ℤ × ℤ)
-    (h_sign : ∀ r ∈ ac, ILS.sign r.2 = source_sig)
-    (h_fcSign : ∀ r ∈ ac, ILS.firstColSign r.2 = (p - source_sig.1, q - source_sig.2))
-    (h_std : ∀ r ∈ ac,
-      p - (ILS.sign r.2).1 - (ILS.firstColSign r.2).2 ≥ 0 ∧
-      q - (ILS.sign r.2).2 - (ILS.firstColSign r.2).1 ≥ 0) :
-    -- This is a statement template; the actual firstColSign of the thetaLift output
-    -- depends on the outer-level (p, q) and source. For direct use, see
-    -- `ILS.thetaLift_CD_firstColSign` on individual source ILS.
-    True := trivial
+-- ACResult.thetaLift_{CD,MB}_firstColSign moved to below the ILS namespace that
+-- defines ILS.thetaLift_{CD,MB}_firstColSign; see after line ~1918.
 
 /-! ## AC step signature matching (Theorem 5.1)
 
@@ -1878,6 +1868,75 @@ theorem thetaLift_MB_firstColSign (E : ILS) (p q : ℤ)
   ext <;> simp <;> ring
 
 end ILS
+
+/-! ## ACResult-level firstColSign propagation for thetaLift
+
+These lemmas aggregate `ILS.thetaLift_{CD,MB}_firstColSign` across ACResult components. -/
+
+/-- thetaLift on ACResult (D target): if every source ILS has uniform signature
+    equal to `source_sig`, then every result ILS has firstColSign
+    `(p - source_sig.1, q - source_sig.2)`.  Standard-case assumption per source. -/
+theorem ACResult.thetaLift_CD_firstColSign (ac : ACResult) (p q : ℤ) (source_sig : ℤ × ℤ)
+    (h_sign : ∀ r ∈ ac, ILS.sign r.2 = source_sig)
+    (h_std : ∀ r ∈ ac,
+      p - (ILS.sign r.2).1 - (ILS.firstColSign r.2).2 ≥ 0 ∧
+      q - (ILS.sign r.2).2 - (ILS.firstColSign r.2).1 ≥ 0) :
+    ∀ r ∈ ac.thetaLift RootType.D p q,
+      ILS.firstColSign r.2 = (p - source_sig.1, q - source_sig.2) := by
+  intro r hr
+  simp only [ACResult.thetaLift, List.mem_flatMap, List.mem_map] at hr
+  obtain ⟨⟨c, ils⟩, hmem, lifted, hlift, rfl⟩ := hr
+  simp only
+  have h_sig := h_sign ⟨c, ils⟩ hmem
+  have h_std' := h_std ⟨c, ils⟩ hmem
+  have h_sig' : ILS.sign ils = source_sig := h_sig
+  have h_std'' : p - (ILS.sign ils).1 - (ILS.firstColSign ils).2 ≥ 0 ∧
+                 q - (ILS.sign ils).2 - (ILS.firstColSign ils).1 ≥ 0 := h_std'
+  simp only [ILS.thetaLift] at hlift
+  have h := ILS.thetaLift_CD_firstColSign ils p q h_std'' lifted hlift
+  rw [h, h_sig']
+
+/-- thetaLift on ACResult (Bplus target): firstColSign mirror via M→B lift. -/
+theorem ACResult.thetaLift_Bplus_firstColSign (ac : ACResult) (p q : ℤ) (source_sig : ℤ × ℤ)
+    (h_sign : ∀ r ∈ ac, ILS.sign r.2 = source_sig)
+    (h_std : ∀ r ∈ ac,
+      p - (ILS.sign r.2).1 - (ILS.firstColSign r.2).2 ≥ 0 ∧
+      q - (ILS.sign r.2).2 - (ILS.firstColSign r.2).1 ≥ 0) :
+    ∀ r ∈ ac.thetaLift RootType.Bplus p q,
+      ILS.firstColSign r.2 = (p - source_sig.1, q - source_sig.2) := by
+  intro r hr
+  simp only [ACResult.thetaLift, List.mem_flatMap, List.mem_map] at hr
+  obtain ⟨⟨c, ils⟩, hmem, lifted, hlift, rfl⟩ := hr
+  simp only
+  have h_sig := h_sign ⟨c, ils⟩ hmem
+  have h_std' := h_std ⟨c, ils⟩ hmem
+  have h_sig' : ILS.sign ils = source_sig := h_sig
+  have h_std'' : p - (ILS.sign ils).1 - (ILS.firstColSign ils).2 ≥ 0 ∧
+                 q - (ILS.sign ils).2 - (ILS.firstColSign ils).1 ≥ 0 := h_std'
+  simp only [ILS.thetaLift] at hlift
+  have h := ILS.thetaLift_MB_firstColSign ils p q h_std'' lifted hlift
+  rw [h, h_sig']
+
+/-- thetaLift on ACResult (Bminus target): same as Bplus. -/
+theorem ACResult.thetaLift_Bminus_firstColSign (ac : ACResult) (p q : ℤ) (source_sig : ℤ × ℤ)
+    (h_sign : ∀ r ∈ ac, ILS.sign r.2 = source_sig)
+    (h_std : ∀ r ∈ ac,
+      p - (ILS.sign r.2).1 - (ILS.firstColSign r.2).2 ≥ 0 ∧
+      q - (ILS.sign r.2).2 - (ILS.firstColSign r.2).1 ≥ 0) :
+    ∀ r ∈ ac.thetaLift RootType.Bminus p q,
+      ILS.firstColSign r.2 = (p - source_sig.1, q - source_sig.2) := by
+  intro r hr
+  simp only [ACResult.thetaLift, List.mem_flatMap, List.mem_map] at hr
+  obtain ⟨⟨c, ils⟩, hmem, lifted, hlift, rfl⟩ := hr
+  simp only
+  have h_sig := h_sign ⟨c, ils⟩ hmem
+  have h_std' := h_std ⟨c, ils⟩ hmem
+  have h_sig' : ILS.sign ils = source_sig := h_sig
+  have h_std'' : p - (ILS.sign ils).1 - (ILS.firstColSign ils).2 ≥ 0 ∧
+                 q - (ILS.sign ils).2 - (ILS.firstColSign ils).1 ≥ 0 := h_std'
+  simp only [ILS.thetaLift] at hlift
+  have h := ILS.thetaLift_MB_firstColSign ils p q h_std'' lifted hlift
+  rw [h, h_sig']
 
 /-! ### Lemma 11.5 — approach
 
