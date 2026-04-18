@@ -12,10 +12,10 @@
 <meta name="generator" content="plasTeX" />
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Lemma 11.5 and 11.6 — AC composition</title>
-<link rel="next" href="sect0032.html" title="Setup for Lemma 11.5" />
-<link rel="prev" href="sect0031.html" title="Proposition 11.4 — signature decomposition" />
-<link rel="up" href="index.html" title="Associated Cycles of Special Unipotent Representations: Blueprint" />
+<title>TODO (future work, not a mathematical gap)</title>
+<link rel="next" href="sect0043.html" title="Repository information" />
+<link rel="prev" href="sect0041.html" title="Unconditional status" />
+<link rel="up" href="chap-status.html" title="Formalization Status" />
 <link rel="stylesheet" href="styles/theme-white.css" />
 <link rel="stylesheet" href="styles/amsthm.css" />
 <link rel="stylesheet" href="styles/showmore.css" />
@@ -184,10 +184,10 @@
 
   </ul>
  </li>
-<li class=" active current">
+<li class="">
   <a href="chap-11_5.html"><span class="toc_ref">10</span> <span class="toc_entry">Lemma 11.5 and 11.6 — AC composition</span></a>
-  <span class="expand-toc">▼</span>
-  <ul class="sub-toc-1 active">
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
      <li class="">
   <a href="sect0032.html"><span class="toc_ref">10.1</span> <span class="toc_entry">Setup for Lemma 11.5</span></a>
  </li>
@@ -222,17 +222,17 @@
 
   </ul>
  </li>
-<li class="">
+<li class=" active">
   <a href="chap-status.html"><span class="toc_ref">12</span> <span class="toc_entry">Formalization Status</span></a>
-  <span class="expand-toc">▶</span>
-  <ul class="sub-toc-1">
+  <span class="expand-toc">▼</span>
+  <ul class="sub-toc-1 active">
      <li class="">
   <a href="sect0040.html"><span class="toc_ref">12.1</span> <span class="toc_entry">Overview</span></a>
  </li>
 <li class="">
   <a href="sect0041.html"><span class="toc_ref">12.2</span> <span class="toc_entry">Unconditional status</span></a>
  </li>
-<li class="">
+<li class=" active current">
   <a href="sec-status_todo.html"><span class="toc_ref">12.3</span> <span class="toc_entry">TODO (future work, not a mathematical gap)</span></a>
  </li>
 <li class="">
@@ -253,27 +253,22 @@
 
 
 <div class="main-text">
-<h1 id="chap:11_5">10 Lemma 11.5 and 11.6 — AC composition</h1>
+<h1 id="sec:status_todo">12.3 TODO (future work, not a mathematical gap)</h1>
 
-<p>Reference: [BMSZ] Lemma&#160;11.5 (two-step AC formula) and Lemma&#160;11.6 (first-entry of \(\mathcal{L}_\tau \)); internal blueprints <span class="ttfamily">lemma_11_5_PBP_identity.md</span>, <span class="ttfamily">lemma_11_5_COMPLETE.md</span>. </p>
+<p>The following would enrich the formalization but are not required for the correctness of the above claims: </p>
+<ul class="itemize">
+  <li><p><b class="bfseries">Constructive canonical \(L_\tau \) builder.</b> Currently <span class="ttfamily">AC.step</span> and <span class="ttfamily">AC.fold</span> produce an ACResult given a caller-supplied descent chain. A <em>builder</em> that goes directly from \(\tau : \mathrm{PBP}\) to the canonical \(L_\tau \) (the AC.fold of \(\tau \)’s explicit descent sequence) would reduce the hypothesis footprint of the PBP-level Prop&#160;11.8/11.12/11.15 wrappers. This is engineering work (\(\sim \)2000 lines) rather than new math. </p>
+</li>
+  <li><p><b class="bfseries">Explicit \(\alpha \to \beta \) bijection for Prop&#160;11.14/15/17.</b> The abstract statement (inject + equal cardinality \(\Rightarrow \) bijection) is mathematically complete. Writing an explicit functorial bijection \((\tau , \varepsilon ) \mapsto \mathcal{L}_\tau \otimes (\varepsilon , \varepsilon ) : \mathrm{PBP}_\star \times \mathrm{Fin}\, 2 \xrightarrow {\sim } \mathbf{MYD}_\star \) in Lean would make the statement constructive. </p>
+</li>
+  <li><p><b class="bfseries">shapeShiftC case (b.1).</b> The case that modifies column&#160;1 of \(\)</p>
+</li>
+</ul>
+<p>\(\) has been deferred (the other three sub-cases are formalized). <ul class="itemize">
+</ul> 
+C^*, D^*\(\) (Lemma&#160;11.2, Prop&#160;11.18–11.21) are <b class="bfseries">not formalized</b>. The coverage is \(\star \in \{ B, D, C, M\} \). </p>
 
 </div> <!--main-text -->
-<nav class=local_toc>
-<ul>
-  <li>  
-  <a href="sect0032.html"><span class="toc_ref">10.1</span> <span class="toc_entry">Setup for Lemma 11.5</span></a>
-  </li>
-  <li>  
-  <a href="sect0033.html"><span class="toc_ref">10.2</span> <span class="toc_entry">Lemma 11.5 — PBP identity</span></a>
-  </li>
-  <li>  
-  <a href="sect0034.html"><span class="toc_ref">10.3</span> <span class="toc_entry">Lemma 11.5 atomic PBP discharge</span></a>
-  </li>
-  <li>  
-  <a href="sect0035.html"><span class="toc_ref">10.4</span> <span class="toc_entry">Lemma 11.6 — first entry of \(\mathcal{L}_\tau \)</span></a>
-  </li>
-</ul>
-</nav>
 </div> <!-- content-wrapper -->
 </div> <!-- content -->
 </div> <!-- wrapper -->
@@ -283,11 +278,11 @@
 
   <svg  id="showmore-plus" class="icon icon-eye-plus showmore"><use xlink:href="symbol-defs.svg#icon-eye-plus"></use></svg>
 
-  <a href="sect0031.html" title="Proposition 11.4 — signature decomposition"><svg  class="icon icon-arrow-left "><use xlink:href="symbol-defs.svg#icon-arrow-left"></use></svg>
+  <a href="sect0041.html" title="Unconditional status"><svg  class="icon icon-arrow-left "><use xlink:href="symbol-defs.svg#icon-arrow-left"></use></svg>
 </a>
-  <a href="index.html" title="Associated Cycles of Special Unipotent Representations: Blueprint"><svg  class="icon icon-arrow-up "><use xlink:href="symbol-defs.svg#icon-arrow-up"></use></svg>
+  <a href="chap-status.html" title="Formalization Status"><svg  class="icon icon-arrow-up "><use xlink:href="symbol-defs.svg#icon-arrow-up"></use></svg>
 </a>
-  <a href="sect0032.html" title="Setup for Lemma 11.5"><svg  class="icon icon-arrow-right "><use xlink:href="symbol-defs.svg#icon-arrow-right"></use></svg>
+  <a href="sect0043.html" title="Repository information"><svg  class="icon icon-arrow-right "><use xlink:href="symbol-defs.svg#icon-arrow-right"></use></svg>
 </a>
 </nav>
 
