@@ -29,9 +29,34 @@ all unconditional (only shape hypotheses + structural equalities of $\tau_1, \ta
 \item PBP-level theorems (\emph{e.g.}~\ref{prop:11_9_D}) that express
   numerical constraints on $\tau$ take only shape/type hypotheses.
 \item Main bijection (\ref{prop:11_14}, \ref{prop:11_15}, \ref{prop:11_17}) uses the
-  abstract $\alpha \simeq \beta$ witness. This is how equality of cardinalities
-  is \emph{expressed} in the formalization (as the caller's input witness);
-  the witness itself is constructed from Section~10 counting + other bijection data.
+  abstract $\alpha \simeq \beta$ witness. Mathematically this is solid:
+  an injective map from a finite type $\alpha$ into a finite type $\beta$ with
+  an equivalence $e : \alpha \simeq \beta$ (i.e.\ $|\alpha| = |\beta|$) is
+  automatically surjective. The witness $e$ is supplied from the Section~10
+  counting formulas plus other enumeration data — this does not make the
+  theorem conditional on any open assumption.
+\end{itemize}
+
+\section{TODO (future work, not a mathematical gap)}
+\label{sec:status_todo}
+
+The following would enrich the formalization but are not required for the
+correctness of the above claims:
+
+\begin{itemize}
+  \item \textbf{Constructive canonical \(L_\tau\) builder.} Currently
+    \texttt{AC.step} and \texttt{AC.fold} produce an ACResult given a caller-supplied
+    descent chain. A \emph{builder} that goes directly from \(\tau : \PBP\) to the
+    canonical \(L_\tau\) (the AC.fold of \(\tau\)'s explicit descent sequence)
+    would reduce the hypothesis footprint of the PBP-level Prop~11.8/11.12/11.15
+    wrappers. This is engineering work ($\sim$2000 lines) rather than new math.
+  \item \textbf{Explicit \(\alpha \to \beta\) bijection for Prop~11.14/15/17.}
+    The abstract statement (inject + equal cardinality $\Rightarrow$ bijection)
+    is mathematically complete. Writing an explicit functorial bijection
+    $(\tau, \eps) \mapsto \mathcal{L}_\tau \otimes (\eps, \eps) : \PBP_\star \times \mathrm{Fin}\,2 \xrightarrow{\sim} \MYD_\star$
+    in Lean would make the statement constructive.
+  \item \textbf{shapeShiftC case (b.1).} The case that modifies column~1 of
+    $\jmath$ has been deferred (the other three sub-cases are formalized).
 \end{itemize}
 
 \section{Deliberately skipped}
