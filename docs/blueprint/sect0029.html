@@ -260,7 +260,7 @@
     Lemma
     </span>
     <span class="lemma_thmlabel">87</span>
-    <span class="lemma_thmtitle">Prop 11.3 — characterisation of \(x_\tau \) via signatures and \(\varepsilon \)</span>
+    <span class="lemma_thmtitle">Prop 11.3 — characterisation of \(x_\tau \), \(x_1\) via signatures and \(\varepsilon \)</span>
     <div class="thm_header_extras">
 
     
@@ -292,6 +292,10 @@
           
           <li><a href="sect0007.html#def:epsilon_pbp">Definition 13</a></li>
           
+          <li><a href="sect0003.html#def:tailContrib">Definition 3</a></li>
+          
+          <li><a href="sect0003.html#def:tailContrib">Definition 3</a></li>
+          
         </ul>
     
       </div>
@@ -314,6 +318,8 @@
           
           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/tailSig_fst_zero_iff_tailSymbol_s" class="lean_decl">tailSig_fst_zero_iff_tailSymbol_s</a></li>
           
+          <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/tailSig_snd_zero_iff_tail_all_r" class="lean_decl">tailSig_snd_zero_iff_tail_all_r</a></li>
+          
         </ul>
     
       </div>
@@ -327,9 +333,31 @@
 <ol class="enumerate">
   <li><p>\(\varepsilon _\tau = 0 \iff x_\tau = d\). </p>
 </li>
-  <li><p>\(p_{\tau _t} = 0 \iff x_\tau = s\). </p>
+  <li><p>\(p_{\tau _t} = 0 \iff x_\tau = s \iff \) every tail cell is \(s\). </p>
+</li>
+  <li><p>\(q_{\tau _t} = 0 \iff \) every tail cell is \(r\) \(\iff x_1 = r\) and \(x_\tau = r\). </p>
 </li>
 </ol>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000102">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  
+<p><b class="bfseries">(1)</b> By layer monotonicity in column&#160;0, a symbol \(d\) (with maximal \(\mathrm{layerOrd} = 4\)) can only appear at the bottom. Conversely, \(\varepsilon _\tau = 0\) iff \(d\) is present somewhere in column&#160;0, which by monotonicity forces it to the bottom, i.e., \(x_\tau = d\). </p>
+<p><b class="bfseries">(2)</b> \(p_{\tau _t} = \sum _i \mathrm{tailContrib}(x_i).p\), and \(\mathrm{tailContrib}(\sigma ).p = 0\) only for \(\sigma = s\). Combined with the non-negativity of each term, \(p_{\tau _t} = 0 \iff \) every tail cell is \(s\). </p>
+<p>Now the equivalence “every tail cell is \(s\)” \(\iff \) \(x_\tau = s\) follows from layer monotonicity: \(x_\tau = s\) means the \(\mathrm{layerOrd}\) at the bottom is \(1\); all cells above have \(\mathrm{layerOrd} \leq 1\); combined with non-dot (every tail cell is non-\(\bullet \) by \(\mathrm{dot\_ match}\)), every cell has \(\mathrm{layerOrd} = 1\), i.e., equals \(s\). </p>
+<p><b class="bfseries">(3)</b> \(q_{\tau _t} = \sum _i \mathrm{tailContrib}(x_i).q\), and \(\mathrm{tailContrib}(\sigma ).q = 0\) only for \(\sigma = r\). So \(q_{\tau _t} = 0 \iff \) every tail cell is \(r\). </p>
+<p>The second equivalence: “every tail cell is \(r\)” \(\iff \) \(x_1 = r\) and \(x_\tau = r\). Layer monotonicity gives \(\mathrm{layerOrd}(x_1) \leq \mathrm{layerOrd}(x_i) \leq \mathrm{layerOrd}(x_\tau )\) for every tail cell \(x_i\). If \(x_1 = x_\tau = r\) (both equal \(2\)), then every \(x_i\) has \(\mathrm{layerOrd}\) sandwiched as \(2 \leq \mathrm{layerOrd}(x_i) \leq 2\), so \(\mathrm{layerOrd}(x_i) = 2\), i.e., \(x_i = r\). The converse is trivial. </p>
+
+  </div>
+</div>
 <div class="remark_thmwrapper theorem-style-remark" id="a0000000103">
   <div class="remark_thmheading">
     <span class="remark_thmcaption">
@@ -348,23 +376,7 @@
         </div>
   </div>
   <div class="remark_thmcontent">
-  <p>The converse-parity claim “\(q_{\tau _t} = 0 \iff x_\tau = r\)” from the paper is <em>not</em> formalized here. The tail contributions \(\mathrm{tailContrib}(c) = (1, 1)\) and \(\mathrm{tailContrib}(d) = (1, 1)\) have \(q\)-component&#160;\(\geq 1\), so \(q_{\tau _t} = 0\) can fail even when \(x_\tau \in \{ c, d\} \); the full iff requires additional structure beyond what the other two parts establish. </p>
-
-  </div>
-</div>
-
-  </div>
-</div>
-<div class="proof_wrapper" id="a0000000102">
-  <div class="proof_heading">
-    <span class="proof_caption">
-    Proof
-    </span>
-    <span class="expand-proof">▶</span>
-  </div>
-  <div class="proof_content">
-  <p>By layer monotonicity, a symbol \(d\) (layerOrd&#160;4) can only appear at the bottom of column&#160;0. Conversely, \(\varepsilon _\tau = 0\) iff \(d\) is present in column&#160;0, which forces it to the bottom. </p>
-<p>For (2): if \(x_\tau = s\), layer monotonicity bounds all tail-cell \(\mathrm{layerOrd} \leq 1\), so each is \(\bullet \) or \(s\). The non-\(\bullet \) ones are forced to be \(s\) by the non-dot condition at the boundary. By the row-\(s\) constraint, each row has at most one \(s\), so the full tail is \(s\) with \(\mathrm{tailContrib} = (0, 2)\) each; summed \(p\)-component is \(0\). Conversely, if \(x_\tau \neq s\), the bottom cell contributes \(\geq 1\) to \(p\) (since \(r \mapsto (2, 0)\), \(c \mapsto (1, 1)\), \(d \mapsto (1, 1)\)). </p>
+  <p>Unlike part&#160;(2), part&#160;(3) cannot be stated purely in terms of the bottom symbol \(x_\tau \): the tail can have an \(s\) cell above an \(r\) bottom (layer orders \(1 \leq 2\)), giving \(q_{\tau _t} = 2 \neq 0\). The correct statement requires either every tail cell to be \(r\) or, equivalently, both \(x_1\) and \(x_\tau \) to be \(r\). </p>
 
   </div>
 </div>

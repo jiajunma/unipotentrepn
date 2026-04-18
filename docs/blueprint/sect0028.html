@@ -330,7 +330,7 @@
     Definition
     </span>
     <span class="definition_thmlabel">83</span>
-    <span class="definition_thmtitle">Tail symbol \(x_\tau \)</span>
+    <span class="definition_thmtitle">Tail symbol \(x_\tau \) and top-of-tail symbol \(x_1\)</span>
     <div class="thm_header_extras">
 
     
@@ -386,7 +386,14 @@
         </div>
   </div>
   <div class="definition_thmcontent">
-  <p>    For D type: \(x_\tau := \mathcal{P}_\tau (\mathcal{P}.\mathrm{colLen}(0) - 1, 0)\) — the paint at the bottom of \(\mathcal{P}\)’s column&#160;0 tail region. For B type: analog in \(\mathcal{Q}\). </p>
+  <p>    For D type, the tail is the sequence of cells \((\mathcal{Q}.\mathrm{colLen}(0), 0),\  (\mathcal{Q}.\mathrm{colLen}(0) + 1, 0),\  \ldots ,\  (\mathcal{P}.\mathrm{colLen}(0) - 1, 0)\) in \(\mathcal{P}\)’s column&#160;0. We write: </p>
+<ul class="itemize">
+  <li><p>\(x_\tau := \mathcal{P}_\tau (\mathcal{P}.\mathrm{colLen}(0) - 1, 0)\) — <em>bottom</em> tail cell (maximum \(\mathrm{layerOrd}\) by layer monotonicity). </p>
+</li>
+  <li><p>\(x_1 := \mathcal{P}_\tau (\mathcal{Q}.\mathrm{colLen}(0), 0)\) — <em>top</em> tail cell (minimum \(\mathrm{layerOrd}\)). </p>
+</li>
+</ul>
+<p> For B type: analogous symbols in \(\mathcal{Q}\). </p>
 
   </div>
 </div>
