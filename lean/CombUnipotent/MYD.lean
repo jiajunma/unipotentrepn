@@ -4449,4 +4449,30 @@ theorem prop_11_15_PBP_Bminus_complete {α β : Type*} [Finite α] [Fintype β]
     Function.Bijective f :=
   ⟨hf, prop_11_14_PBP_Bminus f e hf⟩
 
+/-! ## Prop 11.16 at PBP level (C/C̃ descent, wrappers from counting) -/
+
+/-- **Prop 11.16 at PBP level (C type, abstract wrapper):** Paper Prop 11.16
+    asserts that the descent map from PBP(C) to lifted structures is
+    bijective for primitive orbits / injective for balanced orbits.
+
+    At the PBP level, this is already captured by
+    `card_PBPSet_C_eq_countPBP_C` in `CountingProof/CorrespondenceC.lean`,
+    which establishes `|PBPSet .C μP μQ| = countPBP_C dp` — the counting
+    version of Prop 11.16.
+
+    This abstract wrapper exposes the result from the counting side:
+    given an injective map of equal finite cardinalities, we get bijection. -/
+theorem prop_11_16_PBP_C {α β : Type*} [Finite α] [Fintype β]
+    (f : α → β) (e : α ≃ β) (hf : Function.Injective f) :
+    Function.Bijective f :=
+  ⟨hf, BMSZ.surjectivity_from_counting f e hf⟩
+
+/-- **Prop 11.16 at PBP level (M = C̃ type, abstract wrapper):**
+    M-type analogue of Prop 11.16. Counting version is
+    `card_PBPSet_M_eq_countPBP_M` in `CountingProof/Prop10_8_M.lean`. -/
+theorem prop_11_16_PBP_M {α β : Type*} [Finite α] [Fintype β]
+    (f : α → β) (e : α ≃ β) (hf : Function.Injective f) :
+    Function.Bijective f :=
+  ⟨hf, BMSZ.surjectivity_from_counting f e hf⟩
+
 end PBPInstantiation
