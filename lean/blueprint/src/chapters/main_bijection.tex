@@ -17,7 +17,7 @@ Reference: [BMSZ] Prop~11.8 (non-vanishing), 11.9--11.12 (injectivity),
 \end{lemma}
 \begin{proof}
   \leanok
-  See the Lean formalization referenced on the statement.
+  Direct inspection: $|\check{\mathcal{O}}| = 0$ means \texttt{AC.base}$\,\gamma$ is applied without any \texttt{AC.step}, giving the stated base-case ILS.
 \end{proof}
 
 
@@ -46,7 +46,7 @@ Reference: [BMSZ] Prop~11.8 (non-vanishing), 11.9--11.12 (injectivity),
 \end{theorem}
 \begin{proof}
   \leanok
-  See the Lean formalization referenced on the statement.
+  Direct enumeration: for $p, q > 0$ the set $\{(\pm p, \pm q)\}$ has $4$ elements, with corner cases $p = 0$ or $q = 0$ handled by dedupe.
 \end{proof}
 
 
@@ -59,7 +59,7 @@ Reference: [BMSZ] Prop~11.8 (non-vanishing), 11.9--11.12 (injectivity),
 \end{lemma}
 \begin{proof}
   \leanok
-  See the Lean formalization referenced on the statement.
+  A finite type $\alpha$ with an injection into $\beta$ and an equivalence $\alpha \simeq \beta$ satisfies $|\alpha| = |\beta|$; an injective map between finite sets of equal cardinality is bijective.
 \end{proof}
 
 
@@ -74,7 +74,7 @@ Reference: [BMSZ] Prop~11.8 (non-vanishing), 11.9--11.12 (injectivity),
 \end{lemma}
 \begin{proof}
   \leanok
-  See the Lean formalization referenced on the statement.
+  Apply Lemma~\ref{lem:11_1_b_abstract} with $\alpha = \PBP_D(\check{\mathcal{O}}) \times \mathrm{Fin}\,2$ and $\beta = \MYD_D(\mathcal{O})$; the cardinality match follows from the explicit $4m + 4$ formula (Theorem~\ref{thm:SignTargetSet_card}).
 \end{proof}
 
 
@@ -114,7 +114,7 @@ Reference: [BMSZ] Prop~11.8 (non-vanishing), 11.9--11.12 (injectivity),
 \end{proposition}
 \begin{proof}
   \leanok
-  See the Lean formalization referenced on the statement.
+  Direct wrapper of Prop.~\ref{prop:11_8_ac}: given a PBP with the tail hypothesis, the AC-level conclusion applies to $\mathcal{L}_\tau$.
 \end{proof}
 
 
@@ -146,7 +146,7 @@ Reference: [BMSZ] Prop~11.8 (non-vanishing), 11.9--11.12 (injectivity),
 \end{lemma}
 \begin{proof}
   \leanok
-  See the Lean formalization referenced on the statement.
+  Same argument as the D case (Prop.~\ref{prop:11_9_D}) applied to $B^+$ and $B^-$ via the appropriate tail signatures.
 \end{proof}
 
 
@@ -160,7 +160,7 @@ Reference: [BMSZ] Prop~11.8 (non-vanishing), 11.9--11.12 (injectivity),
 \end{lemma}
 \begin{proof}
   \leanok
-  See the Lean formalization referenced on the statement.
+  By Lemma~\ref{lem:11_6_D}, each branch of $L_i$ has first entry $(p_{\tau_i, t}, (-1)^{\eps} q_{\tau_i, t})$. If $L_1 = L_2$, their first entries coincide, so the $p_t$ and $\pm q_t$ coordinates match.
 \end{proof}
 
 
@@ -202,7 +202,7 @@ Reference: [BMSZ] Prop~11.8 (non-vanishing), 11.9--11.12 (injectivity),
 \end{proposition}
 \begin{proof}
   \leanok
-  See the Lean formalization referenced on the statement.
+  By Prop.~\ref{prop:11_12} we recover $\mathcal{L}_{\tau_1} = \mathcal{L}_{\tau_2}$ and matching $\eps$; the chain injectivity then descends to the inputs via invertibility of each AC.step.
 \end{proof}
 
 
@@ -220,7 +220,7 @@ Reference: [BMSZ] Prop~11.8 (non-vanishing), 11.9--11.12 (injectivity),
 \end{proposition}
 \begin{proof}
   \leanok
-  See the Lean formalization referenced on the statement.
+  A finite injective map into a finite set of equal cardinality is surjective; apply to $f : \alpha \to \beta$ with the cardinality witness $e : \alpha \simeq \beta$.
 \end{proof}
 
 
@@ -235,7 +235,7 @@ Reference: [BMSZ] Prop~11.8 (non-vanishing), 11.9--11.12 (injectivity),
 \end{proposition}
 \begin{proof}
   \leanok
-  See the Lean formalization referenced on the statement.
+  Injectivity follows from Prop.~\ref{prop:11_12} plus Prop.~\ref{prop:11_13}. Surjectivity follows from Prop.~\ref{prop:11_14} with card match from Prop.~\ref{prop:10_11_B}/\ref{prop:10_11_D}.
 \end{proof}
 
 
@@ -248,7 +248,7 @@ Reference: [BMSZ] Prop~11.8 (non-vanishing), 11.9--11.12 (injectivity),
 \end{proposition}
 \begin{proof}
   \leanok
-  See the Lean formalization referenced on the statement.
+  Apply Prop.~\ref{prop:11_14} with $\alpha = \PBP_C(\check{\mathcal{O}})$ and card match from Prop.~\ref{prop:10_12_C}; analogously for $\tilde{C}$ using Prop.~\ref{prop:10_12_M}.
 \end{proof}
 
 
@@ -262,6 +262,6 @@ Reference: [BMSZ] Prop~11.8 (non-vanishing), 11.9--11.12 (injectivity),
 \end{proposition}
 \begin{proof}
   \leanok
-  See the Lean formalization referenced on the statement.
+  Combine injectivity (from Prop.~\ref{prop:11_12}) with card match (Prop.~\ref{prop:10_12_C}/\ref{prop:10_12_M}) via Prop.~\ref{prop:11_14}.
 \end{proof}
 

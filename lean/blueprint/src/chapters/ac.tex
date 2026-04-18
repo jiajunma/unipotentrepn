@@ -65,7 +65,7 @@ Reference: [BMSZ] Equation~(11.2); internal blueprint
 \end{theorem}
 \begin{proof}
   \leanok
-  See the Lean formalization referenced on the statement.
+  Unfold \texttt{AC.step} for $\gamma = D$: it is \texttt{thetaLift\_CD} followed (optionally) by \texttt{twistBD}. Both preserve $\Sign$; the initial value is $(p, q)$ by Theorem~\ref{thm:thetaLift_sign}.
 \end{proof}
 
 
@@ -78,7 +78,7 @@ Reference: [BMSZ] Equation~(11.2); internal blueprint
 \end{theorem}
 \begin{proof}
   \leanok
-  See the Lean formalization referenced on the statement.
+  Parallel argument to the D case using the corresponding \texttt{thetaLift} / twist preservation for each $\gamma \in \{B^+, B^-, C, M\}$.
 \end{proof}
 
 
@@ -91,7 +91,7 @@ Reference: [BMSZ] Equation~(11.2); internal blueprint
 \end{theorem}
 \begin{proof}
   \leanok
-  See the Lean formalization referenced on the statement.
+  By direct inspection of each case: \texttt{AC.base}$\,B^+ = [(1, [(1, 0)])]$ has $\Sign = (1, 0)$; $B^-$ gives $(0, 1)$; $C, D, M$ have empty ILS with $\Sign = (0, 0)$.
 \end{proof}
 
 
@@ -131,7 +131,7 @@ This section extracts the main content of
 \end{theorem}
 \begin{proof}
   \leanok
-  See the Lean formalization referenced on the statement.
+  For each $\gamma$ the \texttt{AC.step} output is a lifted ILS $(p_0, q_0) :: \mathcal{E}'$ whose first-column signature equals $(p - \mathrm{src\_sig}.1, q - \mathrm{src\_sig}.2)$ by the augment + twist formulas (Theorem~\ref{thm:thetaLift_fcSign}, Lemma~\ref{lem:twist_fcSign}).
 \end{proof}
 
 
@@ -144,7 +144,7 @@ This section extracts the main content of
 \end{theorem}
 \begin{proof}
   \leanok
-  See the Lean formalization referenced on the statement.
+  $(a, b) \otimes (1, -1)$ maps $(a, b) \mapsto (a, -b)$ when $\eps_\tau = 1$ (by the definition of \texttt{twistBD} on the first row, which is odd-length), and is the identity otherwise.
 \end{proof}
 
 

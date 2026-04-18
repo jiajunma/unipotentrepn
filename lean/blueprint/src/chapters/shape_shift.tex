@@ -75,7 +75,7 @@ $\mathcal{Q}$, applying an involutive paint translation.
 \end{proposition}
 \begin{proof}
   \leanok
-  See the Lean formalization referenced on the statement.
+  Iterated application of the column-0 swap Lemma~\ref{lem:10_3_M} transports $\tau$ through any sequence of primitive-pair-set configurations.
 \end{proof}
 
 
@@ -159,17 +159,57 @@ Since $\jmath$ is unchanged, $\tau_\uparrow.\mathcal{Q}(i, j) := \tau.\mathcal{Q
 
 \subsection{Validity and bijectivity}
 
-\begin{remark}[$\tau_\uparrow$ is a valid PBP]
-  \label{rem:shapeShiftC_valid}
+\begin{lemma}[Shape shift C produces a valid PBP]
+  \label{cor:shapeShiftC_valid}
+  \lean{shapeShiftC}
+  \leanok
+  \uses{def:shapeShiftC_paint}
   The painted diagram $\tau_\uparrow$ produced by any of the four sub-cases
-  satisfies all PBP axioms (sym\_P, mono\_P, col\_c\_P, col\_d\_P, row\_s,
-  row\_r). This is implicit in the Lean \texttt{shapeShiftC} construction:
-  the new paint values are always in the C-type $\mathcal{P}$-allowed set
-  $\{\bullet, s, r, c, d\}$; the $r \to c \to d$ layer ordering is preserved
-  (case (a.1) moves the $c$ to a new position, with the old $c$ becoming $r$);
-  row uniqueness carries over since the C-type $\mathcal{Q}$ only contains
-  $\{\bullet, s\}$. Details: [BMSZb] p.~66.
-\end{remark}
+  of Def.~\ref{def:shapeShiftC_paint} satisfies all PBP axioms: the allowed
+  symbol sets (\texttt{sym\_P}, \texttt{sym\_Q}), layer monotonicity, the
+  \texttt{dot\_match} invariant, and the row / column uniqueness conditions
+  (\texttt{row\_s}, \texttt{row\_r}, \texttt{col\_c\_P}, \texttt{col\_c\_Q},
+  \texttt{col\_d\_P}, \texttt{col\_d\_Q}).
+\end{lemma}
+\begin{proof}
+  \leanok
+  We check each axiom case-by-case.
+
+  \textbf{sym\_P}: The new paint function outputs values only in
+  $\{r, c, d\}$ (the forced values in the modified region of column~1) or
+  $\mathcal{P}_\tau(i, j)$ (unchanged cells, inheriting validity from $\tau$).
+  Both lie in the C-type $\mathcal{P}$-allowed set $\{\bullet, s, r, c, d\}$.
+  Formalized as \texttt{shiftPaintP\_C\_concrete\_case\_a1\_allowed} and
+  the analogous \texttt{a2}, \texttt{b2} variants.
+
+  \textbf{sym\_Q}: $\mathcal{Q}$ is unchanged, so the axiom carries over
+  directly from $\tau$.
+
+  \textbf{layer monotonicity}: In case (a.1) the sequence $\cdots r\ c\ d$
+  has monotone $\mathrm{layerOrd}$ ($2 \le 3 \le 4$); the pattern is
+  preserved across sub-cases by construction of $\mathcal{P}_{\tau_\uparrow}$.
+
+  \textbf{col\_c\_P, col\_d\_P}: Case (a.1) moves the pre-existing $c$ at
+  row $k-1$ to the new position $k_\uparrow - 1$ (rewriting the old cell as
+  $r$), hence column~1 still has exactly one $c$. The newly-introduced $d$
+  sits at row $k_\uparrow$; uniqueness holds because the original tail
+  contained no $d$ at the top (by layer monotonicity on $\tau$).
+  Formalized as \texttt{shiftPaintP\_C\_concrete\_case\_a2\_col\_c} and
+  \texttt{shiftPaintP\_C\_concrete\_case\_a2\_col\_d}.
+
+  \textbf{row\_s, row\_r}: Same-row uniqueness carries over from $\tau$
+  since the C-type $\mathcal{Q}$ only contains $\{\bullet, s\}$, so the
+  modifications to $\mathcal{P}$'s column~1 cannot conflict row-wise with
+  anything in $\mathcal{Q}$.
+
+  \textbf{dot\_match}: The dot positions of $\mathcal{P}_{\tau_\uparrow}$
+  agree with those of $\mathcal{Q}_{\tau_\uparrow} = \mathcal{Q}_\tau$
+  because the modifications only fill non-dot cells in the strictly
+  extended tail region $[k, k_\uparrow]$.
+
+  The Lean \texttt{shapeShiftC} definition exhibits all of the above by
+  constructing the final PBP with every axiom verified.
+\end{proof}
 
 
 \begin{lemma}[shape shift C identity instance]
@@ -182,7 +222,7 @@ Since $\jmath$ is unchanged, $\tau_\uparrow.\mathcal{Q}(i, j) := \tau.\mathcal{Q
 \end{lemma}
 \begin{proof}
   \leanok
-  See the Lean formalization referenced on the statement.
+  The identity instance takes $\mathcal{P}_{\tau_\uparrow} = \mathcal{P}_\tau$ pointwise, so $\tau_\uparrow = \tau$ by \texttt{PaintedYoungDiagram.ext'}.
 \end{proof}
 
 
@@ -190,13 +230,13 @@ Since $\jmath$ is unchanged, $\tau_\uparrow.\mathcal{Q}(i, j) := \tau.\mathcal{Q
   \label{lem:10_3_C}
   \lean{lemma_10_3_C, card_PBPSet_C_shapeShift}
   \leanok
-  \uses{lem:shapeShiftC_id, rem:shapeShiftC_valid}
+  \uses{lem:shapeShiftC_id, cor:shapeShiftC_valid}
   For shapes $(\mu_P', \mu_Q')$ reachable via C-type shape shift from $(\mu_P, \mu_Q)$:
   \[ |\PBP_C(\mu_P, \mu_Q)| = |\PBP_C(\mu_P', \mu_Q')|. \]
 \end{lemma}
 \begin{proof}
   \leanok
-  See the Lean formalization referenced on the statement.
+  The shape-shift is a bijection $(\wp, \tau) \leftrightarrow (\wp \cup \{(1,2)\}, \tau_\uparrow)$ via the case analysis in Def.~\ref{def:shapeShiftC_paint}. In particular $\mathrm{shapeShiftC\_id}$ is its own inverse (Lemma~\ref{lem:shapeShiftC_id}).
 \end{proof}
 
 
@@ -208,7 +248,7 @@ Since $\jmath$ is unchanged, $\tau_\uparrow.\mathcal{Q}(i, j) := \tau.\mathcal{Q
 \end{proposition}
 \begin{proof}
   \leanok
-  See the Lean formalization referenced on the statement.
+  By iterating Lemma~\ref{lem:10_3_C} (or its identity instance) on $\wp$-modifications.
 \end{proof}
 
 
@@ -229,6 +269,6 @@ shape pair and permutes paints, which we do not parameterise by).
 \end{proposition}
 \begin{proof}
   \leanok
-  See the Lean formalization referenced on the statement.
+  For B/D in our formalization $\PBP_\gamma$ is already the $\wp = \emptyset$ instance. The paper's shape-preserving paint-permutation bijection is not reflected at the Lean level and the statement degenerates to reflexivity.
 \end{proof}
 

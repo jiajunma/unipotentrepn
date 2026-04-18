@@ -156,7 +156,7 @@ are the computational representation of Marked Young Diagrams (MYDs).
 \end{lemma}
 \begin{proof}
   \leanok
-  See the Lean formalization referenced on the statement.
+  $\Sign$ is defined from $|p|, |q|$ via \texttt{signRow}; the twists act only by signs $\pm 1$, which absolute values ignore.
 \end{proof}
 
 
@@ -172,7 +172,7 @@ are the computational representation of Marked Young Diagrams (MYDs).
 \end{lemma}
 \begin{proof}
   \leanok
-  See the Lean formalization referenced on the statement.
+  Same argument as Lemma~\ref{lem:twist_sign}: $\mathrm{fcSign}$ per Eq.~(9.12) uses absolute values, so sign twists and $T^j$ preserve it.
 \end{proof}
 
 
@@ -202,7 +202,7 @@ are the computational representation of Marked Young Diagrams (MYDs).
 \end{theorem}
 \begin{proof}
   \leanok
-  See the Lean formalization referenced on the statement.
+  $\Sign((p_0, q_0) :: \mathcal{E})$ evaluates \texttt{signRow} at the new index~0 (contributing $(|p_0|, |q_0|)$) and shifts every existing row index by~1, which adds its $\mathrm{firstColSignRow}$ contribution.
 \end{proof}
 
 
@@ -216,7 +216,7 @@ are the computational representation of Marked Young Diagrams (MYDs).
 \end{theorem}
 \begin{proof}
   \leanok
-  See the Lean formalization referenced on the statement.
+  Each $\hat\vartheta_\bullet$ is of the form $T^j(\mathrm{augment}((p, q), \mathcal{E}))$ (or similar with $(n, n)$ or $(-1, -1)$). Apply Lemma~\ref{lem:augment_sign} then Lemma~\ref{lem:twist_sign} for the $T^j$ step.
 \end{proof}
 
 
@@ -229,6 +229,6 @@ are the computational representation of Marked Young Diagrams (MYDs).
 \end{theorem}
 \begin{proof}
   \leanok
-  See the Lean formalization referenced on the statement.
+  \texttt{thetaLift\_*\_firstColSign} follows from Lemma~\ref{lem:twist_fcSign} for the $T^j$ step and the observation that $\mathrm{augment}((p_0, q_0), \cdot)$ shifts every row's first-column contribution.
 \end{proof}
 

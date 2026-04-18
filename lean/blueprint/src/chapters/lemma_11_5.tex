@@ -82,7 +82,7 @@ are \emph{structurally} true:
 \end{lemma}
 \begin{proof}
   \leanok
-  See the Lean formalization referenced on the statement.
+  Same argument as Lemma~\ref{lem:sig_sum_D}: for D type $\mathcal{Q}$ is all $\bullet$, so the non-$\bullet$ counts come from $\mathcal{P}$ only; $p_\tau + q_\tau$ equals twice the total cell count.
 \end{proof}
 
 
@@ -95,7 +95,7 @@ are \emph{structurally} true:
 \end{lemma}
 \begin{proof}
   \leanok
-  See the Lean formalization referenced on the statement.
+  Definitional: $|\tau| - \mathbf{c}_1(\mathcal{O})$ equals the cell count of $\tau$ minus the cells in $\mathcal{P}$'s column~0, which is the cell count after a single descent step.
 \end{proof}
 
 
@@ -108,7 +108,7 @@ are \emph{structurally} true:
 \end{lemma}
 \begin{proof}
   \leanok
-  See the Lean formalization referenced on the statement.
+  Lemma~\ref{lem:residual_D}: applying \texttt{tailSig\_sum} ($p_t + q_t = 2k$) with $k = \mathbf{c}_1 - \mathbf{c}_2$ (BV dual column relation) gives the claim.
 \end{proof}
 
 
@@ -129,7 +129,7 @@ are \emph{structurally} true:
 \end{theorem}
 \begin{proof}
   \leanok
-  See the Lean formalization referenced on the statement.
+  The three hypotheses of \texttt{prop\_11\_5\_D\_atomic} are discharged by Lemmas~\ref{lem:fact1_sig_sum}, \ref{lem:fact2_descent}, \ref{lem:fact3_residual} respectively; the remainder follows from Lemma~\ref{lem:11_5_D_ILS}.
 \end{proof}
 
 
@@ -163,7 +163,7 @@ are \emph{structurally} true:
 \end{lemma}
 \begin{proof}
   \leanok
-  See the Lean formalization referenced on the statement.
+  Same proof as Lemma~\ref{lem:11_6_D} with $\hat\vartheta_{MB}$ in place of $\hat\vartheta_{CD}$.
 \end{proof}
 
 
@@ -180,6 +180,6 @@ are \emph{structurally} true:
 \end{corollary}
 \begin{proof}
   \leanok
-  See the Lean formalization referenced on the statement.
+  Combining Lemma~\ref{lem:11_6_D} with Prop.~\ref{prop:11_4}: $p_\tau - \mathbf{c}_2(\mathcal{O}) - p_{\tau''} = p_{\tau_t}$, similarly for $q$. The first entry of $\mathcal{L}_\tau$ is $(p_{\tau_t}, (-1)^{\eps_\tau} q_{\tau_t})$.
 \end{proof}
 

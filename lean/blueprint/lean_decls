@@ -27,6 +27,7 @@ lemma_10_3_M
 prop_10_2_PBP_M
 shiftPaintP_C_concrete
 shapeShiftC
+shapeShiftC
 shapeShiftC_id
 shapeShiftC_id_eq
 lemma_10_3_C

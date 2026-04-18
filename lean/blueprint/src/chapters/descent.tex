@@ -106,7 +106,7 @@ There are four single descent directions:
 \end{lemma}
 \begin{proof}
   \leanok
-  See the Lean formalization referenced on the statement.
+  The C$\to$D descent writes $\mathcal{P}_\tau(i, j + 1)$ pointwise into $\mathcal{P}_{\nabla\tau}(i, j)$ for $i \geq c_L(j)$, and fills the dot/$s$ region uniquely. Given two C-type PBPs with equal descent, we recover $\mathcal{P}_\tau$ cell-by-cell.
 \end{proof}
 
 
@@ -122,7 +122,7 @@ There are four single descent directions:
 \end{lemma}
 \begin{proof}
   \leanok
-  See the Lean formalization referenced on the statement.
+  By \texttt{PBP.descent\_inj\_B}: equal B$\to$M descents plus equal signatures plus equal $\eps$ determine the paint cell-by-cell; the interlacing hypothesis localizes the recovery.
 \end{proof}
 
 
@@ -135,7 +135,7 @@ There are four single descent directions:
 \end{lemma}
 \begin{proof}
   \leanok
-  See the Lean formalization referenced on the statement.
+  The M$\to$B descent is a bijection onto its image (given fixed shapes). Equal images force equal pre-images.
 \end{proof}
 
 
@@ -148,7 +148,7 @@ There are four single descent directions:
 \end{lemma}
 \begin{proof}
   \leanok
-  See the Lean formalization referenced on the statement.
+  \texttt{doubleDescent\_D\_injective\_on\_PBPSet}: two D-type PBPs with equal $\nabla^2\tau$ have column-$\geq 2$ data identical; column~1 is determined by $\mathcal{Q}.\mathrm{colLen}$; column~0 is determined by $(\Sign(\tau), \eps_\tau)$.
 \end{proof}
 
 
@@ -166,7 +166,7 @@ We now turn these injectivity statements into cardinality equalities.
 \end{proposition}
 \begin{proof}
   \leanok
-  See the Lean formalization referenced on the statement.
+  Under $\mu_Q.\mathrm{colLen}(0) \geq \mu_P.\mathrm{colLen}(0)$, every D-type on $(\mu_P, \mathrm{shiftLeft}(\mu_Q))$ is in the image of the C$\to$D descent; injectivity from Lemma~\ref{lem:10_4_C}.
 \end{proof}
 
 
@@ -180,7 +180,7 @@ We now turn these injectivity statements into cardinality equalities.
 \end{proposition}
 \begin{proof}
   \leanok
-  See the Lean formalization referenced on the statement.
+  The image of the C$\to$D descent in the balanced case consists exactly of the D-type PBPs with tail class $\mathrm{DD}$ or $\mathrm{RC}$: a $\mathrm{DD}$ tail corresponds to lifted $c$ in $\mathcal{P}$ col~0, $\mathrm{RC}$ to lifted $r$. Summing cardinalities gives the claim.
 \end{proof}
 
 
@@ -194,7 +194,7 @@ We now turn these injectivity statements into cardinality equalities.
 \end{proposition}
 \begin{proof}
   \leanok
-  See the Lean formalization referenced on the statement.
+  Descending M$\to$B at a primitive step splits into $B^+$ and $B^-$ branches according to the bottom-$\mathcal{Q}$ paint. Injectivity of each branch combined with the disjoint branches gives the sum.
 \end{proof}
 
 
@@ -208,7 +208,7 @@ We now turn these injectivity statements into cardinality equalities.
 \end{proposition}
 \begin{proof}
   \leanok
-  See the Lean formalization referenced on the statement.
+  The balanced case image restricts $B^-$ to those with $\mathrm{layerOrd}(\sigma.\mathcal{Q}(c_2 - 1, 0)) > 1$ (otherwise the descent produces a layer conflict); $B^+$ is unrestricted. Summing gives the card.
 \end{proof}
 
 
@@ -224,7 +224,7 @@ We now turn these injectivity statements into cardinality equalities.
 \end{proposition}
 \begin{proof}
   \leanok
-  See the Lean formalization referenced on the statement.
+  Immediate from Lemma~\ref{lem:10_5_D}: equal $(\nabla^2\tau, \Sign(\tau), \eps_\tau)$ determines $\tau$.
 \end{proof}
 
 
@@ -237,7 +237,7 @@ We now turn these injectivity statements into cardinality equalities.
 \end{proposition}
 \begin{proof}
   \leanok
-  See the Lean formalization referenced on the statement.
+  Immediate from Lemma~\ref{lem:10_4_B}: equal $(\nabla^2\tau, \Sign(\tau), \eps_\tau)$ plus interlacing determines $\tau$.
 \end{proof}
 
 
@@ -250,6 +250,6 @@ We now turn these injectivity statements into cardinality equalities.
 \end{corollary}
 \begin{proof}
   \leanok
-  See the Lean formalization referenced on the statement.
+  Direct PBPSet-level wrapper of Prop.~\ref{prop:10_9_D} / \ref{prop:10_9_B}: convert the equality between subtype witnesses to PBP-level equality, then apply the injectivity theorem.
 \end{proof}
 

@@ -98,7 +98,7 @@ auxiliary proof objects appear.
 \end{proposition}
 \begin{proof}
   \leanok
-  See the Lean formalization referenced on the statement.
+  By induction on $dp$. Base $dp = []$: both sides zero. Inductive step: split $\PBP_D$ along the first-column structure; each sub-class (DD/RC/SS) has a bijection to a lower-level count via the double-descent recursion, which by IH equals $\mathrm{tripleSum}(\mathrm{countPBP\_D}(\mathrm{tail}(dp)))$.
 \end{proof}
 
 
@@ -112,7 +112,7 @@ auxiliary proof objects appear.
 \end{proposition}
 \begin{proof}
   \leanok
-  See the Lean formalization referenced on the statement.
+  For $\mu_Q.\mathrm{colLen}(0) \geq \mu_P.\mathrm{colLen}(0)$: apply Prop.~\ref{prop:10_8_C_prim} to reduce to $\PBP_D$; then invoke Prop.~\ref{prop:10_11_D}. For balanced: Prop.~\ref{prop:10_8_C_bal} gives $\mathrm{DD} + \mathrm{RC}$ of the next-level D count.
 \end{proof}
 
 
@@ -126,7 +126,7 @@ auxiliary proof objects appear.
 \end{proposition}
 \begin{proof}
   \leanok
-  See the Lean formalization referenced on the statement.
+  For $\mu_P.\mathrm{colLen}(0) > \mu_Q.\mathrm{colLen}(0)$: Prop.~\ref{prop:10_8_M_prim} reduces to $B^+ + B^-$, both settled by Prop.~\ref{prop:10_11_B}. Balanced: Prop.~\ref{prop:10_8_M_bal}.
 \end{proof}
 
 
