@@ -2166,6 +2166,24 @@ theorem AC.base_firstColSign_eq_sign (γ : RootType) :
     simp [ILS.firstColSign, ILS.sign, ILS.firstColSignAux, ILS.signAux,
           ILS.firstColSignRow, ILS.signRow]
 
+/-- **Two-step AC composition (B/D outer): firstColSign of outer output**.
+
+    For γ₂ ∈ {D, B⁺, B⁻} (standard B/D outer step), after two consecutive AC.step's
+    starting from any source with uniform signature `(p₁, q₁)`:
+      firstColSign(outer output) = (p₂ - p₁, q₂ - q₁)
+
+    This is the core identity underlying Lemma 11.5 (D-type primitive case). -/
+theorem AC.two_step_firstColSign_BD_outer {γ₂ : RootType}
+    (hγ₂ : γ₂ = .D ∨ γ₂ = .Bplus ∨ γ₂ = .Bminus)
+    (L₁ : ACResult) (p₁ q₁ p₂ q₂ : ℤ) (ε_τ₂ ε_wp₂ : Fin 2)
+    (h₁_sign : ∀ r ∈ L₁, ILS.sign r.2 = (p₁, q₁))
+    (h_std : ∀ r ∈ L₁,
+      p₂ - (ILS.sign r.2).1 - (ILS.firstColSign r.2).2 ≥ 0 ∧
+      q₂ - (ILS.sign r.2).2 - (ILS.firstColSign r.2).1 ≥ 0) :
+    ∀ r ∈ AC.step L₁ γ₂ p₂ q₂ ε_τ₂ ε_wp₂,
+      ILS.firstColSign r.2 = (p₂ - p₁, q₂ - q₁) :=
+  AC.step_firstColSign_BD L₁ p₂ q₂ ε_τ₂ ε_wp₂ γ₂ hγ₂ (p₁, q₁) h₁_sign h_std
+
 /-- AC.step for M target: firstColSign invariant, mirror of C. -/
 theorem AC.step_firstColSign_M (source : ACResult) (n : ℤ) (ε_τ ε_wp : Fin 2)
     (source_sig : ℤ × ℤ)
