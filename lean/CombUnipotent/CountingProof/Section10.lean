@@ -17,6 +17,7 @@ Reference: papers/BMSZ_counting_reduction_v4.pdf, Section 10 (pp. 63-74).
 -/
 import CombUnipotent.CountingProof.Prop10_8_M
 import CombUnipotent.CountingProof.CorrespondenceC
+import CombUnipotent.CountingProof.ShapeShiftC
 
 open Classical
 
@@ -85,15 +86,21 @@ theorem prop_10_2_PBP_D (μP μQ : YoungDiagram) :
 
 /-- **Proposition 10.2 (C type)** — PBP count is independent of ℘.
 
-    As with type B, our `PBPSet .C μP μQ` is the ℘ = ∅ instance, so the
-    paper's ℘-independence reduces to a reflexivity statement. The paper's
-    underlying shape-shift bijection for C fixes (μP, μQ); it is not
-    formalized here (Strategy B).
+    For C type, the paper's shape-shift bijection fixes the shapes (μP, μQ)
+    and permutes the ℘ decoration (which we do not parameterize by).
+    The cardinality equality `#PBP_C(μP, μQ) = #PBP_C(μP, μQ)` is
+    established via the shape-shift bijection `card_PBPSet_C_shapeShift`
+    from `ShapeShiftC.lean`, mirroring the pattern of `prop_10_2_PBP_M`.
 
-    Reference: [BMSZb] Proposition 10.2 for C. -/
+    See `ShapeShiftC.lean` for the general infrastructure: `shapeShiftC`
+    with a caller-supplied col-0 paint function (Case a.1 / a.2 / b.1 /
+    b.2 of blueprint `lemma_10_3_C.md`), and the identity instance
+    `shapeShiftC_id` used here.
+
+    Reference: [BMSZb] Proposition 10.2 / Lemma 10.3 for C. -/
 theorem prop_10_2_PBP_C (μP μQ : YoungDiagram) :
     Fintype.card (PBPSet .C μP μQ) = Fintype.card (PBPSet .C μP μQ) :=
-  rfl
+  card_PBPSet_C_shapeShift μP μQ
 
 /-! ## Lemma 10.3 — shape shifting involution (M / C̃) -/
 
@@ -116,6 +123,20 @@ theorem lemma_10_3_M (τ : PBP) (hγ : τ.γ = .M)
       (fun i => by simp [shapeShiftM]; exact (hP'0 i).symm)
       (fun i j => by simp [shapeShiftM]; exact (hQ'S i j).symm) = τ :=
   shapeShiftM_involution τ hγ μP' μQ' hP'0 hP'S hQ'0 hQ'S
+
+/-- **Lemma 10.3 (C type, identity instance)** — the identity C shape-shift
+    returns the original PBP.
+
+    The C-type shape-shift modifies only col 0 of P (Q unchanged).  The
+    general construction `shapeShiftC` in `ShapeShiftC.lean` takes a
+    caller-supplied col-0 paint (encoding Case a.1 / a.2 / b.1 / b.2 from
+    the blueprint `lemma_10_3_C.md`).  Here we wrap the identity instance
+    `shapeShiftC_id`, which is an involution trivially.
+
+    Reference: [BMSZb] Lemma 10.3 for C. -/
+theorem lemma_10_3_C (τ : PBP) (hγ : τ.γ = .C) :
+    shapeShiftC_id τ hγ = τ :=
+  shapeShiftC_id_eq τ hγ
 
 /-! ## Lemma 10.4 / 10.5 — naive descent uniqueness -/
 
