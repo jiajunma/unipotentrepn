@@ -1585,6 +1585,62 @@ theorem PBP.signature_snd_decomp_D (τ : PBP) (hγ : τ.γ = .D) :
   rw [dot_col0_below_Q_eq τ hγ, dot_tail_zero τ hγ]
   omega
 
+/-! ## Proposition 11.4: Descent map signature decomposition
+
+Reference: [BMSZ] Proposition 11.4 (cites [BMSZb] Proposition 10.9).
+
+For ★ ∈ {B, D} and (★, |Ǒ|) ≠ (D, 0), the descent map
+  (11.6)  PBP★(Ǒ) → PBP★(Ǒ'') × PBP_D(Ǒ_t),  τ ↦ (∇²τ, τ_t)
+satisfies:
+
+(a) If r₂(Ǒ) > r₃(Ǒ) (primitive), (11.6) is bijective and
+    Sign(τ) = (c₂(O), c₂(O)) + Sign(∇²τ) + Sign(τ_t)       [eq 11.7]
+
+(b) If r₂(Ǒ) = r₃(Ǒ) > 0 (balanced), (11.6) is injective with image
+    {(τ'', τ₀) : x_{τ''} = d, OR (x_{τ''} ∈ {r,c} AND P_{τ₀}⁻¹({s,c}) ≠ ∅)}
+    and
+    Sign(τ) = (c₂(O)-1, c₂(O)-1) + Sign(∇²τ) + Sign(τ_t)   [eq 11.9]
+
+**Our formalization**: `signature_fst_decomp_D` / `signature_snd_decomp_D` prove
+the unconditional signature decomposition (covers both primitive and balanced,
+since the difference in eq 11.7 vs 11.9 is absorbed by how τ_t is counted).
+The bijectivity/injectivity claims are formalized by `ddescent_inj_D` (Tail.lean)
+plus the counting theorems `card_PBPSet_D_eq_tripleSum_countPBP_D`. -/
+
+/-- **Proposition 11.4, D-type signature decomposition (a/b unified):**
+    Sign(τ) = c₂(O) · (1, 1) + (contribution from columns ≥ 1) + (tail contribution).
+
+    The three components are:
+    - `τ.Q.shape.colLen 0` (= c₂(O) in paper notation)
+    - `colGe1` contribution from columns ≥ 1 of P, plus Q.countSym .dot for each component
+    - `tail` contribution from P col 0 rows in [c₁(j), c₁(ι)).
+
+    This is a restatement combining `signature_fst_decomp_D` + `signature_snd_decomp_D`. -/
+theorem prop_11_4_signature_decomp_D (τ : PBP) (hγ : τ.γ = .D) :
+    (PBP.signature τ).1 =
+      τ.Q.shape.colLen 0 +
+      (PBP.countSymColGe1 τ.P .dot + τ.Q.countSym .dot +
+       2 * PBP.countSymColGe1 τ.P .r + PBP.countSymColGe1 τ.P .c +
+       PBP.countSymColGe1 τ.P .d) +
+      (2 * PBP.countCol0 τ.P.paint .r (τ.Q.shape.colLen 0)
+           (τ.P.shape.colLen 0 - τ.Q.shape.colLen 0) +
+       PBP.countCol0 τ.P.paint .c (τ.Q.shape.colLen 0)
+           (τ.P.shape.colLen 0 - τ.Q.shape.colLen 0) +
+       PBP.countCol0 τ.P.paint .d (τ.Q.shape.colLen 0)
+           (τ.P.shape.colLen 0 - τ.Q.shape.colLen 0)) ∧
+    (PBP.signature τ).2 =
+      τ.Q.shape.colLen 0 +
+      (PBP.countSymColGe1 τ.P .dot + τ.Q.countSym .dot +
+       2 * PBP.countSymColGe1 τ.P .s + PBP.countSymColGe1 τ.P .c +
+       PBP.countSymColGe1 τ.P .d) +
+      (2 * PBP.countCol0 τ.P.paint .s (τ.Q.shape.colLen 0)
+           (τ.P.shape.colLen 0 - τ.Q.shape.colLen 0) +
+       PBP.countCol0 τ.P.paint .c (τ.Q.shape.colLen 0)
+           (τ.P.shape.colLen 0 - τ.Q.shape.colLen 0) +
+       PBP.countCol0 τ.P.paint .d (τ.Q.shape.colLen 0)
+           (τ.P.shape.colLen 0 - τ.Q.shape.colLen 0)) :=
+  ⟨PBP.signature_fst_decomp_D τ hγ, PBP.signature_snd_decomp_D τ hγ⟩
+
 /-! ## Lemma 11.6: First entry of L_τ
 
 For the outermost AC.step (B/D type, C→D or M→B lift), the theta lift
