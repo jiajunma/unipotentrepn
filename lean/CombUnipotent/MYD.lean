@@ -2044,6 +2044,54 @@ theorem AC.step_firstColSign_Bminus (source : ACResult) (p q : ℤ) (ε_τ ε_wp
   · exact ACResult.twistBD_firstColSign _ 1 (-1) _ (Or.inl rfl) (Or.inr rfl) h_lifted_fc r hr
   · exact h_lifted_fc r hr
 
+/-! ### AC.step firstColSign for C/M targets
+
+For γ ∈ {C, M} targets, AC.step applies a pre-twist then theta lift.
+Pre-twist preserves both sign and firstColSign (twistBD_sign, twistBD_firstColSign).
+Theta lift is thetaLift_DC (C target) or thetaLift_BM (M target). -/
+
+/-- ACResult-level thetaLift (C target) firstColSign: same pattern as D target. -/
+theorem ACResult.thetaLift_DC_firstColSign (ac : ACResult) (n : ℤ) (source_sig : ℤ × ℤ)
+    (h_sign : ∀ r ∈ ac, ILS.sign r.2 = source_sig)
+    (h_std : ∀ r ∈ ac,
+      n - (ILS.sign r.2).1 - (ILS.firstColSign r.2).2 ≥ 0 ∧
+      n - (ILS.sign r.2).2 - (ILS.firstColSign r.2).1 ≥ 0) :
+    ∀ r ∈ ac.thetaLift RootType.C n n,
+      ILS.firstColSign r.2 = (n - source_sig.1, n - source_sig.2) := by
+  intro r hr
+  simp only [ACResult.thetaLift, List.mem_flatMap, List.mem_map] at hr
+  obtain ⟨⟨c, ils⟩, hmem, lifted, hlift, rfl⟩ := hr
+  simp only
+  have h_sig := h_sign ⟨c, ils⟩ hmem
+  have h_std' := h_std ⟨c, ils⟩ hmem
+  have h_sig' : ILS.sign ils = source_sig := h_sig
+  have h_std'' : n - (ILS.sign ils).1 - (ILS.firstColSign ils).2 ≥ 0 ∧
+                 n - (ILS.sign ils).2 - (ILS.firstColSign ils).1 ≥ 0 := h_std'
+  simp only [ILS.thetaLift] at hlift
+  have h := ILS.thetaLift_DC_firstColSign ils n h_std'' lifted hlift
+  rw [h, h_sig']
+
+/-- ACResult-level thetaLift (M target) firstColSign: same pattern. -/
+theorem ACResult.thetaLift_BM_firstColSign (ac : ACResult) (n : ℤ) (source_sig : ℤ × ℤ)
+    (h_sign : ∀ r ∈ ac, ILS.sign r.2 = source_sig)
+    (h_std : ∀ r ∈ ac,
+      n - (ILS.sign r.2).1 - (ILS.firstColSign r.2).2 ≥ 0 ∧
+      n - (ILS.sign r.2).2 - (ILS.firstColSign r.2).1 ≥ 0) :
+    ∀ r ∈ ac.thetaLift RootType.M n n,
+      ILS.firstColSign r.2 = (n - source_sig.1, n - source_sig.2) := by
+  intro r hr
+  simp only [ACResult.thetaLift, List.mem_flatMap, List.mem_map] at hr
+  obtain ⟨⟨c, ils⟩, hmem, lifted, hlift, rfl⟩ := hr
+  simp only
+  have h_sig := h_sign ⟨c, ils⟩ hmem
+  have h_std' := h_std ⟨c, ils⟩ hmem
+  have h_sig' : ILS.sign ils = source_sig := h_sig
+  have h_std'' : n - (ILS.sign ils).1 - (ILS.firstColSign ils).2 ≥ 0 ∧
+                 n - (ILS.sign ils).2 - (ILS.firstColSign ils).1 ≥ 0 := h_std'
+  simp only [ILS.thetaLift] at hlift
+  have h := ILS.thetaLift_BM_firstColSign ils n h_std'' lifted hlift
+  rw [h, h_sig']
+
 /-! ### Lemma 11.5 firstColSign invariant (B/D-level)
 
 Combining the results above: after one AC.step for γ ∈ {D, B⁺, B⁻}, the outer
