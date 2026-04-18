@@ -535,6 +535,28 @@ theorem charTwistCM_firstColSign (E : ILS) (j : ℤ) :
       funext i pq; congr 1; omega
     rw [key, ih (k + 1)]
 
+/-- twistBD preserves firstColSign when tp, tn ∈ {1, -1}. -/
+theorem twistBD_firstColSign (E : ILS) (tp tn : ℤ)
+    (htp : tp = 1 ∨ tp = -1) (htn : tn = 1 ∨ tn = -1) :
+    firstColSign (twistBD E tp tn) = firstColSign E := by
+  rw [firstColSign_eq_aux, firstColSign_eq_aux]
+  show firstColSignAux (E.mapIdx fun i pq => twistBDRow i tp tn pq) 0 = firstColSignAux E 0
+  suffices h : ∀ k, firstColSignAux (E.mapIdx fun i pq => twistBDRow (k + i) tp tn pq) k =
+      firstColSignAux E k by
+    have : (fun i (pq : ℤ × ℤ) => twistBDRow i tp tn pq) =
+        (fun i pq => twistBDRow (0 + i) tp tn pq) := by simp
+    rw [this]; exact h 0
+  intro k; induction E generalizing k with
+  | nil => simp [firstColSignAux]
+  | cons hd tl ih =>
+    simp only [List.mapIdx_cons, firstColSignAux, Nat.add_zero]
+    have h := twistBDRow_natAbs k tp tn hd htp htn
+    rw [firstColSignRow_natAbs k _ hd h.1 h.2]
+    have key : (fun i pq => twistBDRow (k + (i + 1)) tp tn pq) =
+        (fun i pq => twistBDRow ((k + 1) + i) tp tn pq) := by
+      funext i pq; congr 1; omega
+    rw [key, ih (k + 1)]
+
 /-! ## Theta lift signature theorems -/
 
 /-- C→D theta lift: standard case produces ILS with signature (p, q). -/
