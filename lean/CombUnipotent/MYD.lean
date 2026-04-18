@@ -2388,6 +2388,22 @@ theorem AC.lemma_11_6_Bminus_unconditional (source : ACResult) (p q : ℤ) (ε_�
     rw [hf, hsign_ils, hfc_ils]
   exact ACResult.postTwist_BD_first_entry _ ε_τ _ _ h_lifted
 
+/-- **Bridge helper**: convert `head? = some (a, b)` form to `∃ rest, = (a, b) :: rest` form.
+
+    Used to adapt the output of `AC.lemma_11_6_*_unconditional` (which gives
+    `head? = some ...`) into the input hypothesis `h_first` of
+    `BMSZ.prop_11_8` / `prop_11_8_PBP` (which takes `∃ rest, ... :: rest`). -/
+theorem ACResult.head_some_to_cons (ac : ACResult) (a b : ℤ)
+    (h : ∀ r ∈ ac, r.2.head? = some (a, b)) :
+    ∀ r ∈ ac, ∃ rest, r.2 = (a, b) :: rest := by
+  intro r hr
+  have hf := h r hr
+  match hi : r.2, hf with
+  | [], hf => simp [hi] at hf
+  | hd :: tl, hf =>
+    simp only [List.head?, Option.some.injEq] at hf
+    exact ⟨tl, by rw [hf]⟩
+
 /-- AC.step for M target: firstColSign invariant, mirror of C. -/
 theorem AC.step_firstColSign_M (source : ACResult) (n : ℤ) (ε_τ ε_wp : Fin 2)
     (source_sig : ℤ × ℤ)
@@ -3424,6 +3440,59 @@ theorem prop_11_8_PBP (τ : PBP) (hγ : τ.γ = .D)
       rw [hx_d] at hbot; simp [DRCSymbol.tailContrib] at hbot
     have hε0 : ε = 0 := (epsilon_zero_iff_tailSymbol_d τ hγ h_tail).mpr hx_d
     exact h_prop.2.2 hp_pos hq_pos hε0
+
+/-- **Prop 11.8 (D type, closed-loop at PBP level):**
+    For a D-type PBP τ with source ACResult `source` uniform in sign/firstColSign
+    matching the tail-signature formula (via Prop 11.4), the truncation pattern
+    of `AC.step source .D p q ε_τ ε_wp` (where p,q = signature τ, ε_τ = epsilon τ)
+    follows the PBP-level Prop 11.8 clauses.
+
+    This composes `AC.lemma_11_6_D_unconditional` + `head_some_to_cons` + `prop_11_8_PBP`. -/
+theorem prop_11_8_PBP_D_closed (τ : PBP) (hγ : τ.γ = .D)
+    (h_tail : τ.Q.shape.colLen 0 < τ.P.shape.colLen 0)
+    (source : ACResult) (source_sig source_fcSig : ℤ × ℤ)
+    (h_sign : ∀ r ∈ source, ILS.sign r.2 = source_sig)
+    (h_fcSign : ∀ r ∈ source, ILS.firstColSign r.2 = source_fcSig)
+    (h_std : ∀ r ∈ source,
+      (PBP.signature τ).1 - (ILS.sign r.2).1 - (ILS.firstColSign r.2).2 ≥ 0 ∧
+      (PBP.signature τ).2 - (ILS.sign r.2).2 - (ILS.firstColSign r.2).1 ≥ 0)
+    -- Prop 11.4 bridge: first-entry components equal tail signature
+    (h_pt : (PBP.signature τ).1 - source_sig.1 - source_fcSig.2 =
+            (PBP.tailSignature_D τ).1)
+    (h_qt : (PBP.signature τ).2 - source_sig.2 - source_fcSig.1 =
+            (PBP.tailSignature_D τ).2)
+    (h_ne : AC.step source RootType.D (PBP.signature τ).1 (PBP.signature τ).2
+              (PBP.epsilon τ) 0 ≠ []) :
+    let ac := AC.step source RootType.D (PBP.signature τ).1 (PBP.signature τ).2
+                (PBP.epsilon τ) 0
+    let x := PBP.tailSymbol_D τ
+    (x = .s → ac.truncPlus = [] ∧ ac.truncMinus = []) ∧
+    (x ≠ .s → x ≠ .d → ac.truncPlus ≠ []) ∧
+    (x = .d → ac.truncPlus ≠ [] ∧ ac.truncMinus ≠ []) := by
+  -- Step 1: use Lemma 11.6 to get head? = some ...
+  have h_head :=
+    AC.lemma_11_6_D_unconditional source (PBP.signature τ).1 (PBP.signature τ).2
+      (PBP.epsilon τ) 0 source_sig source_fcSig h_sign h_fcSign h_std
+  -- Step 2: rewrite using Prop 11.4 bridge
+  have h_head' : ∀ r ∈ AC.step source RootType.D (PBP.signature τ).1 (PBP.signature τ).2
+      (PBP.epsilon τ) 0,
+      r.2.head? = some ((PBP.tailSignature_D τ).1,
+        if PBP.epsilon τ = 1 then -(PBP.tailSignature_D τ).2
+        else (PBP.tailSignature_D τ).2) := by
+    intro r hr
+    have := h_head r hr
+    rw [h_pt, h_qt] at this
+    exact this
+  -- Step 3: convert head? = some to ∃ rest form
+  have h_cons := ACResult.head_some_to_cons _ _ _ h_head'
+  -- Step 4: convert to ∃ rest form matching prop_11_8_PBP
+  have h_first : ∀ r ∈ AC.step source RootType.D (PBP.signature τ).1 (PBP.signature τ).2
+      (PBP.epsilon τ) 0, ∃ rest,
+      r.2 = ((PBP.tailSignature_D τ).1,
+             if PBP.epsilon τ = 1 then -(PBP.tailSignature_D τ).2
+             else (PBP.tailSignature_D τ).2) :: rest := h_cons
+  -- Step 5: apply prop_11_8_PBP
+  exact PBPInstantiation.prop_11_8_PBP τ hγ h_tail _ h_ne h_first
 
 /-! ### Prop 11.12 + 11.13 at PBP level -/
 
