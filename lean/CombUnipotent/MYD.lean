@@ -1159,17 +1159,84 @@ theorem ACResult.augment_multiplicityFree (ac : ACResult) (pq : ℤ × ℤ)
   intro h_eq
   exact hmf i k hi hk h_ne (List.cons_injective h_eq)
 
-/-! ## Lemma 11.1: Base case for small orbits -/
+/-! ## Lemma 11.1: Base case for small orbits
 
-/-- Lemma 11.1(a): When r₁(O) ≤ 1 (base case after iterated descent),
-    L_τ is a single MYD: (p_τ, (-1)^{ε_τ} q_τ)_★.
-    This corresponds to our AC.base. -/
+Reference: [BMSZ] Lemma 11.1.
+
+(a) If r₁(O) ≤ 1, then L_τ ∈ MYD_★(O) and L_τ = (p_τ, (-1)^{ε_τ} q_τ)_★.
+(b) If r₁(O) = 1, then the map
+    PBP^ext_★(Ǒ) × ℤ/2ℤ → {(a,b) ∈ ℤ × ℤ : |a|+|b| = |O|},
+    (τ, ε) ↦ (-1)^ε · L_τ(1)
+  is bijective.
+
+See `docs/blueprints/lemma_11_1_proof.md` for detailed natural-language proof. -/
+
+/-- First-entry non-negativity of `AC.base`. The base case AC is always of the form
+    [(1, [(p₀, q₀)])] or [(1, [])], and we check p₀ ≥ 0 here. -/
 theorem AC.base_first_entry (γ : RootType) :
     ∀ r ∈ AC.base γ, match r.2 with
       | [] => True  -- empty MYD for C/D/M
       | (p₁, _) :: _ => p₁ ≥ 0  -- first entry p ≥ 0
     := by
   intro r hr; cases γ <;> simp [AC.base] at hr <;> subst hr <;> simp
+
+/-- **Lemma 11.1(a), empty-orbit case** (|Ǒ| = 0):
+
+    For each γ, `AC.base γ` equals the MYD formula `(p_τ, (-1)^{ε_τ} q_τ)_★` evaluated
+    on the empty PBP, where:
+    - γ = B⁺: (p_τ, q_τ, ε_τ) = (1, 0, 1), giving (1, (-1)^1 · 0) = (1, 0)
+    - γ = B⁻: (p_τ, q_τ, ε_τ) = (0, 1, 1), giving (0, (-1)^1 · 1) = (0, -1)
+    - γ ∈ {C, D, M}: (p_τ, q_τ, ε_τ) = (0, 0, 1), giving (0, 0) (empty MYD)
+
+    This is by construction of `AC.base`. -/
+theorem lemma_11_1_a_empty :
+    AC.base .Bplus = [(1, [(1, 0)])] ∧
+    AC.base .Bminus = [(1, [(0, -1)])] ∧
+    AC.base .C = [(1, [])] ∧
+    AC.base .D = [(1, [])] ∧
+    AC.base .M = [(1, [])] := by
+  refine ⟨rfl, rfl, rfl, rfl, rfl⟩
+
+/-- **Lemma 11.1(a), empty-orbit first-entry formula**: for an empty PBP,
+    the first-and-only MYD entry equals `(p, (-1)^ε · q)` where (p, q, ε) are
+    the signature/epsilon values for that γ.
+
+    For empty PBPs, ε_τ = 1 (no d symbols), so (-1)^1 · q = -q. -/
+theorem lemma_11_1_a_empty_first_entry (γ : RootType) :
+    ∀ r ∈ AC.base γ, r.2.head? = (match γ with
+      | .Bplus => some (1, 0)    -- (p_τ, -q_τ) = (1, -0) = (1, 0)
+      | .Bminus => some (0, -1)  -- (p_τ, -q_τ) = (0, -1)
+      | _ => none) := by         -- (0, 0)_⋆ = empty MYD, head? = none
+  intro r hr
+  cases γ <;> simp [AC.base] at hr <;> subst hr <;> rfl
+
+/-
+**Lemma 11.1(a), r₁(O) = 1 case** — not yet formalized.
+
+After one descent step from r₁(O) = 1, we reach the empty-orbit case (Case 1).
+Apply induction formula (11.2) once: L_τ = θ̂(L_{τ'}) ⊗ (0, ε_τ).
+The theta lift at the single step augments by (addp, addn) where, by signature
+decomposition (Prop 11.4 at this boundary), (addp, addn) = (p_τ, q_τ). Then
+the sign twist ⊗(0, ε_τ) gives (p_τ, (-1)^{ε_τ} q_τ).
+
+Requires connecting PBP.signature to AC.step parameters — see blueprint
+`docs/blueprints/lemma_11_1_proof.md` Section "证明 (a) Case 2".
+
+  theorem lemma_11_1_a_r1_one (τ : PBP) ... : AC.fold γ_base [step_data_of τ] = ...
+-/
+
+/-
+**Lemma 11.1(b), bijection at r₁(O) = 1** — not yet formalized.
+
+From (a): each τ corresponds to L_τ(1) = (p_τ, (-1)^{ε_τ} q_τ).
+Map (τ, ε) ↦ (-1)^ε · L_τ(1) is injective (Sign and ε determine τ up to γ)
+and surjective (counting matches).
+
+Requires: (1) `lemma_11_1_a_r1_one` for the formula, (2) counting via
+`card_PBPSet_*_eq_countPBP_*` at r₁ = 1.
+
+  theorem lemma_11_1_b_bijection ... : Function.Bijective ...
+-/
 
 /-! ## Lemma 11.5: Two-step AC recursion formula
 
