@@ -73,6 +73,11 @@ $\mathcal{Q}$, applying an involutive paint translation.
   \uses{lem:10_3_M}
   The cardinality equality extends to arbitrary column-0 swap sequences.
 \end{proposition}
+\begin{proof}
+  \leanok
+  See the Lean formalization referenced on the statement.
+\end{proof}
+
 
 \section{Shape-shift for C type (case analysis)}
 
@@ -156,8 +161,8 @@ Since $\jmath$ is unchanged, $\tau_\uparrow.\mathcal{Q}(i, j) := \tau.\mathcal{Q
 
 \begin{lemma}[$\tau_\uparrow$ is a valid PBP]
   \label{lem:shapeShiftC_valid}
+  \lean{shapeShiftC}
   \leanok
-
   \uses{def:shapeShiftC_paint, def:PBP}
   The painted diagram $\tau_\uparrow$ produced by any of the four sub-cases satisfies all PBP axioms:
   \begin{itemize}
@@ -168,6 +173,11 @@ Since $\jmath$ is unchanged, $\tau_\uparrow.\mathcal{Q}(i, j) := \tau.\mathcal{Q
   \end{itemize}
   Verification is by case analysis; see [BMSZb] p.~66 and the Lean proof.
 \end{lemma}
+\begin{proof}
+  \leanok
+  See the Lean formalization referenced on the statement.
+\end{proof}
+
 
 \begin{lemma}[shape shift C identity instance]
   \label{lem:shapeShiftC_id}
@@ -177,6 +187,11 @@ Since $\jmath$ is unchanged, $\tau_\uparrow.\mathcal{Q}(i, j) := \tau.\mathcal{Q
   The identity instance (parameterised by the trivial col-0 paint)
   returns the original PBP. Used as a degenerate witness.
 \end{lemma}
+\begin{proof}
+  \leanok
+  See the Lean formalization referenced on the statement.
+\end{proof}
+
 
 \begin{lemma}[Lemma 10.3 C — PBPSet cardinality]
   \label{lem:10_3_C}
@@ -186,6 +201,11 @@ Since $\jmath$ is unchanged, $\tau_\uparrow.\mathcal{Q}(i, j) := \tau.\mathcal{Q
   For shapes $(\mu_P', \mu_Q')$ reachable via C-type shape shift from $(\mu_P, \mu_Q)$:
   \[ |\PBP_C(\mu_P, \mu_Q)| = |\PBP_C(\mu_P', \mu_Q')|. \]
 \end{lemma}
+\begin{proof}
+  \leanok
+  See the Lean formalization referenced on the statement.
+\end{proof}
+
 
 \begin{proposition}[Prop 10.2 C — PBP count independent of $\wp$]
   \label{prop:10_2_C}
@@ -193,6 +213,11 @@ Since $\jmath$ is unchanged, $\tau_\uparrow.\mathcal{Q}(i, j) := \tau.\mathcal{Q
   \leanok
   \uses{lem:10_3_C}
 \end{proposition}
+\begin{proof}
+  \leanok
+  See the Lean formalization referenced on the statement.
+\end{proof}
+
 
 \section{Trivial shape-shifts: $B$ and $D$ types}
 
@@ -209,3 +234,8 @@ shape pair and permutes paints, which we do not parameterise by).
   $|\PBP_\gamma(\mu_P, \mu_Q)| = |\PBP_\gamma(\mu_P, \mu_Q)|$ for $\gamma \in \{B^+, B^-, D\}$.
   (Reflexive statement; the genuine content for B/D is the internal paint-permutation bijection, not captured at the Lean level.)
 \end{proposition}
+\begin{proof}
+  \leanok
+  See the Lean formalization referenced on the statement.
+\end{proof}
+

@@ -154,6 +154,11 @@ are the computational representation of Marked Young Diagrams (MYDs).
   \uses{def:twistBD, def:charTwistCM, def:firstColSign}
   $\mathrm{fcSign}(\mathcal{E} \otimes (\eps^+, \eps^-)) = \mathrm{fcSign}(\mathcal{E})$ and $\mathrm{fcSign}(T^j \mathcal{E}) = \mathrm{fcSign}(\mathcal{E})$.
 \end{lemma}
+\begin{proof}
+  \leanok
+  See the Lean formalization referenced on the statement.
+\end{proof}
+
 
 \begin{lemma}[Augmentation signature formula]
   \label{lem:augment_sign}
@@ -165,6 +170,11 @@ are the computational representation of Marked Young Diagrams (MYDs).
     \Sign\big((p_0, q_0) :: \mathcal{E}\big) = \big(p_0 + \Sign(\mathcal{E}).1 + \mathrm{fcSign}(\mathcal{E}).2,\ q_0 + \Sign(\mathcal{E}).2 + \mathrm{fcSign}(\mathcal{E}).1\big).
   \]
 \end{lemma}
+\begin{proof}
+  \leanok
+  See the Lean formalization referenced on the statement.
+\end{proof}
+
 
 \section{Theta lifts (Section 9.5)}
 
@@ -190,6 +200,11 @@ are the computational representation of Marked Young Diagrams (MYDs).
   standard-case condition ($p - \Sign(\mathcal{E}).1 - \mathrm{fcSign}(\mathcal{E}).2 \geq 0$, etc.):
   $\Sign(\hat\vartheta(\mathcal{E})) = (p, q)$ (or $(n, n)$ in D$\to$C split).
 \end{theorem}
+\begin{proof}
+  \leanok
+  See the Lean formalization referenced on the statement.
+\end{proof}
+
 
 \begin{theorem}[Theta lift first-column signature]
   \label{thm:thetaLift_fcSign}
@@ -199,6 +214,11 @@ are the computational representation of Marked Young Diagrams (MYDs).
   $\mathrm{fcSign}(\hat\vartheta(\mathcal{E})) = (p - \Sign(\mathcal{E}).1,\ q - \Sign(\mathcal{E}).2)$
   (the key \emph{firstColSign invariant}).
 \end{theorem}
+\begin{proof}
+  \leanok
+  See the Lean formalization referenced on the statement.
+\end{proof}
+
 
 \begin{theorem}[Theta lift first-entry formula]
   \label{thm:thetaLift_first_entry}
@@ -207,3 +227,8 @@ are the computational representation of Marked Young Diagrams (MYDs).
   \uses{def:thetaLift, def:twistBD, def:augment}
   The first entry of $\hat\vartheta(\mathcal{E})$ is $(p - \Sign(\mathcal{E}).1 - \mathrm{fcSign}(\mathcal{E}).2,\ q - \Sign(\mathcal{E}).2 - \mathrm{fcSign}(\mathcal{E}).1)$.
 \end{theorem}
+\begin{proof}
+  \leanok
+  See the Lean formalization referenced on the statement.
+\end{proof}
+

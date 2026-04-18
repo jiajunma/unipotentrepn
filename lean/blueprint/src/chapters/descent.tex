@@ -104,6 +104,11 @@ There are four single descent directions:
   Let $\mu_P, \mu_Q$ be shapes with $\mathrm{shiftLeft}(\mu_Q) \leq \mu_P$.
   The map $\nabla_{CD} : \PBP_C(\mu_P, \mu_Q) \to \PBP_D(\mu_P, \mathrm{shiftLeft}(\mu_Q))$ is injective.
 \end{lemma}
+\begin{proof}
+  \leanok
+  See the Lean formalization referenced on the statement.
+\end{proof}
+
 
 \begin{lemma}[Lemma 10.4 B — B$\to$M + signature is injective]
   \label{lem:10_4_B}
@@ -115,6 +120,11 @@ There are four single descent directions:
   if $\nabla_{BM}\tau_1 = \nabla_{BM}\tau_2$, $\Sign(\tau_1) = \Sign(\tau_2)$, $\eps_{\tau_1} = \eps_{\tau_2}$,
   then $\tau_1 = \tau_2$.
 \end{lemma}
+\begin{proof}
+  \leanok
+  See the Lean formalization referenced on the statement.
+\end{proof}
+
 
 \begin{lemma}[Lemma 10.5 M — M$\to$B descent is injective]
   \label{lem:10_5_M}
@@ -123,6 +133,11 @@ There are four single descent directions:
   \uses{def:descentPaint_MB}
   Equal M$\to$B descent paints $\Rightarrow$ equal M-type PBPs (same shapes).
 \end{lemma}
+\begin{proof}
+  \leanok
+  See the Lean formalization referenced on the statement.
+\end{proof}
+
 
 \begin{lemma}[Lemma 10.5 D — double descent + signature injective]
   \label{lem:10_5_D}
@@ -131,6 +146,11 @@ There are four single descent directions:
   \uses{def:doubleDescent_D, def:signature_pbp, def:epsilon_pbp}
   On $\PBP_D(\mu_P, \mu_Q)$, the map $\tau \mapsto (\nabla^2\tau, \Sign(\tau), \eps_\tau)$ is injective.
 \end{lemma}
+\begin{proof}
+  \leanok
+  See the Lean formalization referenced on the statement.
+\end{proof}
+
 
 \section{Proposition 10.8 — descent cardinality relations}
 
@@ -144,6 +164,11 @@ We now turn these injectivity statements into cardinality equalities.
   If $\mu_Q.\mathrm{colLen}(0) \geq \mu_P.\mathrm{colLen}(0)$ (\emph{primitive case}), then
   \[ |\PBP_C(\mu_P, \mu_Q)| = |\PBP_D(\mu_P, \mathrm{shiftLeft}(\mu_Q))|. \]
 \end{proposition}
+\begin{proof}
+  \leanok
+  See the Lean formalization referenced on the statement.
+\end{proof}
+
 
 \begin{proposition}[Prop 10.8(b) C balanced]
   \label{prop:10_8_C_bal}
@@ -153,6 +178,11 @@ We now turn these injectivity statements into cardinality equalities.
   If $\mu_P.\mathrm{colLen}(0) = \mu_Q.\mathrm{colLen}(0) + 1$ (\emph{balanced case}), the C$\to$D descent image is $\{\sigma \in \PBP_D \mid \mathrm{tailClass}(\sigma) \in \{\mathrm{DD}, \mathrm{RC}\}\}$:
   \[ |\PBP_C(\mu_P, \mu_Q)| = \#\{\mathrm{DD}\} + \#\{\mathrm{RC}\}. \]
 \end{proposition}
+\begin{proof}
+  \leanok
+  See the Lean formalization referenced on the statement.
+\end{proof}
+
 
 \begin{proposition}[Prop 10.8(a) M primitive]
   \label{prop:10_8_M_prim}
@@ -162,6 +192,11 @@ We now turn these injectivity statements into cardinality equalities.
   If $\mu_P.\mathrm{colLen}(0) > \mu_Q.\mathrm{colLen}(0)$ (\emph{primitive}):
   \[ |\PBP_M(\mu_P, \mu_Q)| = |\PBP_{B^+}(\mathrm{shiftLeft}(\mu_P), \mu_Q)| + |\PBP_{B^-}(\mathrm{shiftLeft}(\mu_P), \mu_Q)|. \]
 \end{proposition}
+\begin{proof}
+  \leanok
+  See the Lean formalization referenced on the statement.
+\end{proof}
+
 
 \begin{proposition}[Prop 10.8(b) M balanced]
   \label{prop:10_8_M_bal}
@@ -171,6 +206,11 @@ We now turn these injectivity statements into cardinality equalities.
   If $\mu_P.\mathrm{colLen}(0) = \mu_Q.\mathrm{colLen}(0) > 0$:
   \[ |\PBP_M(\mu_P, \mu_Q)| = |\PBP_{B^+}(\cdots)| + |\{\sigma \in \PBP_{B^-}(\cdots) : \mathrm{layerOrd}(\sigma.\mathcal{Q}(c_2 - 1, 0)) > 1\}|. \]
 \end{proposition}
+\begin{proof}
+  \leanok
+  See the Lean formalization referenced on the statement.
+\end{proof}
+
 
 \chapter{Double-descent injectivity (Prop 10.9, Cor 10.10)}
 \label{chap:ddescent}
@@ -182,6 +222,11 @@ We now turn these injectivity statements into cardinality equalities.
   \uses{lem:10_5_D, def:signature_pbp, def:epsilon_pbp}
   For D-type PBPs $\tau_1, \tau_2$ with identical shapes, identical $\nabla^2\tau$, identical $\Sign$, and identical $\eps$: $\tau_1 = \tau_2$.
 \end{proposition}
+\begin{proof}
+  \leanok
+  See the Lean formalization referenced on the statement.
+\end{proof}
+
 
 \begin{proposition}[Prop 10.9 B — double descent injective]
   \label{prop:10_9_B}
@@ -190,6 +235,11 @@ We now turn these injectivity statements into cardinality equalities.
   \uses{lem:10_4_B, def:signature_pbp, def:epsilon_pbp}
   Analogue for $\gamma \in \{B^+, B^-\}$, under the interlacing constraint.
 \end{proposition}
+\begin{proof}
+  \leanok
+  See the Lean formalization referenced on the statement.
+\end{proof}
+
 
 \begin{corollary}[Cor 10.10 D/B — PBPSet injectivity]
   \label{cor:10_10}
@@ -198,3 +248,8 @@ We now turn these injectivity statements into cardinality equalities.
   \uses{prop:10_9_D, prop:10_9_B}
   The map $\tau \mapsto (\nabla^2\tau, \Sign(\tau), \eps_\tau)$ is injective on $\PBP_\gamma(\mu_P, \mu_Q)$ for $\gamma \in \{D, B^+, B^-\}$.
 \end{corollary}
+\begin{proof}
+  \leanok
+  See the Lean formalization referenced on the statement.
+\end{proof}
+

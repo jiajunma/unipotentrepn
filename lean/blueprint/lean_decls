@@ -27,6 +27,7 @@ lemma_10_3_M
 prop_10_2_PBP_M
 shiftPaintP_C_concrete
 shapeShiftC
+shapeShiftC
 shapeShiftC_id
 shapeShiftC_id_eq
 lemma_10_3_C
@@ -150,6 +151,7 @@ PBP.tailSignature_D_sum_eq
 tailSig_nonneg_D
 epsilon_zero_iff_tailSymbol_d
 tailSig_fst_zero_iff_tailSymbol_s
+tailSig_snd_zero_iff_tail_all_r
 PBP.signature_sum_D
 PBP.residual_identity_D
 PBP.signature_fst_decomp_D
