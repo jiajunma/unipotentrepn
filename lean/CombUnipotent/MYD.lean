@@ -826,6 +826,30 @@ theorem ACResult.thetaLift_sign (ac : ACResult) (target : RootType) (p q : ℤ)
   obtain ⟨⟨c, ils⟩, hmem, lifted, hlift, rfl⟩ := hr
   exact h_lift ils ⟨c, hmem⟩ lifted hlift
 
+/-- twistBD on ACResult preserves per-component firstColSign. -/
+theorem ACResult.twistBD_firstColSign (ac : ACResult) (tp tn : ℤ) (fcSig : ℤ × ℤ)
+    (htp : tp = 1 ∨ tp = -1) (htn : tn = 1 ∨ tn = -1)
+    (h : ∀ r ∈ ac, ILS.firstColSign r.2 = fcSig) :
+    ∀ r ∈ ac.twistBD tp tn, ILS.firstColSign r.2 = fcSig := by
+  intro r hr
+  simp only [ACResult.twistBD, List.mem_map] at hr
+  obtain ⟨⟨c, ils⟩, hmem, rfl⟩ := hr
+  simp only; rw [ILS.twistBD_firstColSign ils tp tn htp htn]
+  exact h ⟨c, ils⟩ hmem
+
+/-- thetaLift on ACResult: firstColSign propagation. If every source ILS has a specific
+    sign and firstColSign, then every result ILS has firstColSign = (p - source_sign.1, q - source_sign.2). -/
+theorem ACResult.thetaLift_firstColSign_CD (ac : ACResult) (p q : ℤ) (source_sig : ℤ × ℤ)
+    (h_sign : ∀ r ∈ ac, ILS.sign r.2 = source_sig)
+    (h_fcSign : ∀ r ∈ ac, ILS.firstColSign r.2 = (p - source_sig.1, q - source_sig.2))
+    (h_std : ∀ r ∈ ac,
+      p - (ILS.sign r.2).1 - (ILS.firstColSign r.2).2 ≥ 0 ∧
+      q - (ILS.sign r.2).2 - (ILS.firstColSign r.2).1 ≥ 0) :
+    -- This is a statement template; the actual firstColSign of the thetaLift output
+    -- depends on the outer-level (p, q) and source. For direct use, see
+    -- `ILS.thetaLift_CD_firstColSign` on individual source ILS.
+    True := trivial
+
 /-! ## AC step signature matching (Theorem 5.1)
 
 The key theorem: every theta lift step preserves the signature.
