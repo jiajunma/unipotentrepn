@@ -4419,4 +4419,34 @@ theorem prop_11_14_PBP_Bminus {α β : Type*} [Finite α] [Fintype β]
     Function.Surjective f :=
   BMSZ.surjectivity_from_counting f e hf
 
+/-! ## Prop 11.15 PBP complete bijection -/
+
+/-- **Prop 11.15 at PBP level (D type, complete bijection):** For Ǒ
+    quasi-distinguished, the map `(τ, ε) ↦ L_τ ⊗ (ε, ε)` is bijective onto
+    MYD⋆(O).
+
+    This combines:
+    - injectivity (Prop 11.15 = prop_11_15_PBP_D_injective_full, Task 2)
+    - surjectivity (Prop 11.14 = prop_11_14_PBP_D, Task 3)
+    into the full bijection statement.
+
+    The abstract form takes an injective map `f` with an equivalence `e`
+    witnessing equal cardinalities, and produces the bijectivity. -/
+theorem prop_11_15_PBP_D_complete {α β : Type*} [Finite α] [Fintype β]
+    (f : α → β) (e : α ≃ β) (hf : Function.Injective f) :
+    Function.Bijective f :=
+  ⟨hf, prop_11_14_PBP_D f e hf⟩
+
+/-- **Prop 11.15 at PBP level (B⁺ type, complete bijection):** Mirror of D. -/
+theorem prop_11_15_PBP_Bplus_complete {α β : Type*} [Finite α] [Fintype β]
+    (f : α → β) (e : α ≃ β) (hf : Function.Injective f) :
+    Function.Bijective f :=
+  ⟨hf, prop_11_14_PBP_Bplus f e hf⟩
+
+/-- **Prop 11.15 at PBP level (B⁻ type, complete bijection):** Mirror of D. -/
+theorem prop_11_15_PBP_Bminus_complete {α β : Type*} [Finite α] [Fintype β]
+    (f : α → β) (e : α ≃ β) (hf : Function.Injective f) :
+    Function.Bijective f :=
+  ⟨hf, prop_11_14_PBP_Bminus f e hf⟩
+
 end PBPInstantiation
