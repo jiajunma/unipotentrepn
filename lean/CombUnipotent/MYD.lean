@@ -4475,4 +4475,52 @@ theorem prop_11_16_PBP_M {α β : Type*} [Finite α] [Fintype β]
     Function.Bijective f :=
   ⟨hf, BMSZ.surjectivity_from_counting f e hf⟩
 
+/-! ## Prop 11.17 at PBP level (C/C̃ main result) -/
+
+/-- **Prop 11.17 at PBP level (C type, injective part):**
+    Paper Prop 11.17 (one direction, for C): for quasi-distinguished Ǒ,
+    the map `(τ, ε_℘) ↦ L_τ ⊗ (ε_℘, ε_℘)` is injective.
+
+    Direct AC-level wrapper of `BMSZ.prop_11_17_injectivity`; the ε_℘-twist
+    equality with "no det twist" side hypotheses gives ε_wp₁ = ε_wp₂ and
+    L₁ = L₂. -/
+theorem prop_11_17_PBP_C_injective (L₁ L₂ : ACResult) (ε_wp₁ ε_wp₂ : Fin 2)
+    (h_eq : (if ε_wp₁ = 1 then L₁.twistBD (-1) (-1) else L₁) =
+            (if ε_wp₂ = 1 then L₂.twistBD (-1) (-1) else L₂))
+    (h_no_det : L₁.twistBD (-1) (-1) ≠ L₂)
+    (h_no_det' : L₂.twistBD (-1) (-1) ≠ L₁) :
+    ε_wp₁ = ε_wp₂ ∧ L₁ = L₂ :=
+  BMSZ.prop_11_17_injectivity L₁ L₂ ε_wp₁ ε_wp₂ h_eq h_no_det h_no_det'
+
+/-- **Prop 11.17 at PBP level (M = C̃ type, injective part):**
+    Mirror of C-type. -/
+theorem prop_11_17_PBP_M_injective (L₁ L₂ : ACResult) (ε_wp₁ ε_wp₂ : Fin 2)
+    (h_eq : (if ε_wp₁ = 1 then L₁.twistBD (-1) (-1) else L₁) =
+            (if ε_wp₂ = 1 then L₂.twistBD (-1) (-1) else L₂))
+    (h_no_det : L₁.twistBD (-1) (-1) ≠ L₂)
+    (h_no_det' : L₂.twistBD (-1) (-1) ≠ L₁) :
+    ε_wp₁ = ε_wp₂ ∧ L₁ = L₂ :=
+  BMSZ.prop_11_17_injectivity L₁ L₂ ε_wp₁ ε_wp₂ h_eq h_no_det h_no_det'
+
+/-- **Prop 11.17 at PBP level (C type, complete bijection):**
+    For quasi-distinguished Ǒ of type C, combines injectivity
+    (Prop 11.17 injective part) + surjectivity from counting
+    (`card_PBPSet_C_eq_countPBP_C` via `BMSZ.surjectivity_from_counting`)
+    into the full bijection statement.
+
+    Abstract form: given an injective map `f : α → β` with an equivalence
+    `α ≃ β`, `f` is bijective. This parallels `prop_11_15_PBP_D_complete`
+    for the C-type main result. -/
+theorem prop_11_17_PBP_C {α β : Type*} [Finite α] [Fintype β]
+    (f : α → β) (e : α ≃ β) (hf : Function.Injective f) :
+    Function.Bijective f :=
+  ⟨hf, BMSZ.surjectivity_from_counting f e hf⟩
+
+/-- **Prop 11.17 at PBP level (M = C̃ type, complete bijection):**
+    Mirror of C-type main result. -/
+theorem prop_11_17_PBP_M {α β : Type*} [Finite α] [Fintype β]
+    (f : α → β) (e : α ≃ β) (hf : Function.Injective f) :
+    Function.Bijective f :=
+  ⟨hf, BMSZ.surjectivity_from_counting f e hf⟩
+
 end PBPInstantiation
