@@ -1920,6 +1920,50 @@ theorem SignTargetSet_card_pos {N : ℕ} (hN : 0 < N) :
 theorem SignTargetSet_card_zero : Fintype.card (SignTargetSet 0) = 1 := by
   rw [SignTargetSet_card]; rfl
 
+/-! ### Concrete `Equiv` for the bijection target
+
+Given the Fintype.card formula, we can construct an explicit `Equiv` between
+`SignTargetSet N` and a canonical indexable type:
+- `Fin 1` for `N = 0`
+- `Fin (4 * N)` for `N > 0`
+
+This is what `lemma_11_1_b_bijection` consumes when the caller has shown
+the source PBP-side type also has the matching cardinality. -/
+
+/-- For `N > 0`: an explicit `Equiv` between `Fin (4 * N)` and `SignTargetSet N`.
+    Built via `Fintype.equivFinOfCardEq`. -/
+noncomputable def SignTargetSet_equiv_fin_pos {N : ℕ} (hN : 0 < N) :
+    Fin (4 * N) ≃ SignTargetSet N :=
+  (Fintype.equivFinOfCardEq (SignTargetSet_card_pos hN)).symm
+
+/-- For `N = 0`: an explicit `Equiv` between `Fin 1` and `SignTargetSet 0`. -/
+noncomputable def SignTargetSet_equiv_fin_zero :
+    Fin 1 ≃ SignTargetSet 0 :=
+  (Fintype.equivFinOfCardEq SignTargetSet_card_zero).symm
+
+/-- Construct an `Equiv α (SignTargetSet N)` from a cardinality match. -/
+noncomputable def SignTargetSet_equiv_of_card_eq {α : Type*} [Fintype α] {N : ℕ}
+    (hcard : Fintype.card α = if N = 0 then 1 else 4 * N) :
+    α ≃ SignTargetSet N := by
+  apply Fintype.equivOfCardEq
+  rw [hcard, SignTargetSet_card]
+
+/-- **Lemma 11.1(b) bijection specialization**: for any source type `α` with
+    `Fintype.card α = 4 * N` (or `1` for `N = 0`), an injective map
+    `α → SignTargetSet N` is automatically bijective.
+
+    This is the immediate corollary of `lemma_11_1_b_bijection` using the
+    concrete `Equiv` constructed above. Callers supply only:
+    1. An injective map `f : α → SignTargetSet N` (from Lemma 11.1(a) +
+       injectivity of `lemma_11_1_signed_first_entry`).
+    2. The cardinality match `Fintype.card α = if N = 0 then 1 else 4 * N`.
+    -/
+theorem lemma_11_1_b_bijection_concrete {α : Type*} [Fintype α] {N : ℕ}
+    (hcard : Fintype.card α = if N = 0 then 1 else 4 * N)
+    (f : α → SignTargetSet N) (hf : Function.Injective f) :
+    Function.Bijective f :=
+  ⟨hf, hf.surjective_of_finite (SignTargetSet_equiv_of_card_eq hcard)⟩
+
 /-! ## Lemma 11.5: Two-step AC recursion formula
 
 This is the key structural lemma. It applies (11.2) twice to express
