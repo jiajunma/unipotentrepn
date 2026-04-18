@@ -159,24 +159,17 @@ Since $\jmath$ is unchanged, $\tau_\uparrow.\mathcal{Q}(i, j) := \tau.\mathcal{Q
 
 \subsection{Validity and bijectivity}
 
-\begin{lemma}[$\tau_\uparrow$ is a valid PBP]
-  \label{lem:shapeShiftC_valid}
-  \lean{shapeShiftC}
-  \leanok
-  \uses{def:shapeShiftC_paint, def:PBP}
-  The painted diagram $\tau_\uparrow$ produced by any of the four sub-cases satisfies all PBP axioms:
-  \begin{itemize}
-    \item \textbf{sym\_P}: new paint is in $\{\bullet, s, r, c, d\}$ (the C-type $\mathcal{P}$-allowed set);
-    \item \textbf{mono\_P}: the $r \to c \to d$ layer ordering is preserved in column~$1$;
-    \item \textbf{col\_c\_P, col\_d\_P}: at most one $c$ and one $d$ per column (case (a.1) moves the $c$ to a new position; the old $c$ becomes $r$);
-    \item \textbf{row\_s, row\_r}: cross-row constraints preserved (C-type $\mathcal{Q}$ only contains $\{\bullet, s\}$, so same-row $s$ uniqueness is inherited).
-  \end{itemize}
-  Verification is by case analysis; see [BMSZb] p.~66 and the Lean proof.
-\end{lemma}
-\begin{proof}
-  \leanok
-  See the Lean formalization referenced on the statement.
-\end{proof}
+\begin{remark}[$\tau_\uparrow$ is a valid PBP]
+  \label{rem:shapeShiftC_valid}
+  The painted diagram $\tau_\uparrow$ produced by any of the four sub-cases
+  satisfies all PBP axioms (sym\_P, mono\_P, col\_c\_P, col\_d\_P, row\_s,
+  row\_r). This is implicit in the Lean \texttt{shapeShiftC} construction:
+  the new paint values are always in the C-type $\mathcal{P}$-allowed set
+  $\{\bullet, s, r, c, d\}$; the $r \to c \to d$ layer ordering is preserved
+  (case (a.1) moves the $c$ to a new position, with the old $c$ becoming $r$);
+  row uniqueness carries over since the C-type $\mathcal{Q}$ only contains
+  $\{\bullet, s\}$. Details: [BMSZb] p.~66.
+\end{remark}
 
 
 \begin{lemma}[shape shift C identity instance]
@@ -197,7 +190,7 @@ Since $\jmath$ is unchanged, $\tau_\uparrow.\mathcal{Q}(i, j) := \tau.\mathcal{Q
   \label{lem:10_3_C}
   \lean{lemma_10_3_C, card_PBPSet_C_shapeShift}
   \leanok
-  \uses{lem:shapeShiftC_id, lem:shapeShiftC_valid}
+  \uses{lem:shapeShiftC_id, rem:shapeShiftC_valid}
   For shapes $(\mu_P', \mu_Q')$ reachable via C-type shape shift from $(\mu_P, \mu_Q)$:
   \[ |\PBP_C(\mu_P, \mu_Q)| = |\PBP_C(\mu_P', \mu_Q')|. \]
 \end{lemma}
