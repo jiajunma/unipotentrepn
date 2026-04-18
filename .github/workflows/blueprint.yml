@@ -14,6 +14,12 @@ on:
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
 
 jobs:
   build_blueprint:
@@ -55,9 +61,46 @@ jobs:
         run: |
           plastex -c plastex.cfg web.tex
 
-      - name: Sync HTML to docs/blueprint
+      - name: Assemble site directory for Pages
         run: |
-          # Preserve find/index.html; regenerate find/lean_decls.json from source.
+          rm -rf _site
+          mkdir -p _site/blueprint/find
+
+          # Copy compiled blueprint web pages under /blueprint/.
+          cp -R lean/blueprint/web/* _site/blueprint/
+
+          # find/ — Lean decl redirect page + JSON lookup table.
+          if [ -f docs/blueprint/find/index.html ]; then
+            cp docs/blueprint/find/index.html _site/blueprint/find/index.html
+          fi
+          cp lean/blueprint/src/lean_decls.json _site/blueprint/find/lean_decls.json
+
+          # Copy legacy markdown docs + landing page from docs/ (if present).
+          if [ -f docs/index.html ]; then
+            cp docs/index.html _site/index.html
+          fi
+          for md in docs/*.md; do
+            [ -f "$md" ] && cp "$md" _site/
+          done
+
+          touch _site/.nojekyll
+          echo "--- _site listing ---"
+          ls -la _site/
+          echo "--- _site/blueprint listing ---"
+          ls _site/blueprint/ | head -10
+          echo "--- _site/blueprint/find listing ---"
+          ls _site/blueprint/find/
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '_site'
+
+      - name: Sync docs/blueprint (for GitHub browsing)
+        run: |
           if [ -f docs/blueprint/find/index.html ]; then
             cp docs/blueprint/find/index.html /tmp/find-index.html
           fi
@@ -71,7 +114,7 @@ jobs:
           cp lean/blueprint/src/lean_decls.json docs/blueprint/find/lean_decls.json
           touch docs/.nojekyll
 
-      - name: Commit updated blueprint (if changed)
+      - name: Commit updated docs/blueprint (if changed)
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
@@ -82,3 +125,14 @@ jobs:
             git commit -m "ci(blueprint): auto-regenerate docs/blueprint/ [skip ci]"
             git push
           fi
+
+  deploy:
+    needs: build_blueprint
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
