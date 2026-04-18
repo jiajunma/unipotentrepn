@@ -92,35 +92,6 @@
 
 
     
-    <div class="dep-modal-container" id="a0000000068_modal">
-      <div class="dep-modal-content">
-          <button class="dep-closebtn">
-<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
-</button>
-        
-  <div class="thm" id="a0000000068" style="display: none">
-    <div class="thm_thmheading">
-      <span class="lemma_thmcaption">
-      Lemma
-      </span>
-      </div>
-    <div class="thm_thmcontent"></div>
-
-    <a class="latex_link" href="sect0010.html#a0000000068">LaTeX</a>
-    
-    
-  
-    
-    
-  
-    
-  </div>
-    
-      </div>
-    </div>
-
-
-    
     <div class="dep-modal-container" id="cor:10_10_modal">
       <div class="dep-modal-content">
           <button class="dep-closebtn">
@@ -173,7 +144,7 @@
       </span>
       <span class="corollary_thmlabel">99</span><span class="corollary_thmtitle">PBP-level Lemma 11.6</span></div>
     <div class="thm_thmcontent"><p>    At the PBP level, when \(\mathrm{src\_ sig} = \mathrm{Sign}(\tau '') = (p_{\tau ''}, q_{\tau ''})\) and \(\mathrm{src\_ fcSig} = \mathrm{Sign}(\tau '') - \mathrm{Sign}(\tau ^{(4)})\), the first entry of \(\mathcal{L}_\tau \) equals </p>
-<div class="displaymath" id="a0000000157">
+<div class="displaymath" id="a0000000156">
   \[  \big(p_{\tau _t},\  (-1)^{\varepsilon _\tau } q_{\tau _t}\big)  \]
 </div>
 <p> by combining Lem&#160;<a href="sect0035.html#lem:11_6_D">97</a> with Prop&#160;<a href="sect0031.html#prop:11_4">91</a> (which gives \(p_\tau - \mathbf{c}_2 - p_{\tau ''} = p_{\tau _t}\)). </p>
@@ -207,7 +178,7 @@
       </span>
       <span class="definition_thmlabel">71</span><span class="definition_thmtitle">AC base case</span></div>
     <div class="thm_thmcontent"><p>    When \(|\check{\mathcal{O}}| = 0\) the base \(\mathcal{L}_\tau \) is determined by \(\gamma \): </p>
-<div class="displaymath" id="a0000000117">
+<div class="displaymath" id="a0000000116">
   \[  \mathrm{AC.base}\, \gamma = \begin{cases}  [(1,\  [(1, 0)])] &  \gamma = B^+ \\[(1,\  [(0, -1)])]&  \gamma = B^- \\[(1,\  [])]&  \gamma \in \{ C, D, M\} . \end{cases}  \]
 </div>
 <p> (Each list entry is an <span class="ttfamily">ACResult</span> branch: <span class="ttfamily">(coeff, ILS)</span>.) </p>
@@ -273,7 +244,7 @@
     <div class="thm_thmcontent"><p>    Given a source \(\mathrm{ACResult}\) and target \(\gamma \), together with parameters \((p, q, \varepsilon _\tau , \varepsilon _\wp ) \in \mathbb {Z}^2 \times \{ 0, 1\} ^2\), define: </p>
 <ul class="itemize">
   <li><p>If \(\gamma \in \{ D, B^+, B^-\} \) (no C/M pre-twist): </p>
-<div class="displaymath" id="a0000000118">
+<div class="displaymath" id="a0000000117">
   \[  \mathrm{AC.step} = \begin{cases}  (\mathrm{source.thetaLift}\, \gamma \, p\, q)\otimes (1, -1) &  \varepsilon _\tau = 1 \\ \mathrm{source.thetaLift}\, \gamma \, p\, q &  \varepsilon _\tau = 0 \end{cases}  \]
 </div>
 </li>
@@ -371,7 +342,7 @@
       </span>
       <span class="definition_thmlabel">60</span><span class="definition_thmtitle">Character twist \(T^j\)</span></div>
     <div class="thm_thmcontent"><p>    (Paper Eq.&#160;(9.16)–(9.17).) For \(j \in \mathbb {Z}\), \(T^j\) negates the pair at row index \(i\) iff \(j\) is odd and \((i + 1) \bmod 4 = 2\): </p>
-<div class="displaymath" id="a0000000108">
+<div class="displaymath" id="a0000000107">
   \[  \mathrm{charTwistCMRow}(j, i)(p, q) := \begin{cases}  (-p, -q) &  j\text{ odd and } (i + 1) \bmod 4 = 2 \\ (p, q) &  \text{otherwise} \end{cases}  \]
 </div>
 </div>
@@ -443,7 +414,7 @@
       </span>
       <span class="definition_thmlabel">48</span><span class="definition_thmtitle">countPBP_C — recursion on C-type dp</span></div>
     <div class="thm_thmcontent"><p>    \(\mathrm{countPBP\_ C}(dp) \in \mathbb {N}\) via descent to D: </p>
-<div class="displaymath" id="a0000000096">
+<div class="displaymath" id="a0000000095">
   \[  \mathrm{countPBP\_ C}(dp) = \begin{cases}  \text{(primitive formula)} &  \mu _Q.\mathrm{colLen}(0) \geq \mu _P.\mathrm{colLen}(0) \\ n_{\mathrm{DD}} + n_{\mathrm{RC}} &  \text{balanced} \end{cases}  \]
 </div>
 </div>
@@ -552,7 +523,7 @@
       </span>
       <span class="definition_thmlabel">30</span><span class="definition_thmtitle">B \(\to \) M paints</span></div>
     <div class="thm_thmcontent"><p>    \(c_L(j) := \mathrm{dotScolLen}(\tau .\mathcal{P}, j)\), \(c_R(j) := \mathrm{dotScolLen}(\tau .\mathcal{Q}, j + 1)\). </p>
-<div class="displaymath" id="a0000000077">
+<div class="displaymath" id="a0000000076">
   \begin{align*}  (\nabla _{BM}\tau ).\mathcal{P}(i, j) & = \begin{cases}  \bullet &  i {\lt} c_R(j) \\ s &  c_R(j) \leq i {\lt} c_L(j) \\ \tau .\mathcal{P}(i, j) &  i \geq c_L(j) \end{cases}\\ (\nabla _{BM}\tau ).\mathcal{Q}(i, j) & = \begin{cases}  \bullet &  i {\lt} c_R(j) \\ \tau .\mathcal{Q}(i, j + 1) &  i \geq c_R(j) \end{cases}\end{align*}
 </div>
 </div>
@@ -594,7 +565,7 @@
       </span>
       <span class="definition_thmlabel">29</span><span class="definition_thmtitle">C \(\to \) D paints</span></div>
     <div class="thm_thmcontent"><p>    \(c_L(j) := \mathrm{dotScolLen}(\tau .\mathcal{P}, j)\), \(c_R(j) := \tau .\mathcal{Q}.\mathrm{colLen}(j + 1)\). </p>
-<div class="displaymath" id="a0000000076">
+<div class="displaymath" id="a0000000075">
   \[  (\nabla _{CD}\tau ).\mathcal{P}(i, j) = \begin{cases}  \bullet &  i {\lt} c_R(j) \\ s &  c_R(j) \leq i {\lt} c_L(j) \\ \tau .\mathcal{P}(i, j) &  i \geq c_L(j) \end{cases}  \]
 </div>
 <p> \((\nabla _{CD}\tau ).\mathcal{Q}\) is all \(\bullet \) (D type has \(\mathcal{Q}\)-allowed \(= \{ \bullet \} \)). </p>
@@ -637,7 +608,7 @@
       </span>
       <span class="definition_thmlabel">28</span><span class="definition_thmtitle">D \(\to \) C paints</span></div>
     <div class="thm_thmcontent"><p>    Let \(c_L(j) := \mathrm{dotScolLen}(\tau .\mathcal{P}, j + 1)\) and \(c_R(j) := \tau .\mathcal{Q}.\mathrm{colLen}(j)\). </p>
-<div class="displaymath" id="a0000000075">
+<div class="displaymath" id="a0000000074">
   \begin{align*}  (\nabla _{DC}\tau ).\mathcal{P}(i, j) & = \begin{cases}  \bullet &  i {\lt} c_L(j) \\ \tau .\mathcal{P}(i, j + 1) &  \text{otherwise} \end{cases}\\ (\nabla _{DC}\tau ).\mathcal{Q}(i, j) & = \begin{cases}  \bullet &  i {\lt} c_L(j) \\ s &  c_L(j) \leq i {\lt} c_R(j) \\ \bullet &  i \geq c_R(j) \end{cases}\end{align*}
 </div>
 </div>
@@ -679,7 +650,7 @@
       </span>
       <span class="definition_thmlabel">31</span><span class="definition_thmtitle">M \(\to \) B paints</span></div>
     <div class="thm_thmcontent"><p>    \(c_L(j) := \mathrm{dotScolLen}(\tau .\mathcal{P}, j + 1)\), \(c_R(j) := \mathrm{dotScolLen}(\tau .\mathcal{Q}, j)\). </p>
-<div class="displaymath" id="a0000000078">
+<div class="displaymath" id="a0000000077">
   \begin{align*}  (\nabla _{MB}\tau ).\mathcal{P}(i, j) & = \begin{cases}  \bullet &  i {\lt} c_L(j) \\ \tau .\mathcal{P}(i, j+1) &  i \geq c_L(j) \end{cases}\\ (\nabla _{MB}\tau ).\mathcal{Q}(i, j) & = \begin{cases}  \bullet &  i {\lt} c_L(j) \\ s &  c_L(j) \leq i {\lt} c_R(j) \\ \tau .\mathcal{Q}(i, j) &  i \geq c_R(j) \end{cases}\end{align*}
 </div>
 </div>
@@ -751,7 +722,7 @@
       </span>
       <span class="definition_thmlabel">33</span><span class="definition_thmtitle">Double descent B type</span></div>
     <div class="thm_thmcontent"><p>    Composite B \(\xrightarrow {\nabla _{BM}}\) M \(\xrightarrow {\nabla _{MB}}\) B. </p>
-<div class="displaymath" id="a0000000080">
+<div class="displaymath" id="a0000000079">
   \begin{align*}  (\nabla ^2_B \tau ).\mathcal{P}(i, j) & = \begin{cases}  \bullet &  i {\lt} \mathrm{dotScolLen}(\tau .\mathcal{P}, j + 1) \\ \tau .\mathcal{P}(i, j + 1) &  i \geq \ldots \end{cases}\\ (\nabla ^2_B \tau ).\mathcal{Q}(i, j) & = \begin{cases}  \bullet &  i {\lt} \mathrm{dotScolLen}(\tau .\mathcal{P}, j + 1) \\ s &  \mathrm{dotScolLen}(\tau .\mathcal{P}, j + 1) \leq i {\lt} \mathrm{dotScolLen}(\tau .\mathcal{Q}, j + 1) \\ \tau .\mathcal{Q}(i, j + 1) &  i \geq \ldots \end{cases}\end{align*}
 </div>
 </div>
@@ -793,7 +764,7 @@
       </span>
       <span class="definition_thmlabel">32</span><span class="definition_thmtitle">Double descent D type</span></div>
     <div class="thm_thmcontent"><p>    Composite D \(\xrightarrow {\nabla _{DC}}\) C \(\xrightarrow {\nabla _{CD}}\) D. After simplification: </p>
-<div class="displaymath" id="a0000000079">
+<div class="displaymath" id="a0000000078">
   \[  (\nabla ^2_D \tau ).\mathcal{P}(i, j) = \begin{cases}  \bullet &  i {\lt} \tau .\mathcal{Q}.\mathrm{colLen}(j + 1) \\ s &  \tau .\mathcal{Q}.\mathrm{colLen}(j + 1) \leq i {\lt} \mathrm{dotScolLen}(\tau .\mathcal{P}, j + 1) \\ \tau .\mathcal{P}(i, j + 1) &  i \geq \mathrm{dotScolLen}(\tau .\mathcal{P}, j + 1) \end{cases}  \]
 </div>
 <p> (The resulting \(\mathcal{Q}\) is all \(\bullet \).) </p>
@@ -1017,7 +988,7 @@
       </span>
       <span class="definition_thmlabel">57</span><span class="definition_thmtitle">First-column row contribution</span></div>
     <div class="thm_thmcontent"><p>    (Paper Eq.&#160;(9.12).) Per-row contribution to the first-column signature: </p>
-<div class="displaymath" id="a0000000106">
+<div class="displaymath" id="a0000000105">
   \[  \mathrm{firstColSignRow}(i,\  (p, q)) := \begin{cases}  (|p|, |q|) &  i\text{ even} \\ (|q|, |p|) &  i\text{ odd (swap!)} \end{cases}  \]
 </div>
 </div>
@@ -1439,7 +1410,7 @@
       </span>
       <span class="definition_thmlabel">55</span><span class="definition_thmtitle">Row contribution to signature</span></div>
     <div class="thm_thmcontent"><p>    (Paper Eq.&#160;(9.10).) For row \(i\) (0-indexed) of length \(\ell = i + 1\), let \(h := \lfloor \ell / 2 \rfloor \) and \(r := \ell \bmod 2\). The row contribution is </p>
-<div class="displaymath" id="a0000000105">
+<div class="displaymath" id="a0000000104">
   \[  \mathrm{signRow}(i,\  (p, q)) := \big(|p|(h + r) + |q| h,\  |q|(h + r) + |p| h\big).  \]
 </div>
 <p> Concretely: odd-length rows (i.e., \(\ell \) odd, \(r = 1\)) get extra \(|p|\) / \(|q|\) contribution. </p>
@@ -1583,7 +1554,7 @@
       </span>
       <span class="definition_thmlabel">82</span><span class="definition_thmtitle">Tail length \(k\)</span></div>
     <div class="thm_thmcontent"><p>    For \(\tau \in \mathrm{PBP}_D\) with \(\mathcal{P}\) col&#160;0 longer than \(\mathcal{Q}\) col&#160;0, the <em>tail length</em> is </p>
-<div class="displaymath" id="a0000000130">
+<div class="displaymath" id="a0000000129">
   \[  k := \tau .\mathcal{P}.\mathrm{colLen}(0) - \tau .\mathcal{Q}.\mathrm{colLen}(0).  \]
 </div>
 <p> Equivalently \(k = (\mathbf{r}_1(\check{\mathcal{O}}) - \mathbf{r}_2(\check{\mathcal{O}}))/2 + 1\) via the BV dual correspondence. </p>
@@ -1626,7 +1597,7 @@
       </span>
       <span class="definition_thmlabel">84</span><span class="definition_thmtitle">Tail signature \(\mathrm{tailSig}(\tau ) = (p_{\tau _t}, q_{\tau _t})\)</span></div>
     <div class="thm_thmcontent">
-<div class="displaymath" id="a0000000131">
+<div class="displaymath" id="a0000000130">
   \[  \mathrm{tailSig}(\tau ) := \sum _{i = \tau .\mathcal{Q}.\mathrm{colLen}(0)}^{\tau .\mathcal{P}.\mathrm{colLen}(0) - 1} \mathrm{tailContrib}(\mathcal{P}_\tau (i, 0)).  \]
 </div>
 <p> Each cell contributes \(\mathrm{tailContrib}\) (Def.&#160;<a href="sect0003.html#def:tailContrib">3</a>); components sum to&#160;\(2\) per cell. </p>
@@ -1832,7 +1803,7 @@
       </span>
       <span class="definition_thmlabel">59</span><span class="definition_thmtitle">Sign twist \(\otimes (\varepsilon ^+, \varepsilon ^-)\)</span></div>
     <div class="thm_thmcontent"><p>    (Paper Eq.&#160;(9.15).) For \((\varepsilon ^+, \varepsilon ^-) \in \mathbb {Z}^2\) (in practice \(\{ \pm 1\} ^2\)), acts only on odd-length rows (\(\ell = i + 1\) odd, \(i\) even): </p>
-<div class="displaymath" id="a0000000107">
+<div class="displaymath" id="a0000000106">
   \[  \mathrm{twistBDRow}(i,\  \varepsilon ^+, \varepsilon ^-)(p, q) := \begin{cases}  (p, q) &  \ell \text{ even} \\ (\varepsilon ^{+\, h + 1} \varepsilon ^{-\, h}\,  p,\  \varepsilon ^{-\, h + 1} \varepsilon ^{+\, h}\,  q) &  \ell \text{ odd, } h = i / 2. \end{cases}  \]
 </div>
 <p> Common cases: </p>
@@ -1913,7 +1884,7 @@
       </span>
       <span class="lemma_thmlabel">25</span><span class="lemma_thmtitle">Lemma 10.3 C — PBPSet cardinality</span></div>
     <div class="thm_thmcontent"><p>    For shapes \((\mu _P', \mu _Q')\) reachable via C-type shape shift from \((\mu _P, \mu _Q)\): </p>
-<div class="displaymath" id="a0000000072">
+<div class="displaymath" id="a0000000071">
   \[  |\mathrm{PBP}_C(\mu _P, \mu _Q)| = |\mathrm{PBP}_C(\mu _P', \mu _Q')|.  \]
 </div>
 </div>
@@ -2402,15 +2373,15 @@
       </span>
       <span class="lemma_thmlabel">92</span><span class="lemma_thmtitle">Lemma 11.5 D (primitive case, ILS-level, unconditional)</span></div>
     <div class="thm_thmcontent"><p>    Given an ILS \(E\) (intended as \(\mathcal{L}_{\tau ''}\)) with the firstColSign invariant </p>
-<div class="displaymath" id="a0000000144">
+<div class="displaymath" id="a0000000143">
   \[  \mathrm{fcSign}(E) = (\mathrm{Sign}(E).1 - n_{\mathrm{prev}},\  \mathrm{Sign}(E).2 - n_{\mathrm{prev}})  \]
 </div>
 <p> and target tail signature \((p_t, q_t)\) satisfying </p>
-<div class="displaymath" id="a0000000145">
+<div class="displaymath" id="a0000000144">
   \[  p_\tau - 2 n_{\mathrm{inner}} + \mathrm{Sign}(E).2 = p_t,\quad q_\tau - 2 n_{\mathrm{inner}} + \mathrm{Sign}(E).1 = q_t,  \]
 </div>
 <p> define \(n_0 := n_{\mathrm{inner}} - \mathrm{Sign}(E).1 - \mathrm{Sign}(E).2 + n_{\mathrm{prev}}\) and \(E_{\mathrm{inner}} := T^{\gamma _1}\big(E \oplus (n_0, n_0)\big)\). Then: </p>
-<div class="displaymath" id="a0000000146">
+<div class="displaymath" id="a0000000145">
   \begin{align*}  p_\tau - \mathrm{Sign}(E_{\mathrm{inner}}).1 - \mathrm{fcSign}(E_{\mathrm{inner}}).2 & = p_t, \\ q_\tau - \mathrm{Sign}(E_{\mathrm{inner}}).2 - \mathrm{fcSign}(E_{\mathrm{inner}}).1 & = q_t. \end{align*}
 </div>
 <p> These are the “outer augment” parameters consumed by the outer C\(\to \)D or M\(\to \)B lift. </p>
@@ -2496,7 +2467,7 @@
       </span>
       <span class="lemma_thmlabel">97</span><span class="lemma_thmtitle">Lemma 11.6 D (AC-level, unconditional)</span></div>
     <div class="thm_thmcontent"><p>    Let \(\gamma = D\) (no C/M pre-twist). For <span class="ttfamily">source : ACResult</span> with uniform \(\mathrm{Sign}= \mathrm{src\_ sig}\) and uniform \(\mathrm{fcSign} = \mathrm{src\_ fcSig}\) satisfying the standard-case condition (\(p - \mathrm{src\_ sig}.1 - \mathrm{src\_ fcSig}.2 \geq 0\), etc.): every branch \(r \in \mathrm{AC.step}(\mathrm{source}, D, p, q, \varepsilon _\tau , \varepsilon _\wp )\) has </p>
-<div class="displaymath" id="a0000000154">
+<div class="displaymath" id="a0000000153">
   \[  r.2.\mathrm{head?} = \mathrm{some}\big(p - \mathrm{src\_ sig}.1 - \mathrm{src\_ fcSig}.2,\  (-1)^{\varepsilon _\tau }(q - \mathrm{src\_ sig}.2 - \mathrm{src\_ fcSig}.1)\big).  \]
 </div>
 </div>
@@ -2529,7 +2500,7 @@
       </span>
       <span class="lemma_thmlabel">66</span><span class="lemma_thmtitle">Augmentation signature formula</span></div>
     <div class="thm_thmcontent"><p>    For \(p_0, q_0 \geq 0\): </p>
-<div class="displaymath" id="a0000000113">
+<div class="displaymath" id="a0000000112">
   \[  \mathrm{Sign}\big((p_0, q_0) :: \mathcal{E}\big) = \big(p_0 + \mathrm{Sign}(\mathcal{E}).1 + \mathrm{fcSign}(\mathcal{E}).2,\  q_0 + \mathrm{Sign}(\mathcal{E}).2 + \mathrm{fcSign}(\mathcal{E}).1\big).  \]
 </div>
 </div>
@@ -2662,7 +2633,7 @@
       </span>
       <span class="lemma_thmlabel">90</span><span class="lemma_thmtitle">Tail residual identity</span></div>
     <div class="thm_thmcontent"><p>    For \(\tau \in \mathrm{PBP}_D\): </p>
-<div class="displaymath" id="a0000000139">
+<div class="displaymath" id="a0000000138">
   \[  p_{\tau _t} + q_{\tau _t} = 2 \cdot \mathbf{c}_1(\mathcal{O}) - 2 \cdot \mathbf{c}_2(\mathcal{O}).  \]
 </div>
 </div>
@@ -2721,35 +2692,6 @@
 
 
     
-    <div class="dep-modal-container" id="lem:shapeShiftC_valid_modal">
-      <div class="dep-modal-content">
-          <button class="dep-closebtn">
-<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
-</button>
-        
-  <div class="thm" id="lem:shapeShiftC_valid" style="display: none">
-    <div class="thm_thmheading">
-      <span class="lemma_thmcaption">
-      Lemma
-      </span>
-      <span class="lemma_thmlabel">23</span><span class="lemma_thmtitle">\(\)</span></div>
-    <div class="thm_thmcontent"></div>
-
-    <a class="latex_link" href="sect0010.html#lem:shapeShiftC_valid">LaTeX</a>
-    
-    
-  
-    
-    
-  
-    
-  </div>
-    
-      </div>
-    </div>
-
-
-    
     <div class="dep-modal-container" id="lem:shapeShiftM_involution_modal">
       <div class="dep-modal-content">
           <button class="dep-closebtn">
@@ -2793,7 +2735,7 @@
       </span>
       <span class="lemma_thmlabel">89</span><span class="lemma_thmtitle">D-type signature sum</span></div>
     <div class="thm_thmcontent"><p>    For \(\tau \in \mathrm{PBP}_D\): </p>
-<div class="displaymath" id="a0000000137">
+<div class="displaymath" id="a0000000136">
   \[  p_\tau + q_\tau = 2\cdot |\tau |.  \]
 </div>
 <p> (Each cell contributes exactly \(2\) to the total \(p + q\).) </p>
@@ -2995,7 +2937,7 @@
       </span>
       <span class="proposition_thmlabel">50</span><span class="proposition_thmtitle">Prop 10.11 B — counting for B type</span></div>
     <div class="thm_thmcontent"><p>    For any valid B-type dual partition \(dp\) with shape \((\mu _P, \mu _Q)\) derived from \(dp\): </p>
-<div class="displaymath" id="a0000000098">
+<div class="displaymath" id="a0000000097">
   \[  |\mathrm{PBP}_{B^+}(\mu _P, \mu _Q)| + |\mathrm{PBP}_{B^-}(\mu _P, \mu _Q)| = \mathrm{tripleSum}\big(\mathrm{countPBP\_ B}(dp)\big).  \]
 </div>
 </div>
@@ -3039,7 +2981,7 @@
       </span>
       <span class="proposition_thmlabel">51</span><span class="proposition_thmtitle">Prop 10.11 D — counting for D type</span></div>
     <div class="thm_thmcontent"><p>    For any valid D-type dual partition \(dp\): </p>
-<div class="displaymath" id="a0000000100">
+<div class="displaymath" id="a0000000099">
   \[  |\mathrm{PBP}_D(\mu _P, \mu _Q)| = \mathrm{tripleSum}\big(\mathrm{countPBP\_ D}(dp)\big).  \]
 </div>
 </div>
@@ -3081,7 +3023,7 @@
       </span>
       <span class="proposition_thmlabel">52</span><span class="proposition_thmtitle">Prop 10.12 C — counting for C type</span></div>
     <div class="thm_thmcontent"><p>    For any valid C-type dual partition \(dp\) (with \(dp \neq []\)): </p>
-<div class="displaymath" id="a0000000102">
+<div class="displaymath" id="a0000000101">
   \[  |\mathrm{PBP}_C(\mu _P, \mu _Q)| = \mathrm{countPBP\_ C}(dp).  \]
 </div>
 </div>
@@ -3123,7 +3065,7 @@
       </span>
       <span class="proposition_thmlabel">53</span><span class="proposition_thmtitle">Prop 10.12 M — counting for M type</span></div>
     <div class="thm_thmcontent"><p>    For any valid M-type dual partition \(dp\): </p>
-<div class="displaymath" id="a0000000104">
+<div class="displaymath" id="a0000000103">
   \[  |\mathrm{PBP}_M(\mu _P, \mu _Q)| = \mathrm{countPBP\_ M}(dp).  \]
 </div>
 </div>
@@ -3264,7 +3206,7 @@
       </span>
       <span class="proposition_thmlabel">39</span><span class="proposition_thmtitle">Prop 10.8(b) C balanced</span></div>
     <div class="thm_thmcontent"><p>    If \(\mu _P.\mathrm{colLen}(0) = \mu _Q.\mathrm{colLen}(0) + 1\) (<em>balanced case</em>), the C\(\to \)D descent image is \(\{ \sigma \in \mathrm{PBP}_D \mid \mathrm{tailClass}(\sigma ) \in \{ \mathrm{DD}, \mathrm{RC}\} \} \): </p>
-<div class="displaymath" id="a0000000088">
+<div class="displaymath" id="a0000000087">
   \[  |\mathrm{PBP}_C(\mu _P, \mu _Q)| = \# \{ \mathrm{DD}\}  + \# \{ \mathrm{RC}\} .  \]
 </div>
 </div>
@@ -3306,7 +3248,7 @@
       </span>
       <span class="proposition_thmlabel">38</span><span class="proposition_thmtitle">Prop 10.8(a) C primitive</span></div>
     <div class="thm_thmcontent"><p>    If \(\mu _Q.\mathrm{colLen}(0) \geq \mu _P.\mathrm{colLen}(0)\) (<em>primitive case</em>), then </p>
-<div class="displaymath" id="a0000000086">
+<div class="displaymath" id="a0000000085">
   \[  |\mathrm{PBP}_C(\mu _P, \mu _Q)| = |\mathrm{PBP}_D(\mu _P, \mathrm{shiftLeft}(\mu _Q))|.  \]
 </div>
 </div>
@@ -3348,7 +3290,7 @@
       </span>
       <span class="proposition_thmlabel">41</span><span class="proposition_thmtitle">Prop 10.8(b) M balanced</span></div>
     <div class="thm_thmcontent"><p>    If \(\mu _P.\mathrm{colLen}(0) = \mu _Q.\mathrm{colLen}(0) {\gt} 0\): </p>
-<div class="displaymath" id="a0000000092">
+<div class="displaymath" id="a0000000091">
   \[  |\mathrm{PBP}_M(\mu _P, \mu _Q)| = |\mathrm{PBP}_{B^+}(\cdots )| + |\{ \sigma \in \mathrm{PBP}_{B^-}(\cdots ) : \mathrm{layerOrd}(\sigma .\mathcal{Q}(c_2 - 1, 0)) {\gt} 1\} |.  \]
 </div>
 </div>
@@ -3390,7 +3332,7 @@
       </span>
       <span class="proposition_thmlabel">40</span><span class="proposition_thmtitle">Prop 10.8(a) M primitive</span></div>
     <div class="thm_thmcontent"><p>    If \(\mu _P.\mathrm{colLen}(0) {\gt} \mu _Q.\mathrm{colLen}(0)\) (<em>primitive</em>): </p>
-<div class="displaymath" id="a0000000090">
+<div class="displaymath" id="a0000000089">
   \[  |\mathrm{PBP}_M(\mu _P, \mu _Q)| = |\mathrm{PBP}_{B^+}(\mathrm{shiftLeft}(\mu _P), \mu _Q)| + |\mathrm{PBP}_{B^-}(\mathrm{shiftLeft}(\mu _P), \mu _Q)|.  \]
 </div>
 </div>
@@ -3672,7 +3614,7 @@
       </span>
       <span class="proposition_thmlabel">114</span><span class="proposition_thmtitle">Prop 11.15 — main bijection for B/D types</span></div>
     <div class="thm_thmcontent"><p>    The map \((\tau , \varepsilon ) \mapsto \mathcal{L}_\tau \otimes (\varepsilon , \varepsilon )\) is a bijection </p>
-<div class="displaymath" id="a0000000173">
+<div class="displaymath" id="a0000000172">
   \[  \mathrm{PBP}_\gamma (\check{\mathcal{O}}) \times \mathrm{Fin}\, 2 \  \xrightarrow {\sim }\  \mathbf{MYD}_\gamma (\mathcal{O})  \]
 </div>
 <p> for \(\gamma \in \{ D, B^+, B^-\} \). </p>
@@ -3813,11 +3755,11 @@
       </span>
       <span class="proposition_thmlabel">91</span><span class="proposition_thmtitle">Prop 11.4 D — signature decomposition (Eq 11.7)</span></div>
     <div class="thm_thmcontent"><p>    (Primitive case \(\mathbf{r}_2(\check{\mathcal{O}}) {\gt} \mathbf{r}_3(\check{\mathcal{O}})\).) The signature splits as </p>
-<div class="displaymath" id="a0000000141">
+<div class="displaymath" id="a0000000140">
   \[  \mathrm{Sign}(\tau ) = (\mathbf{c}_2(\mathcal{O}), \mathbf{c}_2(\mathcal{O})) + \mathrm{Sign}(\nabla ^2\tau ) + \mathrm{tailSig}(\tau ).  \]
 </div>
 <p> More explicitly (Lean form): </p>
-<div class="displaymath" id="a0000000142">
+<div class="displaymath" id="a0000000141">
   \begin{align*}  p_\tau & = \mathbf{c}_2(\mathcal{O}) + p_{\nabla ^2\tau } + p_{\tau _t} \\ q_\tau & = \mathbf{c}_2(\mathcal{O}) + q_{\nabla ^2\tau } + q_{\tau _t} \end{align*}
 </div>
 <p> where \(\mathbf{c}_2(\mathcal{O}) = \tau .\mathcal{Q}.\mathrm{colLen}(0)\). </p>
@@ -4222,7 +4164,7 @@
       </span>
       <span class="theorem_thmlabel">74</span><span class="theorem_thmtitle">AC.step preserves signature (\(\gamma = D\))</span></div>
     <div class="thm_thmcontent"><p>    Every branch of the output has \(\mathrm{Sign}= (p, q)\): </p>
-<div class="displaymath" id="a0000000120">
+<div class="displaymath" id="a0000000119">
   \[  \forall r \in \mathrm{AC.step}_{D}(\mathrm{source}, p, q, \varepsilon _\tau , \varepsilon _\wp ),\quad \mathrm{Sign}(r.2) = (p, q).  \]
 </div>
 </div>
@@ -4255,11 +4197,11 @@
       </span>
       <span class="theorem_thmlabel">77</span><span class="theorem_thmtitle">firstColSign diff invariant</span></div>
     <div class="thm_thmcontent"><p>    Let \(\mathcal{L}_\tau = \mathrm{AC.fold}\, \gamma \, (\mathrm{descent\  chain})\), with the descent chain producing signatures \(\mathrm{Sign}(\mathcal{L}_\tau )\) and \(\mathrm{Sign}(\mathcal{L}_{\tau ''})\) at successive levels. Then </p>
-<div class="displaymath" id="a0000000124">
+<div class="displaymath" id="a0000000123">
   \[  \mathrm{fcSign}(\mathcal{L}_\tau ) = \mathrm{Sign}(\mathcal{L}_\tau ) - \mathrm{Sign}(\mathcal{L}_{\tau ''}).  \]
 </div>
 <p> Equivalently: </p>
-<div class="displaymath" id="a0000000125">
+<div class="displaymath" id="a0000000124">
   \[  \mathrm{fcSign}(\mathcal{L}_\tau ) = (p_\tau - p_{\tau ''},\  q_\tau - q_{\tau ''}).  \]
 </div>
 </div>
@@ -4497,7 +4439,7 @@ graphContainer.graphviz({useWorker: true})
     .width(width)
     .height(height)
     .fit(true)
-    .renderDot(`strict digraph "" {	graph [bgcolor=transparent];	node [label="\N",		penwidth=1.8	];	edge [arrowhead=vee];	"lem:shapeShiftC_id"	[color=green,		fillcolor="#1CAC78",		label=shapeShiftC_id,		shape=ellipse,		style=filled];	"lem:10_3_C"	[color=green,		fillcolor="#9CEC8B",		label="10_3_C",		shape=ellipse,		style=filled];	"lem:shapeShiftC_id" -> "lem:10_3_C"	[style=dashed];	"prop:10_2_C"	[color=green,		fillcolor="#9CEC8B",		label="10_2_C",		shape=ellipse,		style=filled];	"lem:10_3_C" -> "prop:10_2_C"	[style=dashed];	"prop:10_12_C"	[color=green,		fillcolor="#9CEC8B",		label="10_12_C",		shape=ellipse,		style=filled];	"prop:10_2_C" -> "prop:10_12_C"	[style=dashed];	"thm:thetaLift_first_entry"	[color=green,		fillcolor="#1CAC78",		label=thetaLift_first_entry,		shape=ellipse,		style=filled];	"thm:fcSign_diff"	[color=green,		fillcolor="#1CAC78",		label=fcSign_diff,		shape=ellipse,		style=filled];	"thm:AC_step_fcSign"	[color=green,		fillcolor="#1CAC78",		label=AC_step_fcSign,		shape=ellipse,		style=filled];	"thm:fcSign_diff" -> "thm:AC_step_fcSign"	[style=dashed];	"lem:11_5_D_ILS"	[color=green,		fillcolor="#1CAC78",		label="11_5_D_ILS",		shape=ellipse,		style=filled];	"thm:AC_step_fcSign" -> "lem:11_5_D_ILS"	[style=dashed];	"thm:11_5_atomic_pbp"	[color=green,		fillcolor="#1CAC78",		label="11_5_atomic_pbp",		shape=ellipse,		style=filled];	"lem:11_5_D_ILS" -> "thm:11_5_atomic_pbp"	[style=dashed];	"lem:11_6_D"	[color=green,		fillcolor="#1CAC78",		label="11_6_D",		shape=ellipse,		style=filled];	"lem:11_5_D_ILS" -> "lem:11_6_D"	[style=dashed];	"lem:11_6_B"	[color=green,		fillcolor="#1CAC78",		label="11_6_B",		shape=ellipse,		style=filled];	"lem:11_5_D_ILS" -> "lem:11_6_B"	[style=dashed];	"cor:11_6_pbp"	[color=green,		fillcolor="#1CAC78",		label="11_6_pbp",		shape=ellipse,		style=filled];	"lem:11_6_D" -> "cor:11_6_pbp"	[style=dashed];	"prop:11_8_ac"	[color=green,		fillcolor="#1CAC78",		label="11_8_ac",		shape=ellipse,		style=filled];	"lem:11_6_D" -> "prop:11_8_ac"	[style=dashed];	"prop:11_10_D"	[color=green,		fillcolor="#1CAC78",		label="11_10_D",		shape=ellipse,		style=filled];	"lem:11_6_D" -> "prop:11_10_D"	[style=dashed];	"lem:fact2_descent"	[color=green,		fillcolor="#1CAC78",		label=fact2_descent,		shape=ellipse,		style=filled];	"lem:fact2_descent" -> "thm:11_5_atomic_pbp"	[style=dashed];	"def:signature_pbp"	[color=green,		fillcolor="#B0ECA3",		label=signature_pbp,		shape=box,		style=filled];	"lem:10_5_D"	[color=green,		fillcolor="#1CAC78",		label="10_5_D",		shape=ellipse,		style=filled];	"def:signature_pbp" -> "lem:10_5_D"	[style=dashed];	"prop:11_4"	[color=green,		fillcolor="#1CAC78",		label="11_4",		shape=ellipse,		style=filled];	"def:signature_pbp" -> "prop:11_4"	[style=dashed];	"lem:fact1_sig_sum"	[color=green,		fillcolor="#1CAC78",		label=fact1_sig_sum,		shape=ellipse,		style=filled];	"def:signature_pbp" -> "lem:fact1_sig_sum"	[style=dashed];	"lem:10_4_B"	[color=green,		fillcolor="#1CAC78",		label="10_4_B",		shape=ellipse,		style=filled];	"def:signature_pbp" -> "lem:10_4_B"	[style=dashed];	"lem:sig_sum_D"	[color=green,		fillcolor="#1CAC78",		label=sig_sum_D,		shape=ellipse,		style=filled];	"def:signature_pbp" -> "lem:sig_sum_D"	[style=dashed];	"prop:10_9_D"	[color=green,		fillcolor="#1CAC78",		label="10_9_D",		shape=ellipse,		style=filled];	"lem:10_5_D" -> "prop:10_9_D"	[style=dashed];	"prop:11_4" -> "lem:11_5_D_ILS"	[style=dashed];	"lem:fact1_sig_sum" -> "thm:11_5_atomic_pbp"	[style=dashed];	"prop:10_9_B"	[color=green,		fillcolor="#1CAC78",		label="10_9_B",		shape=ellipse,		style=filled];	"lem:10_4_B" -> "prop:10_9_B"	[style=dashed];	"lem:sig_sum_D" -> "lem:11_5_D_ILS";	"cor:10_10"	[color=green,		fillcolor="#1CAC78",		label="10_10",		shape=ellipse,		style=filled];	"prop:10_9_D" -> "cor:10_10"	[style=dashed];	"def:countPBP_D"	[color=green,		fillcolor="#B0ECA3",		label=countPBP_D,		shape=box,		style=filled];	"prop:10_9_D" -> "def:countPBP_D"	[style=dashed];	"prop:10_11_D"	[color=green,		fillcolor="#1CAC78",		label="10_11_D",		shape=ellipse,		style=filled];	"cor:10_10" -> "prop:10_11_D"	[style=dashed];	"prop:10_11_B"	[color=green,		fillcolor="#1CAC78",		label="10_11_B",		shape=ellipse,		style=filled];	"cor:10_10" -> "prop:10_11_B"	[style=dashed];	"def:countPBP_D" -> "prop:10_11_D"	[style=dashed];	"def:countPBP_B"	[color=green,		fillcolor="#B0ECA3",		label=countPBP_B,		shape=box,		style=filled];	"def:countPBP_D" -> "def:countPBP_B"	[style=dashed];	"def:countPBP_C"	[color=green,		fillcolor="#B0ECA3",		label=countPBP_C,		shape=box,		style=filled];	"def:countPBP_D" -> "def:countPBP_C"	[style=dashed];	"prop:10_9_B" -> "cor:10_10"	[style=dashed];	"prop:10_11_D" -> "prop:10_12_C"	[style=dashed];	"prop:10_12_M"	[color=green,		fillcolor="#1CAC78",		label="10_12_M",		shape=ellipse,		style=filled];	"prop:10_11_B" -> "prop:10_12_M"	[style=dashed];	"def:countPBP_B" -> "prop:10_11_B"	[style=dashed];	"def:countPBP_M"	[color=green,		fillcolor="#B0ECA3",		label=countPBP_M,		shape=box,		style=filled];	"def:countPBP_B" -> "def:countPBP_M"	[style=dashed];	"def:countPBP_C" -> "prop:10_12_C"	[style=dashed];	"prop:11_14"	[color=green,		fillcolor="#9CEC8B",		label="11_14",		shape=ellipse,		style=filled];	"prop:10_12_C" -> "prop:11_14"	[style=dashed];	"prop:11_15"	[color=green,		fillcolor="#9CEC8B",		label="11_15",		shape=ellipse,		style=filled];	"prop:11_14" -> "prop:11_15"	[style=dashed];	"prop:11_16"	[color=green,		fillcolor="#9CEC8B",		label="11_16",		shape=ellipse,		style=filled];	"prop:11_14" -> "prop:11_16"	[style=dashed];	"prop:11_17"	[color=green,		fillcolor="#9CEC8B",		label="11_17",		shape=ellipse,		style=filled];	"prop:11_15" -> "prop:11_17"	[style=dashed];	"prop:11_16" -> "prop:11_17"	[style=dashed];	"def:shapeShiftM"	[color=green,		fillcolor="#B0ECA3",		label=shapeShiftM,		shape=box,		style=filled];	"lem:shapeShiftM_involution"	[color=green,		fillcolor="#1CAC78",		label=shapeShiftM_involution,		shape=ellipse,		style=filled];	"def:shapeShiftM" -> "lem:shapeShiftM_involution"	[style=dashed];	"lem:10_3_M"	[color=green,		fillcolor="#1CAC78",		label="10_3_M",		shape=ellipse,		style=filled];	"lem:shapeShiftM_involution" -> "lem:10_3_M"	[style=dashed];	"prop:10_2_M"	[color=green,		fillcolor="#1CAC78",		label="10_2_M",		shape=ellipse,		style=filled];	"lem:10_3_M" -> "prop:10_2_M"	[style=dashed];	"def:doubleDescent_D"	[color=green,		fillcolor="#B0ECA3",		label=doubleDescent_D,		shape=box,		style=filled];	"def:doubleDescent_D" -> "lem:fact2_descent"	[style=dashed];	"def:doubleDescent_D" -> "lem:10_5_D"	[style=dashed];	"def:doubleDescent_D" -> "prop:11_4"	[style=dashed];	"def:augment"	[color=green,		fillcolor="#B0ECA3",		label=augment,		shape=box,		style=filled];	"def:thetaLift"	[color=green,		fillcolor="#B0ECA3",		label=thetaLift,		shape=box,		style=filled];	"def:augment" -> "def:thetaLift"	[style=dashed];	"lem:augment_sign"	[color=green,		fillcolor="#1CAC78",		label=augment_sign,		shape=ellipse,		style=filled];	"def:augment" -> "lem:augment_sign"	[style=dashed];	"def:thetaLift" -> "thm:thetaLift_first_entry"	[style=dashed];	"def:AC_step"	[color=green,		fillcolor="#B0ECA3",		label=AC_step,		shape=box,		style=filled];	"def:thetaLift" -> "def:AC_step"	[style=dashed];	"thm:thetaLift_fcSign"	[color=green,		fillcolor="#1CAC78",		label=thetaLift_fcSign,		shape=ellipse,		style=filled];	"def:thetaLift" -> "thm:thetaLift_fcSign"	[style=dashed];	"thm:thetaLift_sign"	[color=green,		fillcolor="#1CAC78",		label=thetaLift_sign,		shape=ellipse,		style=filled];	"def:thetaLift" -> "thm:thetaLift_sign"	[style=dashed];	"lem:augment_sign" -> "thm:thetaLift_sign"	[style=dashed];	"def:AC_fold"	[color=green,		fillcolor="#B0ECA3",		label=AC_fold,		shape=box,		style=filled];	"def:AC_step" -> "def:AC_fold"	[style=dashed];	"thm:AC_step_sign_D"	[color=green,		fillcolor="#1CAC78",		label=AC_step_sign_D,		shape=ellipse,		style=filled];	"def:AC_step" -> "thm:AC_step_sign_D"	[style=dashed];	"thm:postTwist_first_entry"	[color=green,		fillcolor="#1CAC78",		label=postTwist_first_entry,		shape=ellipse,		style=filled];	"def:AC_step" -> "thm:postTwist_first_entry"	[style=dashed];	"thm:thetaLift_sign" -> "thm:AC_step_sign_D"	[style=dashed];	"def:AC_fold" -> "thm:fcSign_diff"	[style=dashed];	"prop:10_8_M_bal"	[color=green,		fillcolor="#1CAC78",		label="10_8_M_bal",		shape=ellipse,		style=filled];	"prop:10_8_M_bal" -> "def:countPBP_B"	[style=dashed];	"prop:10_12_M" -> "prop:11_14"	[style=dashed];	"def:countPBP_M" -> "prop:10_12_M"	[style=dashed];	"def:truncate"	[color=green,		fillcolor="#B0ECA3",		label=truncate,		shape=box,		style=filled];	"def:truncate" -> "def:thetaLift"	[style=dashed];	"def:tailSignature"	[color=green,		fillcolor="#B0ECA3",		label=tailSignature,		shape=box,		style=filled];	"def:tailSignature" -> "prop:11_4"	[style=dashed];	"lem:tailSig_nonneg"	[color=green,		fillcolor="#1CAC78",		label=tailSig_nonneg,		shape=ellipse,		style=filled];	"def:tailSignature" -> "lem:tailSig_nonneg"	[style=dashed];	"lem:fact3_residual"	[color=green,		fillcolor="#1CAC78",		label=fact3_residual,		shape=ellipse,		style=filled];	"def:tailSignature" -> "lem:fact3_residual"	[style=dashed];	"lem:11_3"	[color=green,		fillcolor="#1CAC78",		label="11_3",		shape=ellipse,		style=filled];	"def:tailSignature" -> "lem:11_3"	[style=dashed];	"lem:tailSig_sum"	[color=green,		fillcolor="#1CAC78",		label=tailSig_sum,		shape=ellipse,		style=filled];	"def:tailSignature" -> "lem:tailSig_sum"	[style=dashed];	"prop:11_9_D"	[color=green,		fillcolor="#1CAC78",		label="11_9_D",		shape=ellipse,		style=filled];	"lem:tailSig_nonneg" -> "prop:11_9_D"	[style=dashed];	"lem:fact3_residual" -> "thm:11_5_atomic_pbp"	[style=dashed];	"lem:11_3" -> "prop:11_8_ac"	[style=dashed];	"lem:residual_D"	[color=green,		fillcolor="#1CAC78",		label=residual_D,		shape=ellipse,		style=filled];	"lem:tailSig_sum" -> "lem:residual_D"	[style=dashed];	"prop:11_9_B"	[color=green,		fillcolor="#1CAC78",		label="11_9_B",		shape=ellipse,		style=filled];	"prop:11_9_D" -> "prop:11_9_B"	[style=dashed];	"prop:11_8_ac" -> "prop:11_9_D"	[style=dashed];	"prop:11_8_pbp"	[color=green,		fillcolor="#1CAC78",		label="11_8_pbp",		shape=ellipse,		style=filled];	"prop:11_8_ac" -> "prop:11_8_pbp"	[style=dashed];	"lem:11_11"	[color=green,		fillcolor="#1CAC78",		label="11_11",		shape=ellipse,		style=filled];	"prop:11_8_ac" -> "lem:11_11"	[style=dashed];	"lem:residual_D" -> "lem:11_5_D_ILS";	"prop:10_2_M" -> "prop:10_12_M"	[style=dashed];	"prop:11_10_D" -> "lem:11_11"	[style=dashed];	"lem:10_5_M"	[color=green,		fillcolor="#1CAC78",		label="10_5_M",		shape=ellipse,		style=filled];	"lem:10_5_M" -> "prop:10_8_M_bal"	[style=dashed];	"prop:10_8_M_prim"	[color=green,		fillcolor="#1CAC78",		label="10_8_M_prim",		shape=ellipse,		style=filled];	"lem:10_5_M" -> "prop:10_8_M_prim"	[style=dashed];	"prop:10_8_M_prim" -> "def:countPBP_B"	[style=dashed];	"lem:11_1_b_D"	[color=green,		fillcolor="#1CAC78",		label="11_1_b_D",		shape=ellipse,		style=filled];	"lem:11_1_b_D" -> "prop:11_15"	[style=dashed];	"def:RootType"	[color=green,		fillcolor="#B0ECA3",		label=RootType,		shape=box,		style=filled];	"def:sym_allowed"	[color=blue,		fillcolor="#A3D6FF",		label=sym_allowed,		shape=box,		style=filled];	"def:RootType" -> "def:sym_allowed"	[style=dashed];	"def:PBP"	[color=green,		fillcolor="#B0ECA3",		label=PBP,		shape=box,		style=filled];	"def:sym_allowed" -> "def:PBP"	[style=dashed];	"def:PBP" -> "def:signature_pbp"	[style=dashed];	"def:PBP" -> "def:shapeShiftM"	[style=dashed];	"def:cardCells"	[color=green,		fillcolor="#B0ECA3",		label=cardCells,		shape=box,		style=filled];	"def:PBP" -> "def:cardCells"	[style=dashed];	"def:descentPaint_BM"	[color=green,		fillcolor="#B0ECA3",		label=descentPaint_BM,		shape=box,		style=filled];	"def:PBP" -> "def:descentPaint_BM"	[style=dashed];	"def:epsilon_pbp"	[color=green,		fillcolor="#B0ECA3",		label=epsilon_pbp,		shape=box,		style=filled];	"def:PBP" -> "def:epsilon_pbp"	[style=dashed];	"def:descentPaint_DC"	[color=green,		fillcolor="#B0ECA3",		label=descentPaint_DC,		shape=box,		style=filled];	"def:PBP" -> "def:descentPaint_DC"	[style=dashed];	"def:descentPaint_CD"	[color=green,		fillcolor="#B0ECA3",		label=descentPaint_CD,		shape=box,		style=filled];	"def:PBP" -> "def:descentPaint_CD"	[style=dashed];	"def:descentPaint_MB"	[color=green,		fillcolor="#B0ECA3",		label=descentPaint_MB,		shape=box,		style=filled];	"def:PBP" -> "def:descentPaint_MB"	[style=dashed];	"def:shapeShiftC_paint"	[color=green,		fillcolor="#B0ECA3",		label=shapeShiftC_paint,		shape=box,		style=filled];	"def:PBP" -> "def:shapeShiftC_paint"	[style=dashed];	"def:PBPSet"	[color=green,		fillcolor="#B0ECA3",		label=PBPSet,		shape=box,		style=filled];	"def:PBP" -> "def:PBPSet"	[style=dashed];	"def:tailLen"	[color=green,		fillcolor="#B0ECA3",		label=tailLen,		shape=box,		style=filled];	"def:PBP" -> "def:tailLen"	[style=dashed];	"def:tailClass_D"	[color=green,		fillcolor="#B0ECA3",		label=tailClass_D,		shape=box,		style=filled];	"def:PBP" -> "def:tailClass_D"	[style=dashed];	"thm:AC_step_sign_D" -> "thm:fcSign_diff"	[style=dashed];	"thm:AC_step_sign_all"	[color=green,		fillcolor="#1CAC78",		label=AC_step_sign_all,		shape=ellipse,		style=filled];	"thm:AC_step_sign_D" -> "thm:AC_step_sign_all"	[style=dashed];	"thm:postTwist_first_entry" -> "lem:11_6_D"	[style=dashed];	"prop:11_7"	[color=green,		fillcolor="#1CAC78",		label="11_7",		shape=ellipse,		style=filled];	"thm:AC_step_sign_all" -> "prop:11_7";	"lem:11_1_a_r1"	[color=green,		fillcolor="#1CAC78",		label="11_1_a_r1",		shape=ellipse,		style=filled];	"thm:AC_step_sign_all" -> "lem:11_1_a_r1";	"prop:11_7" -> "prop:11_8_ac"	[style=dashed];	"lem:11_1_b_abstract"	[color=green,		fillcolor="#1CAC78",		label="11_1_b_abstract",		shape=ellipse,		style=filled];	"lem:11_1_a_r1" -> "lem:11_1_b_abstract"	[style=dashed];	"lem:11_1_b_abstract" -> "lem:11_1_b_D"	[style=dashed];	"lem:twist_sign"	[color=green,		fillcolor="#1CAC78",		label=twist_sign,		shape=ellipse,		style=filled];	"lem:twist_sign" -> "thm:thetaLift_sign"	[style=dashed];	"prop:10_8_C_prim"	[color=green,		fillcolor="#1CAC78",		label="10_8_C_prim",		shape=ellipse,		style=filled];	"prop:10_8_C_prim" -> "def:countPBP_D"	[style=dashed];	"def:cardCells" -> "lem:fact2_descent"	[style=dashed];	"def:cardCells" -> "lem:fact1_sig_sum"	[style=dashed];	"def:cardCells" -> "lem:sig_sum_D"	[style=dashed];	"def:descentPaint_BM" -> "lem:10_4_B"	[style=dashed];	"def:doubleDescent_B"	[color=green,		fillcolor="#B0ECA3",		label=doubleDescent_B,		shape=box,		style=filled];	"def:descentPaint_BM" -> "def:doubleDescent_B"	[style=dashed];	"def:epsilon_pbp" -> "lem:10_5_D"	[style=dashed];	"def:epsilon_pbp" -> "lem:10_4_B"	[style=dashed];	"def:epsilon_pbp" -> "lem:11_3"	[style=dashed];	"def:descentPaint_DC" -> "def:doubleDescent_D"	[style=dashed];	"def:descentPaint_CD" -> "def:doubleDescent_D"	[style=dashed];	"lem:10_4_C"	[color=green,		fillcolor="#1CAC78",		label="10_4_C",		shape=ellipse,		style=filled];	"def:descentPaint_CD" -> "lem:10_4_C"	[style=dashed];	"def:descentPaint_MB" -> "lem:10_5_M"	[style=dashed];	"def:descentPaint_MB" -> "def:doubleDescent_B"	[style=dashed];	"def:shapeShiftC_paint" -> "lem:shapeShiftC_id"	[style=dashed];	"prop:10_2_BD"	[color=green,		fillcolor="#1CAC78",		label="10_2_BD",		shape=ellipse,		style=filled];	"def:PBPSet" -> "prop:10_2_BD"	[style=dashed];	"def:tailLen" -> "def:tailSignature"	[style=dashed];	"def:tailSymbol"	[color=green,		fillcolor="#B0ECA3",		label=tailSymbol,		shape=box,		style=filled];	"def:tailLen" -> "def:tailSymbol"	[style=dashed];	"def:tailClass_D" -> "def:countPBP_D"	[style=dashed];	a0000000068	[color=blue,		label=a0000000068,		shape=ellipse];	"lem:11_1_a_empty"	[color=green,		fillcolor="#1CAC78",		label="11_1_a_empty",		shape=ellipse,		style=filled];	"lem:11_1_a_empty" -> "lem:11_1_a_r1"	[style=dashed];	"thm:AC_base_sign"	[color=green,		fillcolor="#1CAC78",		label=AC_base_sign,		shape=ellipse,		style=filled];	"prop:11_12"	[color=green,		fillcolor="#1CAC78",		label="11_12",		shape=ellipse,		style=filled];	"lem:11_11" -> "prop:11_12"	[style=dashed];	"def:layerOrd"	[color=green,		fillcolor="#B0ECA3",		label=layerOrd,		shape=box,		style=filled];	"def:pyd"	[color=green,		fillcolor="#B0ECA3",		label=pyd,		shape=box,		style=filled];	"def:layerOrd" -> "def:pyd"	[style=dashed];	"def:pyd" -> "def:PBP"	[style=dashed];	"def:dotScolLen"	[color=green,		fillcolor="#B0ECA3",		label=dotScolLen,		shape=box,		style=filled];	"def:pyd" -> "def:dotScolLen"	[style=dashed];	"def:dotScolLen" -> "def:descentPaint_BM"	[style=dashed];	"def:dotScolLen" -> "def:descentPaint_DC"	[style=dashed];	"def:dotScolLen" -> "def:descentPaint_CD"	[style=dashed];	"def:dotScolLen" -> "def:descentPaint_MB"	[style=dashed];	"def:tailSymbol" -> "lem:11_3"	[style=dashed];	"def:charTwistCM"	[color=green,		fillcolor="#B0ECA3",		label=charTwistCM,		shape=box,		style=filled];	"def:charTwistCM" -> "def:thetaLift"	[style=dashed];	"def:charTwistCM" -> "lem:twist_sign"	[style=dashed];	"lem:twist_fcSign"	[color=green,		fillcolor="#1CAC78",		label=twist_fcSign,		shape=ellipse,		style=filled];	"def:charTwistCM" -> "lem:twist_fcSign"	[style=dashed];	"lem:T_squared"	[color=green,		fillcolor="#1CAC78",		label=T_squared,		shape=ellipse,		style=filled];	"def:charTwistCM" -> "lem:T_squared"	[style=dashed];	"lem:twist_fcSign" -> "lem:11_5_D_ILS";	"lem:twist_fcSign" -> "thm:thetaLift_fcSign"	[style=dashed];	"lem:T_squared" -> "prop:11_7"	[style=dashed];	a0000000066	[color=blue,		fillcolor="#A3D6FF",		label=a0000000066,		shape=box,		style=filled];	"def:mfree"	[color=green,		fillcolor="#B0ECA3",		label=mfree,		shape=box,		style=filled];	"def:mfree" -> "prop:11_7"	[style=dashed];	"prop:11_13"	[color=green,		fillcolor="#1CAC78",		label="11_13",		shape=ellipse,		style=filled];	"prop:11_13" -> "prop:11_15"	[style=dashed];	"lem:10_4_C" -> "prop:10_8_C_prim"	[style=dashed];	"prop:10_8_C_bal"	[color=green,		fillcolor="#1CAC78",		label="10_8_C_bal",		shape=ellipse,		style=filled];	"lem:10_4_C" -> "prop:10_8_C_bal"	[style=dashed];	"def:yd"	[color=green,		fillcolor="#B0ECA3",		label=yd,		shape=box,		style=filled];	"def:yd" -> "def:pyd"	[style=dashed];	"def:firstColSign"	[color=green,		fillcolor="#B0ECA3",		label=firstColSign,		shape=box,		style=filled];	"def:firstColSign" -> "lem:augment_sign"	[style=dashed];	"def:firstColSign" -> "lem:twist_fcSign"	[style=dashed];	"def:firstColSignRow"	[color=green,		fillcolor="#B0ECA3",		label=firstColSignRow,		shape=box,		style=filled];	"def:firstColSignRow" -> "def:firstColSign"	[style=dashed];	"prop:11_12" -> "prop:11_14"	[style=dashed];	"prop:11_12" -> "prop:11_13"	[style=dashed];	"def:ILS"	[color=green,		fillcolor="#B0ECA3",		label=ILS,		shape=box,		style=filled];	"def:ILS" -> "def:augment"	[style=dashed];	"def:ILS" -> "def:truncate"	[style=dashed];	"def:ILS" -> "def:charTwistCM"	[style=dashed];	"def:ILS" -> "def:mfree"	[style=dashed];	"def:ILS" -> "def:firstColSignRow"	[style=dashed];	"thm:SignTargetSet_card"	[color=green,		fillcolor="#1CAC78",		label=SignTargetSet_card,		shape=ellipse,		style=filled];	"def:ILS" -> "thm:SignTargetSet_card"	[style=dashed];	"def:AC_base"	[color=green,		fillcolor="#B0ECA3",		label=AC_base,		shape=box,		style=filled];	"def:ILS" -> "def:AC_base"	[style=dashed];	"def:twistBD"	[color=green,		fillcolor="#B0ECA3",		label=twistBD,		shape=box,		style=filled];	"def:ILS" -> "def:twistBD"	[style=dashed];	"def:signRow"	[color=green,		fillcolor="#B0ECA3",		label=signRow,		shape=box,		style=filled];	"def:ILS" -> "def:signRow"	[style=dashed];	"thm:SignTargetSet_card" -> "lem:11_1_b_D"	[style=dashed];	"def:AC_base" -> "def:AC_step"	[style=dashed];	"def:AC_base" -> "lem:11_1_a_empty"	[style=dashed];	"def:AC_base" -> "thm:AC_base_sign"	[style=dashed];	"def:twistBD" -> "thm:thetaLift_first_entry"	[style=dashed];	"def:twistBD" -> "def:AC_step"	[style=dashed];	"def:twistBD" -> "lem:twist_sign"	[style=dashed];	"def:twistBD" -> "lem:twist_fcSign"	[style=dashed];	"def:sign"	[color=green,		fillcolor="#B0ECA3",		label=sign,		shape=box,		style=filled];	"def:signRow" -> "def:sign"	[style=dashed];	"def:sign" -> "lem:augment_sign"	[style=dashed];	"def:sign" -> "lem:twist_sign"	[style=dashed];	"def:sign" -> "thm:AC_base_sign"	[style=dashed];	"def:tailContrib"	[color=green,		fillcolor="#B0ECA3",		label=tailContrib,		shape=box,		style=filled];	"def:tailContrib" -> "def:tailSignature"	[style=dashed];	"def:translateM"	[color=green,		fillcolor="#B0ECA3",		label=translateM,		shape=box,		style=filled];	"def:translateM" -> "def:shapeShiftM"	[style=dashed];	"prop:10_8_C_bal" -> "def:countPBP_C"	[style=dashed];	"def:drc_symbols"	[color=green,		fillcolor="#B0ECA3",		label=drc_symbols,		shape=box,		style=filled];	"def:drc_symbols" -> "def:sym_allowed"	[style=dashed];	"def:drc_symbols" -> "def:layerOrd"	[style=dashed];	"def:drc_symbols" -> "def:tailContrib"	[style=dashed];	"def:drc_symbols" -> "def:translateM"	[style=dashed];	"lem:shapeShiftC_valid"	[color=blue,		label=shapeShiftC_valid,		shape=ellipse];	"lem:shapeShiftC_valid" -> "lem:10_3_C"	[style=dashed];	"def:DualPart"	[color=green,		fillcolor="#B0ECA3",		label=DualPart,		shape=box,		style=filled];	"def:DualPart" -> "def:countPBP_D"	[style=dashed];	"def:dpartColLens"	[color=green,		fillcolor="#B0ECA3",		label=dpartColLens,		shape=box,		style=filled];	"def:DualPart" -> "def:dpartColLens"	[style=dashed];}`)
+    .renderDot(`strict digraph "" {	graph [bgcolor=transparent];	node [label="\N",		penwidth=1.8	];	edge [arrowhead=vee];	"def:signRow"	[color=green,		fillcolor="#B0ECA3",		label=signRow,		shape=box,		style=filled];	"def:sign"	[color=green,		fillcolor="#B0ECA3",		label=sign,		shape=box,		style=filled];	"def:signRow" -> "def:sign"	[style=dashed];	"lem:twist_sign"	[color=green,		fillcolor="#1CAC78",		label=twist_sign,		shape=ellipse,		style=filled];	"def:sign" -> "lem:twist_sign"	[style=dashed];	"lem:augment_sign"	[color=green,		fillcolor="#1CAC78",		label=augment_sign,		shape=ellipse,		style=filled];	"def:sign" -> "lem:augment_sign"	[style=dashed];	"thm:AC_base_sign"	[color=green,		fillcolor="#1CAC78",		label=AC_base_sign,		shape=ellipse,		style=filled];	"def:sign" -> "thm:AC_base_sign"	[style=dashed];	"thm:thetaLift_sign"	[color=green,		fillcolor="#1CAC78",		label=thetaLift_sign,		shape=ellipse,		style=filled];	"lem:twist_sign" -> "thm:thetaLift_sign"	[style=dashed];	"lem:augment_sign" -> "thm:thetaLift_sign"	[style=dashed];	"thm:AC_step_sign_D"	[color=green,		fillcolor="#1CAC78",		label=AC_step_sign_D,		shape=ellipse,		style=filled];	"thm:thetaLift_sign" -> "thm:AC_step_sign_D"	[style=dashed];	"lem:fact3_residual"	[color=green,		fillcolor="#1CAC78",		label=fact3_residual,		shape=ellipse,		style=filled];	"thm:11_5_atomic_pbp"	[color=green,		fillcolor="#1CAC78",		label="11_5_atomic_pbp",		shape=ellipse,		style=filled];	"lem:fact3_residual" -> "thm:11_5_atomic_pbp"	[style=dashed];	"def:firstColSign"	[color=green,		fillcolor="#B0ECA3",		label=firstColSign,		shape=box,		style=filled];	"def:firstColSign" -> "lem:augment_sign"	[style=dashed];	"lem:twist_fcSign"	[color=green,		fillcolor="#1CAC78",		label=twist_fcSign,		shape=ellipse,		style=filled];	"def:firstColSign" -> "lem:twist_fcSign"	[style=dashed];	"thm:thetaLift_fcSign"	[color=green,		fillcolor="#1CAC78",		label=thetaLift_fcSign,		shape=ellipse,		style=filled];	"lem:twist_fcSign" -> "thm:thetaLift_fcSign"	[style=dashed];	"lem:11_5_D_ILS"	[color=green,		fillcolor="#1CAC78",		label="11_5_D_ILS",		shape=ellipse,		style=filled];	"lem:twist_fcSign" -> "lem:11_5_D_ILS";	"lem:11_5_D_ILS" -> "thm:11_5_atomic_pbp"	[style=dashed];	"lem:11_6_D"	[color=green,		fillcolor="#1CAC78",		label="11_6_D",		shape=ellipse,		style=filled];	"lem:11_5_D_ILS" -> "lem:11_6_D"	[style=dashed];	"lem:11_6_B"	[color=green,		fillcolor="#1CAC78",		label="11_6_B",		shape=ellipse,		style=filled];	"lem:11_5_D_ILS" -> "lem:11_6_B"	[style=dashed];	"thm:fcSign_diff"	[color=green,		fillcolor="#1CAC78",		label=fcSign_diff,		shape=ellipse,		style=filled];	"thm:AC_step_fcSign"	[color=green,		fillcolor="#1CAC78",		label=AC_step_fcSign,		shape=ellipse,		style=filled];	"thm:fcSign_diff" -> "thm:AC_step_fcSign"	[style=dashed];	"thm:AC_step_fcSign" -> "lem:11_5_D_ILS"	[style=dashed];	"prop:11_8_ac"	[color=green,		fillcolor="#1CAC78",		label="11_8_ac",		shape=ellipse,		style=filled];	"lem:11_6_D" -> "prop:11_8_ac"	[style=dashed];	"cor:11_6_pbp"	[color=green,		fillcolor="#1CAC78",		label="11_6_pbp",		shape=ellipse,		style=filled];	"lem:11_6_D" -> "cor:11_6_pbp"	[style=dashed];	"prop:11_10_D"	[color=green,		fillcolor="#1CAC78",		label="11_10_D",		shape=ellipse,		style=filled];	"lem:11_6_D" -> "prop:11_10_D"	[style=dashed];	"prop:10_8_M_prim"	[color=green,		fillcolor="#1CAC78",		label="10_8_M_prim",		shape=ellipse,		style=filled];	"def:countPBP_B"	[color=green,		fillcolor="#B0ECA3",		label=countPBP_B,		shape=box,		style=filled];	"prop:10_8_M_prim" -> "def:countPBP_B"	[style=dashed];	"def:countPBP_M"	[color=green,		fillcolor="#B0ECA3",		label=countPBP_M,		shape=box,		style=filled];	"def:countPBP_B" -> "def:countPBP_M"	[style=dashed];	"prop:10_11_B"	[color=green,		fillcolor="#1CAC78",		label="10_11_B",		shape=ellipse,		style=filled];	"def:countPBP_B" -> "prop:10_11_B"	[style=dashed];	"prop:10_12_M"	[color=green,		fillcolor="#1CAC78",		label="10_12_M",		shape=ellipse,		style=filled];	"def:countPBP_M" -> "prop:10_12_M"	[style=dashed];	"prop:11_14"	[color=green,		fillcolor="#9CEC8B",		label="11_14",		shape=ellipse,		style=filled];	"prop:10_12_M" -> "prop:11_14"	[style=dashed];	"prop:10_11_B" -> "prop:10_12_M"	[style=dashed];	"prop:11_15"	[color=green,		fillcolor="#9CEC8B",		label="11_15",		shape=ellipse,		style=filled];	"prop:11_14" -> "prop:11_15"	[style=dashed];	"prop:11_16"	[color=green,		fillcolor="#9CEC8B",		label="11_16",		shape=ellipse,		style=filled];	"prop:11_14" -> "prop:11_16"	[style=dashed];	"prop:11_8_pbp"	[color=green,		fillcolor="#1CAC78",		label="11_8_pbp",		shape=ellipse,		style=filled];	"def:PBPSet"	[color=green,		fillcolor="#B0ECA3",		label=PBPSet,		shape=box,		style=filled];	"prop:10_2_BD"	[color=green,		fillcolor="#1CAC78",		label="10_2_BD",		shape=ellipse,		style=filled];	"def:PBPSet" -> "prop:10_2_BD"	[style=dashed];	"def:ILS"	[color=green,		fillcolor="#B0ECA3",		label=ILS,		shape=box,		style=filled];	"def:ILS" -> "def:signRow"	[style=dashed];	"def:firstColSignRow"	[color=green,		fillcolor="#B0ECA3",		label=firstColSignRow,		shape=box,		style=filled];	"def:ILS" -> "def:firstColSignRow"	[style=dashed];	"def:mfree"	[color=green,		fillcolor="#B0ECA3",		label=mfree,		shape=box,		style=filled];	"def:ILS" -> "def:mfree"	[style=dashed];	"def:twistBD"	[color=green,		fillcolor="#B0ECA3",		label=twistBD,		shape=box,		style=filled];	"def:ILS" -> "def:twistBD"	[style=dashed];	"def:charTwistCM"	[color=green,		fillcolor="#B0ECA3",		label=charTwistCM,		shape=box,		style=filled];	"def:ILS" -> "def:charTwistCM"	[style=dashed];	"thm:SignTargetSet_card"	[color=green,		fillcolor="#1CAC78",		label=SignTargetSet_card,		shape=ellipse,		style=filled];	"def:ILS" -> "thm:SignTargetSet_card"	[style=dashed];	"def:augment"	[color=green,		fillcolor="#B0ECA3",		label=augment,		shape=box,		style=filled];	"def:ILS" -> "def:augment"	[style=dashed];	"def:truncate"	[color=green,		fillcolor="#B0ECA3",		label=truncate,		shape=box,		style=filled];	"def:ILS" -> "def:truncate"	[style=dashed];	"def:AC_base"	[color=green,		fillcolor="#B0ECA3",		label=AC_base,		shape=box,		style=filled];	"def:ILS" -> "def:AC_base"	[style=dashed];	"def:firstColSignRow" -> "def:firstColSign"	[style=dashed];	"prop:11_7"	[color=green,		fillcolor="#1CAC78",		label="11_7",		shape=ellipse,		style=filled];	"def:mfree" -> "prop:11_7"	[style=dashed];	"def:twistBD" -> "lem:twist_sign"	[style=dashed];	"def:twistBD" -> "lem:twist_fcSign"	[style=dashed];	"thm:thetaLift_first_entry"	[color=green,		fillcolor="#1CAC78",		label=thetaLift_first_entry,		shape=ellipse,		style=filled];	"def:twistBD" -> "thm:thetaLift_first_entry"	[style=dashed];	"def:AC_step"	[color=green,		fillcolor="#B0ECA3",		label=AC_step,		shape=box,		style=filled];	"def:twistBD" -> "def:AC_step"	[style=dashed];	"def:charTwistCM" -> "lem:twist_sign"	[style=dashed];	"def:charTwistCM" -> "lem:twist_fcSign"	[style=dashed];	"lem:T_squared"	[color=green,		fillcolor="#1CAC78",		label=T_squared,		shape=ellipse,		style=filled];	"def:charTwistCM" -> "lem:T_squared"	[style=dashed];	"def:thetaLift"	[color=green,		fillcolor="#B0ECA3",		label=thetaLift,		shape=box,		style=filled];	"def:charTwistCM" -> "def:thetaLift"	[style=dashed];	"lem:11_1_b_D"	[color=green,		fillcolor="#1CAC78",		label="11_1_b_D",		shape=ellipse,		style=filled];	"thm:SignTargetSet_card" -> "lem:11_1_b_D"	[style=dashed];	"def:augment" -> "lem:augment_sign"	[style=dashed];	"def:augment" -> "def:thetaLift"	[style=dashed];	"def:truncate" -> "def:thetaLift"	[style=dashed];	"def:AC_base" -> "thm:AC_base_sign"	[style=dashed];	"def:AC_base" -> "def:AC_step"	[style=dashed];	"lem:11_1_a_empty"	[color=green,		fillcolor="#1CAC78",		label="11_1_a_empty",		shape=ellipse,		style=filled];	"def:AC_base" -> "lem:11_1_a_empty"	[style=dashed];	"prop:11_7" -> "prop:11_8_ac"	[style=dashed];	"def:AC_fold"	[color=green,		fillcolor="#B0ECA3",		label=AC_fold,		shape=box,		style=filled];	"def:AC_step" -> "def:AC_fold"	[style=dashed];	"def:AC_step" -> "thm:AC_step_sign_D"	[style=dashed];	"thm:postTwist_first_entry"	[color=green,		fillcolor="#1CAC78",		label=postTwist_first_entry,		shape=ellipse,		style=filled];	"def:AC_step" -> "thm:postTwist_first_entry"	[style=dashed];	"lem:T_squared" -> "prop:11_7"	[style=dashed];	"def:thetaLift" -> "thm:thetaLift_sign"	[style=dashed];	"def:thetaLift" -> "thm:thetaLift_fcSign"	[style=dashed];	"def:thetaLift" -> "thm:thetaLift_first_entry"	[style=dashed];	"def:thetaLift" -> "def:AC_step"	[style=dashed];	"lem:11_1_b_D" -> "prop:11_15"	[style=dashed];	"lem:11_1_a_r1"	[color=green,		fillcolor="#1CAC78",		label="11_1_a_r1",		shape=ellipse,		style=filled];	"lem:11_1_a_empty" -> "lem:11_1_a_r1"	[style=dashed];	"lem:11_3"	[color=green,		fillcolor="#1CAC78",		label="11_3",		shape=ellipse,		style=filled];	"lem:11_3" -> "prop:11_8_ac"	[style=dashed];	"prop:11_8_ac" -> "prop:11_8_pbp"	[style=dashed];	"prop:11_9_D"	[color=green,		fillcolor="#1CAC78",		label="11_9_D",		shape=ellipse,		style=filled];	"prop:11_8_ac" -> "prop:11_9_D"	[style=dashed];	"lem:11_11"	[color=green,		fillcolor="#1CAC78",		label="11_11",		shape=ellipse,		style=filled];	"prop:11_8_ac" -> "lem:11_11"	[style=dashed];	"prop:11_9_B"	[color=green,		fillcolor="#1CAC78",		label="11_9_B",		shape=ellipse,		style=filled];	"prop:11_9_D" -> "prop:11_9_B"	[style=dashed];	"prop:11_12"	[color=green,		fillcolor="#1CAC78",		label="11_12",		shape=ellipse,		style=filled];	"lem:11_11" -> "prop:11_12"	[style=dashed];	"def:translateM"	[color=green,		fillcolor="#B0ECA3",		label=translateM,		shape=box,		style=filled];	"def:shapeShiftM"	[color=green,		fillcolor="#B0ECA3",		label=shapeShiftM,		shape=box,		style=filled];	"def:translateM" -> "def:shapeShiftM"	[style=dashed];	"lem:shapeShiftM_involution"	[color=green,		fillcolor="#1CAC78",		label=shapeShiftM_involution,		shape=ellipse,		style=filled];	"def:shapeShiftM" -> "lem:shapeShiftM_involution"	[style=dashed];	"lem:10_3_M"	[color=green,		fillcolor="#1CAC78",		label="10_3_M",		shape=ellipse,		style=filled];	"lem:shapeShiftM_involution" -> "lem:10_3_M"	[style=dashed];	"prop:10_2_M"	[color=green,		fillcolor="#1CAC78",		label="10_2_M",		shape=ellipse,		style=filled];	"lem:10_3_M" -> "prop:10_2_M"	[style=dashed];	"def:AC_fold" -> "thm:fcSign_diff"	[style=dashed];	"prop:11_4"	[color=green,		fillcolor="#1CAC78",		label="11_4",		shape=ellipse,		style=filled];	"prop:11_4" -> "lem:11_5_D_ILS"	[style=dashed];	"prop:11_13"	[color=green,		fillcolor="#1CAC78",		label="11_13",		shape=ellipse,		style=filled];	"prop:11_13" -> "prop:11_15"	[style=dashed];	"prop:11_17"	[color=green,		fillcolor="#9CEC8B",		label="11_17",		shape=ellipse,		style=filled];	"prop:11_15" -> "prop:11_17"	[style=dashed];	"thm:AC_step_sign_all"	[color=green,		fillcolor="#1CAC78",		label=AC_step_sign_all,		shape=ellipse,		style=filled];	"thm:AC_step_sign_all" -> "prop:11_7";	"thm:AC_step_sign_all" -> "lem:11_1_a_r1";	"lem:11_1_b_abstract"	[color=green,		fillcolor="#1CAC78",		label="11_1_b_abstract",		shape=ellipse,		style=filled];	"lem:11_1_a_r1" -> "lem:11_1_b_abstract"	[style=dashed];	"lem:11_1_b_abstract" -> "lem:11_1_b_D"	[style=dashed];	"def:signature_pbp"	[color=green,		fillcolor="#B0ECA3",		label=signature_pbp,		shape=box,		style=filled];	"def:signature_pbp" -> "prop:11_4"	[style=dashed];	"lem:10_5_D"	[color=green,		fillcolor="#1CAC78",		label="10_5_D",		shape=ellipse,		style=filled];	"def:signature_pbp" -> "lem:10_5_D"	[style=dashed];	"lem:fact1_sig_sum"	[color=green,		fillcolor="#1CAC78",		label=fact1_sig_sum,		shape=ellipse,		style=filled];	"def:signature_pbp" -> "lem:fact1_sig_sum"	[style=dashed];	"lem:sig_sum_D"	[color=green,		fillcolor="#1CAC78",		label=sig_sum_D,		shape=ellipse,		style=filled];	"def:signature_pbp" -> "lem:sig_sum_D"	[style=dashed];	"lem:10_4_B"	[color=green,		fillcolor="#1CAC78",		label="10_4_B",		shape=ellipse,		style=filled];	"def:signature_pbp" -> "lem:10_4_B"	[style=dashed];	"prop:10_9_D"	[color=green,		fillcolor="#1CAC78",		label="10_9_D",		shape=ellipse,		style=filled];	"lem:10_5_D" -> "prop:10_9_D"	[style=dashed];	"lem:fact1_sig_sum" -> "thm:11_5_atomic_pbp"	[style=dashed];	"lem:sig_sum_D" -> "lem:11_5_D_ILS";	"prop:10_9_B"	[color=green,		fillcolor="#1CAC78",		label="10_9_B",		shape=ellipse,		style=filled];	"lem:10_4_B" -> "prop:10_9_B"	[style=dashed];	"def:countPBP_D"	[color=green,		fillcolor="#B0ECA3",		label=countPBP_D,		shape=box,		style=filled];	"prop:10_9_D" -> "def:countPBP_D"	[style=dashed];	"cor:10_10"	[color=green,		fillcolor="#1CAC78",		label="10_10",		shape=ellipse,		style=filled];	"prop:10_9_D" -> "cor:10_10"	[style=dashed];	"def:countPBP_D" -> "def:countPBP_B"	[style=dashed];	"def:countPBP_C"	[color=green,		fillcolor="#B0ECA3",		label=countPBP_C,		shape=box,		style=filled];	"def:countPBP_D" -> "def:countPBP_C"	[style=dashed];	"prop:10_11_D"	[color=green,		fillcolor="#1CAC78",		label="10_11_D",		shape=ellipse,		style=filled];	"def:countPBP_D" -> "prop:10_11_D"	[style=dashed];	"cor:10_10" -> "prop:10_11_B"	[style=dashed];	"cor:10_10" -> "prop:10_11_D"	[style=dashed];	"prop:10_9_B" -> "cor:10_10"	[style=dashed];	"prop:10_12_C"	[color=green,		fillcolor="#9CEC8B",		label="10_12_C",		shape=ellipse,		style=filled];	"def:countPBP_C" -> "prop:10_12_C"	[style=dashed];	"prop:10_11_D" -> "prop:10_12_C"	[style=dashed];	"prop:10_12_C" -> "prop:11_14"	[style=dashed];	"thm:AC_step_sign_D" -> "thm:fcSign_diff"	[style=dashed];	"thm:AC_step_sign_D" -> "thm:AC_step_sign_all"	[style=dashed];	"prop:11_12" -> "prop:11_14"	[style=dashed];	"prop:11_12" -> "prop:11_13"	[style=dashed];	"def:tailContrib"	[color=green,		fillcolor="#B0ECA3",		label=tailContrib,		shape=box,		style=filled];	"def:tailSignature"	[color=green,		fillcolor="#B0ECA3",		label=tailSignature,		shape=box,		style=filled];	"def:tailContrib" -> "def:tailSignature"	[style=dashed];	"def:tailSignature" -> "lem:fact3_residual"	[style=dashed];	"def:tailSignature" -> "lem:11_3"	[style=dashed];	"def:tailSignature" -> "prop:11_4"	[style=dashed];	"lem:tailSig_sum"	[color=green,		fillcolor="#1CAC78",		label=tailSig_sum,		shape=ellipse,		style=filled];	"def:tailSignature" -> "lem:tailSig_sum"	[style=dashed];	"lem:tailSig_nonneg"	[color=green,		fillcolor="#1CAC78",		label=tailSig_nonneg,		shape=ellipse,		style=filled];	"def:tailSignature" -> "lem:tailSig_nonneg"	[style=dashed];	"lem:residual_D"	[color=green,		fillcolor="#1CAC78",		label=residual_D,		shape=ellipse,		style=filled];	"lem:tailSig_sum" -> "lem:residual_D"	[style=dashed];	"lem:tailSig_nonneg" -> "prop:11_9_D"	[style=dashed];	"def:descentPaint_MB"	[color=green,		fillcolor="#B0ECA3",		label=descentPaint_MB,		shape=box,		style=filled];	"def:doubleDescent_B"	[color=green,		fillcolor="#B0ECA3",		label=doubleDescent_B,		shape=box,		style=filled];	"def:descentPaint_MB" -> "def:doubleDescent_B"	[style=dashed];	"lem:10_5_M"	[color=green,		fillcolor="#1CAC78",		label="10_5_M",		shape=ellipse,		style=filled];	"def:descentPaint_MB" -> "lem:10_5_M"	[style=dashed];	"lem:10_5_M" -> "prop:10_8_M_prim"	[style=dashed];	"prop:10_8_M_bal"	[color=green,		fillcolor="#1CAC78",		label="10_8_M_bal",		shape=ellipse,		style=filled];	"lem:10_5_M" -> "prop:10_8_M_bal"	[style=dashed];	"prop:10_8_M_bal" -> "def:countPBP_B"	[style=dashed];	"def:tailClass_D"	[color=green,		fillcolor="#B0ECA3",		label=tailClass_D,		shape=box,		style=filled];	"def:tailClass_D" -> "def:countPBP_D"	[style=dashed];	"prop:11_16" -> "prop:11_17"	[style=dashed];	"prop:10_2_M" -> "prop:10_12_M"	[style=dashed];	"thm:postTwist_first_entry" -> "lem:11_6_D"	[style=dashed];	"prop:11_10_D" -> "lem:11_11"	[style=dashed];	"def:cardCells"	[color=green,		fillcolor="#B0ECA3",		label=cardCells,		shape=box,		style=filled];	"def:cardCells" -> "lem:fact1_sig_sum"	[style=dashed];	"def:cardCells" -> "lem:sig_sum_D"	[style=dashed];	"lem:fact2_descent"	[color=green,		fillcolor="#1CAC78",		label=fact2_descent,		shape=ellipse,		style=filled];	"def:cardCells" -> "lem:fact2_descent"	[style=dashed];	"lem:fact2_descent" -> "thm:11_5_atomic_pbp"	[style=dashed];	"lem:shapeShiftC_id"	[color=green,		fillcolor="#1CAC78",		label=shapeShiftC_id,		shape=ellipse,		style=filled];	"lem:10_3_C"	[color=green,		fillcolor="#9CEC8B",		label="10_3_C",		shape=ellipse,		style=filled];	"lem:shapeShiftC_id" -> "lem:10_3_C"	[style=dashed];	"prop:10_2_C"	[color=green,		fillcolor="#9CEC8B",		label="10_2_C",		shape=ellipse,		style=filled];	"lem:10_3_C" -> "prop:10_2_C"	[style=dashed];	"prop:10_2_C" -> "prop:10_12_C"	[style=dashed];	"def:sym_allowed"	[color=blue,		fillcolor="#A3D6FF",		label=sym_allowed,		shape=box,		style=filled];	"def:PBP"	[color=green,		fillcolor="#B0ECA3",		label=PBP,		shape=box,		style=filled];	"def:sym_allowed" -> "def:PBP"	[style=dashed];	"def:PBP" -> "def:PBPSet"	[style=dashed];	"def:PBP" -> "def:shapeShiftM"	[style=dashed];	"def:PBP" -> "def:signature_pbp"	[style=dashed];	"def:PBP" -> "def:descentPaint_MB"	[style=dashed];	"def:PBP" -> "def:tailClass_D"	[style=dashed];	"def:PBP" -> "def:cardCells"	[style=dashed];	"def:descentPaint_CD"	[color=green,		fillcolor="#B0ECA3",		label=descentPaint_CD,		shape=box,		style=filled];	"def:PBP" -> "def:descentPaint_CD"	[style=dashed];	"def:epsilon_pbp"	[color=green,		fillcolor="#B0ECA3",		label=epsilon_pbp,		shape=box,		style=filled];	"def:PBP" -> "def:epsilon_pbp"	[style=dashed];	"def:descentPaint_DC"	[color=green,		fillcolor="#B0ECA3",		label=descentPaint_DC,		shape=box,		style=filled];	"def:PBP" -> "def:descentPaint_DC"	[style=dashed];	"def:descentPaint_BM"	[color=green,		fillcolor="#B0ECA3",		label=descentPaint_BM,		shape=box,		style=filled];	"def:PBP" -> "def:descentPaint_BM"	[style=dashed];	"def:tailLen"	[color=green,		fillcolor="#B0ECA3",		label=tailLen,		shape=box,		style=filled];	"def:PBP" -> "def:tailLen"	[style=dashed];	"def:shapeShiftC_paint"	[color=green,		fillcolor="#B0ECA3",		label=shapeShiftC_paint,		shape=box,		style=filled];	"def:PBP" -> "def:shapeShiftC_paint"	[style=dashed];	"lem:10_4_C"	[color=green,		fillcolor="#1CAC78",		label="10_4_C",		shape=ellipse,		style=filled];	"def:descentPaint_CD" -> "lem:10_4_C"	[style=dashed];	"def:doubleDescent_D"	[color=green,		fillcolor="#B0ECA3",		label=doubleDescent_D,		shape=box,		style=filled];	"def:descentPaint_CD" -> "def:doubleDescent_D"	[style=dashed];	"def:epsilon_pbp" -> "lem:11_3"	[style=dashed];	"def:epsilon_pbp" -> "lem:10_5_D"	[style=dashed];	"def:epsilon_pbp" -> "lem:10_4_B"	[style=dashed];	"def:descentPaint_DC" -> "def:doubleDescent_D"	[style=dashed];	"def:descentPaint_BM" -> "lem:10_4_B"	[style=dashed];	"def:descentPaint_BM" -> "def:doubleDescent_B"	[style=dashed];	"def:tailLen" -> "def:tailSignature"	[style=dashed];	"def:tailSymbol"	[color=green,		fillcolor="#B0ECA3",		label=tailSymbol,		shape=box,		style=filled];	"def:tailLen" -> "def:tailSymbol"	[style=dashed];	"def:shapeShiftC_paint" -> "lem:shapeShiftC_id"	[style=dashed];	"lem:residual_D" -> "lem:11_5_D_ILS";	"def:dpartColLens"	[color=green,		fillcolor="#B0ECA3",		label=dpartColLens,		shape=box,		style=filled];	"prop:10_8_C_prim"	[color=green,		fillcolor="#1CAC78",		label="10_8_C_prim",		shape=ellipse,		style=filled];	"lem:10_4_C" -> "prop:10_8_C_prim"	[style=dashed];	"prop:10_8_C_bal"	[color=green,		fillcolor="#1CAC78",		label="10_8_C_bal",		shape=ellipse,		style=filled];	"lem:10_4_C" -> "prop:10_8_C_bal"	[style=dashed];	"def:doubleDescent_D" -> "prop:11_4"	[style=dashed];	"def:doubleDescent_D" -> "lem:10_5_D"	[style=dashed];	"def:doubleDescent_D" -> "lem:fact2_descent"	[style=dashed];	"prop:10_8_C_prim" -> "def:countPBP_D"	[style=dashed];	"prop:10_8_C_bal" -> "def:countPBP_C"	[style=dashed];	"def:pyd"	[color=green,		fillcolor="#B0ECA3",		label=pyd,		shape=box,		style=filled];	"def:pyd" -> "def:PBP"	[style=dashed];	"def:dotScolLen"	[color=green,		fillcolor="#B0ECA3",		label=dotScolLen,		shape=box,		style=filled];	"def:pyd" -> "def:dotScolLen"	[style=dashed];	"def:dotScolLen" -> "def:descentPaint_MB"	[style=dashed];	"def:dotScolLen" -> "def:descentPaint_CD"	[style=dashed];	"def:dotScolLen" -> "def:descentPaint_DC"	[style=dashed];	"def:dotScolLen" -> "def:descentPaint_BM"	[style=dashed];	"def:yd"	[color=green,		fillcolor="#B0ECA3",		label=yd,		shape=box,		style=filled];	"def:yd" -> "def:pyd"	[style=dashed];	a0000000066	[color=blue,		fillcolor="#A3D6FF",		label=a0000000066,		shape=box,		style=filled];	"def:layerOrd"	[color=green,		fillcolor="#B0ECA3",		label=layerOrd,		shape=box,		style=filled];	"def:layerOrd" -> "def:pyd"	[style=dashed];	"def:tailSymbol" -> "lem:11_3"	[style=dashed];	"def:drc_symbols"	[color=green,		fillcolor="#B0ECA3",		label=drc_symbols,		shape=box,		style=filled];	"def:drc_symbols" -> "def:translateM"	[style=dashed];	"def:drc_symbols" -> "def:tailContrib"	[style=dashed];	"def:drc_symbols" -> "def:sym_allowed"	[style=dashed];	"def:drc_symbols" -> "def:layerOrd"	[style=dashed];	"def:RootType"	[color=green,		fillcolor="#B0ECA3",		label=RootType,		shape=box,		style=filled];	"def:RootType" -> "def:sym_allowed"	[style=dashed];	"def:DualPart"	[color=green,		fillcolor="#B0ECA3",		label=DualPart,		shape=box,		style=filled];	"def:DualPart" -> "def:countPBP_D"	[style=dashed];	"def:DualPart" -> "def:dpartColLens"	[style=dashed];}`)
     .on("end", interactive);
 
 latexLabelEscaper = function(label) {

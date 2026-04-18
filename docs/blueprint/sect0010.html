@@ -368,44 +368,33 @@
   </div>
 </div> 
 <h2 id="a0000000067">3.2.3 Validity and bijectivity</h2>
-<div class="lemma_thmwrapper theorem-style-plain" id="lem:shapeShiftC_valid">
-  <div class="lemma_thmheading">
-    <span class="lemma_thmcaption">
-    Lemma
+<div class="remark_thmwrapper theorem-style-remark" id="rem:shapeShiftC_valid">
+  <div class="remark_thmheading">
+    <span class="remark_thmcaption">
+    Remark
     </span>
-    <span class="lemma_thmlabel">23</span>
-    <span class="lemma_thmtitle">\(\)</span>
+    <span class="remark_thmlabel">23</span>
+    <span class="remark_thmtitle"></span>
     <div class="thm_header_extras">
 
         </div>
     <div class="thm_header_hidden_extras">
 
-    <a class="icon proof" href="sect0010.html#lem:shapeShiftC_valid">#</a>
+    <a class="icon proof" href="sect0010.html#rem:shapeShiftC_valid">#</a>
     
     
     
         </div>
   </div>
-  <div class="lemma_thmcontent">
+  <div class="remark_thmcontent">
   
   </div>
 </div>
-τ_\(\) is a valid PBP]    The painted diagram \(\tau _\uparrow \) produced by any of the four sub-cases satisfies all PBP axioms: </p>
-<ul class="itemize">
-  <li><p><b class="bfseries">sym_P</b>: new paint is in \(\{ \bullet , s, r, c, d\} \) (the C-type \(\mathcal{P}\)-allowed set); </p>
-</li>
-  <li><p><b class="bfseries">mono_P</b>: the \(r \to c \to d\) layer ordering is preserved in column&#160;\(1\); </p>
-</li>
-  <li><p><b class="bfseries">col_c_P, col_d_P</b>: at most one \(c\) and one \(d\) per column (case (a.1) moves the \(c\) to a new position; the old \(c\) becomes \(r\)); </p>
-</li>
-  <li><p><b class="bfseries">row_s, row_r</b>: cross-row constraints preserved (C-type \(\mathcal{Q}\) only contains \(\{ \bullet , s\} \), so same-row \(s\) uniqueness is inherited). </p>
-</li>
-</ul>
-<p> Verification is by case analysis; see [BMSZb] p.&#160;66 and the Lean proof. </p>
-<div class="lemma_thmwrapper theorem-style-plain" id="a0000000068">
-  <div class="lemma_thmheading">
-    <span class="lemma_thmcaption">
-    Lemma
+τ_\(\) is a valid PBP]  The painted diagram \(\tau _\uparrow \) produced by any of the four sub-cases satisfies all PBP axioms (sym_P, mono_P, col_c_P, col_d_P, row_s, row_r). This is implicit in the Lean <span class="ttfamily">shapeShiftC</span> construction: the new paint values are always in the C-type \(\mathcal{P}\)-allowed set \(\{ \bullet , s, r, c, d\} \); the \(r \to c \to d\) layer ordering is preserved (case (a.1) moves the \(c\) to a new position, with the old \(c\) becoming \(r\)); row uniqueness carries over since the C-type \(\mathcal{Q}\) only contains \(\{ \bullet , s\} \). Details: [BMSZb] p.&#160;66. </p>
+<div class="remark_thmwrapper theorem-style-remark" id="a0000000068">
+  <div class="remark_thmheading">
+    <span class="remark_thmcaption">
+    Remark
     </span>
     <div class="thm_header_extras">
 
@@ -418,20 +407,8 @@
     
         </div>
   </div>
-  <div class="lemma_thmcontent">
+  <div class="remark_thmcontent">
   
-  </div>
-</div>
-<div class="proof_wrapper" id="a0000000069">
-  <div class="proof_heading">
-    <span class="proof_caption">
-    Proof
-    </span>
-    <span class="expand-proof">▶</span>
-  </div>
-  <div class="proof_content">
-  <p>See the Lean formalization referenced on the statement. </p>
-
   </div>
 </div>
 <div class="lemma_thmwrapper theorem-style-plain" id="lem:shapeShiftC_id">
@@ -450,7 +427,7 @@
 
     <a class="icon proof" href="sect0010.html#lem:shapeShiftC_id">#</a>
     
-    <a class="icon proof" href="sect0010.html#a0000000070"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+    <a class="icon proof" href="sect0010.html#a0000000069"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
 </a>
     
     
@@ -503,7 +480,7 @@
 
   </div>
 </div>
-<div class="proof_wrapper" id="a0000000070">
+<div class="proof_wrapper" id="a0000000069">
   <div class="proof_heading">
     <span class="proof_caption">
     Proof
@@ -531,7 +508,7 @@
 
     <a class="icon proof" href="sect0010.html#lem:10_3_C">#</a>
     
-    <a class="icon proof" href="sect0010.html#a0000000071"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+    <a class="icon proof" href="sect0010.html#a0000000070"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
 </a>
     
     
@@ -549,7 +526,7 @@
           
           <li><a href="sect0010.html#lem:shapeShiftC_id">Lemma 24</a></li>
           
-          <li><a href="sect0010.html#lem:shapeShiftC_valid">Lemma 23</a></li>
+          <li><a href="sect0010.html#rem:shapeShiftC_valid">Remark 23</a></li>
           
         </ul>
     
@@ -583,13 +560,13 @@
   </div>
   <div class="lemma_thmcontent">
   <p>    For shapes \((\mu _P', \mu _Q')\) reachable via C-type shape shift from \((\mu _P, \mu _Q)\): </p>
-<div class="displaymath" id="a0000000072">
+<div class="displaymath" id="a0000000071">
   \[  |\mathrm{PBP}_C(\mu _P, \mu _Q)| = |\mathrm{PBP}_C(\mu _P', \mu _Q')|.  \]
 </div>
 
   </div>
 </div>
-<div class="proof_wrapper" id="a0000000071">
+<div class="proof_wrapper" id="a0000000070">
   <div class="proof_heading">
     <span class="proof_caption">
     Proof
@@ -617,7 +594,7 @@
 
     <a class="icon proof" href="sect0010.html#prop:10_2_C">#</a>
     
-    <a class="icon proof" href="sect0010.html#a0000000073"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+    <a class="icon proof" href="sect0010.html#a0000000072"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
 </a>
     
     
@@ -668,7 +645,7 @@
 
   </div>
 </div>
-<div class="proof_wrapper" id="a0000000073">
+<div class="proof_wrapper" id="a0000000072">
   <div class="proof_heading">
     <span class="proof_caption">
     Proof
