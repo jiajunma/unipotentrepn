@@ -4068,4 +4068,40 @@ theorem prop_11_12_PBP_D (τ₁ τ₂ : PBP)
       hp₂_nn hp₁_nn hq₂_nn hq₁_nn h_nt₂
   exact BMSZ.injectivity_mod_twist L₁ L₂ ε₁ ε₂ h_eq h_no_det h_no_det'
 
+/-! ### Prop 11.15 PBP level (D-type, full injectivity) -/
+
+/-- **Prop 11.15 at PBP level (D type, full injective composition):**
+
+    For quasi-distinguished Ǒ of type D, the map (τ, ε) ↦ L_τ ⊗ (ε,ε) is
+    injective at the PBP level. This is the "full" version composing:
+    - Prop 11.11 (no det twist, from tail-signature nontriviality)
+    - Prop 11.12 (injectivity mod twist)
+    - Prop 11.10 (tail signatures match) [implicitly via first-entry formulas]
+
+    The conclusion: ε₁ = ε₂ and L₁ = L₂. Tasks 2-5 combined. -/
+theorem prop_11_15_PBP_D_injective_full (τ₁ τ₂ : PBP)
+    (hγ₁ : τ₁.γ = .D) (hγ₂ : τ₂.γ = .D)
+    (L₁ L₂ : ACResult) (ε₁ ε₂ : Fin 2)
+    (h_ne₁ : L₁ ≠ []) (h_ne₂ : L₂ ≠ [])
+    (ε_inner : Fin 2)
+    (h_first₁ : ∀ r ∈ L₁, ∃ rest,
+      r.2 = ((PBP.tailSignature_D τ₁).1,
+             if ε_inner = 1 then -(PBP.tailSignature_D τ₁).2
+             else (PBP.tailSignature_D τ₁).2) :: rest)
+    (h_first₂ : ∀ r ∈ L₂, ∃ rest,
+      r.2 = ((PBP.tailSignature_D τ₂).1,
+             if ε_inner = 1 then -(PBP.tailSignature_D τ₂).2
+             else (PBP.tailSignature_D τ₂).2) :: rest)
+    (hp₁_nn : (PBP.tailSignature_D τ₁).1 ≥ 0)
+    (hp₂_nn : (PBP.tailSignature_D τ₂).1 ≥ 0)
+    (hq₁_nn : (PBP.tailSignature_D τ₁).2 ≥ 0)
+    (hq₂_nn : (PBP.tailSignature_D τ₂).2 ≥ 0)
+    (h_nt₁ : (PBP.tailSignature_D τ₁).1 > 0 ∨ (PBP.tailSignature_D τ₁).2 ≠ 0)
+    (h_nt₂ : (PBP.tailSignature_D τ₂).1 > 0 ∨ (PBP.tailSignature_D τ₂).2 ≠ 0)
+    (h_eq : (if ε₁ = 1 then L₁.twistBD (-1) (-1) else L₁) =
+            (if ε₂ = 1 then L₂.twistBD (-1) (-1) else L₂)) :
+    ε₁ = ε₂ ∧ L₁ = L₂ :=
+  prop_11_12_PBP_D τ₁ τ₂ hγ₁ hγ₂ L₁ L₂ ε₁ ε₂ h_ne₁ h_ne₂ ε_inner
+    h_first₁ h_first₂ hp₁_nn hp₂_nn hq₁_nn hq₂_nn h_nt₁ h_nt₂ h_eq
+
 end PBPInstantiation
