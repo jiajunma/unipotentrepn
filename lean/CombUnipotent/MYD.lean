@@ -1938,6 +1938,68 @@ theorem ACResult.thetaLift_Bminus_firstColSign (ac : ACResult) (p q : ℤ) (sour
   have h := ILS.thetaLift_MB_firstColSign ils p q h_std'' lifted hlift
   rw [h, h_sig']
 
+/-! ### AC.step firstColSign: putting it all together
+
+After one AC.step for γ ∈ {D, Bplus, Bminus}, the firstColSign of the output
+equals `(p - source_sig.1, q - source_sig.2)`. This combines:
+- `ACResult.thetaLift_*_firstColSign`: after theta lift, firstColSign is (p - src.1, q - src.2)
+- `ACResult.twistBD_firstColSign`: post-twist preserves firstColSign -/
+
+/-- After `AC.step source .D p q ε_τ ε_wp`, every result ILS has firstColSign
+    equal to `(p - source_sig.1, q - source_sig.2)`. -/
+theorem AC.step_firstColSign_D (source : ACResult) (p q : ℤ) (ε_τ ε_wp : Fin 2)
+    (source_sig : ℤ × ℤ)
+    (h_sign : ∀ r ∈ source, ILS.sign r.2 = source_sig)
+    (h_std : ∀ r ∈ source,
+      p - (ILS.sign r.2).1 - (ILS.firstColSign r.2).2 ≥ 0 ∧
+      q - (ILS.sign r.2).2 - (ILS.firstColSign r.2).1 ≥ 0) :
+    ∀ r ∈ AC.step source RootType.D p q ε_τ ε_wp,
+      ILS.firstColSign r.2 = (p - source_sig.1, q - source_sig.2) := by
+  intro r hr
+  simp only [AC.step] at hr
+  simp only [show ¬(RootType.D = RootType.C ∨ RootType.D = RootType.M) from by decide,
+    ite_false] at hr
+  have h_lifted_fc := ACResult.thetaLift_CD_firstColSign source p q source_sig h_sign h_std
+  split at hr
+  · exact ACResult.twistBD_firstColSign _ 1 (-1) _ (Or.inl rfl) (Or.inr rfl) h_lifted_fc r hr
+  · exact h_lifted_fc r hr
+
+/-- After `AC.step source .Bplus p q ε_τ ε_wp`, firstColSign propagation. -/
+theorem AC.step_firstColSign_Bplus (source : ACResult) (p q : ℤ) (ε_τ ε_wp : Fin 2)
+    (source_sig : ℤ × ℤ)
+    (h_sign : ∀ r ∈ source, ILS.sign r.2 = source_sig)
+    (h_std : ∀ r ∈ source,
+      p - (ILS.sign r.2).1 - (ILS.firstColSign r.2).2 ≥ 0 ∧
+      q - (ILS.sign r.2).2 - (ILS.firstColSign r.2).1 ≥ 0) :
+    ∀ r ∈ AC.step source RootType.Bplus p q ε_τ ε_wp,
+      ILS.firstColSign r.2 = (p - source_sig.1, q - source_sig.2) := by
+  intro r hr
+  simp only [AC.step] at hr
+  simp only [show ¬(RootType.Bplus = RootType.C ∨ RootType.Bplus = RootType.M) from by decide,
+    ite_false] at hr
+  have h_lifted_fc := ACResult.thetaLift_Bplus_firstColSign source p q source_sig h_sign h_std
+  split at hr
+  · exact ACResult.twistBD_firstColSign _ 1 (-1) _ (Or.inl rfl) (Or.inr rfl) h_lifted_fc r hr
+  · exact h_lifted_fc r hr
+
+/-- After `AC.step source .Bminus p q ε_τ ε_wp`, firstColSign propagation. -/
+theorem AC.step_firstColSign_Bminus (source : ACResult) (p q : ℤ) (ε_τ ε_wp : Fin 2)
+    (source_sig : ℤ × ℤ)
+    (h_sign : ∀ r ∈ source, ILS.sign r.2 = source_sig)
+    (h_std : ∀ r ∈ source,
+      p - (ILS.sign r.2).1 - (ILS.firstColSign r.2).2 ≥ 0 ∧
+      q - (ILS.sign r.2).2 - (ILS.firstColSign r.2).1 ≥ 0) :
+    ∀ r ∈ AC.step source RootType.Bminus p q ε_τ ε_wp,
+      ILS.firstColSign r.2 = (p - source_sig.1, q - source_sig.2) := by
+  intro r hr
+  simp only [AC.step] at hr
+  simp only [show ¬(RootType.Bminus = RootType.C ∨ RootType.Bminus = RootType.M) from by decide,
+    ite_false] at hr
+  have h_lifted_fc := ACResult.thetaLift_Bminus_firstColSign source p q source_sig h_sign h_std
+  split at hr
+  · exact ACResult.twistBD_firstColSign _ 1 (-1) _ (Or.inl rfl) (Or.inr rfl) h_lifted_fc r hr
+  · exact h_lifted_fc r hr
+
 /-! ### Lemma 11.5 — approach
 
 The full Lemma 11.5 requires tracking `firstColSign` through AC.step,
