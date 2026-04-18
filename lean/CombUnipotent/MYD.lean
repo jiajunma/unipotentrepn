@@ -4340,4 +4340,50 @@ theorem prop_11_12_PBP_Bminus (τ₁ τ₂ : PBP)
       hp₂_nn hp₁_nn hq₂_nn hq₁_nn h_nt₂
   exact BMSZ.injectivity_mod_twist L₁ L₂ ε₁ ε₂ h_eq h_no_det h_no_det'
 
+/-! ## Prop 11.13 at PBP level (quasi-distinguished injectivity) -/
+
+/-- **Prop 11.13 at PBP level (D type):** For quasi-distinguished orbit Ǒ
+    with both PBPs producing equal AC chains through the full Section 11
+    composition `charTwistCM ∘ augment ∘ twistBD`, the inner AC results
+    are already equal by chain-injectivity.
+
+    At the PBP level, this expresses the paper's Lemma 11.13: equality of
+    the full lifted local systems `L_{τ₁} = L_{τ₂}` forces the inner AC
+    results to agree (which, combined with Props 11.8-11.12, ultimately
+    yields τ₁ = τ₂).
+
+    This is a direct wrapper of `BMSZ.ac_chain_injective` at the PBP level. -/
+theorem prop_11_13_PBP_D (τ₁ τ₂ : PBP)
+    (_hγ₁ : τ₁.γ = .D) (_hγ₂ : τ₂.γ = .D)
+    (ε_wp : Fin 2) (n₀ : ℤ × ℤ) (j : ℤ)
+    (L₁ L₂ : ACResult)
+    (h_eq :
+      ((if ε_wp = 1 then L₁.twistBD (-1) (-1) else L₁).augment n₀).charTwistCM j =
+      ((if ε_wp = 1 then L₂.twistBD (-1) (-1) else L₂).augment n₀).charTwistCM j) :
+    L₁ = L₂ :=
+  BMSZ.ac_chain_injective ε_wp n₀ j h_eq
+
+/-- **Prop 11.13 at PBP level (B⁺ type):** Same chain injectivity statement,
+    specialised with the γ = Bplus hypothesis. -/
+theorem prop_11_13_PBP_Bplus (τ₁ τ₂ : PBP)
+    (_hγ₁ : τ₁.γ = .Bplus) (_hγ₂ : τ₂.γ = .Bplus)
+    (ε_wp : Fin 2) (n₀ : ℤ × ℤ) (j : ℤ)
+    (L₁ L₂ : ACResult)
+    (h_eq :
+      ((if ε_wp = 1 then L₁.twistBD (-1) (-1) else L₁).augment n₀).charTwistCM j =
+      ((if ε_wp = 1 then L₂.twistBD (-1) (-1) else L₂).augment n₀).charTwistCM j) :
+    L₁ = L₂ :=
+  BMSZ.ac_chain_injective ε_wp n₀ j h_eq
+
+/-- **Prop 11.13 at PBP level (B⁻ type):** Mirror of B⁺. -/
+theorem prop_11_13_PBP_Bminus (τ₁ τ₂ : PBP)
+    (_hγ₁ : τ₁.γ = .Bminus) (_hγ₂ : τ₂.γ = .Bminus)
+    (ε_wp : Fin 2) (n₀ : ℤ × ℤ) (j : ℤ)
+    (L₁ L₂ : ACResult)
+    (h_eq :
+      ((if ε_wp = 1 then L₁.twistBD (-1) (-1) else L₁).augment n₀).charTwistCM j =
+      ((if ε_wp = 1 then L₂.twistBD (-1) (-1) else L₂).augment n₀).charTwistCM j) :
+    L₁ = L₂ :=
+  BMSZ.ac_chain_injective ε_wp n₀ j h_eq
+
 end PBPInstantiation
