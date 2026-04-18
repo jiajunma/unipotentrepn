@@ -12,40 +12,60 @@ This decomposes the PBP signature into:
 1. A constant from the Q shape: (μQ.colLen 0, μQ.colLen 0)
 2. The signature contribution from columns ≥ 1 (= double descent)
 3. The tail signature from column 0 above Q
+
+## Status
+
+This file is a documentation stub — the actual formal statements live in
+`CombUnipotent/MYD.lean`:
+
+- `PBP.signature_fst_decomp_D` (line ~2159): signature.1 split as
+  `Q.colLen 0 + colGe1 contribution + tail col 0 contribution`.
+- `PBP.signature_snd_decomp_D` (line ~2189): signature.2 analog.
+- `prop_11_4_signature_decomp_D` (line ~2248): packaged both components.
+
+The colGe1 contribution corresponds to `Sign(∇²(τ))` at the PBP level, and the
+tail col 0 contribution is precisely `tailSignature_D τ`.
+
+For the PBP-level bridge to `Sign(∇²(τ))` (connecting colGe1 to a signature of
+the descended PBP), see `CombUnipotent/MYD/Prop11_5_AtomicDischarge.lean`
+for the atomic 3-fact discharge form that sidesteps this bridge.
 -/
-import CombUnipotent.Tail
+import CombUnipotent.MYD
 
 namespace PBP
 
-open PBP
+/-! Re-export the key signature decomposition theorems for documentation purposes. -/
 
-/-! ## Signature of D-type PBP decomposes into col0 + colGe1
+/-- **Re-export**: D-type signature decomposition (fst).
+    See `PBP.signature_fst_decomp_D` in `MYD.lean` for the proof. -/
+theorem signature_decomp_D_fst (τ : PBP) (hγ : τ.γ = .D) :
+    (PBP.signature τ).1 =
+      τ.Q.shape.colLen 0 +
+      (PBP.countSymColGe1 τ.P .dot + τ.Q.countSym .dot +
+       2 * PBP.countSymColGe1 τ.P .r + PBP.countSymColGe1 τ.P .c +
+       PBP.countSymColGe1 τ.P .d) +
+      (2 * PBP.countCol0 τ.P.paint .r (τ.Q.shape.colLen 0)
+           (τ.P.shape.colLen 0 - τ.Q.shape.colLen 0) +
+       PBP.countCol0 τ.P.paint .c (τ.Q.shape.colLen 0)
+           (τ.P.shape.colLen 0 - τ.Q.shape.colLen 0) +
+       PBP.countCol0 τ.P.paint .d (τ.Q.shape.colLen 0)
+           (τ.P.shape.colLen 0 - τ.Q.shape.colLen 0)) :=
+  PBP.signature_fst_decomp_D τ hγ
 
-For D type:
-  p = nDot + 2·nR + nC + nD
-    = (dotCol0 + dotColGe1) + 2·(rCol0 + rColGe1) + (cCol0 + cColGe1) + (dCol0 + dColGe1)
-
-where:
-  dotCol0 = Q.colLen 0 (cells below Q in P col 0 are dots)
-  {s,r,c,d}Col0 in [Q.colLen 0, P.colLen 0) = tail cells
-  dotColGe1 = dots in columns ≥ 1
-  {s,r,c,d}ColGe1 = non-dot in columns ≥ 1
-
-The colGe1 contributions equal those of the double descent ∇²(τ)
-(since descent preserves columns ≥ 1).
-
-The tail contribution is:
-  tailP = 2·rCol0_tail + cCol0_tail + dCol0_tail
-  tailQ = 2·sCol0_tail + cCol0_tail + dCol0_tail
-which matches our tailSignature_D. -/
-
--- TODO: State and prove the signature decomposition formula.
--- This requires connecting:
--- 1. PBP.signature τ (from Signature.lean)
--- 2. countSym_split (from Tail.lean): P.countSym σ = countSymCol0 + countSymColGe1
--- 3. countCol0 decomposition into [0, Q.colLen) + [Q.colLen, P.colLen)
--- 4. The fact that col0 below Q is all dots (col0_dot_below_Q_D)
--- 5. The fact that Q has only dots for D type (Q_countSym_eq_zero_of_D)
--- 6. tailSignature_D sums the tail cell contributions
+/-- **Re-export**: D-type signature decomposition (snd).
+    See `PBP.signature_snd_decomp_D` in `MYD.lean` for the proof. -/
+theorem signature_decomp_D_snd (τ : PBP) (hγ : τ.γ = .D) :
+    (PBP.signature τ).2 =
+      τ.Q.shape.colLen 0 +
+      (PBP.countSymColGe1 τ.P .dot + τ.Q.countSym .dot +
+       2 * PBP.countSymColGe1 τ.P .s + PBP.countSymColGe1 τ.P .c +
+       PBP.countSymColGe1 τ.P .d) +
+      (2 * PBP.countCol0 τ.P.paint .s (τ.Q.shape.colLen 0)
+           (τ.P.shape.colLen 0 - τ.Q.shape.colLen 0) +
+       PBP.countCol0 τ.P.paint .c (τ.Q.shape.colLen 0)
+           (τ.P.shape.colLen 0 - τ.Q.shape.colLen 0) +
+       PBP.countCol0 τ.P.paint .d (τ.Q.shape.colLen 0)
+           (τ.P.shape.colLen 0 - τ.Q.shape.colLen 0)) :=
+  PBP.signature_snd_decomp_D τ hγ
 
 end PBP
