@@ -94,68 +94,107 @@ where $\wp_\uparrow := \wp \cup \{(1, 2)\}$. By the PP assumption, $k_\uparrow >
 
 Since $\jmath$ is unchanged, $\tau_\uparrow.\mathcal{Q}(i, j) := \tau.\mathcal{Q}(i, j)$ for all $(i, j)$.
 
-\subsection{Case analysis for $\tau_\uparrow.\mathcal{P}$}
+\subsection{Case analysis for the new paint}
 
-\begin{definition}[shape shift C — paint function]
+The construction of $\mathcal{P}_{\tau_\uparrow}$ splits into four sub-cases
+based on the value of $\mathcal{P}_\tau(k, 1)$. Each sub-case is a separate
+definition corresponding to its own Lean helper.
+
+\begin{definition}[shape shift C — main dispatcher]
   \label{def:shapeShiftC_paint}
   \lean{shiftPaintP_C_concrete, shapeShiftC}
   \leanok
   \uses{def:PBP}
-  There are four sub-cases, based on $\mathcal{P}_\tau(k, 1)$:
+  The paint function $\mathcal{P}_{\tau_\uparrow}$ dispatches to one of the
+  four sub-case formulas
+  (Def.~\ref{def:shapeShiftC_case_a1},
+  \ref{def:shapeShiftC_case_a2},
+  \ref{def:shapeShiftC_case_b1},
+  \ref{def:shapeShiftC_case_b2})
+  according to $\mathcal{P}_\tau(k, 1)$ and $\mathcal{P}_\tau(k - 1, 1)$,
+  where $k := \mathbf{c}_1(\iota_\wp)$ and $k_\uparrow := \mathbf{c}_1(\iota_{\wp_\uparrow})$.
+  Set $\alpha_0 := \mathcal{P}_\tau(k, 1)$ when non-$\bullet$.
+\end{definition}
 
-  \noindent\textbf{Case (a):} $\mathcal{P}_\tau(k, 1) \neq \bullet$. Set $\alpha_0 := \mathcal{P}_\tau(k, 1) \in \{s, r, c, d\}$.
-
-  \medskip
-  \noindent\textbf{Sub-case (a.1):} $k \geq 2$ and $\mathcal{P}_\tau(k - 1, 1) = c$.
+\begin{definition}[sub-case (a.1): previous-cell is c]
+  \label{def:shapeShiftC_case_a1}
+  \lean{shiftPaintP_C_concrete_case_a1}
+  \leanok
+  \uses{def:PBP}
+  Applies when $\alpha_0 \neq \bullet$, $k \geq 2$, and $\mathcal{P}_\tau(k - 1, 1) = c$.
+  The new paint is
   \[
-    \tau_\uparrow.\mathcal{P}(i, j) =
+    \mathcal{P}_{\tau_\uparrow}(i, j) =
     \begin{cases}
       r & j = 1,\ k - 1 \leq i \leq k_\uparrow - 2 \\
       c & (i, j) = (k_\uparrow - 1, 1) \\
       d & (i, j) = (k_\uparrow, 1) \\
-      \mathcal{P}_\tau(i, j) & \text{otherwise}
+      \mathcal{P}_\tau(i, j) & \text{otherwise.}
     \end{cases}
   \]
+  \end{definition}
 
-  \medskip
-  \noindent\textbf{Sub-case (a.2):} otherwise.
+\smallskip
+
+\begin{definition}[sub-case (a.2): default for non-dot top]
+  \label{def:shapeShiftC_case_a2}
+  \lean{shiftPaintP_C_concrete_case_a2}
+  \leanok
+  \uses{def:PBP}
+  Applies when $\alpha_0 \neq \bullet$ and the (a.1) condition on $\mathcal{P}_\tau(k - 1, 1)$ fails.
+  The new paint is
   \[
-    \tau_\uparrow.\mathcal{P}(i, j) =
+    \mathcal{P}_{\tau_\uparrow}(i, j) =
     \begin{cases}
       r & j = 1,\ k \leq i \leq k_\uparrow - 1 \\
       \alpha_0 & (i, j) = (k_\uparrow, 1) \\
-      \mathcal{P}_\tau(i, j) & \text{otherwise}
+      \mathcal{P}_\tau(i, j) & \text{otherwise.}
     \end{cases}
   \]
+  \end{definition}
 
-  \medskip
-  \noindent\textbf{Case (b):} $\mathcal{P}_\tau(k, 1) = \bullet$.
+\smallskip
 
-  \medskip
-  \noindent\textbf{Sub-case (b.1):} $\mathbf{c}_2(\iota_\wp) = k$ and $\mathcal{P}_\tau(k, 2) = r$.
+\begin{definition}[sub-case (b.1): Q col-2 lift (deferred)]
+  \label{def:shapeShiftC_case_b1}
+  \lean{shiftPaintP_C_concrete_case_b1_fallback}
+  \leanok
+  \uses{def:PBP}
+  Applies when $\alpha_0 = \bullet$, $\mathbf{c}_2(\iota_\wp) = k$, and $\mathcal{P}_\tau(k, 2) = r$.
+  The new paint formula modifies column~1 of $\jmath$-reachable cells:
   \[
-    \tau_\uparrow.\mathcal{P}(i, j) =
+    \mathcal{P}_{\tau_\uparrow}(i, j) =
     \begin{cases}
       r & j = 1,\ k \leq i \leq k_\uparrow - 1 \\
       c & (i, j) = (\mathbf{c}_2(\iota_\wp), 2) \\
       d & (i, j) = (k_\uparrow, 1) \\
-      \mathcal{P}_\tau(i, j) & \text{otherwise}
+      \mathcal{P}_\tau(i, j) & \text{otherwise.}
     \end{cases}
   \]
-  (Case b.1 modifies column~1 of $\jmath$-reachable cells; formalization of this case is deferred.)
+  The Lean formalization uses a fallback constructor
+  (\texttt{shiftPaintP\_C\_concrete\_case\_b1\_fallback}); a full constructive
+  case (b.1) handler is deferred future work.
+\end{definition}
 
-  \medskip
-  \noindent\textbf{Sub-case (b.2):} otherwise.
+\smallskip
+
+\begin{definition}[sub-case (b.2): default for dot top]
+  \label{def:shapeShiftC_case_b2}
+  \lean{shiftPaintP_C_concrete_case_b2}
+  \leanok
+  \uses{def:PBP}
+  Applies when $\alpha_0 = \bullet$ and the (b.1) condition fails.
+  The new paint is
   \[
-    \tau_\uparrow.\mathcal{P}(i, j) =
+    \mathcal{P}_{\tau_\uparrow}(i, j) =
     \begin{cases}
       r & j = 1,\ k \leq i \leq k_\uparrow - 2 \\
       c & (i, j) = (k - 1, 1) \\
       d & (i, j) = (k_\uparrow, 1) \\
-      \mathcal{P}_\tau(i, j) & \text{otherwise}
+      \mathcal{P}_\tau(i, j) & \text{otherwise.}
     \end{cases}
   \]
-\end{definition}
+  \end{definition}
 
 \subsection{Validity and bijectivity}
 
@@ -164,8 +203,8 @@ Since $\jmath$ is unchanged, $\tau_\uparrow.\mathcal{Q}(i, j) := \tau.\mathcal{Q
   \lean{shapeShiftC}
   \leanok
   \uses{def:shapeShiftC_paint}
-  The painted diagram $\tau_\uparrow$ produced by any of the four sub-cases
-  of Def.~\ref{def:shapeShiftC_paint} satisfies all PBP axioms: the allowed
+  The painted diagram produced by any of the four sub-cases of
+  Def.~\ref{def:shapeShiftC_paint} satisfies all PBP axioms: the allowed
   symbol sets (\texttt{sym\_P}, \texttt{sym\_Q}), layer monotonicity, the
   \texttt{dot\_match} invariant, and the row / column uniqueness conditions
   (\texttt{row\_s}, \texttt{row\_r}, \texttt{col\_c\_P}, \texttt{col\_c\_Q},

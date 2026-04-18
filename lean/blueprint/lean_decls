@@ -4,6 +4,7 @@ DRCSymbol.tailContrib
 PaintedYoungDiagram.layerMonotone
 PBP.dotScolLen
 RootType
+DRCSymbol.allowed
 PBP
 PBPSet
 PBP.signature
@@ -27,6 +28,10 @@ lemma_10_3_M
 prop_10_2_PBP_M
 shiftPaintP_C_concrete
 shapeShiftC
+shiftPaintP_C_concrete_case_a1
+shiftPaintP_C_concrete_case_a2
+shiftPaintP_C_concrete_case_b1_fallback
+shiftPaintP_C_concrete_case_b2
 shapeShiftC
 shapeShiftC_id
 shapeShiftC_id_eq
