@@ -1624,6 +1624,256 @@ private theorem mem_stfBdryB (N : ℕ) (a b : ℤ) :
   simp only [stfBdryB, Finset.mem_insert, Finset.mem_singleton, Prod.mk.injEq]
   tauto
 
+/-- Cover lemma: every pair `(a, b)` in `SignTargetFinset N` (for `N > 0`)
+    lies in exactly one of the 6 slices. -/
+private theorem mem_SignTargetFinset_iff_slices {N : ℕ} (hN : 0 < N) (a b : ℤ) :
+    (a, b) ∈ SignTargetFinset N ↔
+      (a, b) ∈ stfPosPos N ∨ (a, b) ∈ stfPosNeg N ∨
+      (a, b) ∈ stfNegPos N ∨ (a, b) ∈ stfNegNeg N ∨
+      (a, b) ∈ stfBdryA N ∨ (a, b) ∈ stfBdryB N := by
+  rw [mem_SignTargetFinset, mem_stfPosPos, mem_stfPosNeg, mem_stfNegPos,
+      mem_stfNegNeg, mem_stfBdryA, mem_stfBdryB]
+  constructor
+  · intro hsum
+    by_cases ha0 : a = 0
+    · -- a = 0 → b = ±N → bdryA
+      subst ha0
+      have hbN : b.natAbs = N := by simpa using hsum
+      rcases Int.natAbs_eq b with hb | hb
+      · refine Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨rfl, ?_⟩))))
+        left; omega
+      · refine Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨rfl, ?_⟩))))
+        right; omega
+    · by_cases hb0 : b = 0
+      · -- b = 0 → a = ±N → bdryB
+        subst hb0
+        have haN : a.natAbs = N := by simpa using hsum
+        rcases Int.natAbs_eq a with ha | ha
+        · refine Or.inr (Or.inr (Or.inr (Or.inr (Or.inr ⟨?_, rfl⟩))))
+          left; omega
+        · refine Or.inr (Or.inr (Or.inr (Or.inr (Or.inr ⟨?_, rfl⟩))))
+          right; omega
+      · -- both nonzero
+        have ha_sign : a > 0 ∨ a < 0 := by omega
+        have hb_sign : b > 0 ∨ b < 0 := by omega
+        rcases ha_sign with hap | han
+        · rcases hb_sign with hbp | hbn
+          · -- a > 0, b > 0 → posPos
+            refine Or.inl ⟨a, ?_, ?_, rfl, ?_⟩
+            · omega
+            · have hb_abs_pos : b.natAbs ≥ 1 := by
+                rcases Int.natAbs_eq b with hh | hh <;> omega
+              have hae : (a.natAbs : ℤ) = a := by omega
+              omega
+            · have hae : (a.natAbs : ℤ) = a := by omega
+              have hbe : (b.natAbs : ℤ) = b := by omega
+              have hsum' : (a.natAbs : ℤ) + (b.natAbs : ℤ) = N := by exact_mod_cast hsum
+              omega
+          · -- a > 0, b < 0 → posNeg
+            refine Or.inr (Or.inl ⟨a, ?_, ?_, rfl, ?_⟩)
+            · omega
+            · have hb_abs_pos : b.natAbs ≥ 1 := by
+                rcases Int.natAbs_eq b with hh | hh <;> omega
+              have hae : (a.natAbs : ℤ) = a := by omega
+              omega
+            · have hae : (a.natAbs : ℤ) = a := by omega
+              have hbe : (b.natAbs : ℤ) = -b := by omega
+              have hsum' : (a.natAbs : ℤ) + (b.natAbs : ℤ) = N := by exact_mod_cast hsum
+              omega
+        · rcases hb_sign with hbp | hbn
+          · -- a < 0, b > 0 → negPos
+            refine Or.inr (Or.inr (Or.inl ⟨-a, ?_, ?_, ?_, ?_⟩))
+            · omega
+            · have hb_abs_pos : b.natAbs ≥ 1 := by
+                rcases Int.natAbs_eq b with hh | hh <;> omega
+              have hae : (a.natAbs : ℤ) = -a := by omega
+              omega
+            · ring
+            · have hae : (a.natAbs : ℤ) = -a := by omega
+              have hbe : (b.natAbs : ℤ) = b := by omega
+              have hsum' : (a.natAbs : ℤ) + (b.natAbs : ℤ) = N := by exact_mod_cast hsum
+              omega
+          · -- a < 0, b < 0 → negNeg
+            refine Or.inr (Or.inr (Or.inr (Or.inl ⟨-a, ?_, ?_, ?_, ?_⟩)))
+            · omega
+            · have hb_abs_pos : b.natAbs ≥ 1 := by
+                rcases Int.natAbs_eq b with hh | hh <;> omega
+              have hae : (a.natAbs : ℤ) = -a := by omega
+              omega
+            · ring
+            · have hae : (a.natAbs : ℤ) = -a := by omega
+              have hbe : (b.natAbs : ℤ) = -b := by omega
+              have hsum' : (a.natAbs : ℤ) + (b.natAbs : ℤ) = N := by exact_mod_cast hsum
+              omega
+  · rintro (⟨k, hk1, hk2, ha, hb⟩ | ⟨k, hk1, hk2, ha, hb⟩
+            | ⟨k, hk1, hk2, ha, hb⟩ | ⟨k, hk1, hk2, ha, hb⟩
+            | ⟨ha, hb_or⟩ | ⟨ha_or, hb⟩)
+    -- posPos: a = k, b = N - k, k ∈ [1, N - 1]; after subst k → a
+    · subst ha; subst hb
+      simp only
+      have hk_eq : (a.natAbs : ℤ) = a := Int.natAbs_of_nonneg (by omega)
+      have hNk_eq : (((N : ℤ) - a).natAbs : ℤ) = (N : ℤ) - a :=
+        Int.natAbs_of_nonneg (by omega)
+      omega
+    -- posNeg
+    · subst ha; subst hb
+      simp only [Int.natAbs_neg]
+      have hk_eq : (a.natAbs : ℤ) = a := Int.natAbs_of_nonneg (by omega)
+      have hNk_eq : (((N : ℤ) - a).natAbs : ℤ) = (N : ℤ) - a :=
+        Int.natAbs_of_nonneg (by omega)
+      omega
+    -- negPos: a = -k, b = N - k; subst makes a = -k, can't subst k away.
+    · subst ha; subst hb
+      simp only [Int.natAbs_neg]
+      have hk_eq : (k.natAbs : ℤ) = k := Int.natAbs_of_nonneg (by omega)
+      have hNk_eq : (((N : ℤ) - k).natAbs : ℤ) = (N : ℤ) - k :=
+        Int.natAbs_of_nonneg (by omega)
+      omega
+    -- negNeg
+    · subst ha; subst hb
+      simp only [Int.natAbs_neg]
+      have hk_eq : (k.natAbs : ℤ) = k := Int.natAbs_of_nonneg (by omega)
+      have hNk_eq : (((N : ℤ) - k).natAbs : ℤ) = (N : ℤ) - k :=
+        Int.natAbs_of_nonneg (by omega)
+      omega
+    -- bdryA
+    · subst ha
+      rcases hb_or with rfl | rfl <;> simp [Int.natAbs_neg]
+    -- bdryB
+    · subst hb
+      rcases ha_or with rfl | rfl <;> simp [Int.natAbs_neg]
+
+/-- Disjointness lemma: any two distinct slices are disjoint. We bundle
+    all 15 pairwise disjointness facts. -/
+private theorem stf_slices_disjoint {N : ℕ} (hN : 0 < N) :
+    Disjoint (stfPosPos N) (stfPosNeg N) ∧
+    Disjoint (stfPosPos N) (stfNegPos N) ∧
+    Disjoint (stfPosPos N) (stfNegNeg N) ∧
+    Disjoint (stfPosPos N) (stfBdryA N) ∧
+    Disjoint (stfPosPos N) (stfBdryB N) ∧
+    Disjoint (stfPosNeg N) (stfNegPos N) ∧
+    Disjoint (stfPosNeg N) (stfNegNeg N) ∧
+    Disjoint (stfPosNeg N) (stfBdryA N) ∧
+    Disjoint (stfPosNeg N) (stfBdryB N) ∧
+    Disjoint (stfNegPos N) (stfNegNeg N) ∧
+    Disjoint (stfNegPos N) (stfBdryA N) ∧
+    Disjoint (stfNegPos N) (stfBdryB N) ∧
+    Disjoint (stfNegNeg N) (stfBdryA N) ∧
+    Disjoint (stfNegNeg N) (stfBdryB N) ∧
+    Disjoint (stfBdryA N) (stfBdryB N) := by
+  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;>
+    rw [Finset.disjoint_left] <;> rintro ⟨a, b⟩ hx hy
+  -- posPos vs posNeg: b > 0 vs b < 0
+  · rw [mem_stfPosPos] at hx; rw [mem_stfPosNeg] at hy
+    obtain ⟨k, _, _, _, hb⟩ := hx
+    obtain ⟨k', hk1', hk2', _, hb'⟩ := hy
+    rw [hb] at hb'; omega
+  -- posPos vs negPos: a > 0 vs a < 0
+  · rw [mem_stfPosPos] at hx; rw [mem_stfNegPos] at hy
+    obtain ⟨k, hk1, _, ha, _⟩ := hx
+    obtain ⟨k', hk1', _, ha', _⟩ := hy
+    rw [ha] at ha'; omega
+  -- posPos vs negNeg
+  · rw [mem_stfPosPos] at hx; rw [mem_stfNegNeg] at hy
+    obtain ⟨k, hk1, _, ha, _⟩ := hx
+    obtain ⟨k', hk1', _, ha', _⟩ := hy
+    rw [ha] at ha'; omega
+  -- posPos vs bdryA: a > 0 vs a = 0
+  · rw [mem_stfPosPos] at hx; rw [mem_stfBdryA] at hy
+    obtain ⟨k, hk1, _, ha, _⟩ := hx
+    rw [hy.1] at ha; omega
+  -- posPos vs bdryB: b > 0 vs b = 0
+  · rw [mem_stfPosPos] at hx; rw [mem_stfBdryB] at hy
+    obtain ⟨k, _, hk2, _, hb⟩ := hx
+    rw [hy.2] at hb; omega
+  -- posNeg vs negPos
+  · rw [mem_stfPosNeg] at hx; rw [mem_stfNegPos] at hy
+    obtain ⟨k, hk1, _, ha, _⟩ := hx
+    obtain ⟨k', hk1', _, ha', _⟩ := hy
+    rw [ha] at ha'; omega
+  -- posNeg vs negNeg
+  · rw [mem_stfPosNeg] at hx; rw [mem_stfNegNeg] at hy
+    obtain ⟨k, hk1, _, ha, _⟩ := hx
+    obtain ⟨k', hk1', _, ha', _⟩ := hy
+    rw [ha] at ha'; omega
+  -- posNeg vs bdryA
+  · rw [mem_stfPosNeg] at hx; rw [mem_stfBdryA] at hy
+    obtain ⟨k, hk1, _, ha, _⟩ := hx
+    rw [hy.1] at ha; omega
+  -- posNeg vs bdryB: b < 0 vs b = 0
+  · rw [mem_stfPosNeg] at hx; rw [mem_stfBdryB] at hy
+    obtain ⟨k, _, hk2, _, hb⟩ := hx
+    rw [hy.2] at hb; omega
+  -- negPos vs negNeg
+  · rw [mem_stfNegPos] at hx; rw [mem_stfNegNeg] at hy
+    obtain ⟨k, _, _, _, hb⟩ := hx
+    obtain ⟨k', hk1', hk2', _, hb'⟩ := hy
+    rw [hb] at hb'; omega
+  -- negPos vs bdryA
+  · rw [mem_stfNegPos] at hx; rw [mem_stfBdryA] at hy
+    obtain ⟨k, hk1, _, ha, _⟩ := hx
+    rw [hy.1] at ha; omega
+  -- negPos vs bdryB
+  · rw [mem_stfNegPos] at hx; rw [mem_stfBdryB] at hy
+    obtain ⟨k, _, hk2, _, hb⟩ := hx
+    rw [hy.2] at hb; omega
+  -- negNeg vs bdryA
+  · rw [mem_stfNegNeg] at hx; rw [mem_stfBdryA] at hy
+    obtain ⟨k, hk1, _, ha, _⟩ := hx
+    rw [hy.1] at ha; omega
+  -- negNeg vs bdryB
+  · rw [mem_stfNegNeg] at hx; rw [mem_stfBdryB] at hy
+    obtain ⟨k, _, hk2, _, hb⟩ := hx
+    rw [hy.2] at hb; omega
+  -- bdryA vs bdryB
+  · rw [mem_stfBdryA] at hx; rw [mem_stfBdryB] at hy
+    rcases hy.1 with hh | hh
+    · rw [hx.1] at hh; omega
+    · rw [hx.1] at hh; omega
+
+/-- For `N > 0`, the cardinality of `SignTargetFinset N` is `4 * N`.
+
+    Proof strategy: cover `SignTargetFinset N` by 6 disjoint slices
+    (`stfPosPos`, `stfPosNeg`, `stfNegPos`, `stfNegNeg` of size `N - 1` each;
+    `stfBdryA` and `stfBdryB` of size `2` each).
+    Total `4 * (N - 1) + 4 = 4 * N`. -/
+theorem SignTargetFinset_card_pos {N : ℕ} (hN : 0 < N) :
+    (SignTargetFinset N).card = 4 * N := by
+  obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12, h13, h14, h15⟩ :=
+    stf_slices_disjoint hN
+  have hcover : SignTargetFinset N =
+      stfPosPos N ∪ stfPosNeg N ∪ stfNegPos N ∪ stfNegNeg N
+        ∪ stfBdryA N ∪ stfBdryB N := by
+    ext ⟨a, b⟩
+    rw [mem_SignTargetFinset_iff_slices hN]
+    simp only [Finset.mem_union]
+    tauto
+  rw [hcover]
+  rw [Finset.card_union_of_disjoint, Finset.card_union_of_disjoint,
+      Finset.card_union_of_disjoint, Finset.card_union_of_disjoint,
+      Finset.card_union_of_disjoint,
+      stfPosPos_card, stfPosNeg_card, stfNegPos_card, stfNegNeg_card,
+      stfBdryA_card hN, stfBdryB_card hN]
+  · omega
+  · exact h1
+  · rw [Finset.disjoint_union_left]; exact ⟨h2, h6⟩
+  · rw [Finset.disjoint_union_left, Finset.disjoint_union_left]
+    exact ⟨⟨h3, h7⟩, h10⟩
+  · rw [Finset.disjoint_union_left, Finset.disjoint_union_left,
+        Finset.disjoint_union_left]
+    exact ⟨⟨⟨h4, h8⟩, h11⟩, h13⟩
+  · rw [Finset.disjoint_union_left, Finset.disjoint_union_left,
+        Finset.disjoint_union_left, Finset.disjoint_union_left]
+    exact ⟨⟨⟨⟨h5, h9⟩, h12⟩, h14⟩, h15⟩
+
+/-- **Cardinality formula** for `SignTargetFinset`:
+    `card = 1` if `N = 0`, else `4 * N`. -/
+theorem SignTargetFinset_card (N : ℕ) :
+    (SignTargetFinset N).card = if N = 0 then 1 else 4 * N := by
+  by_cases hN : N = 0
+  · subst hN; rw [SignTargetFinset_card_zero]; simp
+  · simp only [hN, ↓reduceIte]
+    exact SignTargetFinset_card_pos (Nat.pos_of_ne_zero hN)
 
 /-! ## Lemma 11.5: Two-step AC recursion formula
 
