@@ -2184,6 +2184,38 @@ theorem AC.two_step_firstColSign_BD_outer {γ₂ : RootType}
       ILS.firstColSign r.2 = (p₂ - p₁, q₂ - q₁) :=
   AC.step_firstColSign_BD L₁ p₂ q₂ ε_τ₂ ε_wp₂ γ₂ hγ₂ (p₁, q₁) h₁_sign h_std
 
+/-! ### Lemma 11.5 → Lemma 11.6 composition: first entry of L_τ
+
+Combining:
+- `AC.step_sign_*`: sign of AC.step output = (p, q)
+- `AC.step_firstColSign_*`: firstColSign of AC.step output = (p - source.1, q - source.2)
+- `thetaLift_{CD,MB}_first_entry`: first entry of theta lift = (addp, addn)
+- `twistBD_first_entry`: first entry after twist
+
+Gives: first entry of L_τ (outer B/D step from L_{τ'}) = `(p_τ - sign(L_{τ'}).1 - firstColSign(L_{τ'}).2, ...)` and this can be further simplified using the sign/fcSign tracking inductively. -/
+
+/-- **AC.fold chain firstColSign**: inductive invariant that firstColSign equals
+    (current sig) − (prev sig) after any AC.fold chain with B/D outer steps.
+
+    At base: firstColSign = sign (by `AC.base_firstColSign_eq_sign`).
+    At each subsequent step: firstColSign(output) = (p - prev_sig.1, q - prev_sig.2)
+    where `prev_sig` is the sign of the source (i.e., the previous level's sign).
+
+    This is the foundational invariant for Section 11's Lemma 11.5 discharge. -/
+theorem AC.chain_firstColSign_eq_diff_sign
+    (chain_prev : ACResult) (γ_curr : RootType)
+    (hγ_curr : γ_curr = .D ∨ γ_curr = .Bplus ∨ γ_curr = .Bminus)
+    (p_curr q_curr : ℤ) (prev_sig : ℤ × ℤ)
+    (ε_τ ε_wp : Fin 2)
+    (h_prev_sign : ∀ r ∈ chain_prev, ILS.sign r.2 = prev_sig)
+    (h_std : ∀ r ∈ chain_prev,
+      p_curr - (ILS.sign r.2).1 - (ILS.firstColSign r.2).2 ≥ 0 ∧
+      q_curr - (ILS.sign r.2).2 - (ILS.firstColSign r.2).1 ≥ 0) :
+    ∀ r ∈ AC.step chain_prev γ_curr p_curr q_curr ε_τ ε_wp,
+      ILS.firstColSign r.2 = (p_curr - prev_sig.1, q_curr - prev_sig.2) :=
+  AC.step_firstColSign_BD chain_prev p_curr q_curr ε_τ ε_wp γ_curr hγ_curr
+    prev_sig h_prev_sign h_std
+
 /-- AC.step for M target: firstColSign invariant, mirror of C. -/
 theorem AC.step_firstColSign_M (source : ACResult) (n : ℤ) (ε_τ ε_wp : Fin 2)
     (source_sig : ℤ × ℤ)
