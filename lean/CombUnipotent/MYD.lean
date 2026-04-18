@@ -3494,6 +3494,93 @@ theorem prop_11_8_PBP_D_closed (τ : PBP) (hγ : τ.γ = .D)
   -- Step 5: apply prop_11_8_PBP
   exact PBPInstantiation.prop_11_8_PBP τ hγ h_tail _ h_ne h_first
 
+/-- **Prop 11.8 (B⁺ type, closed-loop at PBP level):** abstract (p_t, q_t, ε) form.
+
+    For B-type PBPs the tail-symbol infrastructure at the PBP level is not
+    yet developed, so this closed version exposes the truncation-pattern
+    clauses directly in terms of (p_t, q_t, ε) — exactly matching
+    `BMSZ.prop_11_8`. Composes `AC.lemma_11_6_Bplus_unconditional` +
+    `head_some_to_cons` + `BMSZ.prop_11_8`. -/
+theorem prop_11_8_PBP_Bplus_closed (τ : PBP) (hγ : τ.γ = .Bplus)
+    (source : ACResult) (source_sig source_fcSig : ℤ × ℤ)
+    (h_sign : ∀ r ∈ source, ILS.sign r.2 = source_sig)
+    (h_fcSign : ∀ r ∈ source, ILS.firstColSign r.2 = source_fcSig)
+    (h_std : ∀ r ∈ source,
+      (PBP.signature τ).1 - (ILS.sign r.2).1 - (ILS.firstColSign r.2).2 ≥ 0 ∧
+      (PBP.signature τ).2 - (ILS.sign r.2).2 - (ILS.firstColSign r.2).1 ≥ 0)
+    -- Prop 11.4 bridge: first-entry components equal tail signature
+    (h_pt : (PBP.signature τ).1 - source_sig.1 - source_fcSig.2 =
+            (PBP.tailSignature_B τ).1)
+    (h_qt : (PBP.signature τ).2 - source_sig.2 - source_fcSig.1 =
+            (PBP.tailSignature_B τ).2)
+    (hq_nn : (PBP.tailSignature_B τ).2 ≥ 0)
+    (h_ne : AC.step source RootType.Bplus (PBP.signature τ).1 (PBP.signature τ).2
+              (PBP.epsilon τ) 0 ≠ []) :
+    let ac := AC.step source RootType.Bplus (PBP.signature τ).1 (PBP.signature τ).2
+                (PBP.epsilon τ) 0
+    let p_t := (PBP.tailSignature_B τ).1
+    let q_t := (PBP.tailSignature_B τ).2
+    let ε := PBP.epsilon τ
+    (p_t = 0 → ε = 1 → q_t > 0 → ac.truncPlus = [] ∧ ac.truncMinus = []) ∧
+    (p_t > 0 → ε = 1 → ac.truncPlus ≠ [] ∧ ac.truncMinus = []) ∧
+    (p_t > 0 → q_t > 0 → ε = 0 → ac.truncPlus ≠ [] ∧ ac.truncMinus ≠ []) := by
+  -- Step 1: use Lemma 11.6 (B⁺) to get head? = some ...
+  have h_head :=
+    AC.lemma_11_6_Bplus_unconditional source (PBP.signature τ).1 (PBP.signature τ).2
+      (PBP.epsilon τ) 0 source_sig source_fcSig h_sign h_fcSign h_std
+  -- Step 2: rewrite using Prop 11.4 bridge
+  have h_head' : ∀ r ∈ AC.step source RootType.Bplus (PBP.signature τ).1 (PBP.signature τ).2
+      (PBP.epsilon τ) 0,
+      r.2.head? = some ((PBP.tailSignature_B τ).1,
+        if PBP.epsilon τ = 1 then -(PBP.tailSignature_B τ).2
+        else (PBP.tailSignature_B τ).2) := by
+    intro r hr
+    have := h_head r hr
+    rw [h_pt, h_qt] at this
+    exact this
+  -- Step 3: convert head? = some to ∃ rest form
+  have h_cons := ACResult.head_some_to_cons _ _ _ h_head'
+  -- Step 4: apply BMSZ.prop_11_8 directly
+  exact BMSZ.prop_11_8 _ _ _ _ h_ne hq_nn h_cons
+
+/-- **Prop 11.8 (B⁻ type, closed-loop at PBP level):** mirror of B⁺. -/
+theorem prop_11_8_PBP_Bminus_closed (τ : PBP) (hγ : τ.γ = .Bminus)
+    (source : ACResult) (source_sig source_fcSig : ℤ × ℤ)
+    (h_sign : ∀ r ∈ source, ILS.sign r.2 = source_sig)
+    (h_fcSign : ∀ r ∈ source, ILS.firstColSign r.2 = source_fcSig)
+    (h_std : ∀ r ∈ source,
+      (PBP.signature τ).1 - (ILS.sign r.2).1 - (ILS.firstColSign r.2).2 ≥ 0 ∧
+      (PBP.signature τ).2 - (ILS.sign r.2).2 - (ILS.firstColSign r.2).1 ≥ 0)
+    (h_pt : (PBP.signature τ).1 - source_sig.1 - source_fcSig.2 =
+            (PBP.tailSignature_B τ).1)
+    (h_qt : (PBP.signature τ).2 - source_sig.2 - source_fcSig.1 =
+            (PBP.tailSignature_B τ).2)
+    (hq_nn : (PBP.tailSignature_B τ).2 ≥ 0)
+    (h_ne : AC.step source RootType.Bminus (PBP.signature τ).1 (PBP.signature τ).2
+              (PBP.epsilon τ) 0 ≠ []) :
+    let ac := AC.step source RootType.Bminus (PBP.signature τ).1 (PBP.signature τ).2
+                (PBP.epsilon τ) 0
+    let p_t := (PBP.tailSignature_B τ).1
+    let q_t := (PBP.tailSignature_B τ).2
+    let ε := PBP.epsilon τ
+    (p_t = 0 → ε = 1 → q_t > 0 → ac.truncPlus = [] ∧ ac.truncMinus = []) ∧
+    (p_t > 0 → ε = 1 → ac.truncPlus ≠ [] ∧ ac.truncMinus = []) ∧
+    (p_t > 0 → q_t > 0 → ε = 0 → ac.truncPlus ≠ [] ∧ ac.truncMinus ≠ []) := by
+  have h_head :=
+    AC.lemma_11_6_Bminus_unconditional source (PBP.signature τ).1 (PBP.signature τ).2
+      (PBP.epsilon τ) 0 source_sig source_fcSig h_sign h_fcSign h_std
+  have h_head' : ∀ r ∈ AC.step source RootType.Bminus (PBP.signature τ).1 (PBP.signature τ).2
+      (PBP.epsilon τ) 0,
+      r.2.head? = some ((PBP.tailSignature_B τ).1,
+        if PBP.epsilon τ = 1 then -(PBP.tailSignature_B τ).2
+        else (PBP.tailSignature_B τ).2) := by
+    intro r hr
+    have := h_head r hr
+    rw [h_pt, h_qt] at this
+    exact this
+  have h_cons := ACResult.head_some_to_cons _ _ _ h_head'
+  exact BMSZ.prop_11_8 _ _ _ _ h_ne hq_nn h_cons
+
 /-! ### Prop 11.12 + 11.13 at PBP level -/
 
 /-- **Prop 11.12 at PBP level:** If L_{τ₁} ⊗ (ε₁,ε₁) = L_{τ₂} ⊗ (ε₂,ε₂),
