@@ -1067,347 +1067,347 @@
     "singleton_case_B_SS_alpha": {
       "name": "singleton_case_B_SS_alpha",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 3102
+      "line": 3095
     },
     "card_Bplus_SS_eq_Bminus_SS": {
       "name": "card_Bplus_SS_eq_Bminus_SS",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 3187
+      "line": 3180
     },
     "card_Bplus_Qbot_r_eq_Bminus_Qbot_r": {
       "name": "card_Bplus_Qbot_r_eq_Bminus_Qbot_r",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 3255
+      "line": 3248
     },
     "sigma_Q_eq_d_of_Qbot_d_bal": {
       "name": "sigma_Q_eq_d_of_Qbot_d_bal",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 3348
+      "line": 3341
     },
     "dpartColLens_P_le_Q": {
       "name": "dpartColLens_P_le_Q",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 3372
+      "line": 3365
     },
     "colLen_eq_getD": {
       "name": "colLen_eq_getD",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 3391
+      "line": 3384
     },
     "sigma_shape_inc_of_dp": {
       "name": "sigma_shape_inc_of_dp",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 3412
+      "line": 3405
     },
     "sigma_P_eq_c_of_Qbot_d_bal": {
       "name": "sigma_P_eq_c_of_Qbot_d_bal",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 3428
+      "line": 3421
     },
     "sigma_Q_eq_d_of_Qbot_r_bal_j_pos": {
       "name": "sigma_Q_eq_d_of_Qbot_r_bal_j_pos",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 3459
+      "line": 3452
     },
     "sigma_P_eq_c_of_Qbot_r_bal": {
       "name": "sigma_P_eq_c_of_Qbot_r_bal",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 3490
+      "line": 3483
     },
     "liftPBP_B_bal_Qd": {
       "name": "liftPBP_B_bal_Qd",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 3535
+      "line": 3528
     },
     "liftPBP_B_bal_Qd_round_trip": {
       "name": "liftPBP_B_bal_Qd_round_trip",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 3980
+      "line": 3973
     },
     "liftPBP_B_bal_Qd_injective": {
       "name": "liftPBP_B_bal_Qd_injective",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 4083
+      "line": 4076
     },
     "validCol0_B_le_fiber_bal_Qd": {
       "name": "validCol0_B_le_fiber_bal_Qd",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 4144
+      "line": 4137
     },
     "ValidCol0_B_Qr": {
       "name": "ValidCol0_B_Qr",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 4175
+      "line": 4168
     },
     "DSeq_allR": {
       "name": "DSeq_allR",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 4185
+      "line": 4178
     },
     "DSeq_Rd": {
       "name": "DSeq_Rd",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 4193
+      "line": 4186
     },
     "DSeq_allR_first": {
       "name": "DSeq_allR_first",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 4213
+      "line": 4206
     },
     "DSeq_Rd_first": {
       "name": "DSeq_Rd_first",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 4217
+      "line": 4210
     },
     "DSeq_first_r_struct": {
       "name": "DSeq_first_r_struct",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 4223
+      "line": 4216
     },
     "DSeq_first_d_struct": {
       "name": "DSeq_first_d_struct",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 4299
+      "line": 4292
     },
     "card_DSeq_first_rd": {
       "name": "card_DSeq_first_rd",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 4329
+      "line": 4322
     },
     "validCol0_B_Qr_card": {
       "name": "validCol0_B_Qr_card",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 4376
+      "line": 4369
     },
     "fiber_Q_hPm1_nrd_of_Qr": {
       "name": "fiber_Q_hPm1_nrd_of_Qr",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 4432
+      "line": 4425
     },
     "fiber_le_validCol0_B_Qr": {
       "name": "fiber_le_validCol0_B_Qr",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 4471
+      "line": 4464
     },
     "liftPBP_B_bal_Qr": {
       "name": "liftPBP_B_bal_Qr",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 4517
+      "line": 4510
     },
     "liftPBP_B_bal_Qr_round_trip": {
       "name": "liftPBP_B_bal_Qr_round_trip",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 5039
+      "line": 5032
     },
     "liftPBP_B_bal_Qr_injective": {
       "name": "liftPBP_B_bal_Qr_injective",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 5142
+      "line": 5135
     },
     "validCol0_B_Qr_le_fiber": {
       "name": "validCol0_B_Qr_le_fiber",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 5207
+      "line": 5200
     },
     "fiber_card_B_bal_Qd": {
       "name": "fiber_card_B_bal_Qd",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 5284
+      "line": 5277
     },
     "fiber_card_B_bal_Qr": {
       "name": "fiber_card_B_bal_Qr",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 5401
+      "line": 5394
     },
     "ValidCol0_B_Qlow": {
       "name": "ValidCol0_B_Qlow",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 5493
+      "line": 5486
     },
     "validCol0_B_Qlow_card": {
       "name": "validCol0_B_Qlow_card",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 5504
+      "line": 5497
     },
     "validCol0_B_Qlow_card_top_d": {
       "name": "validCol0_B_Qlow_card_top_d",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 5528
+      "line": 5521
     },
     "validCol0_B_Qr_card_top_d": {
       "name": "validCol0_B_Qr_card_top_d",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 5595
+      "line": 5588
     },
     "fiber_P_col0_no_c_of_Qlow": {
       "name": "fiber_P_col0_no_c_of_Qlow",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 5870
+      "line": 5863
     },
     "fiber_le_validCol0_B_Qlow": {
       "name": "fiber_le_validCol0_B_Qlow",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 6098
+      "line": 6091
     },
     "liftPBP_B_bal_Qlow": {
       "name": "liftPBP_B_bal_Qlow",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 6124
+      "line": 6117
     },
     "liftPBP_B_bal_Qlow_round_trip": {
       "name": "liftPBP_B_bal_Qlow_round_trip",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 6427
+      "line": 6420
     },
     "liftPBP_B_bal_Qlow_injective": {
       "name": "liftPBP_B_bal_Qlow_injective",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 6527
+      "line": 6520
     },
     "validCol0_B_Qlow_le_fiber": {
       "name": "validCol0_B_Qlow_le_fiber",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 6556
+      "line": 6549
     },
     "fiber_card_B_bal_Qlow": {
       "name": "fiber_card_B_bal_Qlow",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 6653
+      "line": 6646
     },
     "liftPBP_B_bal_Qd_preserves_top_Q": {
       "name": "liftPBP_B_bal_Qd_preserves_top_Q",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 6739
+      "line": 6732
     },
     "liftPBP_B_bal_Qr_preserves_top_Q": {
       "name": "liftPBP_B_bal_Qr_preserves_top_Q",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 6784
+      "line": 6777
     },
     "liftPBP_B_bal_Qlow_preserves_top_Q": {
       "name": "liftPBP_B_bal_Qlow_preserves_top_Q",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 6830
+      "line": 6823
     },
     "fiber_alpha_topSym_d_count_bal_Qd": {
       "name": "fiber_alpha_topSym_d_count_bal_Qd",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 6868
+      "line": 6861
     },
     "fiber_alpha_topSym_d_count_bal_Qr": {
       "name": "fiber_alpha_topSym_d_count_bal_Qr",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 7000
+      "line": 6993
     },
     "fiber_alpha_topSym_d_count_bal_Qlow": {
       "name": "fiber_alpha_topSym_d_count_bal_Qlow",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 7143
+      "line": 7136
     },
     "validCol0_B_Qr_card_top_lo_le_one": {
       "name": "validCol0_B_Qr_card_top_lo_le_one",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 7304
+      "line": 7297
     },
     "validCol0_B_Qlow_card_top_lo_le_one": {
       "name": "validCol0_B_Qlow_card_top_lo_le_one",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 7340
+      "line": 7333
     },
     "fiber_alpha_topSym_lo_le_one_count_bal_Qd": {
       "name": "fiber_alpha_topSym_lo_le_one_count_bal_Qd",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 7405
+      "line": 7398
     },
     "fiber_alpha_topSym_lo_le_one_count_bal_Qr": {
       "name": "fiber_alpha_topSym_lo_le_one_count_bal_Qr",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 7527
+      "line": 7520
     },
     "fiber_alpha_topSym_lo_le_one_count_bal_Qlow": {
       "name": "fiber_alpha_topSym_lo_le_one_count_bal_Qlow",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 7671
+      "line": 7664
     },
     "card_B_bal_grouped_fiber": {
       "name": "card_B_bal_grouped_fiber",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 7894
+      "line": 7887
     },
     "card_PBPSet_Bplus_filter_eq_sum_fiber_filter": {
       "name": "card_PBPSet_Bplus_filter_eq_sum_fiber_filter",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 8103
+      "line": 8096
     },
     "card_B_DD_alpha_bal_grouped_fiber": {
       "name": "card_B_DD_alpha_bal_grouped_fiber",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 8137
+      "line": 8130
     },
     "card_B_SS_alpha_bal_grouped_fiber": {
       "name": "card_B_SS_alpha_bal_grouped_fiber",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 8388
+      "line": 8381
     },
     "card_Bplus_nonD_eq_low_plus_r": {
       "name": "card_Bplus_nonD_eq_low_plus_r",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 8566
+      "line": 8559
     },
     "card_Bminus_partition_Qbot": {
       "name": "card_Bminus_partition_Qbot",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 8612
+      "line": 8605
     },
     "card_PBPSet_B_balanced_step": {
       "name": "card_PBPSet_B_balanced_step",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 8680
+      "line": 8673
     },
     "card_B_combined": {
       "name": "card_B_combined",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 8855
+      "line": 8848
     },
     "card_B_DD_alpha_eq_countB_dd": {
       "name": "card_B_DD_alpha_eq_countB_dd",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 9454
+      "line": 9447
     },
     "card_B_SS_alpha_eq_countB_ss": {
       "name": "card_B_SS_alpha_eq_countB_ss",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 9480
+      "line": 9473
     },
     "card_PBPSet_B_eq_tripleSum_countPBP_B": {
       "name": "card_PBPSet_B_eq_tripleSum_countPBP_B",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 9503
+      "line": 9496
     },
     "card_PBPSet_Bplus_eq": {
       "name": "card_PBPSet_Bplus_eq",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 9604
+      "line": 9597
     },
     "case": {
       "name": "case",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 9629
+      "line": 9622
     },
     "card_B_RC_alpha_eq_countB_rc": {
       "name": "card_B_RC_alpha_eq_countB_rc",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 9630
+      "line": 9623
     },
     "countPBP_B_primitive": {
       "name": "countPBP_B_primitive",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 9674
+      "line": 9667
     },
     "countPBP_B_balanced": {
       "name": "countPBP_B_balanced",
       "file": "lean/CombUnipotent/CountingProof/CorrespondenceB.lean",
-      "line": 9684
+      "line": 9677
     },
     "descentPaintL_CD_outside": {
       "name": "descentPaintL_CD_outside",
