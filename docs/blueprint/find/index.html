@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Finding declaration…</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  body { font-family: -apple-system, system-ui, sans-serif; max-width: 42rem; margin: 4rem auto; padding: 0 1rem; line-height: 1.6; }
+  code { background: #f4f4f4; padding: 0.1em 0.4em; border-radius: 3px; }
+  .note { color: #666; font-size: 0.9em; }
+  a.btn { display: inline-block; margin-right: 1em; padding: 0.5em 1em; background: #0366d6; color: #fff; text-decoration: none; border-radius: 4px; }
+  a.btn.secondary { background: #586069; }
+</style>
+</head>
+<body>
+<h1>Finding Lean declaration…</h1>
+<p id="status">Parsing…</p>
+<p class="note">
+This project does not host full <code>doc-gen4</code> documentation
+(Mathlib's docs are too large to mirror). Use one of the links below to
+find the declaration in the source code.
+</p>
+<div id="links"></div>
+
+<script>
+  const repo = 'jiajunma/unipotentrepn';
+  const branch = 'main';
+  const hash = window.location.hash;
+  const m = hash.match(/^#doc\/(.+)$/);
+  const status = document.getElementById('status');
+  const links = document.getElementById('links');
+
+  if (m) {
+    const name = decodeURIComponent(m[1]);
+    status.innerHTML = 'Declaration: <code>' + name + '</code>';
+
+    const q = encodeURIComponent('"' + name + '"');
+    const codeSearchUrl = 'https://github.com/' + repo + '/search?q=' + q + '&type=code';
+    const mathlibDocUrl = 'https://leanprover-community.github.io/mathlib4_docs/find/#doc/' + encodeURIComponent(name);
+
+    links.innerHTML =
+      '<p>' +
+      '<a class="btn" href="' + codeSearchUrl + '">Search in repo</a>' +
+      '<a class="btn secondary" href="' + mathlibDocUrl + '">Try Mathlib docs</a>' +
+      '</p>';
+
+    // Auto-redirect to GitHub code search after 800ms so UX stays snappy
+    setTimeout(() => { window.location.replace(codeSearchUrl); }, 800);
+  } else {
+    status.innerHTML = 'No declaration name in URL. Expected <code>#doc/&lt;name&gt;</code>.';
+  }
+</script>
+</body>
+</html>

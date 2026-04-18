@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>unipotentrepn — Formalization Documentation</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --bg: #fcfcfc;
+    --fg: #222;
+    --muted: #666;
+    --accent: #0366d6;
+    --border: #e1e4e8;
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    max-width: 48rem; margin: 0 auto; padding: 3rem 1.25rem;
+    line-height: 1.65; color: var(--fg); background: var(--bg);
+  }
+  h1 { margin: 0 0 0.3em; font-size: 1.8rem; }
+  .subtitle { color: var(--muted); font-size: 1rem; margin-bottom: 2rem; }
+  h2 { margin-top: 2.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0.3em; }
+  .card {
+    display: block; padding: 1.1rem 1.3rem; margin: 0.8rem 0;
+    border: 1px solid var(--border); border-radius: 8px;
+    text-decoration: none; color: inherit;
+    transition: border-color 0.15s, transform 0.15s;
+  }
+  .card:hover { border-color: var(--accent); transform: translateY(-1px); }
+  .card .title { font-weight: 600; color: var(--accent); margin-bottom: 0.2em; }
+  .card .desc { color: var(--muted); font-size: 0.95rem; }
+  ul.doclist { padding-left: 1.5em; }
+  ul.doclist li { margin: 0.3em 0; }
+  code { background: #f4f4f4; padding: 0.1em 0.4em; border-radius: 3px; font-size: 0.9em; }
+  footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--border); color: var(--muted); font-size: 0.85rem; }
+</style>
+</head>
+<body>
+
+<h1>unipotentrepn</h1>
+<p class="subtitle">
+  Formalization of associated cycles of special unipotent representations
+  (Lean 4 + Python).
+</p>
+
+<h2>Main documentation</h2>
+
+<a class="card" href="./blueprint/">
+  <div class="title">Lean Blueprint →</div>
+  <div class="desc">
+    Natural-language proofs cross-linked to Lean definitions.
+    Covers [BMSZb] Section 10 (PBP counting, fully unconditional) and
+    [BMSZ] Section 11 (combinatorial associated cycles).
+  </div>
+</a>
+
+<h2>Paper references</h2>
+
+<ul class="doclist">
+  <li><strong>[BMSZb]</strong> counting reduction paper (Section 10 formalized)</li>
+  <li><strong>[BMSZ]</strong> construction and unitarity paper (Section 11 formalized)</li>
+</ul>
+
+<h2>Other documents</h2>
+
+<ul class="doclist">
+  <li><a href="./algorithm_spec.md">algorithm_spec.md</a> — Python algorithm specification</li>
+  <li><a href="./algorithm_summary.md">algorithm_summary.md</a> — Algorithm summary</li>
+  <li><a href="./descent_algorithm.md">descent_algorithm.md</a> — Descent algorithm</li>
+  <li><a href="./myd_computation.md">myd_computation.md</a> — MYD computation</li>
+  <li><a href="./recursive_counting.md">recursive_counting.md</a> — Recursive counting</li>
+</ul>
+
+<h2>Repository</h2>
+
+<ul class="doclist">
+  <li>GitHub: <a href="https://github.com/jiajunma/unipotentrepn">jiajunma/unipotentrepn</a></li>
+  <li>Lean source: <code>lean/CombUnipotent/</code></li>
+  <li>Blueprint source: <code>lean/blueprint/src/</code></li>
+</ul>
+
+<footer>
+  Scope: <code>★ ∈ {B, D, C, M = C̃}</code> only. Real-form variants
+  <code>C*</code>, <code>D*</code> deliberately skipped.
+</footer>
+
+</body>
+</html>
