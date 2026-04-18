@@ -1,0 +1,167 @@
+digraph "Lifting Tree" {
+	graph [dpi=150 newrank=true nodesep=0.4 rankdir=TB ranksep=1.2]
+	node [fontname="Courier New" fontsize=8 shape=box]
+	n0 [label=<+-<br align="left"/>+-<br align="left"/>-+<br align="left"/>-+<br align="left"/>═════<br align="left"/>(4,4)<br align="left"/>c|s<br align="left"/>d|s ε=0<br align="left"/>> fillcolor="#e6f3ff" style=filled]
+	n1 [label=<-<br align="left"/>-<br align="left"/>+<br align="left"/>+<br align="left"/>═════<br align="left"/>(2,2)<br align="left"/>c| <br align="left"/>d|  ε=0<br align="left"/>> fillcolor="#fff3e6" style=filled]
+	n2 [label=<(triv)<br align="left"/>═════<br align="left"/>(0,0)<br align="left"/> |  ε=0<br align="left"/>> fillcolor="#e6f3ff" style=filled]
+	n3 [label=<*=<br align="left"/>*=<br align="left"/>=*<br align="left"/>=*<br align="left"/>═════<br align="left"/>(4,4)<br align="left"/><font color="red">c</font>|<font color="red">s</font><br align="left"/><font color="red">d</font>|<font color="red">s</font> ε=1<br align="left"/>> fillcolor="#e6f3ff" style=filled]
+	n4 [label=<*=<br align="left"/>=*<br align="left"/>=*<br align="left"/>=*<br align="left"/>═════<br align="left"/>(4,4)<br align="left"/>r|s<br align="left"/>d|s ε=0<br align="left"/>> fillcolor="#e6f3ff" style=filled]
+	n5 [label=<-<br align="left"/>+<br align="left"/>+<br align="left"/>+<br align="left"/>═════<br align="left"/>(3,1)<br align="left"/>r| <br align="left"/>d|  ε=0<br align="left"/>> fillcolor="#fff3e6" style=filled]
+	n6 [label=<+-<br align="left"/>-+<br align="left"/>-+<br align="left"/>-+<br align="left"/>═════<br align="left"/>(4,4)<br align="left"/><font color="red">r</font>|<font color="red">s</font><br align="left"/><font color="red">d</font>|<font color="red">s</font> ε=1<br align="left"/>> fillcolor="#e6f3ff" style=filled]
+	n7 [label=<*=<br align="left"/>*=<br align="left"/>*=<br align="left"/>=*<br align="left"/>═════<br align="left"/>(4,4)<br align="left"/>*|*<br align="left"/>d|s ε=0<br align="left"/>> fillcolor="#e6f3ff" style=filled]
+	n8 [label=<-<br align="left"/>-<br align="left"/>-<br align="left"/>+<br align="left"/>═════<br align="left"/>(1,3)<br align="left"/>s| <br align="left"/>d|  ε=0<br align="left"/>> fillcolor="#fff3e6" style=filled]
+	n9 [label=<+-<br align="left"/>+-<br align="left"/>+-<br align="left"/>-+<br align="left"/>═════<br align="left"/>(4,4)<br align="left"/><font color="red">*</font>|<font color="red">*</font><br align="left"/><font color="red">d</font>|<font color="red">s</font> ε=1<br align="left"/>> fillcolor="#e6f3ff" style=filled]
+	n10 [label=<+-<br align="left"/>=*<br align="left"/>=*<br align="left"/>=*<br align="left"/>═════<br align="left"/>(4,4)<br align="left"/>r|s<br align="left"/>c|s ε=0<br align="left"/>> fillcolor="#e6f3ff" style=filled]
+	n11 [label=<=<br align="left"/>+<br align="left"/>+<br align="left"/>+<br align="left"/>═════<br align="left"/>(3,1)<br align="left"/>r| <br align="left"/>c|  ε=1<br align="left"/>> fillcolor="#fff3e6" style=filled]
+	n12 [label=<*=<br align="left"/>-+<br align="left"/>-+<br align="left"/>-+<br align="left"/>═════<br align="left"/>(4,4)<br align="left"/><font color="red">r</font>|<font color="red">s</font><br align="left"/><font color="red">c</font>|<font color="red">s</font> ε=1<br align="left"/>> fillcolor="#e6f3ff" style=filled]
+	n13 [label=<+-<br align="left"/>+-<br align="left"/>+-<br align="left"/>=*<br align="left"/>═════<br align="left"/>(4,4)<br align="left"/>*|*<br align="left"/>c|s ε=0<br align="left"/>> fillcolor="#e6f3ff" style=filled]
+	n14 [label=<=<br align="left"/>=<br align="left"/>=<br align="left"/>+<br align="left"/>═════<br align="left"/>(1,3)<br align="left"/>s| <br align="left"/>c|  ε=1<br align="left"/>> fillcolor="#fff3e6" style=filled]
+	n15 [label=<*=<br align="left"/>*=<br align="left"/>*=<br align="left"/>-+<br align="left"/>═════<br align="left"/>(4,4)<br align="left"/><font color="red">*</font>|<font color="red">*</font><br align="left"/><font color="red">c</font>|<font color="red">s</font> ε=1<br align="left"/>> fillcolor="#e6f3ff" style=filled]
+	n16 [label=<-+<br align="left"/>-+<br align="left"/>-+<br align="left"/>-+<br align="left"/>═════<br align="left"/>(4,4)<br align="left"/>r|s<br align="left"/>r|s ε=0<br align="left"/>> fillcolor="#e6f3ff" style=filled]
+	n17 [label=<+<br align="left"/>+<br align="left"/>+<br align="left"/>+<br align="left"/>═════<br align="left"/>(4,0)<br align="left"/>r| <br align="left"/>r|  ε=1<br align="left"/>> fillcolor="#fff3e6" style=filled]
+	n18 [label=<=*<br align="left"/>=*<br align="left"/>=*<br align="left"/>=*<br align="left"/>═════<br align="left"/>(4,4)<br align="left"/><font color="red">r</font>|<font color="red">s</font><br align="left"/><font color="red">r</font>|<font color="red">s</font> ε=1<br align="left"/>> fillcolor="#e6f3ff" style=filled]
+	n19 [label=<*=<br align="left"/>*=<br align="left"/>-+<br align="left"/>-+<br align="left"/>═════<br align="left"/>(4,4)<br align="left"/>*|*<br align="left"/>r|s ε=0<br align="left"/>> fillcolor="#e6f3ff" style=filled]
+	n20 [label=<=<br align="left"/>=<br align="left"/>+<br align="left"/>+<br align="left"/>═════<br align="left"/>(2,2)<br align="left"/>s| <br align="left"/>r|  ε=1<br align="left"/>> fillcolor="#fff3e6" style=filled]
+	n21 [label=<+-<br align="left"/>+-<br align="left"/>=*<br align="left"/>=*<br align="left"/>═════<br align="left"/>(4,4)<br align="left"/><font color="red">*</font>|<font color="red">*</font><br align="left"/><font color="red">r</font>|<font color="red">s</font> ε=1<br align="left"/>> fillcolor="#e6f3ff" style=filled]
+	n22 [label=<*=<br align="left"/>*=<br align="left"/>*=<br align="left"/>*=<br align="left"/>═════<br align="left"/>(4,4)<br align="left"/>*|*<br align="left"/>*|* ε=0<br align="left"/>> fillcolor="#e6f3ff" style=filled]
+	n23 [label=<=<br align="left"/>=<br align="left"/>=<br align="left"/>=<br align="left"/>═════<br align="left"/>(0,4)<br align="left"/>s| <br align="left"/>s|  ε=1<br align="left"/>> fillcolor="#fff3e6" style=filled]
+	n24 [label=<+-<br align="left"/>+-<br align="left"/>+-<br align="left"/>+-<br align="left"/>═════<br align="left"/>(4,4)<br align="left"/><font color="red">*</font>|<font color="red">*</font><br align="left"/><font color="red">*</font>|<font color="red">*</font> ε=1<br align="left"/>> fillcolor="#e6f3ff" style=filled]
+	n25 [label=<=<br align="left"/>=<br align="left"/>*<br align="left"/>*<br align="left"/>> fillcolor="#f8f8f8" style=filled]
+	n26 [label=<-<br align="left"/>-<br align="left"/>*<br align="left"/>*<br align="left"/>> fillcolor="#f8f8f8" style=filled]
+	n27 [label=<=<br align="left"/>*<br align="left"/>*<br align="left"/>*<br align="left"/>> fillcolor="#f8f8f8" style=filled]
+	n28 [label=<-<br align="left"/>*<br align="left"/>*<br align="left"/>*<br align="left"/>> fillcolor="#f8f8f8" style=filled]
+	n29 [label=<=<br align="left"/>=<br align="left"/>=<br align="left"/>*<br align="left"/>> fillcolor="#f8f8f8" style=filled]
+	n30 [label=<-<br align="left"/>-<br align="left"/>-<br align="left"/>*<br align="left"/>> fillcolor="#f8f8f8" style=filled]
+	n31 [label=<*<br align="left"/>*<br align="left"/>*<br align="left"/>*<br align="left"/>> fillcolor="#f8f8f8" style=filled]
+	n32 [label=<-<br align="left"/>-<br align="left"/>-<br align="left"/>-<br align="left"/>> fillcolor="#f8f8f8" style=filled]
+	n1 -> n0 [color=blue headport=n]
+	n2 -> n1 [color=blue headport=n]
+	n25 -> n3 [color=blue headport=n]
+	n5 -> n4 [color=blue headport=n]
+	n2 -> n5 [color=blue headport=n]
+	n27 -> n6 [color=blue headport=n]
+	n8 -> n7 [color=blue headport=n]
+	n2 -> n8 [color=blue headport=n]
+	n29 -> n9 [color=blue headport=n]
+	n11 -> n10 [color=blue headport=n]
+	n2 -> n11 [color=blue headport=n]
+	n28 -> n12 [color=blue headport=n]
+	n14 -> n13 [color=blue headport=n]
+	n2 -> n14 [color=blue headport=n]
+	n30 -> n15 [color=blue headport=n]
+	n17 -> n16 [color=blue headport=n]
+	n2 -> n17 [color=blue headport=n]
+	n31 -> n18 [color=blue headport=n]
+	n20 -> n19 [color=blue headport=n]
+	n2 -> n20 [color=blue headport=n]
+	n26 -> n21 [color=blue headport=n]
+	n23 -> n22 [color=blue headport=n]
+	n2 -> n23 [color=blue headport=n]
+	n32 -> n24 [color=blue headport=n]
+	n11 -> n28 [arrowsize=0.3 color=red constraint=false dir=both]
+	n11 -> n5 [arrowsize=0.3 color=green constraint=false dir=both]
+	n11 -> n27 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	n1 -> n25 [arrowsize=0.3 color=red constraint=false dir=both]
+	n1 -> n20 [arrowsize=0.3 color=green constraint=false dir=both]
+	n1 -> n26 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	n31 -> n17 [arrowsize=0.3 color=red constraint=false dir=both]
+	n31 -> n17 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	n30 -> n14 [arrowsize=0.3 color=red constraint=false dir=both]
+	n30 -> n29 [arrowsize=0.3 color=green constraint=false dir=both]
+	n30 -> n8 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	n27 -> n5 [arrowsize=0.3 color=red constraint=false dir=both]
+	n27 -> n28 [arrowsize=0.3 color=green constraint=false dir=both]
+	n20 -> n26 [arrowsize=0.3 color=red constraint=false dir=both]
+	n20 -> n25 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	n8 -> n29 [arrowsize=0.3 color=red constraint=false dir=both]
+	n8 -> n14 [arrowsize=0.3 color=green constraint=false dir=both]
+	n28 -> n5 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	n25 -> n26 [arrowsize=0.3 color=green constraint=false dir=both]
+	n32 -> n23 [arrowsize=0.3 color=red constraint=false dir=both]
+	n32 -> n23 [arrowsize=0.3 color=green constraint=false dir=both]
+	n14 -> n29 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	gp_C_0 [label="Sp(0)" fontcolor="#333333" fontname=Helvetica fontsize=11 group=gp_labels shape=plaintext]
+	{
+		rank=same
+		gp_C_0
+		n2
+	}
+	gp_C_0 -> n2 [style=invis]
+	gp_D_2 [label="SO(4)" fontcolor="#333333" fontname=Helvetica fontsize=11 group=gp_labels shape=plaintext]
+	subgraph cluster_tw_0 {
+		color="#999999" penwidth=0.8 style=dotted
+		n11
+		n27
+		n28
+		n5
+	}
+	subgraph cluster_tw_1 {
+		color="#999999" penwidth=0.8 style=dotted
+		n1
+		n20
+		n25
+		n26
+	}
+	subgraph cluster_tw_2 {
+		color="#999999" penwidth=0.8 style=dotted
+		n31
+		n17
+	}
+	subgraph cluster_tw_3 {
+		color="#999999" penwidth=0.8 style=dotted
+		n30
+		n8
+		n14
+		n29
+	}
+	subgraph cluster_tw_4 {
+		color="#999999" penwidth=0.8 style=dotted
+		n32
+		n23
+	}
+	{
+		rank=same
+		gp_D_2
+		n1
+		n5
+		n8
+		n11
+		n14
+		n17
+		n20
+		n23
+		n25
+		n26
+		n27
+		n28
+		n29
+		n30
+		n31
+		n32
+	}
+	gp_D_2 -> n1 [style=invis]
+	gp_C_4 [label="Sp(8)" fontcolor="#333333" fontname=Helvetica fontsize=11 group=gp_labels shape=plaintext]
+	{
+		rank=same
+		gp_C_4
+		n0
+		n3
+		n4
+		n6
+		n7
+		n9
+		n10
+		n12
+		n13
+		n15
+		n16
+		n18
+		n19
+		n21
+		n22
+		n24
+	}
+	gp_C_4 -> n0 [style=invis]
+	gp_C_0 -> gp_D_2 [style=invis]
+	gp_D_2 -> gp_C_4 [style=invis]
+}

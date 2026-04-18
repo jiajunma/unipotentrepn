@@ -1,0 +1,946 @@
+/-
+# Descent of Painted Bipartitions
+
+Reference: [BMSZ] Section 3.3, Lemma 3.7, Definition 3.14.
+
+The naive descent ∇ maps a PBP τ of type γ to a PBP τ' of type γ':
+- D → C: remove P's column 0, redistribute dot/s via _fill_ds_C
+- C → D: remove Q's column 0, redistribute dot/s via _fill_ds_D
+- B⁺/B⁻ → M: remove Q's column 0, redistribute dot/s via _fill_ds_M
+- M → B⁺/B⁻: remove P's column 0, redistribute dot/s via _fill_ds_B
+
+In each case, the r/c/d symbols are preserved (shifted by one column
+on the removed side). The dot and s symbols are redistributed so that
+the new PBP has the correct symbol constraints for the target type.
+-/
+import CombUnipotent.PBP
+
+open Classical
+
+namespace PBP
+
+/-! ## Shape lemmas for descent -/
+
+theorem Q_s_rightmost_of_C (τ : PBP) (hγ : τ.γ = .C)
+    {i k : ℕ} (hs : τ.Q.paint i k = .s) : (i, k + 1) ∉ τ.Q.shape := by
+  intro hmem
+  have hmono := τ.mono_Q i k i (k + 1) le_rfl (Nat.le_succ k) hmem
+  rw [hs, DRCSymbol.layerOrd] at hmono
+  have hk1 := τ.Q_nonDot_eq_s_of_C hγ i (k + 1) hmem (by
+    intro heq; rw [heq, DRCSymbol.layerOrd] at hmono; omega)
+  have := τ.row_s i .R .R k (k + 1)
+    (by simp [paintBySide]; exact hs) (by simp [paintBySide]; exact hk1)
+  omega
+
+theorem Q_dot_left_of_C (τ : PBP) (hγ : τ.γ = .C)
+    {i k : ℕ} (hmem : (i, k + 1) ∈ τ.Q.shape) : τ.Q.paint i k = .dot := by
+  have hmem_k := τ.Q.shape.isLowerSet (Prod.mk_le_mk.mpr ⟨le_rfl, Nat.le_succ k⟩) hmem
+  by_contra hne
+  exact τ.Q_s_rightmost_of_C hγ (τ.Q_nonDot_eq_s_of_C hγ i k hmem_k hne) hmem
+
+theorem dotDiag_colLen_ge_Q_colLen_succ_of_C (τ : PBP) (hγ : τ.γ = .C) (k : ℕ) :
+    (dotDiag τ.Q τ.mono_Q).colLen k ≥ τ.Q.shape.colLen (k + 1) := by
+  by_contra h; push_neg at h
+  set d := (dotDiag τ.Q τ.mono_Q).colLen k
+  have hd_mem : (d, k + 1) ∈ τ.Q.shape := YoungDiagram.mem_iff_lt_colLen.mpr h
+  have hdk_mem := τ.Q.shape.isLowerSet (Prod.mk_le_mk.mpr ⟨le_rfl, Nat.le_succ k⟩) hd_mem
+  have hdk_dot := τ.Q_dot_left_of_C hγ hd_mem
+  have : (d, k) ∈ (dotDiag τ.Q τ.mono_Q) := by
+    simp only [dotDiag, YoungDiagram.mem_mk, Finset.mem_filter, YoungDiagram.mem_cells]
+    exact ⟨hdk_mem, hdk_dot⟩
+  exact absurd this (by rw [YoungDiagram.mem_iff_lt_colLen]; omega)
+
+theorem dotDiag_le (D : PaintedYoungDiagram) (hm : D.layerMonotone) :
+    dotDiag D hm ≤ D.shape := by
+  intro ⟨i, j⟩ hmem
+  simp only [dotDiag, YoungDiagram.mem_mk, Finset.mem_filter, YoungDiagram.mem_cells] at hmem
+  exact hmem.1
+
+/-! ## Dot+s layer count
+
+For a PaintedYoungDiagram with layer monotonicity, the cells with
+layerOrd ≤ 1 (dot or s) form a contiguous prefix in each column.
+The count of these cells is the boundary between the dot/s block
+and the r/c/d block. -/
+
+/-- The dot+s sub-diagram: cells with layerOrd ≤ 1. Forms a YoungDiagram
+    by the same argument as dotDiag (monotonicity). -/
+def dotSdiag (D : PaintedYoungDiagram) (hm : D.layerMonotone) : YoungDiagram where
+  cells := D.shape.cells.filter fun c => (D.paint c.1 c.2).layerOrd ≤ 1
+  isLowerSet := by
+    intro ⟨i₁, j₁⟩ ⟨i₂, j₂⟩ hle hmem
+    simp only [Finset.mem_coe, Finset.mem_filter, YoungDiagram.mem_cells] at hmem ⊢
+    refine ⟨D.shape.isLowerSet hle hmem.1, ?_⟩
+    have hle' := Prod.mk_le_mk.mp hle
+    exact le_trans (hm i₂ j₂ i₁ j₁ hle'.1 hle'.2 hmem.1) hmem.2
+
+/-- i < dotSdiag.colLen(j) → paint(i, j).layerOrd ≤ 1. -/
+theorem layerOrd_le_one_of_lt_dotSdiag_colLen (D : PaintedYoungDiagram)
+    (hm : D.layerMonotone) {i j : ℕ} (h : i < (dotSdiag D hm).colLen j) :
+    (D.paint i j).layerOrd ≤ 1 := by
+  have hmem : (i, j) ∈ dotSdiag D hm := YoungDiagram.mem_iff_lt_colLen.mpr h
+  simp only [dotSdiag, YoungDiagram.mem_mk, Finset.mem_filter, YoungDiagram.mem_cells] at hmem
+  exact hmem.2
+
+/-- Count of dot+s cells in column j.
+    Equals dotSdiag.colLen j, but defined independently via Finset.card. -/
+noncomputable def dotScolLen (D : PaintedYoungDiagram) (j : ℕ) : ℕ :=
+  (D.shape.cells.filter (fun c => c.2 = j ∧ (D.paint c.1 c.2).layerOrd ≤ 1)).card
+
+/-- dotScolLen = dotSdiag.colLen (bridge between the two definitions). -/
+theorem dotScolLen_eq_dotSdiag_colLen (D : PaintedYoungDiagram) (hm : D.layerMonotone) (j : ℕ) :
+    dotScolLen D j = (dotSdiag D hm).colLen j := by
+  -- dotScolLen = card of {c ∈ cells | c.2 = j ∧ layerOrd ≤ 1}
+  -- dotSdiag.colLen j = card of dotSdiag.col j = card of {c ∈ dotSdiag | c.2 = j}
+  -- dotSdiag.cells = {c ∈ D.cells | layerOrd ≤ 1}
+  -- So dotSdiag.col j = {c ∈ D.cells | layerOrd ≤ 1 ∧ c.2 = j}
+  -- = {c ∈ D.cells | c.2 = j ∧ layerOrd ≤ 1} (same set, different order)
+  simp only [dotScolLen, YoungDiagram.colLen_eq_card, YoungDiagram.col,
+    dotSdiag, YoungDiagram.mem_mk]
+  congr 1
+  ext ⟨i, k⟩
+  simp only [Finset.mem_filter, YoungDiagram.mem_cells]
+  tauto
+
+/-! ## Naive descent paint functions
+
+For each of the four descent directions, we define the paint functions
+of the descended PBP. The key invariant: r/c/d symbols are preserved
+(possibly shifted by one column), while dot/s are redistributed.
+
+Convention: cL and cR denote the dot+s counts used in redistribution.
+-/
+
+/-- **D → C** left paint: P shifts left, top filled with dots.
+    cL(j) = dotScolLen(P, j+1), P'(i,j) = dot if i < cL else P(i, j+1). -/
+noncomputable def descentPaintL_DC (τ : PBP) : ℕ → ℕ → DRCSymbol :=
+  fun i j => if i < dotScolLen τ.P (j + 1) then .dot else τ.P.paint i (j + 1)
+
+/-- **D → C** right paint: Q keeps shape, top with dots, middle with s.
+    cL(j) = dotScolLen(P, j+1), cR(j) = Q.colLen(j).
+    Q'(i,j) = dot if i < cL, s if cL ≤ i < cR, dot if i ≥ cR. -/
+noncomputable def descentPaintR_DC (τ : PBP) : ℕ → ℕ → DRCSymbol :=
+  fun i j =>
+    if i < dotScolLen τ.P (j + 1) then .dot
+    else if i < τ.Q.shape.colLen j then .s
+    else .dot
+
+/-- **C → D** left paint: P keeps shape, top refilled.
+    cL(j) = dotScolLen(P, j), cR(j) = Q.colLen(j+1).
+    P'(i,j) = dot if i < cR, s if cR ≤ i < cL, P(i,j) if i ≥ cL. -/
+noncomputable def descentPaintL_CD (τ : PBP) : ℕ → ℕ → DRCSymbol :=
+  fun i j =>
+    if i < τ.Q.shape.colLen (j + 1) then .dot
+    else if i < dotScolLen τ.P j then .s
+    else τ.P.paint i j
+
+/-- **C → D** right paint: Q shifts left, all dots.
+    cR(j) = Q.colLen(j+1). Q'(i,j) = dot if i < cR, dot otherwise. -/
+noncomputable def descentPaintR_CD (τ : PBP) : ℕ → ℕ → DRCSymbol :=
+  fun i j => .dot  -- D-type right is always dot
+
+/-- **B → M** left paint: P keeps shape, top refilled.
+    cL(j) = dotScolLen(P, j), cR(j) = dotScolLen(Q, j+1).
+    P'(i,j) = dot if i < cR, s if cR ≤ i < cL, P(i,j) if i ≥ cL. -/
+noncomputable def descentPaintL_BM (τ : PBP) : ℕ → ℕ → DRCSymbol :=
+  fun i j =>
+    if i < dotScolLen τ.Q (j + 1) then .dot
+    else if i < dotScolLen τ.P j then .s
+    else τ.P.paint i j
+
+/-- **B → M** right paint: Q shifts left, top with dots, rest preserved.
+    cR(j) = dotScolLen(Q, j+1).
+    Q'(i,j) = dot if i < cR, Q(i, j+1) if i ≥ cR. -/
+noncomputable def descentPaintR_BM (τ : PBP) : ℕ → ℕ → DRCSymbol :=
+  fun i j =>
+    if i < dotScolLen τ.Q (j + 1) then .dot
+    else τ.Q.paint i (j + 1)
+
+/-- **M → B** left paint: P shifts left, top with dots, rest preserved.
+    cL(j) = dotScolLen(P, j+1).
+    P'(i,j) = dot if i < cL, P(i, j+1) if i ≥ cL. -/
+noncomputable def descentPaintL_MB (τ : PBP) : ℕ → ℕ → DRCSymbol :=
+  fun i j =>
+    if i < dotScolLen τ.P (j + 1) then .dot
+    else τ.P.paint i (j + 1)
+
+/-- **M → B** right paint: Q keeps shape, top refilled.
+    cL(j) = dotScolLen(P, j+1), cR(j) = dotScolLen(Q, j).
+    Q'(i,j) = dot if i < cL, s if cL ≤ i < cR, Q(i,j) if i ≥ cR. -/
+noncomputable def descentPaintR_MB (τ : PBP) : ℕ → ℕ → DRCSymbol :=
+  fun i j =>
+    if i < dotScolLen τ.P (j + 1) then .dot
+    else if i < dotScolLen τ.Q j then .s
+    else τ.Q.paint i j
+
+/-! ## Descent type -/
+
+/-- Target type under descent. For M → B, defaults to B⁺;
+    corrected to B⁻ when c appears in P's first column. -/
+def descentType (γ : RootType) : RootType :=
+  match γ with
+  | .C => .D | .D => .C | .Bplus | .Bminus => .M | .M => .Bplus
+
+/-- For M type: the actual B⁺/B⁻ determined by P's first column. -/
+def descentType_M (τ : PBP) (hγ : τ.γ = .M) : RootType :=
+  if (τ.P.shape.cells.filter (fun c => c.2 = 0 ∧ τ.P.paint c.1 c.2 = .c)).Nonempty
+  then .Bminus else .Bplus
+
+/-! ## Shape-based conditions for descent corrections
+
+Reference: [BMSZb] Section 10.4.
+
+The corrections to naive descent depend on orbit data (r₂, r₃, etc.)
+which can equivalently be expressed using PBP column lengths:
+  c₁(ι) = P.shape.colLen 0,  c₂(ι) = P.shape.colLen 1
+  c₁(j) = Q.shape.colLen 0,  c₂(j) = Q.shape.colLen 1
+-/
+
+/-- (2,3) ∈ ℘ inferred from B-type PBP shape:
+    c₂(j) ≥ c₁(ι) + 2, i.e., Q's second column exceeds P's first by ≥ 2.
+    Reference: [BMSZb] Section 10.4, shape-based inference for B type. -/
+def has23_B (τ : PBP) : Prop :=
+  τ.Q.shape.colLen 1 ≥ τ.P.shape.colLen 0 + 2
+
+/-- (2,3) ∈ ℘ inferred from D-type PBP shape:
+    c₂(ι) ≥ c₁(j) + 2, i.e., P's second column exceeds Q's first by ≥ 2.
+    Reference: [BMSZb] Section 10.4, shape-based inference for D type. -/
+def has23_D (τ : PBP) : Prop :=
+  τ.P.shape.colLen 1 ≥ τ.Q.shape.colLen 0 + 2
+
+instance (τ : PBP) : Decidable (has23_B τ) := Nat.decLe _ _
+instance (τ : PBP) : Decidable (has23_D τ) := Nat.decLe _ _
+
+/-- r₂(Ǒ) > 0 ↔ at least 2 non-empty columns in the combined PBP.
+    Equivalently: P.colLen(1) > 0 ∨ Q.colLen(0) > 0 (for B type).
+    Reference: algorithm_spec.md Section 4.2. -/
+def r2_pos (τ : PBP) : Prop :=
+  τ.P.shape.colLen 1 > 0 ∨ τ.Q.shape.colLen 0 > 0
+
+/-- r₂ = r₃ > 0 for D type ↔ c₂(ι) = c₁(j) + 1.
+    Reference: algorithm_spec.md Section 4.2 (D correction condition). -/
+def r2_eq_r3_D (τ : PBP) : Prop :=
+  τ.P.shape.colLen 1 = τ.Q.shape.colLen 0 + 1 ∧ τ.P.shape.colLen 1 > 0
+
+/-! ## Full descent paint (naive + corrections)
+
+For B⁺ and D types, the full descent modifies 1-2 cells in column 0
+of the result, compared to the naive descent.
+
+For C and M types, full descent = naive descent (no corrections). -/
+
+/-- **D → C full descent** left paint.
+    Naive descent + D correction on column 0.
+
+    D correction (a): when (2,3) ∉ ℘ ∧ r₂=r₃>0 ∧ P(c₂(ι)-1, 1)=c ∧
+    all P(i, 0) ∈ {r,d} for c₂(ι)-1 ≤ i < c₁(ι):
+    Set P'(c₁(ι')-1, 0) := r.
+
+    D correction (b): when (2,3) ∈ ℘ ∧ P(c₂(ι)-2, 0) ∈ {r,c}:
+    Set P'(c₁(ι')-2, 0) := r, P'(c₁(ι')-1, 0) := P(c₂(ι)-2, 0). -/
+noncomputable def fullDescentPaintL_DC (τ : PBP) : ℕ → ℕ → DRCSymbol :=
+  fun i j =>
+    let naive := descentPaintL_DC τ i j
+    if j ≠ 0 then naive  -- corrections only affect column 0
+    else
+      let c₂ι := τ.P.shape.colLen 1
+      let c₁j := τ.Q.shape.colLen 0
+      let c₁ι' := dotScolLen τ.P 1 + (τ.P.shape.colLen 1 - dotScolLen τ.P 1)
+        -- = P.shape.colLen(1) = P'.shape.colLen(0) since D→C shifts P left
+      if ¬has23_D τ ∧ r2_eq_r3_D τ
+         ∧ τ.P.paint (c₂ι - 1) 1 = .c
+         ∧ (∀ k, c₂ι - 1 ≤ k → k < τ.P.shape.colLen 0 →
+            τ.P.paint k 0 = .r ∨ τ.P.paint k 0 = .d) then
+        -- Correction (a): last cell of P' col 0 := r
+        if i = c₁ι' - 1 then .r else naive
+      else if has23_D τ ∧ c₂ι ≥ 2 ∧ (τ.P.paint (c₂ι - 2) 0 = .r ∨ τ.P.paint (c₂ι - 2) 0 = .c) then
+        -- Correction (b): modify last two cells of P' col 0
+        if i = c₁ι' - 2 then .r
+        else if i = c₁ι' - 1 then τ.P.paint (c₂ι - 2) 0
+        else naive
+      else naive
+
+/-- D → C full descent right paint = naive (corrections only affect left). -/
+noncomputable def fullDescentPaintR_DC (τ : PBP) : ℕ → ℕ → DRCSymbol :=
+  descentPaintR_DC τ
+
+/-- Full descent paints for C → D, B → M, M → B: same as naive (no corrections). -/
+noncomputable def fullDescentPaintL_CD := @descentPaintL_CD
+noncomputable def fullDescentPaintR_CD := @descentPaintR_CD
+noncomputable def fullDescentPaintL_BM := @descentPaintL_BM
+noncomputable def fullDescentPaintR_BM := @descentPaintR_BM
+noncomputable def fullDescentPaintL_MB := @descentPaintL_MB
+noncomputable def fullDescentPaintR_MB := @descentPaintR_MB
+
+/-- **B⁺ → M full descent** left paint.
+    Naive descent + B⁺ correction (a) on P' column 0.
+
+    Correction (a): (2,3) ∉ ℘ ∧ r₂ > 0 ∧ Q.paint(c₁(ι)-1, 0) ∈ {r,d}
+    → P'(last row of col 0) := s
+
+    In shape terms:
+    - (2,3) ∉ ℘: ¬has23_B τ, i.e., Q.colLen(1) < P.colLen(0) + 2
+    - r₂ > 0: r2_pos τ
+    - Q boundary symbol: Q.paint(P.colLen(0) - 1, 0) ∈ {r, d} -/
+noncomputable def fullDescentPaintL_BpM (τ : PBP) : ℕ → ℕ → DRCSymbol :=
+  fun i j =>
+    let naive := descentPaintL_BM τ i j
+    if j ≠ 0 then naive
+    else
+      -- Correction (a): change last cell of P' col 0 to s
+      let c₁ι := τ.P.shape.colLen 0
+      let qSym := τ.Q.paint (c₁ι - 1) 0
+      if ¬has23_B τ ∧ r2_pos τ ∧ (qSym = .r ∨ qSym = .d) then
+        -- P' col 0 has same shape as P (B→M keeps P shape)
+        if i = τ.P.shape.colLen 0 - 1 then .s else naive
+      else naive
+
+/-- **B⁺ → M full descent** right paint.
+    Naive descent + B⁺ correction (b) on Q' column 0 +
+    additional d→r correction.
+
+    Correction (b): (2,3) ∈ ℘ ∧ Q.paint(c₂(j)-1, 0) ∈ {r,d}
+    → Q'(last row of col 0) := r
+
+    Additional: when P is "shorter" than Q's second column,
+    reverse the lift's tR='r' → nsR='d' conversion. -/
+noncomputable def fullDescentPaintR_BpM (τ : PBP) : ℕ → ℕ → DRCSymbol :=
+  fun i j =>
+    let naive := descentPaintR_BM τ i j
+    if j ≠ 0 then naive
+    else
+      let c₂j := τ.Q.shape.colLen 1
+      let qSym := τ.Q.paint (c₂j - 1) 0
+      -- Correction (b)
+      if has23_B τ ∧ (qSym = .r ∨ qSym = .d) then
+        -- Q' col 0: change last cell to r
+        -- Q' col 0 length = dotScolLen(Q, 1) (from naive)
+        -- Last row of Q' col 0:
+        let q'len := τ.Q.shape.colLen 1  -- Q shifted: col 0 = old col 1
+        if i = q'len - 1 then .r else naive
+      else
+        -- Additional correction: d→r at specific position
+        let sR := τ.Q.shape.colLen 1
+        let nL := τ.P.shape.colLen 0
+        let t := max nL sR - 1
+        let tL_empty := sR > nL
+        if tL_empty ∧ naive = .d ∧ i = t ∧
+           (τ.Q.paint t 0 = .r ∨ τ.Q.paint t 0 = .d) then .r
+        else naive
+
+/-! ## Full descent = naive on columns ≥ 1
+
+Corrections only affect column 0, so for j ≥ 1 the full and naive
+descent paints agree. This lets us reuse the naive recovery lemmas. -/
+
+/-- D→C full descent agrees with naive on columns ≥ 1 (left). -/
+theorem fullDescentPaintL_DC_eq_naive {τ : PBP} {i j : ℕ} (hj : j ≥ 1) :
+    fullDescentPaintL_DC τ i j = descentPaintL_DC τ i j := by
+  unfold fullDescentPaintL_DC
+  rw [if_pos (show j ≠ 0 from by omega)]
+
+/-- D→C full descent right = naive (right side has no corrections). -/
+theorem fullDescentPaintR_DC_eq_naive {τ : PBP} {i j : ℕ} :
+    fullDescentPaintR_DC τ i j = descentPaintR_DC τ i j := rfl
+
+/-- B⁺→M full descent agrees with naive on columns ≥ 1 (left). -/
+theorem fullDescentPaintL_BpM_eq_naive {τ : PBP} {i j : ℕ} (hj : j ≥ 1) :
+    fullDescentPaintL_BpM τ i j = descentPaintL_BM τ i j := by
+  unfold fullDescentPaintL_BpM
+  rw [if_pos (show j ≠ 0 from by omega)]
+
+/-- B⁺→M full descent agrees with naive on columns ≥ 1 (right). -/
+theorem fullDescentPaintR_BpM_eq_naive {τ : PBP} {i j : ℕ} (hj : j ≥ 1) :
+    fullDescentPaintR_BpM τ i j = descentPaintR_BM τ i j := by
+  unfold fullDescentPaintR_BpM
+  rw [if_pos (show j ≠ 0 from by omega)]
+
+/-! ## Full descent recovery reduces to naive
+
+Since full = naive on columns ≥ 1, same full descent ⟹ same naive
+on columns ≥ 1 ⟹ recovery applies. -/
+
+/-- D→C full recovery for cols ≥ 2: uses full = naive on P' cols ≥ 1.
+    For P col j with j ≥ 2: descent uses P'(i, j-1) with j-1 ≥ 1,
+    where full = naive. So the D→C naive recovery applies. -/
+theorem full_descent_eq_implies_cols_ge2_D (τ₁ τ₂ : PBP)
+    (hγ₁ : τ₁.γ = .D) (hγ₂ : τ₂.γ = .D)
+    (hshapeP : τ₁.P.shape = τ₂.P.shape)
+    (hshapeQ : τ₁.Q.shape = τ₂.Q.shape)
+    (hdesc : ∀ i j, fullDescentPaintL_DC τ₁ i j = fullDescentPaintL_DC τ₂ i j) :
+    ∀ i j, 2 ≤ j → τ₁.P.paint i j = τ₂.P.paint i j := by
+  -- The D→C naive recovery at (i, j) uses descentPaintL at (i, j-1).
+  -- For j ≥ 2: j-1 ≥ 1, so fullL = naiveL. From hdesc: naiveL₁ = naiveL₂.
+  -- The 3-way case split in descent_eq_implies_cols_ge1_D works identically.
+  -- We inline the proof for j ≥ 2, using fullL_eq_naive at j-1 ≥ 1.
+  intro i j hj
+  have key := hdesc i (j - 1)
+  rw [fullDescentPaintL_DC_eq_naive (show j - 1 ≥ 1 from by omega),
+      fullDescentPaintL_DC_eq_naive (show j - 1 ≥ 1 from by omega)] at key
+  -- Now key : descentPaintL_DC τ₁ i (j-1) = descentPaintL_DC τ₂ i (j-1)
+  simp only [descentPaintL_DC, Nat.sub_add_cancel (show 1 ≤ j from by omega)] at key
+  -- Same 3-way case split as D→C naive recovery
+  by_cases hq : (i, j) ∈ τ₁.Q.shape
+  · rw [((τ₁.dot_match i j).mpr ⟨hq, Q_all_dot_of_D τ₁ hγ₁ i j hq⟩).2,
+        ((τ₂.dot_match i j).mpr ⟨hshapeQ ▸ hq, Q_all_dot_of_D τ₂ hγ₂ i j (hshapeQ ▸ hq)⟩).2]
+  · by_cases hp : (i, j) ∈ τ₁.P.shape
+    · have hp₂ : (i, j) ∈ τ₂.P.shape := hshapeP ▸ hp
+      have hne₁ : τ₁.P.paint i j ≠ .dot := fun h => hq ((τ₁.dot_match i j).mp ⟨hp, h⟩).1
+      have hne₂ : τ₂.P.paint i j ≠ .dot := fun h =>
+        (hshapeQ ▸ hq : (i, j) ∉ τ₂.Q.shape) ((τ₂.dot_match i j).mp ⟨hp₂, h⟩).1
+      by_cases h1 : i < dotScolLen τ₁.P j
+      · by_cases h2 : i < dotScolLen τ₂.P j
+        · have paint_s : ∀ (τ : PBP), τ.P.paint i j ≠ .dot →
+              i < dotScolLen τ.P j → τ.P.paint i j = .s := by
+            intro τ hne hlt
+            rw [dotScolLen_eq_dotSdiag_colLen _ τ.mono_P] at hlt
+            have hlo := layerOrd_le_one_of_lt_dotSdiag_colLen τ.P τ.mono_P hlt
+            revert hlo hne; cases τ.P.paint i j <;> simp [DRCSymbol.layerOrd]
+          rw [paint_s τ₁ hne₁ h1, paint_s τ₂ hne₂ h2]
+        · rw [if_pos h1, if_neg h2] at key; exact absurd key.symm hne₂
+      · by_cases h2 : i < dotScolLen τ₂.P j
+        · rw [if_neg h1, if_pos h2] at key; exact absurd key hne₁
+        · rw [if_neg h1, if_neg h2] at key; exact key
+    · rw [τ₁.P.paint_outside i j hp, τ₂.P.paint_outside i j (hshapeP ▸ hp)]
+
+/-! ## Recovery lemma for D type
+
+Same descent paint → same P painting on columns ≥ 1. -/
+
+-- dotScolLen_eq_of_descent_eq: not needed (recovery uses case analysis instead)
+
+/-- Recovery: same descent paint + same shapes → same P on cols ≥ 1.
+
+    Proof: for each cell (i, j) with j ≥ 1, the descent paint at (i, j-1)
+    gives `if i < cL then dot else P(i, j)`. We case split:
+
+    - If (i, j) ∈ Q.shape: for D type, dot_match gives P.paint = dot.
+      Same Q.shape → both paint dot.
+
+    - If (i, j) ∉ Q.shape and (i, j) ∉ P.shape: both paint dot (outside).
+
+    - If (i, j) ∉ Q.shape and (i, j) ∈ P.shape: P.paint ≠ dot
+      (otherwise dot_match would give (i,j) ∈ Q.shape).
+      Non-dot means layerOrd ≥ 1. The descent at (i, j-1):
+      If i < cL: impossible (cL counts cells with layerOrd ≤ 1 in shape,
+        and (i,j) ∈ shape with layerOrd ≥ 1 means i could be in the s region
+        or the r/c/d region).
+      Actually, we need a subtler argument here.
+
+    Simpler approach: use hdesc directly without dotScolLen. -/
+theorem descent_eq_implies_cols_ge1_D (τ₁ τ₂ : PBP)
+    (hγ₁ : τ₁.γ = .D) (hγ₂ : τ₂.γ = .D)
+    (hshapeP : τ₁.P.shape = τ₂.P.shape)
+    (hshapeQ : τ₁.Q.shape = τ₂.Q.shape)
+    (hdesc : ∀ i j, descentPaintL_DC τ₁ i j = descentPaintL_DC τ₂ i j) :
+    ∀ i j, 1 ≤ j → τ₁.P.paint i j = τ₂.P.paint i j := by
+  intro i j hj
+  -- Three cases based on Q.shape and P.shape membership
+  by_cases hq : (i, j) ∈ τ₁.Q.shape
+  · -- Case 1: (i,j) ∈ Q.shape → both paint dot (D type: dot_match)
+    rw [((τ₁.dot_match i j).mpr ⟨hq, Q_all_dot_of_D τ₁ hγ₁ i j hq⟩).2,
+        ((τ₂.dot_match i j).mpr ⟨hshapeQ ▸ hq, Q_all_dot_of_D τ₂ hγ₂ i j (hshapeQ ▸ hq)⟩).2]
+  · by_cases hp : (i, j) ∈ τ₁.P.shape
+    · -- Case 2: (i,j) ∉ Q.shape, (i,j) ∈ P.shape
+      -- P.paint(i,j) ≠ dot (otherwise dot_match gives ∈ Q.shape)
+      have hne₁ : τ₁.P.paint i j ≠ .dot := fun h =>
+        hq ((τ₁.dot_match i j).mp ⟨hp, h⟩).1
+      have hne₂ : τ₂.P.paint i j ≠ .dot := fun h =>
+        (hshapeQ ▸ hq : (i, j) ∉ τ₂.Q.shape)
+          ((τ₂.dot_match i j).mp ⟨hshapeP ▸ hp, h⟩).1
+      -- P.paint has layerOrd ≥ 1 (non-dot). The non-dot symbols are {s,r,c,d}.
+      -- In the descent: descentPaintL_DC τ i (j-1) =
+      --   if i < dotScolLen(P, j) then dot else P.paint(i, j)
+      -- Since P.paint(i,j) ≠ dot, and if the 'then' branch fires for one
+      -- but not the other, the descent paints would differ (dot vs non-dot).
+      -- So either both fire 'then' (both ≠ dot but descent = dot, then we need
+      -- more work), or both fire 'else' (direct).
+      have key := hdesc i (j - 1)
+      simp only [descentPaintL_DC, Nat.sub_add_cancel hj] at key
+      -- key : (if i < cL₁ then dot else P₁(i,j)) = (if i < cL₂ then dot else P₂(i,j))
+      by_cases h1 : i < dotScolLen τ₁.P j
+      · -- Both in then-branch (if one is in then, other must be too):
+        -- If τ₂ is in else-branch: key gives dot = P₂(i,j), so P₂ = dot.
+        -- But we showed P₂ ≠ dot. Contradiction. So τ₂ must also be in then.
+        by_cases h2 : i < dotScolLen τ₂.P j
+        · -- Both in then-branch. Both paint ≠ dot. Show both = s.
+          -- layerOrd ≤ 1 (dot or s) + ≠ dot → = s.
+          -- Need: i < dotScolLen → layerOrd ≤ 1.
+          -- This follows from dotScolLen definition + layer monotonicity:
+          -- dotScolLen counts cells with layerOrd ≤ 1 in column j.
+          -- By monotonicity these are contiguous from the top.
+          -- So if i < count, then (i,j) has layerOrd ≤ 1.
+          -- Both have layerOrd ≤ 1 and ≠ dot → both = s.
+          have paint_s : ∀ (τ : PBP), τ.P.paint i j ≠ .dot →
+              i < dotScolLen τ.P j → τ.P.paint i j = .s := by
+            intro τ hne hlt
+            -- Step 1: i < dotScolLen → layerOrd ≤ 1
+            rw [dotScolLen_eq_dotSdiag_colLen _ τ.mono_P] at hlt
+            have hlo := layerOrd_le_one_of_lt_dotSdiag_colLen τ.P τ.mono_P hlt
+            -- Step 2: layerOrd ≤ 1 ∧ ≠ dot → = s
+            revert hlo hne
+            cases τ.P.paint i j <;> simp [DRCSymbol.layerOrd]
+          rw [paint_s τ₁ hne₁ h1, paint_s τ₂ hne₂ h2]
+        · -- τ₁ in then, τ₂ in else: key gives dot = P₂(i,j). But P₂ ≠ dot.
+          rw [if_pos h1, if_neg h2] at key
+          exact absurd key.symm hne₂
+      · -- τ₁ in else-branch
+        by_cases h2 : i < dotScolLen τ₂.P j
+        · -- τ₁ else, τ₂ then: key gives P₁(i,j) = dot. But P₁ ≠ dot.
+          rw [if_neg h1, if_pos h2] at key
+          exact absurd key hne₁
+        · -- Both in else: key gives P₁(i,j) = P₂(i,j) directly.
+          rw [if_neg h1, if_neg h2] at key
+          exact key
+    · -- Case 3: (i,j) ∉ P.shape → both outside shape → both paint dot
+      rw [τ₁.P.paint_outside i j hp,
+          τ₂.P.paint_outside i j (hshapeP ▸ hp)]
+
+/-- dotSdiag ≤ shape. -/
+theorem dotSdiag_le_shape (D : PaintedYoungDiagram) (hm : D.layerMonotone) :
+    dotSdiag D hm ≤ D.shape := by
+  intro ⟨i, j⟩ hmem
+  simp only [dotSdiag, YoungDiagram.mem_mk, Finset.mem_filter, YoungDiagram.mem_cells] at hmem
+  exact hmem.1
+
+/-- layerOrd > 1 at (i, j) in shape → i ≥ dotSdiag.colLen(j).
+    Contrapositive of layerOrd_le_one_of_lt_dotSdiag_colLen. -/
+theorem ge_dotSdiag_colLen_of_layerOrd_gt_one (D : PaintedYoungDiagram)
+    (hm : D.layerMonotone) {i j : ℕ}
+    (hmem : (i, j) ∈ D.shape) (hgt : (D.paint i j).layerOrd > 1) :
+    (dotSdiag D hm).colLen j ≤ i := by
+  by_contra h; push_neg at h
+  exact absurd (layerOrd_le_one_of_lt_dotSdiag_colLen D hm h) (by omega)
+
+/-- Non-dot → i ≥ dotScolLen(j). -/
+theorem ge_dotScolLen_of_nonDot (D : PaintedYoungDiagram)
+    (hm : D.layerMonotone) {i j : ℕ}
+    (hmem : (i, j) ∈ D.shape) (hne : D.paint i j ≠ .dot)
+    (hlo_gt : (D.paint i j).layerOrd > 1) :
+    dotScolLen D j ≤ i := by
+  rw [dotScolLen_eq_dotSdiag_colLen D hm]
+  exact ge_dotSdiag_colLen_of_layerOrd_gt_one D hm hmem hlo_gt
+
+/-- For C type P, non-dot means layerOrd ≥ 2 (symbols are {•,r,c,d}). -/
+theorem layerOrd_gt_one_of_nonDot_C (τ : PBP) (hγ : τ.γ = .C) {i j : ℕ}
+    (hmem : (i, j) ∈ τ.P.shape) (hne : τ.P.paint i j ≠ .dot) :
+    (τ.P.paint i j).layerOrd > 1 := by
+  have hsym := τ.sym_P i j hmem; rw [hγ] at hsym
+  revert hne hsym; cases τ.P.paint i j <;> simp [DRCSymbol.layerOrd, DRCSymbol.allowed]
+
+/-- For C type P: layerOrd ≤ 1 implies dot (since C type P has {•, r, c, d}, no s). -/
+theorem paint_dot_of_layerOrd_le_one_C (τ : PBP) (hγ : τ.γ = .C) {i j : ℕ}
+    (hmem : (i, j) ∈ τ.P.shape) (hlo : (τ.P.paint i j).layerOrd ≤ 1) :
+    τ.P.paint i j = .dot := by
+  have hsym := τ.sym_P i j hmem; rw [hγ] at hsym
+  revert hlo hsym; cases τ.P.paint i j <;> simp [DRCSymbol.layerOrd, DRCSymbol.allowed]
+
+/-- For C type P: i < dotSdiag.colLen(j) → paint = dot. -/
+theorem dotS_eq_dot_of_C (τ : PBP) (hγ : τ.γ = .C) {i j : ℕ}
+    (h : i < (dotSdiag τ.P τ.mono_P).colLen j) : τ.P.paint i j = .dot := by
+  have hmem : (i, j) ∈ τ.P.shape :=
+    dotSdiag_le_shape τ.P τ.mono_P (YoungDiagram.mem_iff_lt_colLen.mpr h)
+  exact paint_dot_of_layerOrd_le_one_C τ hγ hmem
+    (layerOrd_le_one_of_lt_dotSdiag_colLen τ.P τ.mono_P h)
+
+/-- For C type: Q.colLen(j+1) ≤ dotScolLen(P, j).
+    Proof: interlacing (dotDiag.colLen ≥ Q.colLen) + C type dotSdiag = dotDiag. -/
+theorem Q_colLen_succ_le_dotScolLen_C (τ : PBP) (hγ : τ.γ = .C) (j : ℕ) :
+    τ.Q.shape.colLen (j + 1) ≤ dotScolLen τ.P j := by
+  rw [dotScolLen_eq_dotSdiag_colLen _ τ.mono_P]
+  -- dotDiag ≤ dotSdiag (dot ⊆ dot+s)
+  have hdot_le_dotS : dotDiag τ.P τ.mono_P ≤ dotSdiag τ.P τ.mono_P := by
+    intro ⟨a, b⟩ h
+    simp only [dotDiag, dotSdiag, YoungDiagram.mem_mk, Finset.mem_filter,
+      YoungDiagram.mem_cells] at h ⊢
+    exact ⟨h.1, by rw [h.2]; simp [DRCSymbol.layerOrd]⟩
+  -- Chain via colLen monotonicity
+  calc τ.Q.shape.colLen (j + 1)
+      ≤ (dotDiag τ.Q τ.mono_Q).colLen j :=
+        dotDiag_colLen_ge_Q_colLen_succ_of_C τ hγ j
+    _ = (dotDiag τ.P τ.mono_P).colLen j := by rw [dotDiag_eq τ]
+    _ ≤ (dotSdiag τ.P τ.mono_P).colLen j := by
+        -- (i, j) ∈ dotDiag → (i, j) ∈ dotSdiag → i < dotSdiag.colLen(j)
+        by_contra h; push_neg at h
+        set d := (dotDiag τ.P τ.mono_P).colLen j
+        set ds := (dotSdiag τ.P τ.mono_P).colLen j
+        -- ds < d. Cell (ds, j) ∈ dotDiag (since ds < d = dotDiag.colLen).
+        have hmem : (ds, j) ∈ dotDiag τ.P τ.mono_P :=
+          YoungDiagram.mem_iff_lt_colLen.mpr h
+        -- So (ds, j) ∈ dotSdiag.
+        have hmemS := hdot_le_dotS hmem
+        -- But ds = dotSdiag.colLen, so (ds, j) ∉ dotSdiag.
+        exact absurd hmemS (by rw [YoungDiagram.mem_iff_lt_colLen]; omega)
+
+/-! ## C → D Recovery: descent is injective
+
+For C type: P has {•, r, c, d} (no s), Q has {•, s}.
+C→D descent: P' = redistribution of P (dots, new s, preserved r/c/d), Q' = all dots.
+From same P' + same shapes → P₁ = P₂ on all cells. Then Q follows from dot_match. -/
+
+theorem descent_inj_CD (τ₁ τ₂ : PBP)
+    (hγ₁ : τ₁.γ = .C) (hγ₂ : τ₂.γ = .C)
+    (hshapeP : τ₁.P.shape = τ₂.P.shape)
+    (hshapeQ : τ₁.Q.shape = τ₂.Q.shape)
+    (hdescL : ∀ i j, descentPaintL_CD τ₁ i j = descentPaintL_CD τ₂ i j) :
+    (∀ i j, τ₁.P.paint i j = τ₂.P.paint i j) ∧
+    (∀ i j, τ₁.Q.paint i j = τ₂.Q.paint i j) := by
+  -- Step 1: P agrees on all cells
+  -- Key insight for C type P (no s):
+  -- P(i,j) = dot ↔ i < dotScolLen(P, j) ↔ P'(i,j) ∈ {dot, s}
+  -- P(i,j) ∈ {r,c,d} ↔ i ≥ dotScolLen(P, j) ↔ P'(i,j) = P(i,j)
+  -- Since P'₁ = P'₂: dot classification same, and non-dot directly same.
+  have hP : ∀ i j, τ₁.P.paint i j = τ₂.P.paint i j := by
+    intro i j
+    by_cases hp : (i, j) ∈ τ₁.P.shape
+    · have hp₂ : (i, j) ∈ τ₂.P.shape := hshapeP ▸ hp
+      -- C type: P.paint ∈ {dot, r, c, d}. No s.
+      -- If P₁.paint = dot and P₂.paint = dot: done.
+      -- If P₁.paint ≠ dot and P₂.paint ≠ dot: both ∈ {r,c,d}.
+      --   P'(i,j) = P(i,j) for both (i ≥ cL since non-dot means layerOrd > 1).
+      --   From hdescL: P₁ = P₂.
+      -- If P₁ = dot, P₂ ≠ dot (or vice versa):
+      --   P₁ = dot → P'₁ ∈ {dot, s}. P₂ ∈ {r,c,d} → P'₂ = P₂.
+      --   hdescL: P'₁ = P'₂. So {dot,s} = {r,c,d}: impossible.
+      -- Helper: for C type, P'(i,j) = P(i,j) when P(i,j) is non-dot.
+      -- This is because non-dot → layerOrd > 1 → i ≥ cL ≥ cR → P' = P.
+      have descent_preserves_nonDot : ∀ (τ : PBP), τ.γ = .C →
+          (i, j) ∈ τ.P.shape → τ.P.paint i j ≠ .dot →
+          descentPaintL_CD τ i j = τ.P.paint i j := by
+        intro τ hγ hmem hne
+        simp only [descentPaintL_CD]
+        have hge := ge_dotScolLen_of_nonDot τ.P τ.mono_P hmem hne
+          (layerOrd_gt_one_of_nonDot_C τ hγ hmem hne)
+        have hcR := Q_colLen_succ_le_dotScolLen_C τ hγ j
+        rw [if_neg (by omega), if_neg (by omega)]
+      -- Helper: for C type, P(i,j) = dot → P'(i,j) ∈ {dot, s}.
+      have descent_maps_dot : ∀ (τ : PBP), τ.γ = .C →
+          (i, j) ∈ τ.P.shape → τ.P.paint i j = .dot →
+          descentPaintL_CD τ i j = .dot ∨ descentPaintL_CD τ i j = .s := by
+        intro τ hγ hmem hd
+        simp only [descentPaintL_CD]
+        by_cases hcr : i < τ.Q.shape.colLen (j + 1)
+        · left; rw [if_pos hcr]
+        · have hcl : i < dotScolLen τ.P j := by
+            rw [dotScolLen_eq_dotSdiag_colLen _ τ.mono_P]
+            rw [YoungDiagram.mem_iff_lt_colLen.symm]
+            simp [dotSdiag, Finset.mem_filter, YoungDiagram.mem_cells, hmem, hd, DRCSymbol.layerOrd]
+          right; rw [if_neg hcr, if_pos hcl]
+      -- Main proof: 4-way case split on dot vs non-dot
+      have key := hdescL i j
+      by_cases hd₁ : τ₁.P.paint i j = .dot <;> by_cases hd₂ : τ₂.P.paint i j = .dot
+      · -- Both dot
+        rw [hd₁, hd₂]
+      · -- P₁ = dot, P₂ ≠ dot → contradiction
+        exfalso
+        rw [descent_preserves_nonDot τ₂ hγ₂ hp₂ hd₂] at key
+        rcases descent_maps_dot τ₁ hγ₁ hp hd₁ with h | h <;> rw [h] at key
+        · exact hd₂ key.symm
+        · have := layerOrd_gt_one_of_nonDot_C τ₂ hγ₂ hp₂ hd₂
+          revert key this; cases τ₂.P.paint i j <;> simp [DRCSymbol.layerOrd]
+      · -- P₁ ≠ dot, P₂ = dot → symmetric contradiction
+        exfalso
+        rw [descent_preserves_nonDot τ₁ hγ₁ hp hd₁] at key
+        rcases descent_maps_dot τ₂ hγ₂ hp₂ hd₂ with h | h <;> rw [h] at key
+        · exact hd₁ key
+        · have := layerOrd_gt_one_of_nonDot_C τ₁ hγ₁ hp hd₁
+          revert key this; cases τ₁.P.paint i j <;> simp [DRCSymbol.layerOrd]
+      · -- Both non-dot: P' = P directly
+        rw [descent_preserves_nonDot τ₁ hγ₁ hp hd₁,
+            descent_preserves_nonDot τ₂ hγ₂ hp₂ hd₂] at key
+        exact key
+    · rw [τ₁.P.paint_outside i j hp, τ₂.P.paint_outside i j (hshapeP ▸ hp)]
+  constructor
+  · exact hP
+  · -- Step 2: Q agrees on all cells (from P + dot_match + shapes)
+    intro i j
+    by_cases hq : (i, j) ∈ τ₁.Q.shape
+    · -- In Q.shape: Q has {•, s}. dot_match determines dot vs s.
+      -- Q.paint = dot ↔ P.paint = dot (at (i,j) in both shapes)
+      -- Since P agrees, dot classification agrees. And non-dot = s.
+      have hq₂ : (i, j) ∈ τ₂.Q.shape := hshapeQ ▸ hq
+      by_cases hd : τ₁.Q.paint i j = .dot
+      · -- Q₁ = dot. By dot_match: P₁ = dot (at (i,j) in P.shape, if in P.shape).
+        have ⟨_, hp_dot⟩ := (τ₁.dot_match i j).mpr ⟨hq, hd⟩
+        -- P₁ = dot → P₂ = dot (by hP) → Q₂ = dot (by dot_match)
+        rw [hd]
+        have hp₂_dot : τ₂.P.paint i j = .dot := hP i j ▸ hp_dot
+        by_cases hp₂_mem : (i, j) ∈ τ₂.P.shape
+        · exact ((τ₂.dot_match i j).mp ⟨hp₂_mem, hp₂_dot⟩).2.symm
+        · -- (i,j) ∉ P₂.shape but P₂.paint = dot → could be outside.
+          -- Q₂.paint at (i,j) ∈ Q₂.shape: must be {•, s}. If dot: done.
+          -- If s: (i,j) ∉ P₂.shape → P₂.paint = dot.
+          -- dot_match: P₂ dot ↔ Q₂ dot. P₂ dot (outside) → need (i,j) ∈ P₂.shape
+          -- for the forward direction. But (i,j) ∉ P₂.shape!
+          -- dot_match: ((i,j) ∈ P.shape ∧ P.paint = dot) ↔ ((i,j) ∈ Q.shape ∧ Q.paint = dot)
+          -- RHS = (i,j) ∈ Q₂.shape ∧ Q₂.paint = dot = True ∧ Q₂.paint = dot
+          -- LHS = False (since ∉ P₂.shape). So Q₂.paint ≠ dot.
+          -- But we want Q₂.paint = dot. Contradiction?
+          -- This means (i,j) must be in P₂.shape. Let me check.
+          -- P₂.paint = dot (from hP + hp_dot). (i,j) ∈ P₁.shape (from dot_match on τ₁).
+          -- hshapeP: P₁.shape = P₂.shape. So (i,j) ∈ P₂.shape.
+          exact absurd (hshapeP ▸ (τ₁.dot_match i j).mpr ⟨hq, hd⟩).1 hp₂_mem
+      · -- Q₁ ≠ dot → Q₁ = s (C type Q has {•, s})
+        have hs₁ := Q_nonDot_eq_s_of_C τ₁ hγ₁ i j hq hd
+        -- P₁ ≠ dot (otherwise dot_match gives Q₁ = dot)
+        -- So P₂ ≠ dot (by hP). So Q₂ ≠ dot (by dot_match). So Q₂ = s.
+        have hd₂ : τ₂.Q.paint i j ≠ .dot := by
+          intro hd₂
+          have ⟨hp₂_mem, hp₂_dot⟩ := (τ₂.dot_match i j).mpr ⟨hq₂, hd₂⟩
+          rw [← hP i j] at hp₂_dot
+          exact hd ((τ₁.dot_match i j).mp ⟨hshapeP.symm ▸ hp₂_mem, hp₂_dot⟩).2
+        rw [hs₁, Q_nonDot_eq_s_of_C τ₂ hγ₂ i j hq₂ hd₂]
+    · -- Not in Q.shape: both paint dot (paint_outside)
+      rw [τ₁.Q.paint_outside i j hq, τ₂.Q.paint_outside i j (hshapeQ ▸ hq)]
+
+/-! ## M → B Recovery
+
+For M type: P has {•, s, c}, Q has {•, r, d}.
+M→B: P shifts left, Q gets redistribution.
+Same structure as D→C. Recovery: first Q from Q', then P via dot_match. -/
+
+theorem descent_eq_implies_cols_ge1_MB (τ₁ τ₂ : PBP)
+    (hγ₁ : τ₁.γ = .M) (hγ₂ : τ₂.γ = .M)
+    (hshapeP : τ₁.P.shape = τ₂.P.shape)
+    (hshapeQ : τ₁.Q.shape = τ₂.Q.shape)
+    -- Interlacing: descent well-defined (non-negative s count in Q').
+    -- Required for both τ₁ and τ₂ (follows from orbit structure).
+    (hinterl₁ : ∀ j, dotScolLen τ₁.Q j ≥ dotScolLen τ₁.P (j + 1))
+    (hinterl₂ : ∀ j, dotScolLen τ₂.Q j ≥ dotScolLen τ₂.P (j + 1))
+    (hdescL : ∀ i j, descentPaintL_MB τ₁ i j = descentPaintL_MB τ₂ i j)
+    (hdescR : ∀ i j, descentPaintR_MB τ₁ i j = descentPaintR_MB τ₂ i j) :
+    (∀ i j, 1 ≤ j → τ₁.P.paint i j = τ₂.P.paint i j) ∧
+    (∀ i j, τ₁.Q.paint i j = τ₂.Q.paint i j) := by
+  -- For M type Q ({•,r,d}): non-dot has layerOrd > 1.
+  have layerOrd_gt_one_M_Q : ∀ (τ : PBP), τ.γ = .M →
+      ∀ {i j}, (i, j) ∈ τ.Q.shape → τ.Q.paint i j ≠ .dot →
+      (τ.Q.paint i j).layerOrd > 1 := by
+    intro τ hγ i j hm hne
+    have hsym := τ.sym_Q i j hm; rw [hγ] at hsym
+    revert hne hsym; cases τ.Q.paint i j <;> simp [DRCSymbol.layerOrd, DRCSymbol.allowed]
+  -- For M type Q: non-dot → Q' preserves Q (uses interlacing cR ≥ cL).
+  have Q_descent_preserves : ∀ (τ : PBP), τ.γ = .M →
+      (∀ j, dotScolLen τ.Q j ≥ dotScolLen τ.P (j + 1)) →
+      ∀ {i j}, (i, j) ∈ τ.Q.shape → τ.Q.paint i j ≠ .dot →
+      descentPaintR_MB τ i j = τ.Q.paint i j := by
+    intro τ hγ hil i j hm hne
+    simp only [descentPaintR_MB]
+    have hge := ge_dotScolLen_of_nonDot τ.Q τ.mono_Q hm hne
+      (layerOrd_gt_one_M_Q τ hγ hm hne)
+    have hge_cL := le_trans (hil j) hge
+    rw [if_neg (by omega), if_neg (by omega)]
+  -- For M type Q: dot → Q' ∈ {dot, s}.
+  have Q_descent_maps_dot : ∀ (τ : PBP), τ.γ = .M →
+      ∀ {i j}, (i, j) ∈ τ.Q.shape → τ.Q.paint i j = .dot →
+      descentPaintR_MB τ i j = .dot ∨ descentPaintR_MB τ i j = .s := by
+    intro τ hγ i j hm hd
+    simp only [descentPaintR_MB]
+    by_cases hcl : i < dotScolLen τ.P (j + 1)
+    · left; rw [if_pos hcl]
+    · have hcr : i < dotScolLen τ.Q j := by
+        rw [dotScolLen_eq_dotSdiag_colLen _ τ.mono_Q, YoungDiagram.mem_iff_lt_colLen.symm]
+        simp [dotSdiag, Finset.mem_filter, YoungDiagram.mem_cells, hm, hd, DRCSymbol.layerOrd]
+      right; rw [if_neg hcl, if_pos hcr]
+  -- Step 1: Q recovery (same pattern as C→D P recovery)
+  have hQ : ∀ i j, τ₁.Q.paint i j = τ₂.Q.paint i j := by
+    intro i j
+    by_cases hq : (i, j) ∈ τ₁.Q.shape
+    · have hq₂ : (i, j) ∈ τ₂.Q.shape := hshapeQ ▸ hq
+      have key := hdescR i j
+      by_cases hd₁ : τ₁.Q.paint i j = .dot <;> by_cases hd₂ : τ₂.Q.paint i j = .dot
+      · rw [hd₁, hd₂]
+      · exfalso
+        rw [Q_descent_preserves τ₂ hγ₂ hinterl₂ hq₂ hd₂] at key
+        rcases Q_descent_maps_dot τ₁ hγ₁ hq hd₁ with h | h <;> rw [h] at key
+        · exact hd₂ key.symm
+        · have := layerOrd_gt_one_M_Q τ₂ hγ₂ hq₂ hd₂
+          revert key this; cases τ₂.Q.paint i j <;> simp [DRCSymbol.layerOrd]
+      · exfalso
+        rw [Q_descent_preserves τ₁ hγ₁ hinterl₁ hq hd₁] at key
+        rcases Q_descent_maps_dot τ₂ hγ₂ hq₂ hd₂ with h | h <;> rw [h] at key
+        · exact hd₁ key
+        · have := layerOrd_gt_one_M_Q τ₁ hγ₁ hq hd₁
+          revert key this; cases τ₁.Q.paint i j <;> simp [DRCSymbol.layerOrd]
+      · rw [Q_descent_preserves τ₁ hγ₁ hinterl₁ hq hd₁,
+            Q_descent_preserves τ₂ hγ₂ hinterl₂ hq₂ hd₂] at key
+        exact key
+    · rw [τ₁.Q.paint_outside i j hq, τ₂.Q.paint_outside i j (hshapeQ ▸ hq)]
+  -- Step 2: P recovery using Q + descent + dot_match
+  have hP : ∀ i j, 1 ≤ j → τ₁.P.paint i j = τ₂.P.paint i j := by
+    intro i j hj
+    have key := hdescL i (j - 1)
+    simp only [descentPaintL_MB, Nat.sub_add_cancel hj] at key
+    by_cases hp : (i, j) ∈ τ₁.P.shape
+    · have hp₂ : (i, j) ∈ τ₂.P.shape := hshapeP ▸ hp
+      by_cases h1 : i < dotScolLen τ₁.P j <;> by_cases h2 : i < dotScolLen τ₂.P j
+      · -- Both in dot+s: use Q + dot_match
+        rw [dotScolLen_eq_dotSdiag_colLen _ τ₁.mono_P] at h1
+        rw [dotScolLen_eq_dotSdiag_colLen _ τ₂.mono_P] at h2
+        have hlo₁ := layerOrd_le_one_of_lt_dotSdiag_colLen τ₁.P τ₁.mono_P h1
+        have hlo₂ := layerOrd_le_one_of_lt_dotSdiag_colLen τ₂.P τ₂.mono_P h2
+        by_cases hd₁ : τ₁.P.paint i j = .dot
+        · by_cases hq_mem : (i, j) ∈ τ₁.Q.shape
+          · have hq_dot := ((τ₁.dot_match i j).mp ⟨hp, hd₁⟩).2
+            rw [hQ i j] at hq_dot
+            rw [hd₁, ((τ₂.dot_match i j).mpr ⟨hshapeQ ▸ hq_mem, hq_dot⟩).2]
+          · exact absurd ((τ₁.dot_match i j).mp ⟨hp, hd₁⟩).1 hq_mem
+        · have hs₁ : τ₁.P.paint i j = .s := by
+            revert hlo₁ hd₁; cases τ₁.P.paint i j <;> simp [DRCSymbol.layerOrd]
+          have hd₂ : τ₂.P.paint i j ≠ .dot := by
+            intro hd₂
+            by_cases hq_mem : (i, j) ∈ τ₂.Q.shape
+            · have := ((τ₂.dot_match i j).mp ⟨hp₂, hd₂⟩).2
+              rw [← hQ i j] at this
+              have := ((τ₁.dot_match i j).mpr ⟨hshapeQ.symm ▸ hq_mem, this⟩).2
+              rw [this] at hs₁; exact DRCSymbol.noConfusion hs₁
+            · exact hq_mem ((τ₂.dot_match i j).mp ⟨hp₂, hd₂⟩).1
+          rw [hs₁]; revert hlo₂ hd₂; cases τ₂.P.paint i j <;> simp [DRCSymbol.layerOrd]
+      · -- τ₁ in dot+s, τ₂ not: key gives dot = P₂(i,j). P₂ is dot → in dot+s. Contradiction.
+        rw [if_pos h1, if_neg h2] at key
+        -- key : dot = τ₂.P.paint i j. So τ₂.P.paint = dot. But h2 says ¬(i < dotScolLen₂).
+        -- τ₂.P.paint = dot → (i,j) ∈ dotSdiag₂ → i < dotScolLen₂. Contradiction with h2.
+        exact absurd (by
+          rw [dotScolLen_eq_dotSdiag_colLen _ τ₂.mono_P, YoungDiagram.mem_iff_lt_colLen.symm]
+          simp only [dotSdiag, YoungDiagram.mem_mk, Finset.mem_filter, YoungDiagram.mem_cells]
+          exact ⟨hp₂, by rw [key.symm]; simp [DRCSymbol.layerOrd]⟩ : i < dotScolLen τ₂.P j) h2
+      · -- symmetric: τ₂ in dot+s, τ₁ not
+        rw [if_neg h1, if_pos h2] at key
+        exact absurd (by
+          rw [dotScolLen_eq_dotSdiag_colLen _ τ₁.mono_P, YoungDiagram.mem_iff_lt_colLen.symm]
+          simp only [dotSdiag, YoungDiagram.mem_mk, Finset.mem_filter, YoungDiagram.mem_cells]
+          exact ⟨hp, by rw [key]; simp [DRCSymbol.layerOrd]⟩ : i < dotScolLen τ₁.P j) h1
+      · rw [if_neg h1, if_neg h2] at key; exact key
+    · rw [τ₁.P.paint_outside i j hp, τ₂.P.paint_outside i j (hshapeP ▸ hp)]
+  exact ⟨hP, hQ⟩
+
+/-! ## B → M Recovery: P recovery + Q cols ≥ 1
+
+For B type: P has {•, c}, Q has {•, s, r, d}.
+B→M: Q shifts left, P gets redistribution.
+
+Note: B→M descent is NOT fully injective (unlike C→D).
+Q col 0 has non-dot symbols from {s, r, d} that are NOT determined
+by the descent alone. The full injectivity for B type requires
+additional invariants (p, q, ε) — this is Corollary 10.10.
+
+What we CAN prove: P is fully recoverable, and Q cols ≥ 1 are recoverable. -/
+
+theorem descent_recovery_BM (τ₁ τ₂ : PBP)
+    (hγ₁ : τ₁.γ = .Bplus ∨ τ₁.γ = .Bminus)
+    (hγ₂ : τ₂.γ = .Bplus ∨ τ₂.γ = .Bminus)
+    (hshapeP : τ₁.P.shape = τ₂.P.shape)
+    (hshapeQ : τ₁.Q.shape = τ₂.Q.shape)
+    -- Interlacing for both (orbit-level constraint)
+    (hinterl₁ : ∀ j, dotScolLen τ₁.P j ≥ dotScolLen τ₁.Q (j + 1))
+    (hinterl₂ : ∀ j, dotScolLen τ₂.P j ≥ dotScolLen τ₂.Q (j + 1))
+    (hdescL : ∀ i j, descentPaintL_BM τ₁ i j = descentPaintL_BM τ₂ i j)
+    (hdescR : ∀ i j, descentPaintR_BM τ₁ i j = descentPaintR_BM τ₂ i j) :
+    (∀ i j, τ₁.P.paint i j = τ₂.P.paint i j) ∧
+    (∀ i j, 1 ≤ j → τ₁.Q.paint i j = τ₂.Q.paint i j) := by
+  -- B type P ({•, c}): non-dot = c, layerOrd 3 > 1. Same as C type P.
+  have layerOrd_gt_one_B_P : ∀ (τ : PBP), (τ.γ = .Bplus ∨ τ.γ = .Bminus) →
+      ∀ {i j}, (i, j) ∈ τ.P.shape → τ.P.paint i j ≠ .dot →
+      (τ.P.paint i j).layerOrd > 1 := by
+    intro τ hγ i j hm hne
+    have hsym := τ.sym_P i j hm
+    rcases hγ with h₁ | h₁ <;> rw [h₁] at hsym <;>
+      (simp [DRCSymbol.allowed] at hsym; revert hne hsym;
+       cases τ.P.paint i j <;> simp [DRCSymbol.layerOrd])
+  -- B→M P' has 3 regions: dot / s / P. Same structure as C→D.
+  -- descent_preserves_nonDot for B→M P:
+  have P_descent_preserves : ∀ (τ : PBP), (τ.γ = .Bplus ∨ τ.γ = .Bminus) →
+      (∀ j, dotScolLen τ.P j ≥ dotScolLen τ.Q (j + 1)) →
+      ∀ {i j}, (i, j) ∈ τ.P.shape → τ.P.paint i j ≠ .dot →
+      descentPaintL_BM τ i j = τ.P.paint i j := by
+    intro τ hγ hil i j hm hne
+    simp only [descentPaintL_BM]
+    have hge := ge_dotScolLen_of_nonDot τ.P τ.mono_P hm hne
+      (layerOrd_gt_one_B_P τ hγ hm hne)
+    have hge_cR := le_trans (hil j) hge
+    rw [if_neg (by omega), if_neg (by omega)]
+  -- descent_maps_dot for B→M P:
+  have P_descent_maps_dot : ∀ (τ : PBP), (τ.γ = .Bplus ∨ τ.γ = .Bminus) →
+      ∀ {i j}, (i, j) ∈ τ.P.shape → τ.P.paint i j = .dot →
+      descentPaintL_BM τ i j = .dot ∨ descentPaintL_BM τ i j = .s := by
+    intro τ hγ i j hm hd
+    simp only [descentPaintL_BM]
+    by_cases hcr : i < dotScolLen τ.Q (j + 1)
+    · left; rw [if_pos hcr]
+    · have hcl : i < dotScolLen τ.P j := by
+        rw [dotScolLen_eq_dotSdiag_colLen _ τ.mono_P, YoungDiagram.mem_iff_lt_colLen.symm]
+        simp [dotSdiag, Finset.mem_filter, YoungDiagram.mem_cells, hm, hd, DRCSymbol.layerOrd]
+      right; rw [if_neg hcr, if_pos hcl]
+  -- Step 1: P recovery (same as C→D)
+  have hP : ∀ i j, τ₁.P.paint i j = τ₂.P.paint i j := by
+    intro i j
+    by_cases hp : (i, j) ∈ τ₁.P.shape
+    · have hp₂ : (i, j) ∈ τ₂.P.shape := hshapeP ▸ hp
+      have key := hdescL i j
+      by_cases hd₁ : τ₁.P.paint i j = .dot <;> by_cases hd₂ : τ₂.P.paint i j = .dot
+      · rw [hd₁, hd₂]
+      · exfalso
+        rw [P_descent_preserves τ₂ hγ₂ hinterl₂ hp₂ hd₂] at key
+        rcases P_descent_maps_dot τ₁ hγ₁ hp hd₁ with h | h <;> rw [h] at key
+        · exact hd₂ key.symm
+        · have := layerOrd_gt_one_B_P τ₂ hγ₂ hp₂ hd₂
+          revert key this; cases τ₂.P.paint i j <;> simp [DRCSymbol.layerOrd]
+      · exfalso
+        rw [P_descent_preserves τ₁ hγ₁ hinterl₁ hp hd₁] at key
+        rcases P_descent_maps_dot τ₂ hγ₂ hp₂ hd₂ with h | h <;> rw [h] at key
+        · exact hd₁ key
+        · have := layerOrd_gt_one_B_P τ₁ hγ₁ hp hd₁
+          revert key this; cases τ₁.P.paint i j <;> simp [DRCSymbol.layerOrd]
+      · rw [P_descent_preserves τ₁ hγ₁ hinterl₁ hp hd₁,
+            P_descent_preserves τ₂ hγ₂ hinterl₂ hp₂ hd₂] at key
+        exact key
+    · rw [τ₁.P.paint_outside i j hp, τ₂.P.paint_outside i j (hshapeP ▸ hp)]
+  constructor
+  · exact hP
+  · -- Step 2: Q cols ≥ 1 recovery.
+    -- Q'(i, k) = if i < dotScolLen(Q, k+1) then dot else Q(i, k+1).
+    -- For j ≥ 1: Q(i, j) corresponds to Q'(i, j-1).
+    -- Same structure as D→C P recovery (3-way case split).
+    intro i j hj
+    have key := hdescR i (j - 1)
+    simp only [descentPaintR_BM, Nat.sub_add_cancel hj] at key
+    by_cases hq : (i, j) ∈ τ₁.Q.shape
+    · have hq₂ : (i, j) ∈ τ₂.Q.shape := hshapeQ ▸ hq
+      -- dot_match: Q dot ↔ P dot (within shapes). Same P → same Q dot classification.
+      by_cases hd₁ : τ₁.Q.paint i j = .dot
+      · -- Q₁ dot. P₁ dot (dot_match). P₂ dot (hP). Q₂ dot (dot_match).
+        have ⟨_, hp₁_dot⟩ := (τ₁.dot_match i j).mpr ⟨hq, hd₁⟩
+        have hp₂_dot := hP i j ▸ hp₁_dot
+        rw [hd₁, ((τ₂.dot_match i j).mp ⟨hshapeP ▸ hp₁_dot ▸ hp₁_dot ▸
+          (τ₁.dot_match i j).mpr ⟨hq, hd₁⟩ |>.1, hp₂_dot⟩).2]
+      · -- Q₁ non-dot. Need Q₂ also non-dot, then both determined by descent.
+        have hd₂ : τ₂.Q.paint i j ≠ .dot := by
+          intro h₂
+          have ⟨_, hp₂_dot⟩ := (τ₂.dot_match i j).mpr ⟨hq₂, h₂⟩
+          have hp₁_dot := (hP i j).symm ▸ hp₂_dot
+          exact hd₁ ((τ₁.dot_match i j).mp ⟨hshapeP.symm ▸
+            (τ₂.dot_match i j).mpr ⟨hq₂, h₂⟩ |>.1, hp₁_dot⟩).2
+        -- Both Q non-dot. Two sub-cases: layerOrd ≤ 1 (=s) or > 1 (r/d).
+        -- If both have layerOrd > 1: Q' = Q directly (past dot+s boundary).
+        -- If one has layerOrd ≤ 1 (=s) and other > 1: Q' gives dot vs Q.
+        --   dot ≠ Q (non-dot). Contradiction.
+        -- If both ≤ 1: both = s.
+        -- But we need to handle the if-then-else. Q'(i, j-1) depends on
+        -- dotScolLen(Q, j), which we don't know is equal.
+        -- Use same trick: if i ≥ dotScolLen for one but < for other,
+        -- Q' gives Q vs dot, contradiction since both Q ≠ dot.
+        by_cases h1 : i < dotScolLen τ₁.Q j <;> by_cases h2 : i < dotScolLen τ₂.Q j
+        · -- Both in dot+s: both non-dot → both = s (layerOrd ≤ 1, ≠ dot)
+          rw [if_pos h1, if_pos h2] at key  -- key: trivially satisfied
+          have paint_s_Q : ∀ (τ : PBP), τ.Q.paint i j ≠ .dot →
+              i < dotScolLen τ.Q j → τ.Q.paint i j = .s := by
+            intro τ hne hlt
+            rw [dotScolLen_eq_dotSdiag_colLen _ τ.mono_Q] at hlt
+            have hlo := layerOrd_le_one_of_lt_dotSdiag_colLen τ.Q τ.mono_Q hlt
+            revert hlo hne; cases τ.Q.paint i j <;> simp [DRCSymbol.layerOrd]
+          rw [paint_s_Q τ₁ hd₁ h1, paint_s_Q τ₂ hd₂ h2]
+        · rw [if_pos h1, if_neg h2] at key; exact absurd key.symm hd₂
+        · rw [if_neg h1, if_pos h2] at key; exact absurd key hd₁
+        · rw [if_neg h1, if_neg h2] at key; exact key
+    · rw [τ₁.Q.paint_outside i j hq, τ₂.Q.paint_outside i j (hshapeQ ▸ hq)]
+
+end PBP

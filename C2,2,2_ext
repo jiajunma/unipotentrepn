@@ -1,0 +1,44 @@
+digraph "Extended PBP Tree" {
+	graph [dpi=150 newrank=true nodesep=0.3 rankdir=TB ranksep=0.8]
+	node [fontname="Courier New" fontsize=8 shape=box]
+	e0 [label="(1,1) ε=0\ld|\l" fillcolor="#e6f3ff" labeljust=l style=filled]
+	e1 [label="(1,1) ε=0\ld|\l" fillcolor="#fff3e6" labeljust=l style=filled]
+	e2 [label="(0,0) ε=0\l\l" fillcolor="#e6f3ff" labeljust=l style=filled]
+	e3 [label="(1,1) ε=0\lc|\l" fillcolor="#e6f3ff" labeljust=l style=filled]
+	e4 [label="(1,1) ε=1\lc|\l" fillcolor="#fff3e6" labeljust=l style=filled]
+	e5 [label="(1,1) ε=0\lr|\l" fillcolor="#e6f3ff" labeljust=l style=filled]
+	e6 [label="(2,0) ε=1\lr|\l" fillcolor="#fff3e6" labeljust=l style=filled]
+	e1 -> e0 [color=blue]
+	e2 -> e1 [color=blue]
+	e4 -> e3 [color=blue]
+	e2 -> e4 [color=blue]
+	e6 -> e5 [color=blue]
+	e2 -> e6 [color=blue]
+	gp_C_0 [label="Sp(0)" fontcolor="#333333" fontname=Helvetica fontsize=11 group=gp_labels shape=plaintext]
+	{
+		rank=same
+		gp_C_0
+		e2
+	}
+	gp_C_0 -> e2 [style=invis]
+	gp_C_1 [label="Sp(2)" fontcolor="#333333" fontname=Helvetica fontsize=11 group=gp_labels shape=plaintext]
+	{
+		rank=same
+		gp_C_1
+		e0
+		e3
+		e5
+	}
+	gp_C_1 -> e0 [style=invis]
+	gp_D_1 [label="SO(2)" fontcolor="#333333" fontname=Helvetica fontsize=11 group=gp_labels shape=plaintext]
+	{
+		rank=same
+		gp_D_1
+		e1
+		e4
+		e6
+	}
+	gp_D_1 -> e1 [style=invis]
+	gp_C_0 -> gp_C_1 [style=invis]
+	gp_C_1 -> gp_D_1 [style=invis]
+}

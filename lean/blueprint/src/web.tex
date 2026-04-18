@@ -1,0 +1,27 @@
+\documentclass{report}
+
+\usepackage{amsthm}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage[showmore,dep_graph,project=../../]{blueprint}
+\input{macros/common}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+
+\title{Associated Cycles of Special Unipotent Representations: Blueprint}
+\author{Based on Barbasch--Ma--Sun--Zhu}
+
+\home{https://github.com/jiajunma/unipotentrepn}
+\github{https://github.com/jiajunma/unipotentrepn}
+\dochome{https://jiajunma.github.io/unipotentrepn/docs/}
+
+\begin{document}
+\maketitle
+\input{content}
+\end{document}

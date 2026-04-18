@@ -1,0 +1,4 @@
+digraph "Lifting Tree" {
+	graph [dpi=150 newrank=true nodesep=0.4 rankdir=BT ranksep=1.2]
+	node [fontname="Courier New" fontsize=8 shape=box]
+}

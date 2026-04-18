@@ -1,0 +1,648 @@
+digraph "Combined Lift Tree" {
+	graph [dpi=150 newrank=true nodesep=0.15 rankdir=TB ranksep=0.8 splines=line]
+	node [fontname="Courier New" fontsize=7 shape=box]
+	ls0 [label="(5,2)\l+-+\l-  \l+  \l+  \l+  \l" fillcolor="#ffe6e6" labeljust=l style=filled]
+	d1 [label=<B+ ε=0<br align="left"/>c|r<br align="left"/> |d<br align="left"/>> fillcolor=white style=filled]
+	ls0 -> d1 [arrowsize=0.4 color="#aaaaaa" weight=10]
+	ls2 [label="(1,1)\l-+\l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	d3 [label=<ε=0<br align="left"/>s| <br align="left"/>> fillcolor=white style=filled]
+	ls2 -> d3 [arrowsize=0.4 color="#aaaaaa" weight=10]
+	ls4 [label="(1,0)\l+\l" fillcolor="#ffe6e6" labeljust=l style=filled]
+	d5 [label=<B+ ε=1<br align="left"/> | <br align="left"/>> fillcolor=white style=filled]
+	ls4 -> d5 [arrowsize=0.4 color="#aaaaaa" weight=10]
+	ls6 [label="(0,0)\l(triv)\l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	d7 [label=<ε=0<br align="left"/> | <br align="left"/>> fillcolor=white style=filled]
+	ls6 -> d7 [arrowsize=0.4 color="#aaaaaa" weight=10]
+	ls8 [label="(4,3)\l=*=\l-  \l+  \l+  \l+  \l" fillcolor="#ffe6e6" labeljust=l style=filled]
+	d9 [label=<B- ε=0<br align="left"/>c|r<br align="left"/> |d<br align="left"/>> fillcolor=white style=filled]
+	ls8 -> d9 [arrowsize=0.4 color="#aaaaaa" weight=10]
+	ls10 [label="(1,1)\l+-\l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	d11 [label=<ε=0<br align="left"/>c| <br align="left"/>> fillcolor=white style=filled]
+	ls10 -> d11 [arrowsize=0.4 color="#aaaaaa" weight=10]
+	ls12 [label="(0,1)\l=\l" fillcolor="#ffe6e6" labeljust=l style=filled]
+	d13 [label=<B- ε=1<br align="left"/> | <br align="left"/>> fillcolor=white style=filled]
+	ls12 -> d13 [arrowsize=0.4 color="#aaaaaa" weight=10]
+	ls14 [label="(5,2)\l*=*\l-  \l+  \l+  \l+  \l" fillcolor="#ffe6e6" labeljust=l style=filled]
+	d15 [label=<B+ ε=0<br align="left"/><font color="red">c</font>|r<br align="left"/> |d<br align="left"/>> fillcolor=white style=filled]
+	ls14 -> d15 [arrowsize=0.4 color="#aaaaaa" weight=10]
+	ls16 [label="(1,1)\l=*\l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	d17 [label=<ε=1<br align="left"/><font color="red">s</font>| <br align="left"/>> fillcolor=white style=filled]
+	ls16 -> d17 [arrowsize=0.4 color="#aaaaaa" weight=10]
+	ls18 [label="(4,3)\l-+-\l-  \l+  \l+  \l+  \l" fillcolor="#ffe6e6" labeljust=l style=filled]
+	d19 [label=<B- ε=0<br align="left"/><font color="red">c</font>|r<br align="left"/> |d<br align="left"/>> fillcolor=white style=filled]
+	ls18 -> d19 [arrowsize=0.4 color="#aaaaaa" weight=10]
+	ls20 [label="(1,1)\l*=\l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	d21 [label=<ε=1<br align="left"/><font color="red">c</font>| <br align="left"/>> fillcolor=white style=filled]
+	ls20 -> d21 [arrowsize=0.4 color="#aaaaaa" weight=10]
+	ls22 [label="(3,4)\l-+-\l-  \l-  \l+  \l+  \l" fillcolor="#ffe6e6" labeljust=l style=filled]
+	d23 [label=<B+ ε=0<br align="left"/>c|s<br align="left"/> |d<br align="left"/>> fillcolor=white style=filled]
+	ls22 -> d23 [arrowsize=0.4 color="#aaaaaa" weight=10]
+	ls24 [label="(2,5)\l=*=\l-  \l-  \l-  \l+  \l" fillcolor="#ffe6e6" labeljust=l style=filled]
+	d25 [label=<B- ε=0<br align="left"/>c|s<br align="left"/> |d<br align="left"/>> fillcolor=white style=filled]
+	ls24 -> d25 [arrowsize=0.4 color="#aaaaaa" weight=10]
+	ls26 [label="(3,4)\l=*=\l-  \l-  \l+  \l+  \l" fillcolor="#ffe6e6" labeljust=l style=filled]
+	d27 [label=<B+ ε=0<br align="left"/><font color="red">c</font>|s<br align="left"/> |d<br align="left"/>> fillcolor=white style=filled]
+	ls26 -> d27 [arrowsize=0.4 color="#aaaaaa" weight=10]
+	ls28 [label="(2,5)\l-+-\l-  \l-  \l-  \l+  \l" fillcolor="#ffe6e6" labeljust=l style=filled]
+	d29 [label=<B- ε=0<br align="left"/><font color="red">c</font>|s<br align="left"/> |d<br align="left"/>> fillcolor=white style=filled]
+	ls28 -> d29 [arrowsize=0.4 color="#aaaaaa" weight=10]
+	ls30 [label="(4,3)\l*=*\l-  \l-  \l+  \l+  \l" fillcolor="#ffe6e6" labeljust=l style=filled]
+	d31 [label=<B+ ε=0<br align="left"/>*|*<br align="left"/> |d<br align="left"/>> fillcolor=white style=filled]
+	ls30 -> d31 [arrowsize=0.4 color="#aaaaaa" weight=10]
+	ls32 [label="(3,4)\l+-+\l-  \l-  \l-  \l+  \l" fillcolor="#ffe6e6" labeljust=l style=filled]
+	d33 [label=<B- ε=0<br align="left"/>*|*<br align="left"/> |d<br align="left"/>> fillcolor=white style=filled]
+	ls32 -> d33 [arrowsize=0.4 color="#aaaaaa" weight=10]
+	ls34 [label="(4,3)\l+-+\l-  \l-  \l+  \l+  \l" fillcolor="#ffe6e6" labeljust=l style=filled]
+	d35 [label=<B+ ε=0<br align="left"/><font color="red">*</font>|*<br align="left"/> |d<br align="left"/>> fillcolor=white style=filled]
+	ls34 -> d35 [arrowsize=0.4 color="#aaaaaa" weight=10]
+	ls36 [label="(3,4)\l*=*\l-  \l-  \l-  \l+  \l" fillcolor="#ffe6e6" labeljust=l style=filled]
+	d37 [label=<B- ε=0<br align="left"/><font color="red">*</font>|*<br align="left"/> |d<br align="left"/>> fillcolor=white style=filled]
+	ls36 -> d37 [arrowsize=0.4 color="#aaaaaa" weight=10]
+	ls38 [label="(6,1)\l+-+\l+  \l+  \l+  \l+  \l" fillcolor="#ffe6e6" labeljust=l style=filled]
+	d39 [label=<B+ ε=1<br align="left"/>c|r<br align="left"/> |r<br align="left"/>> fillcolor=white style=filled]
+	ls38 -> d39 [arrowsize=0.4 color="#aaaaaa" weight=10]
+	ls40 [label="(5,2)\l-+-\l+  \l+  \l+  \l+  \l" fillcolor="#ffe6e6" labeljust=l style=filled]
+	d41 [label=<B- ε=1<br align="left"/>c|r<br align="left"/> |r<br align="left"/>> fillcolor=white style=filled]
+	ls40 -> d41 [arrowsize=0.4 color="#aaaaaa" weight=10]
+	ls42 [label="(6,1)\l*=*\l+  \l+  \l+  \l+  \l" fillcolor="#ffe6e6" labeljust=l style=filled]
+	d43 [label=<B+ ε=1<br align="left"/><font color="red">c</font>|r<br align="left"/> |r<br align="left"/>> fillcolor=white style=filled]
+	ls42 -> d43 [arrowsize=0.4 color="#aaaaaa" weight=10]
+	ls44 [label="(5,2)\l=*=\l+  \l+  \l+  \l+  \l" fillcolor="#ffe6e6" labeljust=l style=filled]
+	d45 [label=<B- ε=1<br align="left"/><font color="red">c</font>|r<br align="left"/> |r<br align="left"/>> fillcolor=white style=filled]
+	ls44 -> d45 [arrowsize=0.4 color="#aaaaaa" weight=10]
+	ls46 [label="(4,3)\l=*=\l=  \l+  \l+  \l+  \l" fillcolor="#ffe6e6" labeljust=l style=filled]
+	d47 [label=<B+ ε=1<br align="left"/>c|s<br align="left"/> |r<br align="left"/>> fillcolor=white style=filled]
+	ls46 -> d47 [arrowsize=0.4 color="#aaaaaa" weight=10]
+	ls48 [label="(3,4)\l-+-\l=  \l=  \l+  \l+  \l" fillcolor="#ffe6e6" labeljust=l style=filled]
+	d49 [label=<B- ε=1<br align="left"/>c|s<br align="left"/> |r<br align="left"/>> fillcolor=white style=filled]
+	ls48 -> d49 [arrowsize=0.4 color="#aaaaaa" weight=10]
+	ls50 [label="(4,3)\l-+-\l=  \l+  \l+  \l+  \l" fillcolor="#ffe6e6" labeljust=l style=filled]
+	d51 [label=<B+ ε=1<br align="left"/><font color="red">c</font>|s<br align="left"/> |r<br align="left"/>> fillcolor=white style=filled]
+	ls50 -> d51 [arrowsize=0.4 color="#aaaaaa" weight=10]
+	ls52 [label="(3,4)\l=*=\l=  \l=  \l+  \l+  \l" fillcolor="#ffe6e6" labeljust=l style=filled]
+	d53 [label=<B- ε=1<br align="left"/><font color="red">c</font>|s<br align="left"/> |r<br align="left"/>> fillcolor=white style=filled]
+	ls52 -> d53 [arrowsize=0.4 color="#aaaaaa" weight=10]
+	ls54 [label="(2,5)\l=*=\l=  \l=  \l=  \l+  \l" fillcolor="#ffe6e6" labeljust=l style=filled]
+	d55 [label=<B+ ε=1<br align="left"/>c|s<br align="left"/> |s<br align="left"/>> fillcolor=white style=filled]
+	ls54 -> d55 [arrowsize=0.4 color="#aaaaaa" weight=10]
+	ls56 [label="(1,6)\l-+-\l=  \l=  \l=  \l=  \l" fillcolor="#ffe6e6" labeljust=l style=filled]
+	d57 [label=<B- ε=1<br align="left"/>c|s<br align="left"/> |s<br align="left"/>> fillcolor=white style=filled]
+	ls56 -> d57 [arrowsize=0.4 color="#aaaaaa" weight=10]
+	ls58 [label="(2,5)\l-+-\l=  \l=  \l=  \l+  \l" fillcolor="#ffe6e6" labeljust=l style=filled]
+	d59 [label=<B+ ε=1<br align="left"/><font color="red">c</font>|s<br align="left"/> |s<br align="left"/>> fillcolor=white style=filled]
+	ls58 -> d59 [arrowsize=0.4 color="#aaaaaa" weight=10]
+	ls60 [label="(1,6)\l=*=\l=  \l=  \l=  \l=  \l" fillcolor="#ffe6e6" labeljust=l style=filled]
+	d61 [label=<B- ε=1<br align="left"/><font color="red">c</font>|s<br align="left"/> |s<br align="left"/>> fillcolor=white style=filled]
+	ls60 -> d61 [arrowsize=0.4 color="#aaaaaa" weight=10]
+	ls62 [label="(5,2)\l*=*\l=  \l+  \l+  \l+  \l" fillcolor="#ffe6e6" labeljust=l style=filled]
+	d63 [label=<B+ ε=1<br align="left"/>*|*<br align="left"/> |r<br align="left"/>> fillcolor=white style=filled]
+	ls62 -> d63 [arrowsize=0.4 color="#aaaaaa" weight=10]
+	ls64 [label="(4,3)\l+-+\l=  \l=  \l+  \l+  \l" fillcolor="#ffe6e6" labeljust=l style=filled]
+	d65 [label=<B- ε=1<br align="left"/>*|*<br align="left"/> |r<br align="left"/>> fillcolor=white style=filled]
+	ls64 -> d65 [arrowsize=0.4 color="#aaaaaa" weight=10]
+	ls66 [label="(5,2)\l+-+\l=  \l+  \l+  \l+  \l" fillcolor="#ffe6e6" labeljust=l style=filled]
+	d67 [label=<B+ ε=1<br align="left"/><font color="red">*</font>|*<br align="left"/> |r<br align="left"/>> fillcolor=white style=filled]
+	ls66 -> d67 [arrowsize=0.4 color="#aaaaaa" weight=10]
+	ls68 [label="(4,3)\l*=*\l=  \l=  \l+  \l+  \l" fillcolor="#ffe6e6" labeljust=l style=filled]
+	d69 [label=<B- ε=1<br align="left"/><font color="red">*</font>|*<br align="left"/> |r<br align="left"/>> fillcolor=white style=filled]
+	ls68 -> d69 [arrowsize=0.4 color="#aaaaaa" weight=10]
+	ls70 [label="(3,4)\l*=*\l=  \l=  \l=  \l+  \l" fillcolor="#ffe6e6" labeljust=l style=filled]
+	d71 [label=<B+ ε=1<br align="left"/>*|*<br align="left"/> |s<br align="left"/>> fillcolor=white style=filled]
+	ls70 -> d71 [arrowsize=0.4 color="#aaaaaa" weight=10]
+	ls72 [label="(2,5)\l+-+\l=  \l=  \l=  \l=  \l" fillcolor="#ffe6e6" labeljust=l style=filled]
+	d73 [label=<B- ε=1<br align="left"/>*|*<br align="left"/> |s<br align="left"/>> fillcolor=white style=filled]
+	ls72 -> d73 [arrowsize=0.4 color="#aaaaaa" weight=10]
+	ls74 [label="(3,4)\l+-+\l=  \l=  \l=  \l+  \l" fillcolor="#ffe6e6" labeljust=l style=filled]
+	d75 [label=<B+ ε=1<br align="left"/><font color="red">*</font>|*<br align="left"/> |s<br align="left"/>> fillcolor=white style=filled]
+	ls74 -> d75 [arrowsize=0.4 color="#aaaaaa" weight=10]
+	ls76 [label="(2,5)\l*=*\l=  \l=  \l=  \l=  \l" fillcolor="#ffe6e6" labeljust=l style=filled]
+	d77 [label=<B- ε=1<br align="left"/><font color="red">*</font>|*<br align="left"/> |s<br align="left"/>> fillcolor=white style=filled]
+	ls76 -> d77 [arrowsize=0.4 color="#aaaaaa" weight=10]
+	g78 [label="*=*\l=  \l*  \l*  \l*  \l" fillcolor="#f0f0f0" labeljust=l style=filled]
+	g79 [label="+-+\l-  \l*  \l*  \l*  \l" fillcolor="#f0f0f0" labeljust=l style=filled]
+	g80 [label="*\l" fillcolor="#f0f0f0" labeljust=l style=filled]
+	g81 [label="-+-\l=  \l*  \l*  \l*  \l" fillcolor="#f0f0f0" labeljust=l style=filled]
+	g82 [label="-+-\l-  \l*  \l*  \l*  \l" fillcolor="#f0f0f0" labeljust=l style=filled]
+	g83 [label="-\l" fillcolor="#f0f0f0" labeljust=l style=filled]
+	g84 [label="+-+\l=  \l*  \l*  \l*  \l" fillcolor="#f0f0f0" labeljust=l style=filled]
+	g85 [label="*=*\l-  \l*  \l*  \l*  \l" fillcolor="#f0f0f0" labeljust=l style=filled]
+	g86 [label="=*=\l=  \l*  \l*  \l*  \l" fillcolor="#f0f0f0" labeljust=l style=filled]
+	g87 [label="=*=\l-  \l*  \l*  \l*  \l" fillcolor="#f0f0f0" labeljust=l style=filled]
+	g88 [label="=*=\l=  \l=  \l*  \l*  \l" fillcolor="#f0f0f0" labeljust=l style=filled]
+	g89 [label="=*=\l-  \l-  \l*  \l*  \l" fillcolor="#f0f0f0" labeljust=l style=filled]
+	g90 [label="-+-\l=  \l=  \l=  \l*  \l" fillcolor="#f0f0f0" labeljust=l style=filled]
+	g91 [label="-+-\l-  \l-  \l-  \l*  \l" fillcolor="#f0f0f0" labeljust=l style=filled]
+	g92 [label="-+-\l=  \l=  \l*  \l*  \l" fillcolor="#f0f0f0" labeljust=l style=filled]
+	g93 [label="-+-\l-  \l-  \l*  \l*  \l" fillcolor="#f0f0f0" labeljust=l style=filled]
+	g94 [label="=*=\l=  \l=  \l=  \l*  \l" fillcolor="#f0f0f0" labeljust=l style=filled]
+	g95 [label="=*=\l-  \l-  \l-  \l*  \l" fillcolor="#f0f0f0" labeljust=l style=filled]
+	g96 [label="+-+\l=  \l=  \l*  \l*  \l" fillcolor="#f0f0f0" labeljust=l style=filled]
+	g97 [label="*=*\l-  \l-  \l*  \l*  \l" fillcolor="#f0f0f0" labeljust=l style=filled]
+	g98 [label="*=*\l=  \l=  \l=  \l*  \l" fillcolor="#f0f0f0" labeljust=l style=filled]
+	g99 [label="+-+\l-  \l-  \l-  \l*  \l" fillcolor="#f0f0f0" labeljust=l style=filled]
+	g100 [label="*=*\l=  \l=  \l*  \l*  \l" fillcolor="#f0f0f0" labeljust=l style=filled]
+	g101 [label="+-+\l-  \l-  \l*  \l*  \l" fillcolor="#f0f0f0" labeljust=l style=filled]
+	g102 [label="+-+\l=  \l=  \l=  \l*  \l" fillcolor="#f0f0f0" labeljust=l style=filled]
+	g103 [label="*=*\l-  \l-  \l-  \l*  \l" fillcolor="#f0f0f0" labeljust=l style=filled]
+	g104 [label="*=*\l*  \l*  \l*  \l*  \l" fillcolor="#f0f0f0" labeljust=l style=filled]
+	g105 [label="+-+\l*  \l*  \l*  \l*  \l" fillcolor="#f0f0f0" labeljust=l style=filled]
+	g106 [label="=*=\l*  \l*  \l*  \l*  \l" fillcolor="#f0f0f0" labeljust=l style=filled]
+	g107 [label="-+-\l*  \l*  \l*  \l*  \l" fillcolor="#f0f0f0" labeljust=l style=filled]
+	g108 [label="=*=\l-  \l-  \l-  \l-  \l" fillcolor="#f0f0f0" labeljust=l style=filled]
+	g109 [label="-+-\l-  \l-  \l-  \l-  \l" fillcolor="#f0f0f0" labeljust=l style=filled]
+	g110 [label="*=*\l-  \l-  \l-  \l-  \l" fillcolor="#f0f0f0" labeljust=l style=filled]
+	g111 [label="+-+\l-  \l-  \l-  \l-  \l" fillcolor="#f0f0f0" labeljust=l style=filled]
+	subgraph cluster_tw_0 {
+		color="#bbbbbb" label="" penwidth=0.8 style=dashed
+		g110
+		ls72
+		d73
+	}
+	subgraph cluster_tw_1 {
+		color="#bbbbbb" label="" penwidth=0.8 style=dashed
+		g111
+		ls76
+		d77
+	}
+	subgraph cluster_tw_2 {
+		color="#bbbbbb" label="" penwidth=0.8 style=dashed
+		ls18
+		d19
+		ls50
+		d51
+		g86
+		g87
+	}
+	subgraph cluster_tw_3 {
+		color="#bbbbbb" label="" penwidth=0.8 style=dashed
+		ls24
+		d25
+		g91
+		ls54
+		d55
+		g90
+	}
+	subgraph cluster_tw_4 {
+		color="#bbbbbb" label="" penwidth=0.8 style=dashed
+		ls8
+		d9
+		g82
+		g81
+		ls46
+		d47
+	}
+	subgraph cluster_tw_5 {
+		color="#bbbbbb" label="" penwidth=0.8 style=dashed
+		ls52
+		d53
+		ls26
+		d27
+		g92
+		g93
+	}
+	subgraph cluster_tw_6 {
+		color="#bbbbbb" label="" penwidth=0.8 style=dashed
+		g107
+		ls44
+		d45
+	}
+	subgraph cluster_tw_7 {
+		color="#bbbbbb" label="" penwidth=0.8 style=dashed
+		g80
+		ls4
+		d5
+	}
+	subgraph cluster_tw_8 {
+		color="#bbbbbb" label="" penwidth=0.8 style=dashed
+		g84
+		ls66
+		d67
+		g85
+		ls14
+		d15
+	}
+	subgraph cluster_tw_9 {
+		color="#bbbbbb" label="" penwidth=0.8 style=dashed
+		ls32
+		d33
+		ls70
+		d71
+		g99
+		g98
+	}
+	subgraph cluster_tw_10 {
+		color="#bbbbbb" label="" penwidth=0.8 style=dashed
+		ls22
+		d23
+		ls48
+		d49
+		g89
+		g88
+	}
+	subgraph cluster_tw_11 {
+		color="#bbbbbb" label="" penwidth=0.8 style=dashed
+		ls36
+		d37
+		g103
+		ls74
+		d75
+		g102
+	}
+	subgraph cluster_tw_12 {
+		color="#bbbbbb" label="" penwidth=0.8 style=dashed
+		ls62
+		d63
+		g78
+		ls0
+		d1
+		g79
+	}
+	subgraph cluster_tw_13 {
+		color="#bbbbbb" label="" penwidth=0.8 style=dashed
+		g108
+		g109
+		ls60
+		d61
+		ls56
+		d57
+	}
+	subgraph cluster_tw_14 {
+		color="#bbbbbb" label="" penwidth=0.8 style=dashed
+		g97
+		ls30
+		d31
+		g96
+		ls64
+		d65
+	}
+	subgraph cluster_tw_15 {
+		color="#bbbbbb" label="" penwidth=0.8 style=dashed
+		g83
+		ls12
+		d13
+	}
+	subgraph cluster_tw_16 {
+		color="#bbbbbb" label="" penwidth=0.8 style=dashed
+		g105
+		ls38
+		d39
+		ls42
+		d43
+		g104
+	}
+	subgraph cluster_tw_17 {
+		color="#bbbbbb" label="" penwidth=0.8 style=dashed
+		g94
+		g95
+		ls58
+		d59
+		ls28
+		d29
+	}
+	subgraph cluster_tw_18 {
+		color="#bbbbbb" label="" penwidth=0.8 style=dashed
+		g100
+		ls68
+		d69
+		g101
+		ls34
+		d35
+	}
+	subgraph cluster_tw_19 {
+		color="#bbbbbb" label="" penwidth=0.8 style=dashed
+		ls40
+		d41
+		g106
+	}
+	ls0 -> g78 [arrowsize=0.3 color=red constraint=false dir=both]
+	ls0 -> ls62 [arrowsize=0.3 color=green constraint=false dir=both]
+	ls0 -> g79 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	ls4 -> g80 [arrowsize=0.3 color=red constraint=false dir=both]
+	ls4 -> g80 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	ls8 -> g81 [arrowsize=0.3 color=red constraint=false dir=both]
+	ls8 -> ls46 [arrowsize=0.3 color=green constraint=false dir=both]
+	ls8 -> g82 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	ls12 -> g83 [arrowsize=0.3 color=red constraint=false dir=both]
+	ls12 -> g83 [arrowsize=0.3 color=green constraint=false dir=both]
+	ls14 -> g84 [arrowsize=0.3 color=red constraint=false dir=both]
+	ls14 -> ls66 [arrowsize=0.3 color=green constraint=false dir=both]
+	ls14 -> g85 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	ls18 -> g86 [arrowsize=0.3 color=red constraint=false dir=both]
+	ls18 -> ls50 [arrowsize=0.3 color=green constraint=false dir=both]
+	ls18 -> g87 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	ls22 -> g88 [arrowsize=0.3 color=red constraint=false dir=both]
+	ls22 -> ls48 [arrowsize=0.3 color=green constraint=false dir=both]
+	ls22 -> g89 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	ls24 -> g90 [arrowsize=0.3 color=red constraint=false dir=both]
+	ls24 -> ls54 [arrowsize=0.3 color=green constraint=false dir=both]
+	ls24 -> g91 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	ls26 -> g92 [arrowsize=0.3 color=red constraint=false dir=both]
+	ls26 -> ls52 [arrowsize=0.3 color=green constraint=false dir=both]
+	ls26 -> g93 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	ls28 -> g94 [arrowsize=0.3 color=red constraint=false dir=both]
+	ls28 -> ls58 [arrowsize=0.3 color=green constraint=false dir=both]
+	ls28 -> g95 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	ls30 -> g96 [arrowsize=0.3 color=red constraint=false dir=both]
+	ls30 -> ls64 [arrowsize=0.3 color=green constraint=false dir=both]
+	ls30 -> g97 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	ls32 -> g98 [arrowsize=0.3 color=red constraint=false dir=both]
+	ls32 -> ls70 [arrowsize=0.3 color=green constraint=false dir=both]
+	ls32 -> g99 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	ls34 -> g100 [arrowsize=0.3 color=red constraint=false dir=both]
+	ls34 -> ls68 [arrowsize=0.3 color=green constraint=false dir=both]
+	ls34 -> g101 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	ls36 -> g102 [arrowsize=0.3 color=red constraint=false dir=both]
+	ls36 -> ls74 [arrowsize=0.3 color=green constraint=false dir=both]
+	ls36 -> g103 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	ls38 -> g104 [arrowsize=0.3 color=red constraint=false dir=both]
+	ls38 -> ls42 [arrowsize=0.3 color=green constraint=false dir=both]
+	ls38 -> g105 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	ls40 -> g106 [arrowsize=0.3 color=red constraint=false dir=both]
+	ls40 -> g106 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	ls42 -> g105 [arrowsize=0.3 color=red constraint=false dir=both]
+	ls42 -> g104 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	ls44 -> g107 [arrowsize=0.3 color=red constraint=false dir=both]
+	ls44 -> g107 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	ls46 -> g82 [arrowsize=0.3 color=red constraint=false dir=both]
+	ls46 -> g81 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	ls48 -> g89 [arrowsize=0.3 color=red constraint=false dir=both]
+	ls48 -> g88 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	ls50 -> g87 [arrowsize=0.3 color=red constraint=false dir=both]
+	ls50 -> g86 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	ls52 -> g93 [arrowsize=0.3 color=red constraint=false dir=both]
+	ls52 -> g92 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	ls54 -> g91 [arrowsize=0.3 color=red constraint=false dir=both]
+	ls54 -> g90 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	ls56 -> g108 [arrowsize=0.3 color=red constraint=false dir=both]
+	ls56 -> g109 [arrowsize=0.3 color=green constraint=false dir=both]
+	ls56 -> ls60 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	ls58 -> g95 [arrowsize=0.3 color=red constraint=false dir=both]
+	ls58 -> g94 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	ls60 -> g109 [arrowsize=0.3 color=red constraint=false dir=both]
+	ls60 -> g108 [arrowsize=0.3 color=green constraint=false dir=both]
+	ls62 -> g79 [arrowsize=0.3 color=red constraint=false dir=both]
+	ls62 -> g78 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	ls64 -> g97 [arrowsize=0.3 color=red constraint=false dir=both]
+	ls64 -> g96 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	ls66 -> g85 [arrowsize=0.3 color=red constraint=false dir=both]
+	ls66 -> g84 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	ls68 -> g101 [arrowsize=0.3 color=red constraint=false dir=both]
+	ls68 -> g100 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	ls70 -> g99 [arrowsize=0.3 color=red constraint=false dir=both]
+	ls70 -> g98 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	ls72 -> g110 [arrowsize=0.3 color=red constraint=false dir=both]
+	ls72 -> g110 [arrowsize=0.3 color=green constraint=false dir=both]
+	ls74 -> g103 [arrowsize=0.3 color=red constraint=false dir=both]
+	ls74 -> g102 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	ls76 -> g111 [arrowsize=0.3 color=red constraint=false dir=both]
+	ls76 -> g111 [arrowsize=0.3 color=green constraint=false dir=both]
+	g78 -> g79 [arrowsize=0.3 color=green constraint=false dir=both]
+	g81 -> g82 [arrowsize=0.3 color=green constraint=false dir=both]
+	g84 -> g85 [arrowsize=0.3 color=green constraint=false dir=both]
+	g86 -> g87 [arrowsize=0.3 color=green constraint=false dir=both]
+	g88 -> g89 [arrowsize=0.3 color=green constraint=false dir=both]
+	g90 -> g91 [arrowsize=0.3 color=green constraint=false dir=both]
+	g92 -> g93 [arrowsize=0.3 color=green constraint=false dir=both]
+	g94 -> g95 [arrowsize=0.3 color=green constraint=false dir=both]
+	g96 -> g97 [arrowsize=0.3 color=green constraint=false dir=both]
+	g98 -> g99 [arrowsize=0.3 color=green constraint=false dir=both]
+	g100 -> g101 [arrowsize=0.3 color=green constraint=false dir=both]
+	g102 -> g103 [arrowsize=0.3 color=green constraint=false dir=both]
+	g104 -> g105 [arrowsize=0.3 color=green constraint=false dir=both]
+	g108 -> g109 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	d3 -> d1 [arrowsize=0.5 color="#888888" style=dashed]
+	d5 -> d3 [arrowsize=0.5 color="#888888" style=dashed]
+	d7 -> d5 [arrowsize=0.5 color="#888888" style=dashed]
+	d11 -> d9 [arrowsize=0.5 color="#888888" style=dashed]
+	d13 -> d11 [arrowsize=0.5 color="#888888" style=dashed]
+	d7 -> d13 [arrowsize=0.5 color="#888888" style=dashed]
+	d17 -> d15 [arrowsize=0.5 color="#888888" style=dashed]
+	d5 -> d17 [arrowsize=0.5 color="#888888" style=dashed]
+	d21 -> d19 [arrowsize=0.5 color="#888888" style=dashed]
+	d13 -> d21 [arrowsize=0.5 color="#888888" style=dashed]
+	d11 -> d23 [arrowsize=0.5 color="#888888" style=dashed]
+	d11 -> d25 [arrowsize=0.5 color="#888888" style=dashed]
+	d21 -> d27 [arrowsize=0.5 color="#888888" style=dashed]
+	d21 -> d29 [arrowsize=0.5 color="#888888" style=dashed]
+	d3 -> d31 [arrowsize=0.5 color="#888888" style=dashed]
+	d3 -> d33 [arrowsize=0.5 color="#888888" style=dashed]
+	d17 -> d35 [arrowsize=0.5 color="#888888" style=dashed]
+	d17 -> d37 [arrowsize=0.5 color="#888888" style=dashed]
+	d3 -> d39 [arrowsize=0.5 color="#888888" style=dashed]
+	d11 -> d41 [arrowsize=0.5 color="#888888" style=dashed]
+	d17 -> d43 [arrowsize=0.5 color="#888888" style=dashed]
+	d21 -> d45 [arrowsize=0.5 color="#888888" style=dashed]
+	d11 -> d47 [arrowsize=0.5 color="#888888" style=dashed]
+	d11 -> d49 [arrowsize=0.5 color="#888888" style=dashed]
+	d21 -> d51 [arrowsize=0.5 color="#888888" style=dashed]
+	d21 -> d53 [arrowsize=0.5 color="#888888" style=dashed]
+	d11 -> d55 [arrowsize=0.5 color="#888888" style=dashed]
+	d11 -> d57 [arrowsize=0.5 color="#888888" style=dashed]
+	d21 -> d59 [arrowsize=0.5 color="#888888" style=dashed]
+	d21 -> d61 [arrowsize=0.5 color="#888888" style=dashed]
+	d3 -> d63 [arrowsize=0.5 color="#888888" style=dashed]
+	d3 -> d65 [arrowsize=0.5 color="#888888" style=dashed]
+	d17 -> d67 [arrowsize=0.5 color="#888888" style=dashed]
+	d17 -> d69 [arrowsize=0.5 color="#888888" style=dashed]
+	d3 -> d71 [arrowsize=0.5 color="#888888" style=dashed]
+	d3 -> d73 [arrowsize=0.5 color="#888888" style=dashed]
+	d17 -> d75 [arrowsize=0.5 color="#888888" style=dashed]
+	d17 -> d77 [arrowsize=0.5 color="#888888" style=dashed]
+	ls2 -> ls0 [color=blue]
+	ls4 -> ls2 [color=blue]
+	ls10 -> ls8 [color=blue]
+	ls12 -> ls10 [color=blue]
+	ls16 -> ls14 [color=blue]
+	g80 -> ls16 [color=blue]
+	ls20 -> ls18 [color=blue]
+	g83 -> ls20 [color=blue]
+	ls10 -> ls22 [color=blue]
+	ls10 -> ls24 [color=blue]
+	ls20 -> ls26 [color=blue]
+	ls20 -> ls28 [color=blue]
+	ls2 -> ls30 [color=blue]
+	ls2 -> ls32 [color=blue]
+	ls16 -> ls34 [color=blue]
+	ls16 -> ls36 [color=blue]
+	gp_M_0 [label="Mp(0)" fontcolor="#333333" fontname=Helvetica fontsize=10 group=gp_labels shape=plaintext]
+	{
+		rank=same
+		gp_M_0
+		ls6
+	}
+	gp_M_0 -> ls6 [style=invis]
+	gp_B_top_0 [label="" group=gp_labels height=0 shape=none width=0]
+	{
+		rank=same
+		gp_B_top_0
+		g80
+		g83
+	}
+	gp_B_top_0 -> g80 [style=invis]
+	gp_B_mid_0 [label="O(1)" fontcolor="#333333" fontname=Helvetica fontsize=10 group=gp_labels shape=plaintext]
+	{
+		rank=same
+		gp_B_mid_0
+		ls4
+		ls12
+	}
+	gp_B_mid_0 -> ls4 [style=invis]
+	gp_B_bot_0 [label="" group=gp_labels height=0 shape=none width=0]
+	{
+		rank=same
+		gp_B_bot_0
+		d5
+		d13
+	}
+	gp_B_bot_0 -> d5 [style=invis]
+	gp_M_bot_0 [label="" group=gp_labels height=0 shape=none width=0]
+	{
+		rank=same
+		gp_M_bot_0
+		d7
+	}
+	gp_M_bot_0 -> d7 [style=invis]
+	gp_M_1 [label="Mp(2)" fontcolor="#333333" fontname=Helvetica fontsize=10 group=gp_labels shape=plaintext]
+	{
+		rank=same
+		gp_M_1
+		ls2
+		ls10
+		ls16
+		ls20
+	}
+	gp_M_1 -> ls2 [style=invis]
+	gp_M_bot_1 [label="" group=gp_labels height=0 shape=none width=0]
+	{
+		rank=same
+		gp_M_bot_1
+		d3
+		d11
+		d17
+		d21
+	}
+	gp_M_bot_1 -> d3 [style=invis]
+	gp_B_top_3 [label="" group=gp_labels height=0 shape=none width=0]
+	{
+		rank=same
+		gp_B_top_3
+		g78
+		g79
+		g81
+		g82
+		g84
+		g85
+		g86
+		g87
+		g88
+		g89
+		g90
+		g91
+		g92
+		g93
+		g94
+		g95
+		g96
+		g97
+		g98
+		g99
+		g100
+		g101
+		g102
+		g103
+		g104
+		g105
+		g106
+		g107
+		g108
+		g109
+		g110
+		g111
+	}
+	gp_B_top_3 -> g78 [style=invis]
+	gp_B_mid_3 [label="O(7)" fontcolor="#333333" fontname=Helvetica fontsize=10 group=gp_labels shape=plaintext]
+	{
+		rank=same
+		gp_B_mid_3
+		ls0
+		ls8
+		ls14
+		ls18
+		ls22
+		ls24
+		ls26
+		ls28
+		ls30
+		ls32
+		ls34
+		ls36
+		ls38
+		ls40
+		ls42
+		ls44
+		ls46
+		ls48
+		ls50
+		ls52
+		ls54
+		ls56
+		ls58
+		ls60
+		ls62
+		ls64
+		ls66
+		ls68
+		ls70
+		ls72
+		ls74
+		ls76
+	}
+	gp_B_mid_3 -> ls0 [style=invis]
+	gp_B_bot_3 [label="" group=gp_labels height=0 shape=none width=0]
+	{
+		rank=same
+		gp_B_bot_3
+		d1
+		d9
+		d15
+		d19
+		d23
+		d25
+		d27
+		d29
+		d31
+		d33
+		d35
+		d37
+		d39
+		d41
+		d43
+		d45
+		d47
+		d49
+		d51
+		d53
+		d55
+		d57
+		d59
+		d61
+		d63
+		d65
+		d67
+		d69
+		d71
+		d73
+		d75
+		d77
+	}
+	gp_B_bot_3 -> d1 [style=invis]
+	gp_M_0 -> gp_B_top_0 [style=invis]
+	gp_B_top_0 -> gp_B_mid_0 [style=invis]
+	gp_B_mid_0 -> gp_B_bot_0 [style=invis]
+	gp_B_bot_0 -> gp_M_bot_0 [style=invis]
+	gp_M_bot_0 -> gp_M_1 [style=invis]
+	gp_M_1 -> gp_M_bot_1 [style=invis]
+	gp_M_bot_1 -> gp_B_top_3 [style=invis]
+	gp_B_top_3 -> gp_B_mid_3 [style=invis]
+	gp_B_mid_3 -> gp_B_bot_3 [style=invis]
+}

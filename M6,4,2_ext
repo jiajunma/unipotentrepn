@@ -1,0 +1,346 @@
+digraph "Extended PBP Tree" {
+	graph [dpi=150 newrank=true nodesep=0.3 rankdir=TB ranksep=0.8]
+	node [fontname="Courier New" fontsize=8 shape=box]
+	e0 [label="(6,6) ε=0\lsc|r\ls |d\lc | \l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e1 [label="(4,3) B- ε=0\lc|r\l |d\l" fillcolor="#ffe6f3" labeljust=l style=filled]
+	e2 [label="(1,1) ε=0\lc|\l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e3 [label="(0,1) B- ε=1\l\l" fillcolor="#ffe6f3" labeljust=l style=filled]
+	e4 [label="(0,0) ε=0\l\l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e5 [label="(6,6) ε=1 ℘={0}\lsc|r\ls |d\lc | \l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e6 [label="(6,6) ε=0 ℘={1}\lsc|r\ls |d\lc | \l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e7 [label="(4,3) B- ε=0 ℘={0}\lc|r\l |d\l" fillcolor="#ffe6f3" labeljust=l style=filled]
+	e8 [label="(1,1) ε=1 ℘={0}\lc|\l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e9 [label="(6,6) ε=1 ℘={0, 1}\lsc|r\ls |d\lc | \l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e10 [label="(6,6) ε=0\l.c|.\ls |d\lc | \l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e11 [label="(2,5) B- ε=0\lc|s\l |d\l" fillcolor="#ffe6f3" labeljust=l style=filled]
+	e12 [label="(6,6) ε=1 ℘={0}\l.c|.\ls |d\lc | \l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e13 [label="(6,6) ε=0 ℘={1}\l.c|.\ls |d\lc | \l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e14 [label="(2,5) B- ε=0 ℘={0}\lc|s\l |d\l" fillcolor="#ffe6f3" labeljust=l style=filled]
+	e15 [label="(6,6) ε=1 ℘={0, 1}\l.c|.\ls |d\lc | \l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e16 [label="(6,6) ε=0\l.s|.\ls |d\lc | \l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e17 [label="(3,4) B- ε=0\l.|.\l |d\l" fillcolor="#ffe6f3" labeljust=l style=filled]
+	e18 [label="(1,1) ε=0\ls|\l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e19 [label="(1,0) B+ ε=1\l\l" fillcolor="#ffe6e6" labeljust=l style=filled]
+	e20 [label="(6,6) ε=1 ℘={0}\l.s|.\ls |d\lc | \l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e21 [label="(6,6) ε=0 ℘={1}\l.s|.\ls |d\lc | \l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e22 [label="(3,4) B- ε=0 ℘={0}\l.|.\l |d\l" fillcolor="#ffe6f3" labeljust=l style=filled]
+	e23 [label="(1,1) ε=1 ℘={0}\ls|\l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e24 [label="(6,6) ε=1 ℘={0, 1}\l.s|.\ls |d\lc | \l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e25 [label="(6,6) ε=0\lsc|r\ls |d\ls | \l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e26 [label="(5,2) B+ ε=0\lc|r\l |d\l" fillcolor="#ffe6e6" labeljust=l style=filled]
+	e27 [label="(6,6) ε=1 ℘={0}\lsc|r\ls |d\ls | \l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e28 [label="(6,6) ε=0 ℘={1}\lsc|r\ls |d\ls | \l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e29 [label="(5,2) B+ ε=0 ℘={0}\lc|r\l |d\l" fillcolor="#ffe6e6" labeljust=l style=filled]
+	e30 [label="(6,6) ε=1 ℘={0, 1}\lsc|r\ls |d\ls | \l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e31 [label="(6,6) ε=0\l.c|.\ls |d\ls | \l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e32 [label="(3,4) B+ ε=0\lc|s\l |d\l" fillcolor="#ffe6e6" labeljust=l style=filled]
+	e33 [label="(6,6) ε=1 ℘={0}\l.c|.\ls |d\ls | \l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e34 [label="(6,6) ε=0 ℘={1}\l.c|.\ls |d\ls | \l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e35 [label="(3,4) B+ ε=0 ℘={0}\lc|s\l |d\l" fillcolor="#ffe6e6" labeljust=l style=filled]
+	e36 [label="(6,6) ε=1 ℘={0, 1}\l.c|.\ls |d\ls | \l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e37 [label="(6,6) ε=0\l.s|.\ls |d\ls | \l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e38 [label="(4,3) B+ ε=0\l.|.\l |d\l" fillcolor="#ffe6e6" labeljust=l style=filled]
+	e39 [label="(6,6) ε=1 ℘={0}\l.s|.\ls |d\ls | \l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e40 [label="(6,6) ε=0 ℘={1}\l.s|.\ls |d\ls | \l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e41 [label="(4,3) B+ ε=0 ℘={0}\l.|.\l |d\l" fillcolor="#ffe6e6" labeljust=l style=filled]
+	e42 [label="(6,6) ε=1 ℘={0, 1}\l.s|.\ls |d\ls | \l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e43 [label="(6,6) ε=0\lsc|r\ls |r\lc | \l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e44 [label="(5,2) B- ε=1\lc|r\l |r\l" fillcolor="#ffe6f3" labeljust=l style=filled]
+	e45 [label="(6,6) ε=1 ℘={0}\lsc|r\ls |r\lc | \l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e46 [label="(6,6) ε=0 ℘={1}\lsc|r\ls |r\lc | \l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e47 [label="(5,2) B- ε=1 ℘={0}\lc|r\l |r\l" fillcolor="#ffe6f3" labeljust=l style=filled]
+	e48 [label="(6,6) ε=1 ℘={0, 1}\lsc|r\ls |r\lc | \l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e49 [label="(6,6) ε=0\l.c|.\ls |r\lc | \l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e50 [label="(3,4) B- ε=1\lc|s\l |r\l" fillcolor="#ffe6f3" labeljust=l style=filled]
+	e51 [label="(6,6) ε=1 ℘={0}\l.c|.\ls |r\lc | \l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e52 [label="(6,6) ε=0 ℘={1}\l.c|.\ls |r\lc | \l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e53 [label="(3,4) B- ε=1 ℘={0}\lc|s\l |r\l" fillcolor="#ffe6f3" labeljust=l style=filled]
+	e54 [label="(6,6) ε=1 ℘={0, 1}\l.c|.\ls |r\lc | \l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e55 [label="(6,6) ε=0\l.c|.\l. |.\lc | \l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e56 [label="(1,6) B- ε=1\lc|s\l |s\l" fillcolor="#ffe6f3" labeljust=l style=filled]
+	e57 [label="(6,6) ε=1 ℘={0}\l.c|.\l. |.\lc | \l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e58 [label="(6,6) ε=0 ℘={1}\l.c|.\l. |.\lc | \l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e59 [label="(1,6) B- ε=1 ℘={0}\lc|s\l |s\l" fillcolor="#ffe6f3" labeljust=l style=filled]
+	e60 [label="(6,6) ε=1 ℘={0, 1}\l.c|.\l. |.\lc | \l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e61 [label="(6,6) ε=0\l.s|.\ls |r\lc | \l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e62 [label="(4,3) B- ε=1\l.|.\l |r\l" fillcolor="#ffe6f3" labeljust=l style=filled]
+	e63 [label="(6,6) ε=1 ℘={0}\l.s|.\ls |r\lc | \l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e64 [label="(6,6) ε=0 ℘={1}\l.s|.\ls |r\lc | \l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e65 [label="(4,3) B- ε=1 ℘={0}\l.|.\l |r\l" fillcolor="#ffe6f3" labeljust=l style=filled]
+	e66 [label="(6,6) ε=1 ℘={0, 1}\l.s|.\ls |r\lc | \l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e67 [label="(6,6) ε=0\l.s|.\l. |.\lc | \l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e68 [label="(2,5) B- ε=1\l.|.\l |s\l" fillcolor="#ffe6f3" labeljust=l style=filled]
+	e69 [label="(6,6) ε=1 ℘={0}\l.s|.\l. |.\lc | \l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e70 [label="(6,6) ε=0 ℘={1}\l.s|.\l. |.\lc | \l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e71 [label="(2,5) B- ε=1 ℘={0}\l.|.\l |s\l" fillcolor="#ffe6f3" labeljust=l style=filled]
+	e72 [label="(6,6) ε=1 ℘={0, 1}\l.s|.\l. |.\lc | \l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e73 [label="(6,6) ε=0\lsc|r\ls |r\ls | \l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e74 [label="(6,1) B+ ε=1\lc|r\l |r\l" fillcolor="#ffe6e6" labeljust=l style=filled]
+	e75 [label="(6,6) ε=1 ℘={0}\lsc|r\ls |r\ls | \l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e76 [label="(6,6) ε=0 ℘={1}\lsc|r\ls |r\ls | \l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e77 [label="(6,1) B+ ε=1 ℘={0}\lc|r\l |r\l" fillcolor="#ffe6e6" labeljust=l style=filled]
+	e78 [label="(6,6) ε=1 ℘={0, 1}\lsc|r\ls |r\ls | \l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e79 [label="(6,6) ε=0\l.c|.\ls |r\ls | \l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e80 [label="(4,3) B+ ε=1\lc|s\l |r\l" fillcolor="#ffe6e6" labeljust=l style=filled]
+	e81 [label="(6,6) ε=1 ℘={0}\l.c|.\ls |r\ls | \l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e82 [label="(6,6) ε=0 ℘={1}\l.c|.\ls |r\ls | \l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e83 [label="(4,3) B+ ε=1 ℘={0}\lc|s\l |r\l" fillcolor="#ffe6e6" labeljust=l style=filled]
+	e84 [label="(6,6) ε=1 ℘={0, 1}\l.c|.\ls |r\ls | \l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e85 [label="(6,6) ε=0\l.c|.\l. |.\ls | \l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e86 [label="(2,5) B+ ε=1\lc|s\l |s\l" fillcolor="#ffe6e6" labeljust=l style=filled]
+	e87 [label="(6,6) ε=1 ℘={0}\l.c|.\l. |.\ls | \l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e88 [label="(6,6) ε=0 ℘={1}\l.c|.\l. |.\ls | \l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e89 [label="(2,5) B+ ε=1 ℘={0}\lc|s\l |s\l" fillcolor="#ffe6e6" labeljust=l style=filled]
+	e90 [label="(6,6) ε=1 ℘={0, 1}\l.c|.\l. |.\ls | \l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e91 [label="(6,6) ε=0\l.s|.\ls |r\ls | \l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e92 [label="(5,2) B+ ε=1\l.|.\l |r\l" fillcolor="#ffe6e6" labeljust=l style=filled]
+	e93 [label="(6,6) ε=1 ℘={0}\l.s|.\ls |r\ls | \l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e94 [label="(6,6) ε=0 ℘={1}\l.s|.\ls |r\ls | \l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e95 [label="(5,2) B+ ε=1 ℘={0}\l.|.\l |r\l" fillcolor="#ffe6e6" labeljust=l style=filled]
+	e96 [label="(6,6) ε=1 ℘={0, 1}\l.s|.\ls |r\ls | \l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e97 [label="(6,6) ε=0\l.s|.\l. |.\ls | \l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e98 [label="(3,4) B+ ε=1\l.|.\l |s\l" fillcolor="#ffe6e6" labeljust=l style=filled]
+	e99 [label="(6,6) ε=1 ℘={0}\l.s|.\l. |.\ls | \l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e100 [label="(6,6) ε=0 ℘={1}\l.s|.\l. |.\ls | \l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e101 [label="(3,4) B+ ε=1 ℘={0}\l.|.\l |s\l" fillcolor="#ffe6e6" labeljust=l style=filled]
+	e102 [label="(6,6) ε=1 ℘={0, 1}\l.s|.\l. |.\ls | \l" fillcolor="#e6ffe6" labeljust=l style=filled]
+	e1 -> e0 [color=blue]
+	e2 -> e1 [color=blue]
+	e3 -> e2 [color=blue]
+	e4 -> e3 [color=blue]
+	e1 -> e5 [color=blue]
+	e7 -> e6 [color=blue]
+	e8 -> e7 [color=blue]
+	e3 -> e8 [color=blue]
+	e7 -> e9 [color=blue]
+	e11 -> e10 [color=blue]
+	e2 -> e11 [color=blue]
+	e11 -> e12 [color=blue]
+	e14 -> e13 [color=blue]
+	e8 -> e14 [color=blue]
+	e14 -> e15 [color=blue]
+	e17 -> e16 [color=blue]
+	e18 -> e17 [color=blue]
+	e19 -> e18 [color=blue]
+	e4 -> e19 [color=blue]
+	e17 -> e20 [color=blue]
+	e22 -> e21 [color=blue]
+	e23 -> e22 [color=blue]
+	e19 -> e23 [color=blue]
+	e22 -> e24 [color=blue]
+	e26 -> e25 [color=blue]
+	e18 -> e26 [color=blue]
+	e26 -> e27 [color=blue]
+	e29 -> e28 [color=blue]
+	e23 -> e29 [color=blue]
+	e29 -> e30 [color=blue]
+	e32 -> e31 [color=blue]
+	e2 -> e32 [color=blue]
+	e32 -> e33 [color=blue]
+	e35 -> e34 [color=blue]
+	e8 -> e35 [color=blue]
+	e35 -> e36 [color=blue]
+	e38 -> e37 [color=blue]
+	e18 -> e38 [color=blue]
+	e38 -> e39 [color=blue]
+	e41 -> e40 [color=blue]
+	e23 -> e41 [color=blue]
+	e41 -> e42 [color=blue]
+	e44 -> e43 [color=blue]
+	e2 -> e44 [color=blue]
+	e44 -> e45 [color=blue]
+	e47 -> e46 [color=blue]
+	e8 -> e47 [color=blue]
+	e47 -> e48 [color=blue]
+	e50 -> e49 [color=blue]
+	e2 -> e50 [color=blue]
+	e50 -> e51 [color=blue]
+	e53 -> e52 [color=blue]
+	e8 -> e53 [color=blue]
+	e53 -> e54 [color=blue]
+	e56 -> e55 [color=blue]
+	e2 -> e56 [color=blue]
+	e56 -> e57 [color=blue]
+	e59 -> e58 [color=blue]
+	e8 -> e59 [color=blue]
+	e59 -> e60 [color=blue]
+	e62 -> e61 [color=blue]
+	e18 -> e62 [color=blue]
+	e62 -> e63 [color=blue]
+	e65 -> e64 [color=blue]
+	e23 -> e65 [color=blue]
+	e65 -> e66 [color=blue]
+	e68 -> e67 [color=blue]
+	e18 -> e68 [color=blue]
+	e68 -> e69 [color=blue]
+	e71 -> e70 [color=blue]
+	e23 -> e71 [color=blue]
+	e71 -> e72 [color=blue]
+	e74 -> e73 [color=blue]
+	e18 -> e74 [color=blue]
+	e74 -> e75 [color=blue]
+	e77 -> e76 [color=blue]
+	e23 -> e77 [color=blue]
+	e77 -> e78 [color=blue]
+	e80 -> e79 [color=blue]
+	e2 -> e80 [color=blue]
+	e80 -> e81 [color=blue]
+	e83 -> e82 [color=blue]
+	e8 -> e83 [color=blue]
+	e83 -> e84 [color=blue]
+	e86 -> e85 [color=blue]
+	e2 -> e86 [color=blue]
+	e86 -> e87 [color=blue]
+	e89 -> e88 [color=blue]
+	e8 -> e89 [color=blue]
+	e89 -> e90 [color=blue]
+	e92 -> e91 [color=blue]
+	e18 -> e92 [color=blue]
+	e92 -> e93 [color=blue]
+	e95 -> e94 [color=blue]
+	e23 -> e95 [color=blue]
+	e95 -> e96 [color=blue]
+	e98 -> e97 [color=blue]
+	e18 -> e98 [color=blue]
+	e98 -> e99 [color=blue]
+	e101 -> e100 [color=blue]
+	e23 -> e101 [color=blue]
+	e101 -> e102 [color=blue]
+	gp_B_0 [label="O(1)" fontcolor="#333333" fontname=Helvetica fontsize=11 group=gp_labels shape=plaintext]
+	{
+		rank=same
+		gp_B_0
+		e3
+		e19
+	}
+	gp_B_0 -> e3 [style=invis]
+	gp_M_0 [label="Mp(0)" fontcolor="#333333" fontname=Helvetica fontsize=11 group=gp_labels shape=plaintext]
+	{
+		rank=same
+		gp_M_0
+		e4
+	}
+	gp_M_0 -> e4 [style=invis]
+	gp_M_1 [label="Mp(2)" fontcolor="#333333" fontname=Helvetica fontsize=11 group=gp_labels shape=plaintext]
+	{
+		rank=same
+		gp_M_1
+		e2
+		e8
+		e18
+		e23
+	}
+	gp_M_1 -> e2 [style=invis]
+	gp_B_3 [label="O(7)" fontcolor="#333333" fontname=Helvetica fontsize=11 group=gp_labels shape=plaintext]
+	{
+		rank=same
+		gp_B_3
+		e1
+		e7
+		e11
+		e14
+		e17
+		e22
+		e26
+		e29
+		e32
+		e35
+		e38
+		e41
+		e44
+		e47
+		e50
+		e53
+		e56
+		e59
+		e62
+		e65
+		e68
+		e71
+		e74
+		e77
+		e80
+		e83
+		e86
+		e89
+		e92
+		e95
+		e98
+		e101
+	}
+	gp_B_3 -> e1 [style=invis]
+	gp_M_6 [label="Mp(12)" fontcolor="#333333" fontname=Helvetica fontsize=11 group=gp_labels shape=plaintext]
+	{
+		rank=same
+		gp_M_6
+		e0
+		e5
+		e6
+		e9
+		e10
+		e12
+		e13
+		e15
+		e16
+		e20
+		e21
+		e24
+		e25
+		e27
+		e28
+		e30
+		e31
+		e33
+		e34
+		e36
+		e37
+		e39
+		e40
+		e42
+		e43
+		e45
+		e46
+		e48
+		e49
+		e51
+		e52
+		e54
+		e55
+		e57
+		e58
+		e60
+		e61
+		e63
+		e64
+		e66
+		e67
+		e69
+		e70
+		e72
+		e73
+		e75
+		e76
+		e78
+		e79
+		e81
+		e82
+		e84
+		e85
+		e87
+		e88
+		e90
+		e91
+		e93
+		e94
+		e96
+		e97
+		e99
+		e100
+		e102
+	}
+	gp_M_6 -> e0 [style=invis]
+	gp_B_0 -> gp_M_0 [style=invis]
+	gp_M_0 -> gp_M_1 [style=invis]
+	gp_M_1 -> gp_B_3 [style=invis]
+	gp_B_3 -> gp_M_6 [style=invis]
+}

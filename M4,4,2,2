@@ -1,0 +1,514 @@
+digraph "Lifting Tree" {
+	graph [dpi=150 newrank=true nodesep=0.4 rankdir=TB ranksep=1.2]
+	node [fontname="Courier New" fontsize=8 shape=box]
+	n0 [label=<+-+- | +-+- | +-+-<br align="left"/>+-+- | -+-+ | -+-+<br align="left"/>-+   | +-   | -+  <br align="left"/>-+   | -+   | -+  <br align="left"/>═════<br align="left"/>(6,6)<br align="left"/>sc|rd<br align="left"/>c |d  ε=0<br align="left"/>> fillcolor="#e6ffe6" style=filled]
+	n1 [label=<-+- | -+-<br align="left"/>-+- | +-+<br align="left"/>+   | -  <br align="left"/>+   | +  <br align="left"/>+   | +  <br align="left"/>═════<br align="left"/>(5,4)<br align="left"/>c|rd<br align="left"/> |d  B- ε=0<br align="left"/>> fillcolor="#ffe6e6" style=filled]
+	n2 [label=<*= | *=<br align="left"/>*= | =*<br align="left"/>═════<br align="left"/>(2,2)<br align="left"/>c|d ε=0<br align="left"/>> fillcolor="#e6ffe6" style=filled]
+	n3 [label=<-<br align="left"/>-<br align="left"/>+<br align="left"/>═════<br align="left"/>(1,2)<br align="left"/> |d B- ε=0<br align="left"/>> fillcolor="#ffe6e6" style=filled]
+	n4 [label=<(triv)<br align="left"/>═════<br align="left"/>(0,0)<br align="left"/> |  ε=0<br align="left"/>> fillcolor="#e6ffe6" style=filled]
+	n5 [label=<+-+- | +-+- | +-+-<br align="left"/>+-+- | +-+- | -+-+<br align="left"/>+-   | +-   | +-  <br align="left"/>+-   | -+   | +-  <br align="left"/>═════<br align="left"/>(6,6)<br align="left"/>*c|*d<br align="left"/>c |d  ε=0<br align="left"/>> fillcolor="#e6ffe6" style=filled]
+	n6 [label=<-+- | -+-<br align="left"/>-+- | +-+<br align="left"/>-   | -  <br align="left"/>-   | -  <br align="left"/>+   | -  <br align="left"/>═════<br align="left"/>(3,6)<br align="left"/>c|sd<br align="left"/> |d  B- ε=0<br align="left"/>> fillcolor="#ffe6e6" style=filled]
+	n7 [label=<+-+- | +-+- | -+-+<br align="left"/>-+-+ | -+-+ | -+-+<br align="left"/>*=   | *=   | *=  <br align="left"/>*=   | =*   | *=  <br align="left"/>═════<br align="left"/>(6,6)<br align="left"/>*s|*d<br align="left"/>c |d  ε=0<br align="left"/>> fillcolor="#e6ffe6" style=filled]
+	n8 [label=<-+- | +-+<br align="left"/>+-+ | +-+<br align="left"/>-   | -  <br align="left"/>-   | -  <br align="left"/>+   | -  <br align="left"/>═════<br align="left"/>(4,5)<br align="left"/>*|*d<br align="left"/> |d  B- ε=0<br align="left"/>> fillcolor="#ffe6e6" style=filled]
+	n9 [label=<+- | -+<br align="left"/>-+ | -+<br align="left"/>═════<br align="left"/>(2,2)<br align="left"/>s|d ε=0<br align="left"/>> fillcolor="#e6ffe6" style=filled]
+	n10 [label=<-<br align="left"/>+<br align="left"/>+<br align="left"/>═════<br align="left"/>(2,1)<br align="left"/> |d B+ ε=0<br align="left"/>> fillcolor="#ffe6e6" style=filled]
+	n11 [label=<+-+- | -+-+ | -+-+<br align="left"/>-+-+ | -+-+ | -+-+<br align="left"/>=*   | *=   | =*  <br align="left"/>=*   | =*   | =*  <br align="left"/>═════<br align="left"/>(6,6)<br align="left"/>sc|rd<br align="left"/>s |d  ε=0<br align="left"/>> fillcolor="#e6ffe6" style=filled]
+	n12 [label=<-+- | +-+<br align="left"/>+-+ | +-+<br align="left"/>+   | -  <br align="left"/>+   | +  <br align="left"/>+   | +  <br align="left"/>═════<br align="left"/>(6,3)<br align="left"/>c|rd<br align="left"/> |d  B+ ε=0<br align="left"/>> fillcolor="#ffe6e6" style=filled]
+	n13 [label=<*=*= | *=*= | *=*= | *=*=<br align="left"/>*=*= | *=*= | =*=* | =*=*<br align="left"/>*=   | =*   | *=   | *=  <br align="left"/>=*   | =*   | *=   | =*  <br align="left"/>═════<br align="left"/>(6,6)<br align="left"/>*c|*d<br align="left"/>s |d  ε=0<br align="left"/>> fillcolor="#e6ffe6" style=filled]
+	n14 [label=<=*= | =*=<br align="left"/>=*= | *=*<br align="left"/>-   | -  <br align="left"/>+   | -  <br align="left"/>+   | +  <br align="left"/>═════<br align="left"/>(4,5)<br align="left"/>c|sd<br align="left"/> |d  B+ ε=0<br align="left"/>> fillcolor="#ffe6e6" style=filled]
+	n15 [label=<*=*= | *=*= | =*=* | =*=*<br align="left"/>=*=* | =*=* | =*=* | =*=*<br align="left"/>+-   | -+   | +-   | +-  <br align="left"/>-+   | -+   | +-   | -+  <br align="left"/>═════<br align="left"/>(6,6)<br align="left"/>*s|*d<br align="left"/>s |d  ε=0<br align="left"/>> fillcolor="#e6ffe6" style=filled]
+	n16 [label=<=*= | *=*<br align="left"/>*=* | *=*<br align="left"/>-   | -  <br align="left"/>+   | -  <br align="left"/>+   | +  <br align="left"/>═════<br align="left"/>(5,4)<br align="left"/>*|*d<br align="left"/> |d  B+ ε=0<br align="left"/>> fillcolor="#ffe6e6" style=filled]
+	n17 [label=<*=*= | *=*=<br align="left"/>-+-+ | -+-+<br align="left"/>*=   | *=  <br align="left"/>*=   | =*  <br align="left"/>═════<br align="left"/>(6,6)<br align="left"/>*c|*r<br align="left"/>c |d  ε=0<br align="left"/>> fillcolor="#e6ffe6" style=filled]
+	n18 [label=<=*=<br align="left"/>+-+<br align="left"/>-  <br align="left"/>-  <br align="left"/>+  <br align="left"/>═════<br align="left"/>(4,5)<br align="left"/>c|sr<br align="left"/> |d  B- ε=0<br align="left"/>> fillcolor="#ffe6e6" style=filled]
+	n19 [label=<*=<br align="left"/>-+<br align="left"/>═════<br align="left"/>(2,2)<br align="left"/>c|r ε=0<br align="left"/>> fillcolor="#e6ffe6" style=filled]
+	n20 [label=<=<br align="left"/>+<br align="left"/>+<br align="left"/>═════<br align="left"/>(2,1)<br align="left"/> |r B- ε=1<br align="left"/>> fillcolor="#ffe6e6" style=filled]
+	n21 [label=<-+-+ | -+-+<br align="left"/>-+-+ | -+-+<br align="left"/>+-   | +-  <br align="left"/>+-   | -+  <br align="left"/>═════<br align="left"/>(6,6)<br align="left"/>*s|*r<br align="left"/>c |d  ε=0<br align="left"/>> fillcolor="#e6ffe6" style=filled]
+	n22 [label=<+-+<br align="left"/>+-+<br align="left"/>-  <br align="left"/>-  <br align="left"/>+  <br align="left"/>═════<br align="left"/>(5,4)<br align="left"/>*|*r<br align="left"/> |d  B- ε=0<br align="left"/>> fillcolor="#ffe6e6" style=filled]
+	n23 [label=<=*<br align="left"/>=*<br align="left"/>═════<br align="left"/>(2,2)<br align="left"/>s|r ε=0<br align="left"/>> fillcolor="#e6ffe6" style=filled]
+	n24 [label=<+<br align="left"/>+<br align="left"/>+<br align="left"/>═════<br align="left"/>(3,0)<br align="left"/> |r B+ ε=1<br align="left"/>> fillcolor="#ffe6e6" style=filled]
+	n25 [label=<*=*= | *=*=<br align="left"/>*=*= | *=*=<br align="left"/>+-   | +-  <br align="left"/>+-   | -+  <br align="left"/>═════<br align="left"/>(6,6)<br align="left"/>**|**<br align="left"/>c |d  ε=0<br align="left"/>> fillcolor="#e6ffe6" style=filled]
+	n26 [label=<=*=<br align="left"/>=*=<br align="left"/>-  <br align="left"/>-  <br align="left"/>+  <br align="left"/>═════<br align="left"/>(3,6)<br align="left"/>*|*s<br align="left"/> |d  B- ε=0<br align="left"/>> fillcolor="#ffe6e6" style=filled]
+	n27 [label=<+-<br align="left"/>+-<br align="left"/>═════<br align="left"/>(2,2)<br align="left"/>*|* ε=0<br align="left"/>> fillcolor="#e6ffe6" style=filled]
+	n28 [label=<=<br align="left"/>=<br align="left"/>+<br align="left"/>═════<br align="left"/>(1,2)<br align="left"/> |s B+ ε=1<br align="left"/>> fillcolor="#ffe6e6" style=filled]
+	n29 [label=<+-+- | +-+-<br align="left"/>=*=* | =*=*<br align="left"/>+-   | -+  <br align="left"/>-+   | -+  <br align="left"/>═════<br align="left"/>(6,6)<br align="left"/>*c|*r<br align="left"/>s |d  ε=0<br align="left"/>> fillcolor="#e6ffe6" style=filled]
+	n30 [label=<-+-<br align="left"/>*=*<br align="left"/>-  <br align="left"/>+  <br align="left"/>+  <br align="left"/>═════<br align="left"/>(5,4)<br align="left"/>c|sr<br align="left"/> |d  B+ ε=0<br align="left"/>> fillcolor="#ffe6e6" style=filled]
+	n31 [label=<=*=* | =*=*<br align="left"/>=*=* | =*=*<br align="left"/>*=   | =*  <br align="left"/>=*   | =*  <br align="left"/>═════<br align="left"/>(6,6)<br align="left"/>*s|*r<br align="left"/>s |d  ε=0<br align="left"/>> fillcolor="#e6ffe6" style=filled]
+	n32 [label=<*=*<br align="left"/>*=*<br align="left"/>-  <br align="left"/>+  <br align="left"/>+  <br align="left"/>═════<br align="left"/>(6,3)<br align="left"/>*|*r<br align="left"/> |d  B+ ε=0<br align="left"/>> fillcolor="#ffe6e6" style=filled]
+	n33 [label=<+-+- | +-+-<br align="left"/>+-+- | +-+-<br align="left"/>*=   | =*  <br align="left"/>=*   | =*  <br align="left"/>═════<br align="left"/>(6,6)<br align="left"/>**|**<br align="left"/>s |d  ε=0<br align="left"/>> fillcolor="#e6ffe6" style=filled]
+	n34 [label=<-+-<br align="left"/>-+-<br align="left"/>-  <br align="left"/>+  <br align="left"/>+  <br align="left"/>═════<br align="left"/>(4,5)<br align="left"/>*|*s<br align="left"/> |d  B+ ε=0<br align="left"/>> fillcolor="#ffe6e6" style=filled]
+	n35 [label=<*=*=<br align="left"/>-+-+<br align="left"/>=*  <br align="left"/>=*  <br align="left"/>═════<br align="left"/>(6,6)<br align="left"/>sc|rd<br align="left"/>c |r  ε=0<br align="left"/>> fillcolor="#e6ffe6" style=filled]
+	n36 [label=<=*=<br align="left"/>+-+<br align="left"/>+  <br align="left"/>+  <br align="left"/>+  <br align="left"/>═════<br align="left"/>(6,3)<br align="left"/>c|rd<br align="left"/> |r  B- ε=1<br align="left"/>> fillcolor="#ffe6e6" style=filled]
+	n37 [label=<*=*= | *=*=<br align="left"/>*=*= | -+-+<br align="left"/>+-   | +-  <br align="left"/>=*   | +-  <br align="left"/>═════<br align="left"/>(6,6)<br align="left"/>*c|*d<br align="left"/>c |r  ε=0<br align="left"/>> fillcolor="#e6ffe6" style=filled]
+	n38 [label=<=*= | =*=<br align="left"/>=*= | +-+<br align="left"/>=   | =  <br align="left"/>+   | =  <br align="left"/>+   | +  <br align="left"/>═════<br align="left"/>(4,5)<br align="left"/>c|sd<br align="left"/> |r  B- ε=1<br align="left"/>> fillcolor="#ffe6e6" style=filled]
+	n39 [label=<*=*= | -+-+<br align="left"/>-+-+ | -+-+<br align="left"/>*=   | *=  <br align="left"/>-+   | *=  <br align="left"/>═════<br align="left"/>(6,6)<br align="left"/>*s|*d<br align="left"/>c |r  ε=0<br align="left"/>> fillcolor="#e6ffe6" style=filled]
+	n40 [label=<=*= | +-+<br align="left"/>+-+ | +-+<br align="left"/>=   | =  <br align="left"/>+   | =  <br align="left"/>+   | +  <br align="left"/>═════<br align="left"/>(5,4)<br align="left"/>*|*d<br align="left"/> |r  B- ε=1<br align="left"/>> fillcolor="#ffe6e6" style=filled]
+	n41 [label=<-+-+<br align="left"/>-+-+<br align="left"/>-+  <br align="left"/>-+  <br align="left"/>═════<br align="left"/>(6,6)<br align="left"/>sc|rd<br align="left"/>s |r  ε=0<br align="left"/>> fillcolor="#e6ffe6" style=filled]
+	n42 [label=<+-+<br align="left"/>+-+<br align="left"/>+  <br align="left"/>+  <br align="left"/>+  <br align="left"/>═════<br align="left"/>(7,2)<br align="left"/>c|rd<br align="left"/> |r  B+ ε=1<br align="left"/>> fillcolor="#ffe6e6" style=filled]
+	n43 [label=<+-+- | +-+-<br align="left"/>+-+- | =*=*<br align="left"/>-+   | *=  <br align="left"/>-+   | -+  <br align="left"/>═════<br align="left"/>(6,6)<br align="left"/>*c|*d<br align="left"/>s |r  ε=0<br align="left"/>> fillcolor="#e6ffe6" style=filled]
+	n44 [label=<-+- | -+-<br align="left"/>-+- | *=*<br align="left"/>+   | =  <br align="left"/>+   | +  <br align="left"/>+   | +  <br align="left"/>═════<br align="left"/>(5,4)<br align="left"/>c|sd<br align="left"/> |r  B+ ε=1<br align="left"/>> fillcolor="#ffe6e6" style=filled]
+	n45 [label=<+-+-<br align="left"/>+-+-<br align="left"/>*=  <br align="left"/>*=  <br align="left"/>═════<br align="left"/>(6,6)<br align="left"/>*c|*d<br align="left"/>* |*  ε=0<br align="left"/>> fillcolor="#e6ffe6" style=filled]
+	n46 [label=<-+- | -+-<br align="left"/>-+- | *=*<br align="left"/>=   | =  <br align="left"/>=   | =  <br align="left"/>+   | =  <br align="left"/>═════<br align="left"/>(3,6)<br align="left"/>c|sd<br align="left"/> |s  B+ ε=1<br align="left"/>> fillcolor="#ffe6e6" style=filled]
+	n47 [label=<+-+- | =*=*<br align="left"/>=*=* | =*=*<br align="left"/>=*   | +-  <br align="left"/>=*   | =*  <br align="left"/>═════<br align="left"/>(6,6)<br align="left"/>*s|*d<br align="left"/>s |r  ε=0<br align="left"/>> fillcolor="#e6ffe6" style=filled]
+	n48 [label=<-+- | *=*<br align="left"/>*=* | *=*<br align="left"/>+   | =  <br align="left"/>+   | +  <br align="left"/>+   | +  <br align="left"/>═════<br align="left"/>(6,3)<br align="left"/>*|*d<br align="left"/> |r  B+ ε=1<br align="left"/>> fillcolor="#ffe6e6" style=filled]
+	n49 [label=<+-+-<br align="left"/>=*=*<br align="left"/>+-  <br align="left"/>+-  <br align="left"/>═════<br align="left"/>(6,6)<br align="left"/>*s|*d<br align="left"/>* |*  ε=0<br align="left"/>> fillcolor="#e6ffe6" style=filled]
+	n50 [label=<-+- | *=*<br align="left"/>*=* | *=*<br align="left"/>=   | =  <br align="left"/>=   | =  <br align="left"/>+   | =  <br align="left"/>═════<br align="left"/>(4,5)<br align="left"/>*|*d<br align="left"/> |s  B+ ε=1<br align="left"/>> fillcolor="#ffe6e6" style=filled]
+	n51 [label=<+-+-<br align="left"/>-+-+<br align="left"/>*=  <br align="left"/>-+  <br align="left"/>═════<br align="left"/>(6,6)<br align="left"/>*c|*r<br align="left"/>c |r  ε=0<br align="left"/>> fillcolor="#e6ffe6" style=filled]
+	n52 [label=<-+-<br align="left"/>+-+<br align="left"/>=  <br align="left"/>+  <br align="left"/>+  <br align="left"/>═════<br align="left"/>(5,4)<br align="left"/>c|sr<br align="left"/> |r  B- ε=1<br align="left"/>> fillcolor="#ffe6e6" style=filled]
+	n53 [label=<-+-+<br align="left"/>-+-+<br align="left"/>+-  <br align="left"/>=*  <br align="left"/>═════<br align="left"/>(6,6)<br align="left"/>*s|*r<br align="left"/>c |r  ε=0<br align="left"/>> fillcolor="#e6ffe6" style=filled]
+	n54 [label=<+-+<br align="left"/>+-+<br align="left"/>=  <br align="left"/>+  <br align="left"/>+  <br align="left"/>═════<br align="left"/>(6,3)<br align="left"/>*|*r<br align="left"/> |r  B- ε=1<br align="left"/>> fillcolor="#ffe6e6" style=filled]
+	n55 [label=<+-+-<br align="left"/>+-+-<br align="left"/>+-  <br align="left"/>=*  <br align="left"/>═════<br align="left"/>(6,6)<br align="left"/>**|**<br align="left"/>c |r  ε=0<br align="left"/>> fillcolor="#e6ffe6" style=filled]
+	n56 [label=<-+-<br align="left"/>-+-<br align="left"/>=  <br align="left"/>+  <br align="left"/>+  <br align="left"/>═════<br align="left"/>(4,5)<br align="left"/>*|*s<br align="left"/> |r  B- ε=1<br align="left"/>> fillcolor="#ffe6e6" style=filled]
+	n57 [label=<*=*=<br align="left"/>=*=*<br align="left"/>=*  <br align="left"/>=*  <br align="left"/>═════<br align="left"/>(6,6)<br align="left"/>*c|*r<br align="left"/>s |r  ε=0<br align="left"/>> fillcolor="#e6ffe6" style=filled]
+	n58 [label=<=*=<br align="left"/>*=*<br align="left"/>+  <br align="left"/>+  <br align="left"/>+  <br align="left"/>═════<br align="left"/>(6,3)<br align="left"/>c|sr<br align="left"/> |r  B+ ε=1<br align="left"/>> fillcolor="#ffe6e6" style=filled]
+	n59 [label=<*=*=<br align="left"/>=*=*<br align="left"/>+-  <br align="left"/>+-  <br align="left"/>═════<br align="left"/>(6,6)<br align="left"/>*c|*r<br align="left"/>* |*  ε=0<br align="left"/>> fillcolor="#e6ffe6" style=filled]
+	n60 [label=<=*=<br align="left"/>*=*<br align="left"/>=  <br align="left"/>=  <br align="left"/>+  <br align="left"/>═════<br align="left"/>(4,5)<br align="left"/>c|sr<br align="left"/> |s  B+ ε=1<br align="left"/>> fillcolor="#ffe6e6" style=filled]
+	n61 [label=<=*=*<br align="left"/>=*=*<br align="left"/>-+  <br align="left"/>-+  <br align="left"/>═════<br align="left"/>(6,6)<br align="left"/>*s|*r<br align="left"/>s |r  ε=0<br align="left"/>> fillcolor="#e6ffe6" style=filled]
+	n62 [label=<*=*<br align="left"/>*=*<br align="left"/>+  <br align="left"/>+  <br align="left"/>+  <br align="left"/>═════<br align="left"/>(7,2)<br align="left"/>*|*r<br align="left"/> |r  B+ ε=1<br align="left"/>> fillcolor="#ffe6e6" style=filled]
+	n63 [label=<=*=*<br align="left"/>=*=*<br align="left"/>*=  <br align="left"/>*=  <br align="left"/>═════<br align="left"/>(6,6)<br align="left"/>*s|*r<br align="left"/>* |*  ε=0<br align="left"/>> fillcolor="#e6ffe6" style=filled]
+	n64 [label=<*=*<br align="left"/>*=*<br align="left"/>=  <br align="left"/>=  <br align="left"/>+  <br align="left"/>═════<br align="left"/>(5,4)<br align="left"/>*|*r<br align="left"/> |s  B+ ε=1<br align="left"/>> fillcolor="#ffe6e6" style=filled]
+	n65 [label=<*=*=<br align="left"/>*=*=<br align="left"/>-+  <br align="left"/>-+  <br align="left"/>═════<br align="left"/>(6,6)<br align="left"/>**|**<br align="left"/>s |r  ε=0<br align="left"/>> fillcolor="#e6ffe6" style=filled]
+	n66 [label=<=*=<br align="left"/>=*=<br align="left"/>+  <br align="left"/>+  <br align="left"/>+  <br align="left"/>═════<br align="left"/>(5,4)<br align="left"/>*|*s<br align="left"/> |r  B+ ε=1<br align="left"/>> fillcolor="#ffe6e6" style=filled]
+	n67 [label=<*=*=<br align="left"/>*=*=<br align="left"/>*=  <br align="left"/>*=  <br align="left"/>═════<br align="left"/>(6,6)<br align="left"/>**|**<br align="left"/>* |*  ε=0<br align="left"/>> fillcolor="#e6ffe6" style=filled]
+	n68 [label=<=*=<br align="left"/>=*=<br align="left"/>=  <br align="left"/>=  <br align="left"/>+  <br align="left"/>═════<br align="left"/>(3,6)<br align="left"/>*|*s<br align="left"/> |s  B+ ε=1<br align="left"/>> fillcolor="#ffe6e6" style=filled]
+	n69 [label=<=*= | =*=<br align="left"/>=*= | *=*<br align="left"/>*   | =  <br align="left"/>*   | *  <br align="left"/>*   | *  <br align="left"/>> fillcolor="#f8f8f8" style=filled]
+	n70 [label=<=*= | =*=<br align="left"/>=*= | +-+<br align="left"/>*   | -  <br align="left"/>*   | *  <br align="left"/>*   | *  <br align="left"/>> fillcolor="#f8f8f8" style=filled]
+	n71 [label=<=<br align="left"/>=<br align="left"/>*<br align="left"/>> fillcolor="#f8f8f8" style=filled]
+	n72 [label=<-<br align="left"/>-<br align="left"/>*<br align="left"/>> fillcolor="#f8f8f8" style=filled]
+	n73 [label=<=*= | =*=<br align="left"/>=*= | *=*<br align="left"/>=   | =  <br align="left"/>=   | =  <br align="left"/>*   | =  <br align="left"/>> fillcolor="#f8f8f8" style=filled]
+	n74 [label=<=*= | =*=<br align="left"/>=*= | +-+<br align="left"/>-   | -  <br align="left"/>-   | -  <br align="left"/>*   | -  <br align="left"/>> fillcolor="#f8f8f8" style=filled]
+	n75 [label=<=*= | *=*<br align="left"/>*=* | *=*<br align="left"/>=   | =  <br align="left"/>=   | =  <br align="left"/>*   | =  <br align="left"/>> fillcolor="#f8f8f8" style=filled]
+	n76 [label=<=*= | +-+<br align="left"/>+-+ | +-+<br align="left"/>-   | -  <br align="left"/>-   | -  <br align="left"/>*   | -  <br align="left"/>> fillcolor="#f8f8f8" style=filled]
+	n77 [label=<=<br align="left"/>*<br align="left"/>*<br align="left"/>> fillcolor="#f8f8f8" style=filled]
+	n78 [label=<-<br align="left"/>*<br align="left"/>*<br align="left"/>> fillcolor="#f8f8f8" style=filled]
+	n79 [label=<=*= | *=*<br align="left"/>*=* | *=*<br align="left"/>*   | =  <br align="left"/>*   | *  <br align="left"/>*   | *  <br align="left"/>> fillcolor="#f8f8f8" style=filled]
+	n80 [label=<=*= | +-+<br align="left"/>+-+ | +-+<br align="left"/>*   | -  <br align="left"/>*   | *  <br align="left"/>*   | *  <br align="left"/>> fillcolor="#f8f8f8" style=filled]
+	n81 [label=<-+- | -+-<br align="left"/>-+- | +-+<br align="left"/>=   | =  <br align="left"/>*   | =  <br align="left"/>*   | *  <br align="left"/>> fillcolor="#f8f8f8" style=filled]
+	n82 [label=<-+- | -+-<br align="left"/>-+- | *=*<br align="left"/>-   | -  <br align="left"/>*   | -  <br align="left"/>*   | *  <br align="left"/>> fillcolor="#f8f8f8" style=filled]
+	n83 [label=<-+- | +-+<br align="left"/>+-+ | +-+<br align="left"/>=   | =  <br align="left"/>*   | =  <br align="left"/>*   | *  <br align="left"/>> fillcolor="#f8f8f8" style=filled]
+	n84 [label=<-+- | *=*<br align="left"/>*=* | *=*<br align="left"/>-   | -  <br align="left"/>*   | -  <br align="left"/>*   | *  <br align="left"/>> fillcolor="#f8f8f8" style=filled]
+	n85 [label=<-+-<br align="left"/>*=*<br align="left"/>=  <br align="left"/>=  <br align="left"/>*  <br align="left"/>> fillcolor="#f8f8f8" style=filled]
+	n86 [label=<-+-<br align="left"/>+-+<br align="left"/>-  <br align="left"/>-  <br align="left"/>*  <br align="left"/>> fillcolor="#f8f8f8" style=filled]
+	n87 [label=<*=*<br align="left"/>*=*<br align="left"/>=  <br align="left"/>=  <br align="left"/>*  <br align="left"/>> fillcolor="#f8f8f8" style=filled]
+	n88 [label=<+-+<br align="left"/>+-+<br align="left"/>-  <br align="left"/>-  <br align="left"/>*  <br align="left"/>> fillcolor="#f8f8f8" style=filled]
+	n89 [label=<*<br align="left"/>*<br align="left"/>*<br align="left"/>> fillcolor="#f8f8f8" style=filled]
+	n90 [label=<-+-<br align="left"/>-+-<br align="left"/>=  <br align="left"/>=  <br align="left"/>*  <br align="left"/>> fillcolor="#f8f8f8" style=filled]
+	n91 [label=<-+-<br align="left"/>-+-<br align="left"/>-  <br align="left"/>-  <br align="left"/>*  <br align="left"/>> fillcolor="#f8f8f8" style=filled]
+	n92 [label=<=*=<br align="left"/>+-+<br align="left"/>=  <br align="left"/>*  <br align="left"/>*  <br align="left"/>> fillcolor="#f8f8f8" style=filled]
+	n93 [label=<=*=<br align="left"/>*=*<br align="left"/>-  <br align="left"/>*  <br align="left"/>*  <br align="left"/>> fillcolor="#f8f8f8" style=filled]
+	n94 [label=<+-+<br align="left"/>+-+<br align="left"/>=  <br align="left"/>*  <br align="left"/>*  <br align="left"/>> fillcolor="#f8f8f8" style=filled]
+	n95 [label=<*=*<br align="left"/>*=*<br align="left"/>-  <br align="left"/>*  <br align="left"/>*  <br align="left"/>> fillcolor="#f8f8f8" style=filled]
+	n96 [label=<=*=<br align="left"/>=*=<br align="left"/>=  <br align="left"/>*  <br align="left"/>*  <br align="left"/>> fillcolor="#f8f8f8" style=filled]
+	n97 [label=<=*=<br align="left"/>=*=<br align="left"/>-  <br align="left"/>*  <br align="left"/>*  <br align="left"/>> fillcolor="#f8f8f8" style=filled]
+	n98 [label=<-+-<br align="left"/>*=*<br align="left"/>*  <br align="left"/>*  <br align="left"/>*  <br align="left"/>> fillcolor="#f8f8f8" style=filled]
+	n99 [label=<-+-<br align="left"/>+-+<br align="left"/>*  <br align="left"/>*  <br align="left"/>*  <br align="left"/>> fillcolor="#f8f8f8" style=filled]
+	n100 [label=<*=*<br align="left"/>*=*<br align="left"/>*  <br align="left"/>*  <br align="left"/>*  <br align="left"/>> fillcolor="#f8f8f8" style=filled]
+	n101 [label=<+-+<br align="left"/>+-+<br align="left"/>*  <br align="left"/>*  <br align="left"/>*  <br align="left"/>> fillcolor="#f8f8f8" style=filled]
+	n102 [label=<-+-<br align="left"/>-+-<br align="left"/>*  <br align="left"/>*  <br align="left"/>*  <br align="left"/>> fillcolor="#f8f8f8" style=filled]
+	n1 -> n0 [color=blue headport=n]
+	n2 -> n1 [color=blue headport=n]
+	n3 -> n2 [color=blue headport=n]
+	n4 -> n3 [color=blue headport=n]
+	n6 -> n5 [color=blue headport=n]
+	n2 -> n6 [color=blue headport=n]
+	n8 -> n7 [color=blue headport=n]
+	n9 -> n8 [color=blue headport=n]
+	n10 -> n9 [color=blue headport=n]
+	n4 -> n10 [color=blue headport=n]
+	n12 -> n11 [color=blue headport=n]
+	n9 -> n12 [color=blue headport=n]
+	n14 -> n13 [color=blue headport=n]
+	n2 -> n14 [color=blue headport=n]
+	n16 -> n15 [color=blue headport=n]
+	n9 -> n16 [color=blue headport=n]
+	n18 -> n17 [color=blue headport=n]
+	n19 -> n18 [color=blue headport=n]
+	n20 -> n19 [color=blue headport=n]
+	n22 -> n21 [color=blue headport=n]
+	n23 -> n22 [color=blue headport=n]
+	n24 -> n23 [color=blue headport=n]
+	n26 -> n25 [color=blue headport=n]
+	n27 -> n26 [color=blue headport=n]
+	n28 -> n27 [color=blue headport=n]
+	n30 -> n29 [color=blue headport=n]
+	n19 -> n30 [color=blue headport=n]
+	n32 -> n31 [color=blue headport=n]
+	n23 -> n32 [color=blue headport=n]
+	n34 -> n33 [color=blue headport=n]
+	n27 -> n34 [color=blue headport=n]
+	n36 -> n35 [color=blue headport=n]
+	n38 -> n37 [color=blue headport=n]
+	n40 -> n39 [color=blue headport=n]
+	n42 -> n41 [color=blue headport=n]
+	n44 -> n43 [color=blue headport=n]
+	n46 -> n45 [color=blue headport=n]
+	n48 -> n47 [color=blue headport=n]
+	n50 -> n49 [color=blue headport=n]
+	n52 -> n51 [color=blue headport=n]
+	n54 -> n53 [color=blue headport=n]
+	n56 -> n55 [color=blue headport=n]
+	n58 -> n57 [color=blue headport=n]
+	n60 -> n59 [color=blue headport=n]
+	n62 -> n61 [color=blue headport=n]
+	n64 -> n63 [color=blue headport=n]
+	n66 -> n65 [color=blue headport=n]
+	n68 -> n67 [color=blue headport=n]
+	n62 -> n101 [arrowsize=0.3 color=red constraint=false dir=both]
+	n62 -> n42 [arrowsize=0.3 color=green constraint=false dir=both]
+	n62 -> n100 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	n88 -> n64 [arrowsize=0.3 color=red constraint=false dir=both]
+	n88 -> n87 [arrowsize=0.3 color=green constraint=false dir=both]
+	n88 -> n22 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	n92 -> n30 [arrowsize=0.3 color=red constraint=false dir=both]
+	n92 -> n93 [arrowsize=0.3 color=green constraint=false dir=both]
+	n92 -> n52 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	n100 -> n42 [arrowsize=0.3 color=red constraint=false dir=both]
+	n100 -> n101 [arrowsize=0.3 color=green constraint=false dir=both]
+	n79 -> n12 [arrowsize=0.3 color=red constraint=false dir=both]
+	n79 -> n80 [arrowsize=0.3 color=green constraint=false dir=both]
+	n79 -> n48 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	n84 -> n40 [arrowsize=0.3 color=red constraint=false dir=both]
+	n84 -> n83 [arrowsize=0.3 color=green constraint=false dir=both]
+	n84 -> n16 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	n78 -> n20 [arrowsize=0.3 color=red constraint=false dir=both]
+	n78 -> n77 [arrowsize=0.3 color=green constraint=false dir=both]
+	n78 -> n10 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	n75 -> n8 [arrowsize=0.3 color=red constraint=false dir=both]
+	n75 -> n76 [arrowsize=0.3 color=green constraint=false dir=both]
+	n75 -> n50 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	n60 -> n86 [arrowsize=0.3 color=red constraint=false dir=both]
+	n60 -> n18 [arrowsize=0.3 color=green constraint=false dir=both]
+	n60 -> n85 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	n89 -> n24 [arrowsize=0.3 color=red constraint=false dir=both]
+	n89 -> n24 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	n30 -> n52 [arrowsize=0.3 color=green constraint=false dir=both]
+	n30 -> n93 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	n10 -> n77 [arrowsize=0.3 color=red constraint=false dir=both]
+	n10 -> n20 [arrowsize=0.3 color=green constraint=false dir=both]
+	n42 -> n101 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	n20 -> n77 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	n58 -> n99 [arrowsize=0.3 color=red constraint=false dir=both]
+	n58 -> n36 [arrowsize=0.3 color=green constraint=false dir=both]
+	n58 -> n98 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	n1 -> n69 [arrowsize=0.3 color=red constraint=false dir=both]
+	n1 -> n44 [arrowsize=0.3 color=green constraint=false dir=both]
+	n1 -> n70 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	n54 -> n95 [arrowsize=0.3 color=red constraint=false dir=both]
+	n54 -> n32 [arrowsize=0.3 color=green constraint=false dir=both]
+	n54 -> n94 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	n72 -> n28 [arrowsize=0.3 color=red constraint=false dir=both]
+	n72 -> n71 [arrowsize=0.3 color=green constraint=false dir=both]
+	n72 -> n3 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	n91 -> n68 [arrowsize=0.3 color=red constraint=false dir=both]
+	n91 -> n90 [arrowsize=0.3 color=green constraint=false dir=both]
+	n91 -> n26 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	n36 -> n98 [arrowsize=0.3 color=red constraint=false dir=both]
+	n36 -> n99 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	n76 -> n50 [arrowsize=0.3 color=red constraint=false dir=both]
+	n76 -> n8 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	n52 -> n93 [arrowsize=0.3 color=red constraint=false dir=both]
+	n82 -> n38 [arrowsize=0.3 color=red constraint=false dir=both]
+	n82 -> n81 [arrowsize=0.3 color=green constraint=false dir=both]
+	n82 -> n14 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	n85 -> n18 [arrowsize=0.3 color=red constraint=false dir=both]
+	n85 -> n86 [arrowsize=0.3 color=green constraint=false dir=both]
+	n3 -> n71 [arrowsize=0.3 color=red constraint=false dir=both]
+	n3 -> n28 [arrowsize=0.3 color=green constraint=false dir=both]
+	n34 -> n96 [arrowsize=0.3 color=red constraint=false dir=both]
+	n34 -> n56 [arrowsize=0.3 color=green constraint=false dir=both]
+	n34 -> n97 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	n81 -> n14 [arrowsize=0.3 color=red constraint=false dir=both]
+	n81 -> n38 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	n68 -> n26 [arrowsize=0.3 color=green constraint=false dir=both]
+	n68 -> n90 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	n97 -> n56 [arrowsize=0.3 color=red constraint=false dir=both]
+	n97 -> n96 [arrowsize=0.3 color=green constraint=false dir=both]
+	n95 -> n94 [arrowsize=0.3 color=green constraint=false dir=both]
+	n95 -> n32 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	n96 -> n56 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	n6 -> n73 [arrowsize=0.3 color=red constraint=false dir=both]
+	n6 -> n46 [arrowsize=0.3 color=green constraint=false dir=both]
+	n6 -> n74 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	n16 -> n83 [arrowsize=0.3 color=red constraint=false dir=both]
+	n16 -> n40 [arrowsize=0.3 color=green constraint=false dir=both]
+	n22 -> n87 [arrowsize=0.3 color=red constraint=false dir=both]
+	n22 -> n64 [arrowsize=0.3 color=green constraint=false dir=both]
+	n26 -> n90 [arrowsize=0.3 color=red constraint=false dir=both]
+	n14 -> n38 [arrowsize=0.3 color=green constraint=false dir=both]
+	n48 -> n80 [arrowsize=0.3 color=red constraint=false dir=both]
+	n48 -> n12 [arrowsize=0.3 color=green constraint=false dir=both]
+	n99 -> n98 [arrowsize=0.3 color=green constraint=false dir=both]
+	n12 -> n80 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	n8 -> n50 [arrowsize=0.3 color=green constraint=false dir=both]
+	n83 -> n40 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	n70 -> n44 [arrowsize=0.3 color=red constraint=false dir=both]
+	n70 -> n69 [arrowsize=0.3 color=green constraint=false dir=both]
+	n44 -> n69 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	n87 -> n64 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	n18 -> n86 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	n71 -> n28 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	n46 -> n74 [arrowsize=0.3 color=red constraint=false dir=both]
+	n46 -> n73 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	n94 -> n32 [arrowsize=0.3 color=red constraint=false dir=both]
+	n102 -> n66 [arrowsize=0.3 color=red constraint=false dir=both]
+	n102 -> n66 [arrowsize=0.3 color="#9933cc" constraint=false dir=both]
+	n74 -> n73 [arrowsize=0.3 color=green constraint=false dir=both]
+	gp_M_0 [label="Mp(0)" fontcolor="#333333" fontname=Helvetica fontsize=11 group=gp_labels shape=plaintext]
+	{
+		rank=same
+		gp_M_0
+		n4
+	}
+	gp_M_0 -> n4 [style=invis]
+	gp_B_1 [label="O(3)" fontcolor="#333333" fontname=Helvetica fontsize=11 group=gp_labels shape=plaintext]
+	subgraph cluster_tw_0 {
+		color="#999999" penwidth=0.8 style=dotted
+		n78
+		n10
+		n20
+		n77
+	}
+	subgraph cluster_tw_1 {
+		color="#999999" penwidth=0.8 style=dotted
+		n89
+		n24
+	}
+	subgraph cluster_tw_2 {
+		color="#999999" penwidth=0.8 style=dotted
+		n72
+		n3
+		n71
+		n28
+	}
+	{
+		rank=same
+		gp_B_1
+		n3
+		n10
+		n20
+		n24
+		n28
+		n71
+		n72
+		n77
+		n78
+		n89
+	}
+	gp_B_1 -> n3 [style=invis]
+	gp_M_2 [label="Mp(4)" fontcolor="#333333" fontname=Helvetica fontsize=11 group=gp_labels shape=plaintext]
+	{
+		rank=same
+		gp_M_2
+		n2
+		n9
+		n19
+		n23
+		n27
+	}
+	gp_M_2 -> n2 [style=invis]
+	gp_B_4 [label="O(9)" fontcolor="#333333" fontname=Helvetica fontsize=11 group=gp_labels shape=plaintext]
+	subgraph cluster_tw_3 {
+		color="#999999" penwidth=0.8 style=dotted
+		n62
+		n100
+		n42
+		n101
+	}
+	subgraph cluster_tw_4 {
+		color="#999999" penwidth=0.8 style=dotted
+		n88
+		n22
+		n87
+		n64
+	}
+	subgraph cluster_tw_5 {
+		color="#999999" penwidth=0.8 style=dotted
+		n92
+		n30
+		n52
+		n93
+	}
+	subgraph cluster_tw_6 {
+		color="#999999" penwidth=0.8 style=dotted
+		n79
+		n48
+		n12
+		n80
+	}
+	subgraph cluster_tw_7 {
+		color="#999999" penwidth=0.8 style=dotted
+		n84
+		n16
+		n83
+		n40
+	}
+	subgraph cluster_tw_8 {
+		color="#999999" penwidth=0.8 style=dotted
+		n75
+		n76
+		n8
+		n50
+	}
+	subgraph cluster_tw_9 {
+		color="#999999" penwidth=0.8 style=dotted
+		n60
+		n85
+		n18
+		n86
+	}
+	subgraph cluster_tw_10 {
+		color="#999999" penwidth=0.8 style=dotted
+		n58
+		n36
+		n99
+		n98
+	}
+	subgraph cluster_tw_11 {
+		color="#999999" penwidth=0.8 style=dotted
+		n1
+		n70
+		n44
+		n69
+	}
+	subgraph cluster_tw_12 {
+		color="#999999" penwidth=0.8 style=dotted
+		n54
+		n95
+		n94
+		n32
+	}
+	subgraph cluster_tw_13 {
+		color="#999999" penwidth=0.8 style=dotted
+		n91
+		n68
+		n26
+		n90
+	}
+	subgraph cluster_tw_14 {
+		color="#999999" penwidth=0.8 style=dotted
+		n82
+		n81
+		n14
+		n38
+	}
+	subgraph cluster_tw_15 {
+		color="#999999" penwidth=0.8 style=dotted
+		n34
+		n97
+		n96
+		n56
+	}
+	subgraph cluster_tw_16 {
+		color="#999999" penwidth=0.8 style=dotted
+		n6
+		n46
+		n74
+		n73
+	}
+	subgraph cluster_tw_17 {
+		color="#999999" penwidth=0.8 style=dotted
+		n102
+		n66
+	}
+	{
+		rank=same
+		gp_B_4
+		n1
+		n6
+		n8
+		n12
+		n14
+		n16
+		n18
+		n22
+		n26
+		n30
+		n32
+		n34
+		n36
+		n38
+		n40
+		n42
+		n44
+		n46
+		n48
+		n50
+		n52
+		n54
+		n56
+		n58
+		n60
+		n62
+		n64
+		n66
+		n68
+		n69
+		n70
+		n73
+		n74
+		n75
+		n76
+		n79
+		n80
+		n81
+		n82
+		n83
+		n84
+		n85
+		n86
+		n87
+		n88
+		n90
+		n91
+		n92
+		n93
+		n94
+		n95
+		n96
+		n97
+		n98
+		n99
+		n100
+		n101
+		n102
+	}
+	gp_B_4 -> n1 [style=invis]
+	gp_M_6 [label="Mp(12)" fontcolor="#333333" fontname=Helvetica fontsize=11 group=gp_labels shape=plaintext]
+	{
+		rank=same
+		gp_M_6
+		n0
+		n5
+		n7
+		n11
+		n13
+		n15
+		n17
+		n21
+		n25
+		n29
+		n31
+		n33
+		n35
+		n37
+		n39
+		n41
+		n43
+		n45
+		n47
+		n49
+		n51
+		n53
+		n55
+		n57
+		n59
+		n61
+		n63
+		n65
+		n67
+	}
+	gp_M_6 -> n0 [style=invis]
+	gp_M_0 -> gp_B_1 [style=invis]
+	gp_B_1 -> gp_M_2 [style=invis]
+	gp_M_2 -> gp_B_4 [style=invis]
+	gp_B_4 -> gp_M_6 [style=invis]
+}
