@@ -127,6 +127,38 @@ theorem lemma_10_4_C {μP μQ : YoungDiagram}
     Function.Injective (descentCD_PBP · h_sub : PBPSet .C μP μQ → _) :=
   descentCD_injective h_sub
 
+/-- **Lemma 10.4 (B type)** — for γ ∈ {Bplus, Bminus}, the single naive B→M
+    descent combined with (signature, epsilon) is injective on `PBPSet γ μP μQ`.
+
+    Concretely: if two B-type PBPs with the same shapes have equal B→M naive
+    descent paints (both sides) and equal (signature, epsilon), and each
+    satisfies the orbit-level interlacing
+    `dotScolLen τ.P j ≥ dotScolLen τ.Q (j + 1)`, then they are equal.
+
+    PBPSet-level wrapper of `PBP.descent_inj_B`.
+    Reference: [BMSZb] Lemma 10.4 for B. -/
+theorem lemma_10_4_B {μP μQ : YoungDiagram} (γ : RootType) (hγ : γ = .Bplus ∨ γ = .Bminus)
+    (τ₁ τ₂ : PBPSet γ μP μQ)
+    (hinterl₁ : ∀ j, PBP.dotScolLen τ₁.val.P j ≥ PBP.dotScolLen τ₁.val.Q (j + 1))
+    (hinterl₂ : ∀ j, PBP.dotScolLen τ₂.val.P j ≥ PBP.dotScolLen τ₂.val.Q (j + 1))
+    (hdescL : ∀ i j, PBP.descentPaintL_BM τ₁.val i j = PBP.descentPaintL_BM τ₂.val i j)
+    (hdescR : ∀ i j, PBP.descentPaintR_BM τ₁.val i j = PBP.descentPaintR_BM τ₂.val i j)
+    (hsig : PBP.signature τ₁.val = PBP.signature τ₂.val)
+    (heps : PBP.epsilon τ₁.val = PBP.epsilon τ₂.val) :
+    τ₁ = τ₂ := by
+  have hγ₁ : τ₁.val.γ = .Bplus ∨ τ₁.val.γ = .Bminus := by rw [τ₁.prop.1]; exact hγ
+  have hγ₂ : τ₂.val.γ = .Bplus ∨ τ₂.val.γ = .Bminus := by rw [τ₂.prop.1]; exact hγ
+  have hγ_eq : τ₁.val.γ = τ₂.val.γ := by rw [τ₁.prop.1, τ₂.prop.1]
+  have hshapeP : τ₁.val.P.shape = τ₂.val.P.shape := by
+    rw [τ₁.prop.2.1, τ₂.prop.2.1]
+  have hshapeQ : τ₁.val.Q.shape = τ₂.val.Q.shape := by
+    rw [τ₁.prop.2.2, τ₂.prop.2.2]
+  have ⟨hPeq, hQeq⟩ := PBP.descent_inj_B τ₁.val τ₂.val hγ₁ hγ₂ hshapeP hshapeQ
+    hinterl₁ hinterl₂ hdescL hdescR hsig heps
+  exact Subtype.ext (PBP.ext'' hγ_eq
+    (PaintedYoungDiagram.ext' hshapeP (funext fun i => funext (hPeq i)))
+    (PaintedYoungDiagram.ext' hshapeQ (funext fun i => funext (hQeq i))))
+
 /-- **Lemma 10.5 (M type)** — the M→B descent on PBPs is injective.
 
     More precisely: if two M-type PBPs with the same shapes have the same
