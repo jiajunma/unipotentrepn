@@ -2216,6 +2216,27 @@ theorem AC.chain_firstColSign_eq_diff_sign
   AC.step_firstColSign_BD chain_prev p_curr q_curr ε_τ ε_wp γ_curr hγ_curr
     prev_sig h_prev_sign h_std
 
+/-- After B/D post-twist ⊗(0, ε_τ), first entry `(a, b)` becomes `(a, (-1)^{ε_τ} · b)`.
+
+    This is a clean corollary of `ILS.twistBD_first_entry`, packaged for the
+    ACResult level. Used by `AC.lemma_11_6_*_unconditional` to propagate the
+    first-entry formula through the post-twist step of `AC.step`. -/
+theorem ACResult.postTwist_BD_first_entry (ac : ACResult) (ε_τ : Fin 2) (a b : ℤ)
+    (h_first : ∀ r ∈ ac, r.2.head? = some (a, b)) :
+    ∀ r ∈ (if ε_τ = 1 then ac.twistBD 1 (-1) else ac),
+      r.2.head? = some (a, if ε_τ = 1 then -b else b) := by
+  intro r hr
+  by_cases hε : ε_τ = 1
+  · simp only [hε, ite_true] at hr ⊢
+    simp only [ACResult.twistBD, List.mem_map] at hr
+    obtain ⟨⟨c, ils⟩, hmem, rfl⟩ := hr
+    have hf := h_first ⟨c, ils⟩ hmem
+    simp only at hf ⊢
+    rw [ILS.twistBD_first_entry]
+    simp [hf]
+  · simp only [hε, ite_false] at hr ⊢
+    exact h_first r hr
+
 /-- AC.step for M target: firstColSign invariant, mirror of C. -/
 theorem AC.step_firstColSign_M (source : ACResult) (n : ℤ) (ε_τ ε_wp : Fin 2)
     (source_sig : ℤ × ℤ)
