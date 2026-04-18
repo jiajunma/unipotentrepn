@@ -1,0 +1,57 @@
+\chapter{Introduction}
+\label{chap:intro}
+
+This blueprint documents the Lean~4 formalization of the combinatorial
+aspects of associated cycles of special unipotent representations of
+classical groups (Sp, SO, Mp). It follows two papers by
+Barbasch--Ma--Sun--Zhu:
+
+\begin{itemize}
+\item \textbf{[BMSZb]} — counting reduction (Section~10): PBP counting recursion formulas for classical groups.
+\item \textbf{[BMSZ]} — construction and unitarity (Section~11): combinatorial
+      associated cycles $\mathcal{L}_\tau$.
+\end{itemize}
+
+The formalization covers $\star \in \{B, D, C, M = \tilde{C}\}$; the real-form
+variants $C^*$, $D^*$ are deliberately skipped (per a project directive).
+
+\section{Group / dual-partition conventions}
+
+For each root type $\star$ we work with a nilpotent orbit $\mathcal{O}$ in
+the Lie algebra of a classical group. The \emph{BV dual} (Barbasch--Vogan /
+Lusztig) $\check{\mathcal{O}}$ is a partition subject to parity conditions:
+
+\begin{center}
+\begin{tabular}{c|l|l}
+  $\star$ & Group & Dual partition $\check{\mathcal{O}}$ \\\hline
+  $B$ & $\mathrm{SO}(2n+1)$ & all parts even, positive \\
+  $D$ & $\mathrm{SO}(2n)$   & all parts odd \\
+  $C$ & $\mathrm{Sp}(2n)$   & all parts odd \\
+  $M = \tilde{C}$ & $\mathrm{Mp}(2n)$ & all parts even, positive \\
+\end{tabular}
+\end{center}
+
+From $\check{\mathcal{O}}$ we read off column lengths
+$\mathbf{c}_1 \geq \mathbf{c}_2 \geq \cdots$ and row lengths
+$\mathbf{r}_1 \geq \mathbf{r}_2 \geq \cdots$.
+
+\section{Scope and structure}
+
+This blueprint is organised as follows.
+
+\begin{itemize}
+\item Chapter~\ref{chap:pbp}: the painted bipartition (PBP) combinatorial data.
+\item Chapter~\ref{chap:shape_shift}: shape-shifting bijections (Lemma~10.3 for M and C).
+\item Chapter~\ref{chap:descent}: single/double descent (Lemmas~10.4, 10.5, Prop~10.8).
+\item Chapter~\ref{chap:ddescent}: Prop~10.9 / Cor~10.10 double-descent injectivity.
+\item Chapter~\ref{chap:counting}: main counting formulas (Prop~10.11/10.12).
+\item Chapter~\ref{chap:ils}: Integer List Sequences, ILS operations (Section~9.4).
+\item Chapter~\ref{chap:ac}: AC recursion Eq.~(11.2); sign/fcSign invariants.
+\item Chapter~\ref{chap:tail}: tail PBP, Lemma~11.3, Prop~11.4.
+\item Chapter~\ref{chap:11_5}: Lemma~11.5 two-step AC formula; Lemma~11.6 first entry.
+\item Chapter~\ref{chap:11_main}: injectivity (11.8--11.13), main bijection (11.14/15/17).
+\item Chapter~\ref{chap:status}: formal status.
+\end{itemize}
+
+All Lean declarations named via \texttt{\textbackslash lean\{...\}} can be
+clicked to reach the source code in the GitHub repository.

@@ -63,6 +63,64 @@
 <div id="statements">
 
     
+    <div class="dep-modal-container" id="a0000000065_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="a0000000065" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      </div>
+    <div class="thm_thmcontent"></div>
+
+    <a class="latex_link" href="sect0010.html#a0000000065">LaTeX</a>
+    
+    
+  
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="a0000000067_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="a0000000067" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      </div>
+    <div class="thm_thmcontent"></div>
+
+    <a class="latex_link" href="sect0010.html#a0000000067">LaTeX</a>
+    
+    
+  
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
     <div class="dep-modal-container" id="cor:10_10_modal">
       <div class="dep-modal-content">
           <button class="dep-closebtn">
@@ -74,11 +132,11 @@
       <span class="corollary_thmcaption">
       Corollary
       </span>
-      <span class="corollary_thmlabel">14</span><span class="corollary_thmtitle">Cor 10.10 D/B: PBPSet-level injectivity</span></div>
-    <div class="thm_thmcontent"><p>    The double-descent map is injective on \(\mathrm{PBP}_\gamma (\mu _P, \mu _Q)\) for \(\gamma \in \{ D, B^+, B^-\} \). </p>
+      <span class="corollary_thmlabel">44</span><span class="corollary_thmtitle">Cor 10.10 D/B — PBPSet injectivity</span></div>
+    <div class="thm_thmcontent"><p>    The map \(\tau \mapsto (\nabla ^2\tau , \mathrm{Sign}(\tau ), \varepsilon _\tau )\) is injective on \(\mathrm{PBP}_\gamma (\mu _P, \mu _Q)\) for \(\gamma \in \{ D, B^+, B^-\} \). </p>
 </div>
 
-    <a class="latex_link" href="sect0006.html#cor:10_10">LaTeX</a>
+    <a class="latex_link" href="chap-ddescent.html#cor:10_10">LaTeX</a>
     
     
   <div class="tooltip">
@@ -102,6 +160,40 @@
 
 
     
+    <div class="dep-modal-container" id="cor:11_6_pbp_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="cor:11_6_pbp" style="display: none">
+    <div class="thm_thmheading">
+      <span class="corollary_thmcaption">
+      Corollary
+      </span>
+      <span class="corollary_thmlabel">98</span><span class="corollary_thmtitle">PBP-level Lemma 11.6</span></div>
+    <div class="thm_thmcontent"><p>    At the PBP level, when \(\mathrm{src\_ sig} = \mathrm{Sign}(\tau '') = (p_{\tau ''}, q_{\tau ''})\) and \(\mathrm{src\_ fcSig} = \mathrm{Sign}(\tau '') - \mathrm{Sign}(\tau ^{(4)})\), the first entry of \(\mathcal{L}_\tau \) equals </p>
+<div class="displaymath" id="a0000000118">
+  \[  \big(p_{\tau _t},\  (-1)^{\varepsilon _\tau } q_{\tau _t}\big)  \]
+</div>
+<p> by combining Lem&#160;<a href="sect0035.html#lem:11_6_D">96</a> with Prop&#160;<a href="sect0031.html#prop:11_4">90</a> (which gives \(p_\tau - \mathbf{c}_2 - p_{\tau ''} = p_{\tau _t}\)). </p>
+</div>
+
+    <a class="latex_link" href="sect0035.html#cor:11_6_pbp">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/AC.lemma_11_6_D_unconditional">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
     <div class="dep-modal-container" id="def:AC_base_modal">
       <div class="dep-modal-content">
           <button class="dep-closebtn">
@@ -113,11 +205,15 @@
       <span class="definition_thmcaption">
       Definition
       </span>
-      <span class="definition_thmlabel">28</span><span class="definition_thmtitle">AC base case</span></div>
-    <div class="thm_thmcontent"><p>   When \(|\check{\mathcal{O}}| = 0\): initial ACResult depending on \(\gamma \). </p>
+      <span class="definition_thmlabel">71</span><span class="definition_thmtitle">AC base case</span></div>
+    <div class="thm_thmcontent"><p>    When \(|\check{\mathcal{O}}| = 0\) the base \(\mathcal{L}_\tau \) is determined by \(\gamma \): </p>
+<div class="displaymath" id="a0000000092">
+  \[  \mathrm{AC.base}\, \gamma = \begin{cases}  [(1,\  [(1, 0)])] &  \gamma = B^+ \\[(1,\  [(0, -1)])]&  \gamma = B^- \\[(1,\  [])]&  \gamma \in \{ C, D, M\} . \end{cases}  \]
+</div>
+<p> (Each list entry is an <span class="ttfamily">ACResult</span> branch: <span class="ttfamily">(coeff, ILS)</span>.) </p>
 </div>
 
-    <a class="latex_link" href="sect0010.html#def:AC_base">LaTeX</a>
+    <a class="latex_link" href="sect0024.html#def:AC_base">LaTeX</a>
     
     
   <a class="lean_link lean_decl" href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/AC.base">Lean</a>
@@ -143,11 +239,11 @@
       <span class="definition_thmcaption">
       Definition
       </span>
-      <span class="definition_thmlabel">30</span><span class="definition_thmtitle">AC fold — chain construction</span></div>
-    <div class="thm_thmcontent"><p>    \(L_\tau \) as AC.fold of a descent chain. </p>
+      <span class="definition_thmlabel">73</span><span class="definition_thmtitle">AC fold — chain of AC.step</span></div>
+    <div class="thm_thmcontent"><p>    Given a descent chain <span class="ttfamily">chain : List ACStepData</span>, inductively apply <span class="ttfamily">AC.step</span> from <span class="ttfamily">AC.base</span> to get the final <span class="ttfamily">ACResult</span>, yielding \(\mathcal{L}_\tau \) when the chain is \(\tau \)’s descent sequence. </p>
 </div>
 
-    <a class="latex_link" href="sect0010.html#def:AC_fold">LaTeX</a>
+    <a class="latex_link" href="sect0024.html#def:AC_fold">LaTeX</a>
     
     
   <a class="lean_link lean_decl" href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/AC.fold">Lean</a>
@@ -173,11 +269,21 @@
       <span class="definition_thmcaption">
       Definition
       </span>
-      <span class="definition_thmlabel">29</span><span class="definition_thmtitle">AC step</span></div>
-    <div class="thm_thmcontent"><p>    Recursive step: \(\mathcal{L}_\tau = \hat\vartheta (\mathcal{L}_\tau [']) \otimes \) (appropriate twist). </p>
+      <span class="definition_thmlabel">72</span><span class="definition_thmtitle">AC step — single recursion step</span></div>
+    <div class="thm_thmcontent"><p>    Given a source \(\mathrm{ACResult}\) and target \(\gamma \), together with parameters \((p, q, \varepsilon _\tau , \varepsilon _\wp ) \in \mathbb {Z}^2 \times \{ 0, 1\} ^2\), define: </p>
+<ul class="itemize">
+  <li><p>If \(\gamma \in \{ D, B^+, B^-\} \) (no C/M pre-twist): </p>
+<div class="displaymath" id="a0000000093">
+  \[  \mathrm{AC.step} = \begin{cases}  (\mathrm{source.thetaLift}\, \gamma \, p\, q)\otimes (1, -1) &  \varepsilon _\tau = 1 \\ \mathrm{source.thetaLift}\, \gamma \, p\, q &  \varepsilon _\tau = 0 \end{cases}  \]
+</div>
+</li>
+  <li><p>If \(\gamma \in \{ C, M\} \): first pre-twist the source by \(\otimes (-1, -1)^{\varepsilon _\wp }\), then theta lift. </p>
+</li>
+</ul>
+<p> The resulting <span class="ttfamily">ACResult</span> carries all branches. </p>
 </div>
 
-    <a class="latex_link" href="sect0010.html#def:AC_step">LaTeX</a>
+    <a class="latex_link" href="sect0024.html#def:AC_step">LaTeX</a>
     
     
   <a class="lean_link lean_decl" href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/AC.step">Lean</a>
@@ -203,14 +309,44 @@
       <span class="definition_thmcaption">
       Definition
       </span>
-      <span class="definition_thmlabel">23</span><span class="definition_thmtitle">Augmentation</span></div>
-    <div class="thm_thmcontent"><p>    \(\mathcal{E}' \oplus (p_0, q_0)\) prepends \((p_0, q_0)\) at position&#160;1. </p>
+      <span class="definition_thmlabel">62</span><span class="definition_thmtitle">Augmentation \(\oplus (p_0, q_0)\)</span></div>
+    <div class="thm_thmcontent"><p>    \(\mathrm{augment}((p_0, q_0), \mathcal{E}) := (p_0, q_0) :: \mathcal{E}\). Prepend at position&#160;0 (shift existing rows up by&#160;1). </p>
 </div>
 
-    <a class="latex_link" href="sect0008.html#def:augment">LaTeX</a>
+    <a class="latex_link" href="sect0021.html#def:augment">LaTeX</a>
     
     
   <a class="lean_link lean_decl" href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/ILS.augment">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:cardCells_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:cardCells" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">14</span><span class="definition_thmtitle">Total cell count \(|\tau |\)</span></div>
+    <div class="thm_thmcontent"><p>    \(|\tau | := |\mathcal{P}.\mathrm{shape}.\mathrm{cells}| + |\mathcal{Q}.\mathrm{shape}.\mathrm{cells}|\). </p>
+</div>
+
+    <a class="latex_link" href="sect0007.html#def:cardCells">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/PBP.cardCells">Lean</a>
     
     
   
@@ -233,14 +369,600 @@
       <span class="definition_thmcaption">
       Definition
       </span>
-      <span class="definition_thmlabel">21</span><span class="definition_thmtitle">Character twist \(T\)</span></div>
-    <div class="thm_thmcontent"><p>    For \(\star \in \{ C, \tilde{C}\} \), the involution \(T\) negates entries at positions \(i \equiv 2 \pmod{4}\). </p>
+      <span class="definition_thmlabel">60</span><span class="definition_thmtitle">Character twist \(T^j\)</span></div>
+    <div class="thm_thmcontent"><p>    (Paper Eq.&#160;(9.16)–(9.17).) For \(j \in \mathbb {Z}\), \(T^j\) negates the pair at row index \(i\) iff \(j\) is odd and \((i + 1) \bmod 4 = 2\): </p>
+<div class="displaymath" id="a0000000088">
+  \[  \mathrm{charTwistCMRow}(j, i)(p, q) := \begin{cases}  (-p, -q) &  j\text{ odd and } (i + 1) \bmod 4 = 2 \\ (p, q) &  \text{otherwise} \end{cases}  \]
+</div>
 </div>
 
-    <a class="latex_link" href="sect0008.html#def:charTwistCM">LaTeX</a>
+    <a class="latex_link" href="sect0021.html#def:charTwistCM">LaTeX</a>
     
     
-  <a class="lean_link lean_decl" href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/ILS.charTwistCM">Lean</a>
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/ILS.charTwistCM" class="lean_decl">ILS.charTwistCM</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/ILS.charTwistCMRow" class="lean_decl">ILS.charTwistCMRow</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:countPBP_B_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:countPBP_B" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">47</span><span class="definition_thmtitle">countPBP_B — recursion on B-type dp</span></div>
+    <div class="thm_thmcontent"><p>    \(\mathrm{countPBP\_ B}(dp) \in \mathbb {N}^3\) via analogous recursion, using the M\(\to \)B descent (Prop&#160;10.8 M) plus recursion to D on a shifted shape. </p>
+</div>
+
+    <a class="latex_link" href="sect0016.html#def:countPBP_B">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/countPBP_B">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:countPBP_C_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:countPBP_C" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">48</span><span class="definition_thmtitle">countPBP_C — recursion on C-type dp</span></div>
+    <div class="thm_thmcontent"><p>    \(\mathrm{countPBP\_ C}(dp) \in \mathbb {N}\) via descent to D: </p>
+<div class="displaymath" id="a0000000079">
+  \[  \mathrm{countPBP\_ C}(dp) = \begin{cases}  \text{(primitive formula)} &  \mu _Q.\mathrm{colLen}(0) \geq \mu _P.\mathrm{colLen}(0) \\ n_{\mathrm{DD}} + n_{\mathrm{RC}} &  \text{balanced} \end{cases}  \]
+</div>
+</div>
+
+    <a class="latex_link" href="sect0016.html#def:countPBP_C">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/countPBP_C">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:countPBP_D_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:countPBP_D" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">46</span><span class="definition_thmtitle">countPBP_D — recursion on D-type dp</span></div>
+    <div class="thm_thmcontent"><p>    \(\mathrm{countPBP\_ D}(dp) \in \mathbb {N}^3\) is a triple \((n_{\mathrm{DD}}, n_{\mathrm{RC}}, n_{\mathrm{SS}})\) counting PBPs by tail class. </p>
+<p>Base case: \(dp = []\) gives \((0, 0, 0)\) (or \((1, 0, 0)\) for the empty orbit, depending on the initial convention; see the Lean definition). </p>
+<p>Step: remove the first part of \(dp\), recursively count on the remaining orbit, and combine via descent relations (Prop&#160;<a href="sect0015.html#prop:10_8_C_prim">38</a>, Prop&#160;<a href="sect0015.html#prop:10_8_C_bal">39</a>, or the balanced D split). </p>
+<p>\(\mathrm{tripleSum}(n_{\mathrm{DD}}, n_{\mathrm{RC}}, n_{\mathrm{SS}}) := n_{\mathrm{DD}} + n_{\mathrm{RC}} + n_{\mathrm{SS}}\) is the total count. </p>
+</div>
+
+    <a class="latex_link" href="sect0016.html#def:countPBP_D">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/countPBP_D" class="lean_decl">countPBP_D</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/countPBP_D_of_YD" class="lean_decl">countPBP_D_of_YD</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/countPBP_D_of_YD_aux" class="lean_decl">countPBP_D_of_YD_aux</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/tripleSum" class="lean_decl">tripleSum</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:countPBP_M_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:countPBP_M" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">49</span><span class="definition_thmtitle">countPBP_M — recursion on M-type dp</span></div>
+    <div class="thm_thmcontent"><p>    \(\mathrm{countPBP\_ M}(dp) \in \mathbb {N}\) via descent to B. </p>
+</div>
+
+    <a class="latex_link" href="sect0016.html#def:countPBP_M">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/countPBP_M">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:descentPaint_BM_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:descentPaint_BM" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">30</span><span class="definition_thmtitle">B \(\to \) M paints</span></div>
+    <div class="thm_thmcontent"><p>    \(c_L(j) := \mathrm{dotScolLen}(\tau .\mathcal{P}, j)\), \(c_R(j) := \mathrm{dotScolLen}(\tau .\mathcal{Q}, j + 1)\). </p>
+<div class="displaymath" id="a0000000071">
+  \begin{align*}  (\nabla _{BM}\tau ).\mathcal{P}(i, j) & = \begin{cases}  \bullet &  i {\lt} c_R(j) \\ s &  c_R(j) \leq i {\lt} c_L(j) \\ \tau .\mathcal{P}(i, j) &  i \geq c_L(j) \end{cases}\\ (\nabla _{BM}\tau ).\mathcal{Q}(i, j) & = \begin{cases}  \bullet &  i {\lt} c_R(j) \\ \tau .\mathcal{Q}(i, j + 1) &  i \geq c_R(j) \end{cases}\end{align*}
+</div>
+</div>
+
+    <a class="latex_link" href="sect0012.html#def:descentPaint_BM">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/descentPaintL_BM" class="lean_decl">descentPaintL_BM</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/descentPaintR_BM" class="lean_decl">descentPaintR_BM</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:descentPaint_CD_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:descentPaint_CD" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">29</span><span class="definition_thmtitle">C \(\to \) D paints</span></div>
+    <div class="thm_thmcontent"><p>    \(c_L(j) := \mathrm{dotScolLen}(\tau .\mathcal{P}, j)\), \(c_R(j) := \tau .\mathcal{Q}.\mathrm{colLen}(j + 1)\). </p>
+<div class="displaymath" id="a0000000070">
+  \[  (\nabla _{CD}\tau ).\mathcal{P}(i, j) = \begin{cases}  \bullet &  i {\lt} c_R(j) \\ s &  c_R(j) \leq i {\lt} c_L(j) \\ \tau .\mathcal{P}(i, j) &  i \geq c_L(j) \end{cases}  \]
+</div>
+<p> \((\nabla _{CD}\tau ).\mathcal{Q}\) is all \(\bullet \) (D type has \(\mathcal{Q}\)-allowed \(= \{ \bullet \} \)). </p>
+</div>
+
+    <a class="latex_link" href="sect0012.html#def:descentPaint_CD">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/descentPaintL_CD" class="lean_decl">descentPaintL_CD</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/descentPaintR_CD" class="lean_decl">descentPaintR_CD</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:descentPaint_DC_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:descentPaint_DC" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">28</span><span class="definition_thmtitle">D \(\to \) C paints</span></div>
+    <div class="thm_thmcontent"><p>    Let \(c_L(j) := \mathrm{dotScolLen}(\tau .\mathcal{P}, j + 1)\) and \(c_R(j) := \tau .\mathcal{Q}.\mathrm{colLen}(j)\). </p>
+<div class="displaymath" id="a0000000069">
+  \begin{align*}  (\nabla _{DC}\tau ).\mathcal{P}(i, j) & = \begin{cases}  \bullet &  i {\lt} c_L(j) \\ \tau .\mathcal{P}(i, j + 1) &  \text{otherwise} \end{cases}\\ (\nabla _{DC}\tau ).\mathcal{Q}(i, j) & = \begin{cases}  \bullet &  i {\lt} c_L(j) \\ s &  c_L(j) \leq i {\lt} c_R(j) \\ \bullet &  i \geq c_R(j) \end{cases}\end{align*}
+</div>
+</div>
+
+    <a class="latex_link" href="sect0012.html#def:descentPaint_DC">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/descentPaintL_DC" class="lean_decl">descentPaintL_DC</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/descentPaintR_DC" class="lean_decl">descentPaintR_DC</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:descentPaint_MB_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:descentPaint_MB" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">31</span><span class="definition_thmtitle">M \(\to \) B paints</span></div>
+    <div class="thm_thmcontent"><p>    \(c_L(j) := \mathrm{dotScolLen}(\tau .\mathcal{P}, j + 1)\), \(c_R(j) := \mathrm{dotScolLen}(\tau .\mathcal{Q}, j)\). </p>
+<div class="displaymath" id="a0000000072">
+  \begin{align*}  (\nabla _{MB}\tau ).\mathcal{P}(i, j) & = \begin{cases}  \bullet &  i {\lt} c_L(j) \\ \tau .\mathcal{P}(i, j+1) &  i \geq c_L(j) \end{cases}\\ (\nabla _{MB}\tau ).\mathcal{Q}(i, j) & = \begin{cases}  \bullet &  i {\lt} c_L(j) \\ s &  c_L(j) \leq i {\lt} c_R(j) \\ \tau .\mathcal{Q}(i, j) &  i \geq c_R(j) \end{cases}\end{align*}
+</div>
+</div>
+
+    <a class="latex_link" href="sect0012.html#def:descentPaint_MB">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/descentPaintL_MB" class="lean_decl">descentPaintL_MB</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/descentPaintR_MB" class="lean_decl">descentPaintR_MB</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:dotScolLen_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:dotScolLen" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">6</span><span class="definition_thmtitle">\(\mathrm{dotScolLen}\) — dot-and-s column length</span></div>
+    <div class="thm_thmcontent"><p>    For a painted Young diagram \(D\), \(\mathrm{dotScolLen}(D, j)\) is the number of cells in column \(j\) whose paint is \(\bullet \) or \(s\) (equivalently, the largest \(k\) such that every cell \((i, j)\) with \(i {\lt} k\) has \(\mathrm{layerOrd}(\mathcal{P}(i, j)) \leq 1\)). </p>
+</div>
+
+    <a class="latex_link" href="sect0004.html#def:dotScolLen">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/PBP.dotScolLen">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:doubleDescent_B_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:doubleDescent_B" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">33</span><span class="definition_thmtitle">Double descent B type</span></div>
+    <div class="thm_thmcontent"><p>    Composite B \(\xrightarrow {\nabla _{BM}}\) M \(\xrightarrow {\nabla _{MB}}\) B. </p>
+<div class="displaymath" id="a0000000074">
+  \begin{align*}  (\nabla ^2_B \tau ).\mathcal{P}(i, j) & = \begin{cases}  \bullet &  i {\lt} \mathrm{dotScolLen}(\tau .\mathcal{P}, j + 1) \\ \tau .\mathcal{P}(i, j + 1) &  i \geq \ldots \end{cases}\\ (\nabla ^2_B \tau ).\mathcal{Q}(i, j) & = \begin{cases}  \bullet &  i {\lt} \mathrm{dotScolLen}(\tau .\mathcal{P}, j + 1) \\ s &  \mathrm{dotScolLen}(\tau .\mathcal{P}, j + 1) \leq i {\lt} \mathrm{dotScolLen}(\tau .\mathcal{Q}, j + 1) \\ \tau .\mathcal{Q}(i, j + 1) &  i \geq \ldots \end{cases}\end{align*}
+</div>
+</div>
+
+    <a class="latex_link" href="sect0013.html#def:doubleDescent_B">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/doubleDescent_B_paintL" class="lean_decl">doubleDescent_B_paintL</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/doubleDescent_B_paintR" class="lean_decl">doubleDescent_B_paintR</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:doubleDescent_D_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:doubleDescent_D" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">32</span><span class="definition_thmtitle">Double descent D type</span></div>
+    <div class="thm_thmcontent"><p>    Composite D \(\xrightarrow {\nabla _{DC}}\) C \(\xrightarrow {\nabla _{CD}}\) D. After simplification: </p>
+<div class="displaymath" id="a0000000073">
+  \[  (\nabla ^2_D \tau ).\mathcal{P}(i, j) = \begin{cases}  \bullet &  i {\lt} \tau .\mathcal{Q}.\mathrm{colLen}(j + 1) \\ s &  \tau .\mathcal{Q}.\mathrm{colLen}(j + 1) \leq i {\lt} \mathrm{dotScolLen}(\tau .\mathcal{P}, j + 1) \\ \tau .\mathcal{P}(i, j + 1) &  i \geq \mathrm{dotScolLen}(\tau .\mathcal{P}, j + 1) \end{cases}  \]
+</div>
+<p> (The resulting \(\mathcal{Q}\) is all \(\bullet \).) </p>
+</div>
+
+    <a class="latex_link" href="sect0013.html#def:doubleDescent_D">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/doubleDescent_D_paintL">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:dpartColLens_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:dpartColLens" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">16</span><span class="definition_thmtitle">Column lengths from dp</span></div>
+    <div class="thm_thmcontent"><p>    For each root type, functions compute the column-length lists of \(\mu _P\) and \(\mu _Q\) from \(dp\). For example (D type): \(\mu _P(dp)\) has column lengths \((dp_1 + 1)/2, (dp_2 + 1)/2, \ldots \), etc. </p>
+</div>
+
+    <a class="latex_link" href="sect0008.html#def:dpartColLens">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/dpartColLensP_B" class="lean_decl">dpartColLensP_B</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/dpartColLensQ_B" class="lean_decl">dpartColLensQ_B</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/dpartColLensP_D" class="lean_decl">dpartColLensP_D</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/dpartColLensQ_D" class="lean_decl">dpartColLensQ_D</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/dpartColLensP_C" class="lean_decl">dpartColLensP_C</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/dpartColLensQ_C" class="lean_decl">dpartColLensQ_C</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/dpartColLensP_M" class="lean_decl">dpartColLensP_M</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/dpartColLensQ_M" class="lean_decl">dpartColLensQ_M</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:drc_symbols_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:drc_symbols" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">1</span><span class="definition_thmtitle">DRC symbols</span></div>
+    <div class="thm_thmcontent"><p>   The five <em>DRC symbols</em> are </p>
+<div class="displaymath" id="a0000000046">
+  \[  \{ \bullet ,\  s,\  r,\  c,\  d\} .  \]
+</div>
+<p> Symbols other than \(\bullet \) are called <em>non-dot</em>. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#def:drc_symbols">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/DRCSymbol">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:DualPart_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:DualPart" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">15</span><span class="definition_thmtitle">Dual partition legality</span></div>
+    <div class="thm_thmcontent"><p>   A <em>dual partition</em> \(dp\) is a <span class="ttfamily">List ℕ</span> that is sorted \(\geq \) (strictly decreasing with possible ties). Validity conditions: </p>
+<ul class="itemize">
+  <li><p>B-type / M-type: every entry is even and positive. </p>
+</li>
+  <li><p>D-type / C-type: every entry is odd. </p>
+</li>
+</ul>
+</div>
+
+    <a class="latex_link" href="sect0008.html#def:DualPart">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/DualPart" class="lean_decl">DualPart</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/DualPart.SortedGE" class="lean_decl">DualPart.SortedGE</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:epsilon_pbp_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:epsilon_pbp" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">13</span><span class="definition_thmtitle">Epsilon \(\varepsilon _\tau \)</span></div>
+    <div class="thm_thmcontent"><p>    (Paper Eq.&#160;(3.6).) \(\varepsilon _\tau \in \{ 0, 1\} \) is \(1\) iff column&#160;0 of \(\mathcal{P}\) (or \(\mathcal{Q}\), per \(\gamma \)) contains a \(d\). </p>
+</div>
+
+    <a class="latex_link" href="sect0007.html#def:epsilon_pbp">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/PBP.epsilon">Lean</a>
     
     
   
@@ -263,14 +985,47 @@
       <span class="definition_thmcaption">
       Definition
       </span>
-      <span class="definition_thmlabel">25</span><span class="definition_thmtitle">First-column signature</span></div>
-    <div class="thm_thmcontent"><p>    The first-column signature, Eq.&#160;(9.12). </p>
+      <span class="definition_thmlabel">58</span><span class="definition_thmtitle">First-column signature \(\mathrm{fcSign}\)</span></div>
+    <div class="thm_thmcontent"><p>    \(\mathrm{fcSign}(\mathcal{E}) := \sum _i \mathrm{firstColSignRow}(i, \mathcal{E}[i])\). </p>
 </div>
 
-    <a class="latex_link" href="sect0008.html#def:firstColSign">LaTeX</a>
+    <a class="latex_link" href="sect0020.html#def:firstColSign">LaTeX</a>
     
     
   <a class="lean_link lean_decl" href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/ILS.firstColSign">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:firstColSignRow_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:firstColSignRow" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">57</span><span class="definition_thmtitle">First-column row contribution</span></div>
+    <div class="thm_thmcontent"><p>    (Paper Eq.&#160;(9.12).) Per-row contribution to the first-column signature: </p>
+<div class="displaymath" id="a0000000086">
+  \[  \mathrm{firstColSignRow}(i,\  (p, q)) := \begin{cases}  (|p|, |q|) &  i\text{ even} \\ (|q|, |p|) &  i\text{ odd (swap!)} \end{cases}  \]
+</div>
+</div>
+
+    <a class="latex_link" href="sect0020.html#def:firstColSignRow">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/ILS.firstColSignRow">Lean</a>
     
     
   
@@ -293,14 +1048,48 @@
       <span class="definition_thmcaption">
       Definition
       </span>
-      <span class="definition_thmlabel">19</span><span class="definition_thmtitle">Integer List Sequence (ILS)</span></div>
-    <div class="thm_thmcontent"><p>   \(\text{ILS} := \text{List}(\mathbb {Z} \times \mathbb {Z})\) — list of integer pairs representing a marked Young diagram row-by-row. </p>
+      <span class="definition_thmlabel">54</span><span class="definition_thmtitle">ILS</span></div>
+    <div class="thm_thmcontent"><p>   \(\mathrm{ILS} := \mathrm{List}(\mathbb {Z} \times \mathbb {Z})\). The \(i\)-th entry (0-indexed) represents row \(i + 1\) of the associated MYD, carrying a mark \((p_i, q_i) \in \mathbb {Z}^2\). </p>
 </div>
 
-    <a class="latex_link" href="sect0008.html#def:ILS">LaTeX</a>
+    <a class="latex_link" href="sect0019.html#def:ILS">LaTeX</a>
     
     
   <a class="lean_link lean_decl" href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/ILS">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:layerOrd_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:layerOrd" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">2</span><span class="definition_thmtitle">Layer order</span></div>
+    <div class="thm_thmcontent"><p>    The <em>layer order</em> is a function \(\mathrm{layerOrd} : \mathrm{DRCSymbol} \to \mathbb {N}\) given by </p>
+<div class="displaymath" id="a0000000047">
+  \[  \mathrm{layerOrd}(\bullet ) = 0,\  \mathrm{layerOrd}(s) = 1,\  \mathrm{layerOrd}(r) = 2,\  \mathrm{layerOrd}(c) = 3,\  \mathrm{layerOrd}(d) = 4.  \]
+</div>
+<p> This is the linear order \(\bullet {\lt} s {\lt} r {\lt} c {\lt} d\). </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#def:layerOrd">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/DRCSymbol.layerOrd">Lean</a>
     
     
   
@@ -323,11 +1112,11 @@
       <span class="definition_thmcaption">
       Definition
       </span>
-      <span class="definition_thmlabel">43</span><span class="definition_thmtitle">Multiplicity free</span></div>
-    <div class="thm_thmcontent"><p>   \(\mathcal{A}\) is multiplicity free if all MYDs with nonzero coefficient are distinct. </p>
+      <span class="definition_thmlabel">80</span><span class="definition_thmtitle">MultiplicityFree</span></div>
+    <div class="thm_thmcontent"><p>    An \(\mathrm{ACResult}\) is <em>multiplicity free</em> if no two branches carry the same ILS. </p>
 </div>
 
-    <a class="latex_link" href="sect0015.html#def:mfree">LaTeX</a>
+    <a class="latex_link" href="sect0027.html#def:mfree">LaTeX</a>
     
     
   <a class="lean_link lean_decl" href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/ACResult.MultiplicityFree">Lean</a>
@@ -353,11 +1142,23 @@
       <span class="definition_thmcaption">
       Definition
       </span>
-      <span class="definition_thmlabel">1</span><span class="definition_thmtitle">Painted Bipartition (PBP)</span></div>
-    <div class="thm_thmcontent"><p>   A painted bipartition consists of two painted Young diagrams \(P, Q\) with paint symbols in \(\{ \bullet , s, r, c, d\} \), a root type \(\gamma \in \{ B^+, B^-, C, D, M\} \), and validity axioms (layer monotonicity, row/column constraints, dot match). </p>
+      <span class="definition_thmlabel">9</span><span class="definition_thmtitle">Painted Bipartition</span></div>
+    <div class="thm_thmcontent"><p>    A <em>painted bipartition</em> (PBP) is \(\tau = (\mathcal{P}, \mathcal{Q}, \gamma )\) where \(\mathcal{P}\) and \(\mathcal{Q}\) are painted Young diagrams with root type \(\gamma \) satisfying: </p>
+<ol class="enumerate">
+  <li><p><b class="bfseries">sym_P, sym_Q</b>: \(\mathcal{P}.\mathrm{paint}(i, j)\) is in the allowed set for \(\mathcal{P}\) determined by \(\gamma \) (Def.&#160;<a href="sect0005.html#def:sym_allowed">8</a>), and likewise for \(\mathcal{Q}\). </p>
+</li>
+  <li><p><b class="bfseries">dot_match</b>: \(\mathcal{P}(i,j) = \bullet \Leftrightarrow \mathcal{Q}(i,j) = \bullet \) (the outside-shape convention makes this an equivalence between cell memberships). </p>
+</li>
+  <li><p><b class="bfseries">row_s, row_r</b>: each row contains at most one \(s\) across \(\mathcal{P} \cup \mathcal{Q}\); similarly at most one \(r\). </p>
+</li>
+  <li><p><b class="bfseries">col_c_P / col_c_Q</b>: each column of \(\mathcal{P}\) has at most one \(c\); same for \(\mathcal{Q}\). </p>
+</li>
+  <li><p><b class="bfseries">col_d_P / col_d_Q</b>: each column has at most one \(d\). </p>
+</li>
+</ol>
 </div>
 
-    <a class="latex_link" href="sect0002.html#def:PBP">LaTeX</a>
+    <a class="latex_link" href="sect0006.html#def:PBP">LaTeX</a>
     
     
   <a class="lean_link lean_decl" href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/PBP">Lean</a>
@@ -383,14 +1184,149 @@
       <span class="definition_thmcaption">
       Definition
       </span>
-      <span class="definition_thmlabel">2</span><span class="definition_thmtitle">PBPSet — PBPs of fixed shape</span></div>
-    <div class="thm_thmcontent"><p>    For \(\gamma \in \{ B^+, B^-, C, D, M\} \) and Young diagrams \(\mu _P, \mu _Q\), \(\mathrm{PBP}_\gamma (\mu _P, \mu _Q) := \{ \tau : \text{PBP} \mid \tau .\gamma = \gamma , \tau .P.\text{shape} = \mu _P, \tau .Q.\text{shape} = \mu _Q\} \). </p>
+      <span class="definition_thmlabel">11</span><span class="definition_thmtitle">PBPSet — PBPs of fixed shape</span></div>
+    <div class="thm_thmcontent"><p>    For \(\gamma \) a root type and \(\mu _P, \mu _Q\) Young diagrams, </p>
+<div class="displaymath" id="a0000000052">
+  \[  \mathrm{PBP}_\gamma (\mu _P, \mu _Q) := \{ \tau \in \mathrm{PBP} \mid \tau .\gamma = \gamma ,\  \tau .\mathcal{P}.\mathrm{shape} = \mu _P,\  \tau .\mathcal{Q}.\mathrm{shape} = \mu _Q\} .  \]
+</div>
+<p> Given a dual partition \(dp\), we set \(\mathrm{PBP}_\gamma (\check{\mathcal{O}}) := \mathrm{PBP}_\gamma (\mu _P(dp), \mu _Q(dp))\) where \(\mu _P, \mu _Q\) are derived from \(dp\). </p>
 </div>
 
-    <a class="latex_link" href="sect0002.html#def:PBPSet">LaTeX</a>
+    <a class="latex_link" href="sect0006.html#def:PBPSet">LaTeX</a>
     
     
   <a class="lean_link lean_decl" href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/PBPSet">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:pyd_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:pyd" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">5</span><span class="definition_thmtitle">Painted Young diagram</span></div>
+    <div class="thm_thmcontent"><p>    A <em>painted Young diagram</em> is a triple \(D = (\mu , \mathcal{P}, \mathrm{layerMono})\) where: </p>
+<ol class="enumerate">
+  <li><p>\(\mu \) is a Young diagram (the <em>shape</em>). </p>
+</li>
+  <li><p>\(\mathcal{P} : \mathbb {N}^2 \to \mathrm{DRCSymbol}\) is a paint function with \(\mathcal{P}(i, j) = \bullet \) for \((i, j) \notin \mu \) (paint outside the shape is \(\bullet \)). </p>
+</li>
+  <li><p><b class="bfseries">layer monotonicity</b>: for all \((i_1, j_1), (i_2, j_2)\) with \(i_1 \leq i_2\) and \(j_1 \leq j_2\), if \((i_2, j_2) \in \mu \) then \(\mathrm{layerOrd}(\mathcal{P}(i_1, j_1)) \leq \mathrm{layerOrd}(\mathcal{P}(i_2, j_2))\). </p>
+</li>
+</ol>
+</div>
+
+    <a class="latex_link" href="sect0004.html#def:pyd">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/PaintedYoungDiagram" class="lean_decl">PaintedYoungDiagram</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/PaintedYoungDiagram.layerMonotone" class="lean_decl">PaintedYoungDiagram.layerMonotone</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:RootType_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:RootType" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">7</span><span class="definition_thmtitle">Root type</span></div>
+    <div class="thm_thmcontent"><p>   A <em>root type</em> \(\gamma \in \{ B^+,\  B^-,\  C,\  D,\  M\} \) selects a set of allowed paint symbols for \(\mathcal{P}\) and \(\mathcal{Q}\) (see below). </p>
+</div>
+
+    <a class="latex_link" href="sect0005.html#def:RootType">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/RootType">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:shapeShiftC_paint_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:shapeShiftC_paint" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">22</span><span class="definition_thmtitle">shape shift C — paint function</span></div>
+    <div class="thm_thmcontent"><p>    There are four sub-cases, based on \(\mathcal{P}_\tau (k, 1)\): </p>
+<p><b class="bfseries">Case (a):</b> \(\mathcal{P}_\tau (k, 1) \neq \bullet \). Set \(\alpha _0 := \mathcal{P}_\tau (k, 1) \in \{ s, r, c, d\} \). </p>
+<p><b class="bfseries">Sub-case (a.1):</b> \(k \geq 2\) and \(\mathcal{P}_\tau (k - 1, 1) = c\). </p>
+<div class="displaymath" id="a0000000061">
+  \[  \tau _\uparrow .\mathcal{P}(i, j) = \begin{cases}  r &  j = 1,\  k - 1 \leq i \leq k_\uparrow - 2 \\ c &  (i, j) = (k_\uparrow - 1, 1) \\ d &  (i, j) = (k_\uparrow , 1) \\ \mathcal{P}_\tau (i, j) &  \text{otherwise} \end{cases}  \]
+</div>
+<p><b class="bfseries">Sub-case (a.2):</b> otherwise. </p>
+<div class="displaymath" id="a0000000062">
+  \[  \tau _\uparrow .\mathcal{P}(i, j) = \begin{cases}  r &  j = 1,\  k \leq i \leq k_\uparrow - 1 \\ \alpha _0 &  (i, j) = (k_\uparrow , 1) \\ \mathcal{P}_\tau (i, j) &  \text{otherwise} \end{cases}  \]
+</div>
+<p><b class="bfseries">Case (b):</b> \(\mathcal{P}_\tau (k, 1) = \bullet \). </p>
+<p><b class="bfseries">Sub-case (b.1):</b> \(\mathbf{c}_2(\iota _\wp ) = k\) and \(\mathcal{P}_\tau (k, 2) = r\). </p>
+<div class="displaymath" id="a0000000063">
+  \[  \tau _\uparrow .\mathcal{P}(i, j) = \begin{cases}  r &  j = 1,\  k \leq i \leq k_\uparrow - 1 \\ c &  (i, j) = (\mathbf{c}_2(\iota _\wp ), 2) \\ d &  (i, j) = (k_\uparrow , 1) \\ \mathcal{P}_\tau (i, j) &  \text{otherwise} \end{cases}  \]
+</div>
+<p> (Case b.1 modifies column&#160;1 of \(\)</p>
+</div>
+
+    <a class="latex_link" href="sect0010.html#def:shapeShiftC_paint">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/shiftPaintP_C_concrete" class="lean_decl">shiftPaintP_C_concrete</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/shapeShiftC" class="lean_decl">shapeShiftC</a></li>
+        
+      </ul>
+  </div>
     
     
   
@@ -413,11 +1349,14 @@
       <span class="definition_thmcaption">
       Definition
       </span>
-      <span class="definition_thmlabel">3</span><span class="definition_thmtitle">Shape shift M</span></div>
-    <div class="thm_thmcontent"><p>    For \(\star = M\), the shape-shift operation swaps col 0 between \(\iota _{\wp }\) and \(\jmath_ {\wp }\) and translates paint symbols via \(r \leftrightarrow s\), \(c \leftrightarrow d\). </p>
+      <span class="definition_thmlabel">18</span><span class="definition_thmtitle">shape shift M</span></div>
+    <div class="thm_thmcontent"><p>    Let \(\tau = (\mathcal{P}, \mathcal{Q}, M) \in \mathrm{PBP}_M(\mu _P, \mu _Q)\). Given shapes \((\mu _P', \mu _Q')\) whose column&#160;0 is swapped with \((\mu _P, \mu _Q)\) (i.e., \((i, 0) \in \mu _P' \iff (i, 0) \in \mu _Q\); columns \(\geq 1\) unchanged), define \(\mathrm{shapeShiftM}(\tau ) \in \mathrm{PBP}_M(\mu _P', \mu _Q')\) by </p>
+<div class="displaymath" id="a0000000055">
+  \begin{align*}  \tau ’.\mathcal{P}(i, 0) & = \mathrm{translateM}(\tau .\mathcal{Q}(i, 0)), &  \tau ’.\mathcal{P}(i, j+1) & = \tau .\mathcal{P}(i, j+1), \\ \tau ’.\mathcal{Q}(i, 0) & = \mathrm{translateM}(\tau .\mathcal{P}(i, 0)), &  \tau ’.\mathcal{Q}(i, j+1) & = \tau .\mathcal{Q}(i, j+1). \end{align*}
+</div>
 </div>
 
-    <a class="latex_link" href="sect0003.html#def:shapeShiftM">LaTeX</a>
+    <a class="latex_link" href="sect0009.html#def:shapeShiftM">LaTeX</a>
     
     
   <a class="lean_link lean_decl" href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/shapeShiftM">Lean</a>
@@ -443,14 +1382,235 @@
       <span class="definition_thmcaption">
       Definition
       </span>
-      <span class="definition_thmlabel">24</span><span class="definition_thmtitle">Signature</span></div>
-    <div class="thm_thmcontent"><p>    The signature \(\mathrm{Sign}(\mathcal{E}) = (p, q) \in \mathbb {Z}^2\) computed via Eq.&#160;(9.10). </p>
+      <span class="definition_thmlabel">56</span><span class="definition_thmtitle">ILS signature \(\mathrm{Sign}(\mathcal{E})\)</span></div>
+    <div class="thm_thmcontent"><p>    \(\mathrm{Sign}(\mathcal{E}) := \sum _{i} \mathrm{signRow}(i, \mathcal{E}[i]) \in \mathbb {Z}^2\). Since <span class="ttfamily">signRow</span> is a sum of \(|p|, |q|\) (non-negative integer) contributions, \(\mathrm{Sign}(\mathcal{E}).1, \mathrm{Sign}(\mathcal{E}).2 \geq 0\). </p>
 </div>
 
-    <a class="latex_link" href="sect0008.html#def:sign">LaTeX</a>
+    <a class="latex_link" href="sect0020.html#def:sign">LaTeX</a>
     
     
   <a class="lean_link lean_decl" href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/ILS.sign">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:signature_pbp_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:signature_pbp" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">12</span><span class="definition_thmtitle">PBP signature \(\mathrm{Sign}(\tau )\)</span></div>
+    <div class="thm_thmcontent"><p>    The signature \(\mathrm{Sign}(\tau ) = (p_\tau , q_\tau ) \in \mathbb {N}^2\) counts paint symbols weighted by paint multiplicities (paper Eq.&#160;(3.3)). Specifically, denoting by \(\# _\sigma \) the count of symbol \(\sigma \) in \(\mathcal{P}\) and \(\mathcal{Q}\), and by \(n_s, n_r\) the total \(s, r\) counts across both, </p>
+<div class="displaymath" id="a0000000053">
+  \[  p_\tau = n_r, \qquad q_\tau = n_s,  \]
+</div>
+<p> with appropriate bookkeeping for \(\bullet , c, d\) counts and per-\(\gamma \) variations. For D type: \(p_\tau = \# _{\bullet ,\iota } + \# _{\bullet ,\jmath } + 2\# _{r,\iota } + \# _{c,\iota } + \# _{d,\iota }\) (and similarly for \(q_\tau \) with \(s\) in place of \(r\)). </p>
+</div>
+
+    <a class="latex_link" href="sect0007.html#def:signature_pbp">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/PBP.signature">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:signRow_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:signRow" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">55</span><span class="definition_thmtitle">Row contribution to signature</span></div>
+    <div class="thm_thmcontent"><p>    (Paper Eq.&#160;(9.10).) For row \(i\) (0-indexed) of length \(\ell = i + 1\), let \(h := \lfloor \ell / 2 \rfloor \) and \(r := \ell \bmod 2\). The row contribution is </p>
+<div class="displaymath" id="a0000000085">
+  \[  \mathrm{signRow}(i,\  (p, q)) := \big(|p|(h + r) + |q| h,\  |q|(h + r) + |p| h\big).  \]
+</div>
+<p> Concretely: odd-length rows (i.e., \(\ell \) odd, \(r = 1\)) get extra \(|p|\) / \(|q|\) contribution. </p>
+</div>
+
+    <a class="latex_link" href="sect0020.html#def:signRow">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/ILS.signRow">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:sym_allowed_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:sym_allowed" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">8</span><span class="definition_thmtitle">Symbol allowances per root type</span></div>
+    <div class="thm_thmcontent"><p>   The following table gives the allowed DRC symbols for \(\mathcal{P}\) and \(\mathcal{Q}\) (paper Def.&#160;2.25): </p>
+<div class="displaymath" id="a0000000050">
+  \[  \begin{array}{l|ll} \gamma &  \mathcal{P}\text{ allowed} &  \mathcal{Q}\text{ allowed} \\ \hline B^+ / B^- &  \{ \bullet , c\}  &  \{ \bullet , s, r, d\}  \\ C &  \{ \bullet , r, c, d\}  &  \{ \bullet , s\}  \\ D &  \{ \bullet , s, r, c, d\}  &  \{ \bullet \}  \\ M = \tilde{C} &  \{ \bullet , s, c\}  &  \{ \bullet , r, d\}  \\ \end{array}  \]
+</div>
+<p> The \(B^+/B^-\) distinction corresponds to a tag on the extended DRC diagram. </p>
+</div>
+
+    <a class="latex_link" href="sect0005.html#def:sym_allowed">LaTeX</a>
+    
+    
+  
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:tailClass_D_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:tailClass_D" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">45</span><span class="definition_thmtitle">Tail class for D type</span></div>
+    <div class="thm_thmcontent"><p>    The <em>tail class</em> of \(\tau \in \mathrm{PBP}_D\) is one of \(\{ \mathrm{DD}, \mathrm{RC}, \mathrm{SS}\} \) determined by the tail symbol (Def.&#160;??): \(x_\tau = d\) gives \(\mathrm{DD}\), \(x_\tau \in \{ r, c\} \) gives \(\mathrm{RC}\), \(x_\tau = s\) gives \(\mathrm{SS}\). </p>
+</div>
+
+    <a class="latex_link" href="sect0016.html#def:tailClass_D">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/tailClass_D" class="lean_decl">tailClass_D</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/TailClass" class="lean_decl">TailClass</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:tailContrib_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:tailContrib" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">3</span><span class="definition_thmtitle">Tail contribution</span></div>
+    <div class="thm_thmcontent"><p>    Paper Eq.&#160;(11.5). Each DRC symbol contributes a pair of non-negative integers to the tail signature: </p>
+<div class="displaymath" id="a0000000048">
+  \[  \mathrm{tailContrib}(\bullet ) = (1,1),\  \mathrm{tailContrib}(s) = (0, 2),\  \mathrm{tailContrib}(r) = (2, 0),  \]
+</div>
+<div class="displaymath" id="a0000000049">
+  \[  \mathrm{tailContrib}(c) = (1, 1),\  \mathrm{tailContrib}(d) = (1, 1).  \]
+</div>
+<p> In particular the two components always sum to&#160;\(2\). </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#def:tailContrib">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/DRCSymbol.tailContrib">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:tailLen_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:tailLen" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">82</span><span class="definition_thmtitle">Tail length \(k\)</span></div>
+    <div class="thm_thmcontent"><p>    For \(\tau \in \mathrm{PBP}_D\) with \(\mathcal{P}\) col&#160;0 longer than \(\mathcal{Q}\) col&#160;0, the <em>tail length</em> is </p>
+<div class="displaymath" id="a0000000100">
+  \[  k := \tau .\mathcal{P}.\mathrm{colLen}(0) - \tau .\mathcal{Q}.\mathrm{colLen}(0).  \]
+</div>
+<p> Equivalently \(k = (\mathbf{r}_1(\check{\mathcal{O}}) - \mathbf{r}_2(\check{\mathcal{O}}))/2 + 1\) via the BV dual correspondence. </p>
+</div>
+
+    <a class="latex_link" href="sect0028.html#def:tailLen">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/PBP.tailLen_D" class="lean_decl">PBP.tailLen_D</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/PBP.tailLen_B" class="lean_decl">PBP.tailLen_B</a></li>
+        
+      </ul>
+  </div>
     
     
   
@@ -473,14 +1633,27 @@
       <span class="definition_thmcaption">
       Definition
       </span>
-      <span class="definition_thmlabel">34</span><span class="definition_thmtitle">Tail signature</span></div>
-    <div class="thm_thmcontent"><p>    Sum of per-cell <span class="ttfamily">tailContrib</span> from tail cells in P’s column&#160;0. </p>
+      <span class="definition_thmlabel">84</span><span class="definition_thmtitle">Tail signature \(\mathrm{tailSig}(\tau ) = (p_{\tau _t}, q_{\tau _t})\)</span></div>
+    <div class="thm_thmcontent">
+<div class="displaymath" id="a0000000101">
+  \[  \mathrm{tailSig}(\tau ) := \sum _{i = \tau .\mathcal{Q}.\mathrm{colLen}(0)}^{\tau .\mathcal{P}.\mathrm{colLen}(0) - 1} \mathrm{tailContrib}(\mathcal{P}_\tau (i, 0)).  \]
+</div>
+<p> Each cell contributes \(\mathrm{tailContrib}\) (Def.&#160;<a href="sect0003.html#def:tailContrib">3</a>); components sum to&#160;\(2\) per cell. </p>
 </div>
 
-    <a class="latex_link" href="sect0011.html#def:tailSignature">LaTeX</a>
+    <a class="latex_link" href="sect0028.html#def:tailSignature">LaTeX</a>
     
     
-  <a class="lean_link lean_decl" href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/PBP.tailSignature_D">Lean</a>
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/PBP.tailSignature_D" class="lean_decl">PBP.tailSignature_D</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/PBP.tailSignature_B" class="lean_decl">PBP.tailSignature_B</a></li>
+        
+      </ul>
+  </div>
     
     
   
@@ -503,14 +1676,23 @@
       <span class="definition_thmcaption">
       Definition
       </span>
-      <span class="definition_thmlabel">35</span><span class="definition_thmtitle">Tail symbol</span></div>
-    <div class="thm_thmcontent"><p>    Symbol \(x_\tau := \mathcal{P}_{\tau _\mathbf {t}}(k, 1)\) at the bottom of the tail. </p>
+      <span class="definition_thmlabel">83</span><span class="definition_thmtitle">Tail symbol \(x_\tau \)</span></div>
+    <div class="thm_thmcontent"><p>    For D type: \(x_\tau := \mathcal{P}_\tau (\mathcal{P}.\mathrm{colLen}(0) - 1, 0)\) — the paint at the bottom of \(\mathcal{P}\)’s column&#160;0 tail region. For B type: analog in \(\mathcal{Q}\). </p>
 </div>
 
-    <a class="latex_link" href="sect0011.html#def:tailSymbol">LaTeX</a>
+    <a class="latex_link" href="sect0028.html#def:tailSymbol">LaTeX</a>
     
     
-  <a class="lean_link lean_decl" href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/PBP.tailSymbol_D">Lean</a>
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/PBP.tailSymbol_D" class="lean_decl">PBP.tailSymbol_D</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/PBP.tailSymbol_B" class="lean_decl">PBP.tailSymbol_B</a></li>
+        
+      </ul>
+  </div>
     
     
   
@@ -533,14 +1715,101 @@
       <span class="definition_thmcaption">
       Definition
       </span>
-      <span class="definition_thmlabel">26</span><span class="definition_thmtitle">Theta lift</span></div>
-    <div class="thm_thmcontent"><p>    The theta lift from \(\mathbf{MYD}_{\star '}(\mathcal{O}')\) to \(\mathbf{MYD}_\star (\mathcal{O})\), defined by formulas (9.29) and (9.30). </p>
+      <span class="definition_thmlabel">67</span><span class="definition_thmtitle">Theta lift \(\hat\vartheta \)</span></div>
+    <div class="thm_thmcontent"><p>    Four variants (paper Eq.&#160;(9.29)–(9.30)): </p>
+<ul class="itemize">
+  <li><p>\(\hat\vartheta _{CD} : \mathbf{MYD}_C \to \mathbf{MYD}_D\) (single branch): \(\mathcal{E} \mapsto T^j(\mathrm{augment}((p, q), \mathcal{E}))\). </p>
+</li>
+  <li><p>\(\hat\vartheta _{DC} : \mathbf{MYD}_D \to \mathbf{MYD}_C\) (two branches: standard with \(\mathrm{augment}((n, n), \mathcal{E})\); split with \(\mathrm{augment}((-1, -1), \Lambda (\mathcal{E}))\)). </p>
+</li>
+  <li><p>\(\hat\vartheta _{BM}, \hat\vartheta _{MB}\) analogous. </p>
+</li>
+</ul>
 </div>
 
-    <a class="latex_link" href="sect0009.html#def:thetaLift">LaTeX</a>
+    <a class="latex_link" href="sect0023.html#def:thetaLift">LaTeX</a>
     
     
-  <a class="lean_link lean_decl" href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/ILS.thetaLift">Lean</a>
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/ILS.thetaLift" class="lean_decl">ILS.thetaLift</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/ILS.thetaLift_CD" class="lean_decl">ILS.thetaLift_CD</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/ILS.thetaLift_DC" class="lean_decl">ILS.thetaLift_DC</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/ILS.thetaLift_BM" class="lean_decl">ILS.thetaLift_BM</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/ILS.thetaLift_MB" class="lean_decl">ILS.thetaLift_MB</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:translateM_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:translateM" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">17</span><span class="definition_thmtitle">paint translation \(\mathrm{translateM}\)</span></div>
+    <div class="thm_thmcontent"><p>    The involution </p>
+<div class="displaymath" id="a0000000054">
+  \[  \mathrm{translateM}(\bullet ) = \bullet ,\quad \mathrm{translateM}(s) = r,\quad \mathrm{translateM}(r) = s,\quad \mathrm{translateM}(c) = d,\quad \mathrm{translateM}(d) = c.  \]
+</div>
+<p> Note that \(\mathrm{translateM}\) preserves \(\mathrm{layerOrd}\) modulo the swaps. </p>
+</div>
+
+    <a class="latex_link" href="sect0009.html#def:translateM">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/translateM">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:truncate_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:truncate" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">63</span><span class="definition_thmtitle">Truncation \(\Lambda _{(p_0, q_0)}\)</span></div>
+    <div class="thm_thmcontent"><p>    Subtract \((p_0, q_0)\) from the first entry, defined when the containment condition \(\mathcal{E}[0] \supseteq (p_0, q_0)\) holds (both components non-negative and \(|\mathcal{E}[0]_i| \geq |(p_0, q_0)_i|\)). </p>
+</div>
+
+    <a class="latex_link" href="sect0021.html#def:truncate">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/ILS.truncate">Lean</a>
     
     
   
@@ -563,14 +1832,65 @@
       <span class="definition_thmcaption">
       Definition
       </span>
-      <span class="definition_thmlabel">20</span><span class="definition_thmtitle">Sign twist</span></div>
-    <div class="thm_thmcontent"><p>    For \(\star \in \{ B, D\} \) and \((\varepsilon ^+, \varepsilon ^-) \in \{ -1, 1\} ^2\), the sign twist \(\mathcal{E} \otimes (\varepsilon ^+, \varepsilon ^-)\) acts on odd-length rows by multiplying entries by powers of \(\pm 1\). </p>
+      <span class="definition_thmlabel">59</span><span class="definition_thmtitle">Sign twist \(\otimes (\varepsilon ^+, \varepsilon ^-)\)</span></div>
+    <div class="thm_thmcontent"><p>    (Paper Eq.&#160;(9.15).) For \((\varepsilon ^+, \varepsilon ^-) \in \mathbb {Z}^2\) (in practice \(\{ \pm 1\} ^2\)), acts only on odd-length rows (\(\ell = i + 1\) odd, \(i\) even): </p>
+<div class="displaymath" id="a0000000087">
+  \[  \mathrm{twistBDRow}(i,\  \varepsilon ^+, \varepsilon ^-)(p, q) := \begin{cases}  (p, q) &  \ell \text{ even} \\ (\varepsilon ^{+\, h + 1} \varepsilon ^{-\, h}\,  p,\  \varepsilon ^{-\, h + 1} \varepsilon ^{+\, h}\,  q) &  \ell \text{ odd, } h = i / 2. \end{cases}  \]
+</div>
+<p> Common cases: </p>
+<ul class="itemize">
+  <li><p>\((1, -1)\): sign twist \(\otimes 1^{+-}\) (B/D post-twist when \(\varepsilon _\tau = 1\)). </p>
+</li>
+  <li><p>\((-1, -1)\): det twist (C/M pre-twist when \(\varepsilon _\wp = 1\)). </p>
+</li>
+  <li><p>\((1, 1)\): identity. </p>
+</li>
+</ul>
 </div>
 
-    <a class="latex_link" href="sect0008.html#def:twistBD">LaTeX</a>
+    <a class="latex_link" href="sect0021.html#def:twistBD">LaTeX</a>
     
     
-  <a class="lean_link lean_decl" href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/ILS.twistBD">Lean</a>
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/ILS.twistBD" class="lean_decl">ILS.twistBD</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/ILS.twistBDRow" class="lean_decl">ILS.twistBDRow</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:yd_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:yd" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">4</span><span class="definition_thmtitle">Young diagram</span></div>
+    <div class="thm_thmcontent"><p>   A Young diagram \(\mu \) is a finite subset of \(\mathbb {N}^2\) which is a <em>down-set</em> under \((i, j) \leq (i', j') \iff i \leq i' \land j \leq j'\). Columns \(j\) have lengths \(\mu .\mathrm{colLen}(j) = |\{ i : (i, j) \in \mu \} |\). </p>
+</div>
+
+    <a class="latex_link" href="sect0004.html#def:yd">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/YoungDiagram">Lean</a>
     
     
   
@@ -593,20 +1913,23 @@
       <span class="lemma_thmcaption">
       Lemma
       </span>
-      <span class="lemma_thmlabel">5</span><span class="lemma_thmtitle">Lemma 10.3 C: shape-shift for C type</span></div>
-    <div class="thm_thmcontent"><p>    For \(\star = C\), the identity shape-shift returns the original PBP. The general C-type shape-shift (Case a.1 / a.2 / b.1 / b.2) is parameterized by a col-0 paint function and formalized in ShapeShiftC.lean. </p>
+      <span class="lemma_thmlabel">25</span><span class="lemma_thmtitle">Lemma 10.3 C — PBPSet cardinality</span></div>
+    <div class="thm_thmcontent"><p>    For shapes \((\mu _P', \mu _Q')\) reachable via C-type shape shift from \((\mu _P, \mu _Q)\): </p>
+<div class="displaymath" id="a0000000068">
+  \[  |\mathrm{PBP}_C(\mu _P, \mu _Q)| = |\mathrm{PBP}_C(\mu _P', \mu _Q')|.  \]
+</div>
 </div>
 
-    <a class="latex_link" href="sect0003.html#lem:10_3_C">LaTeX</a>
+    <a class="latex_link" href="sect0010.html#lem:10_3_C">LaTeX</a>
     
     
   <div class="tooltip">
       <span class="lean_link">Lean</span>
       <ul class="tooltip_list">
         
-           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/shapeShiftC_id_eq" class="lean_decl">shapeShiftC_id_eq</a></li>
-        
            <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/lemma_10_3_C" class="lean_decl">lemma_10_3_C</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/card_PBPSet_C_shapeShift" class="lean_decl">card_PBPSet_C_shapeShift</a></li>
         
       </ul>
   </div>
@@ -632,20 +1955,59 @@
       <span class="lemma_thmcaption">
       Lemma
       </span>
-      <span class="lemma_thmlabel">4</span><span class="lemma_thmtitle">Lemma 10.3 M: shape-shift involution</span></div>
-    <div class="thm_thmcontent"><p>    Applying \(\text{shapeShiftM}\) twice returns the original PBP. </p>
+      <span class="lemma_thmlabel">20</span><span class="lemma_thmtitle">Lemma 10.3 M — PBPSet cardinality equality</span></div>
+    <div class="thm_thmcontent"><p>    \(|\mathrm{PBP}_M(\mu _P, \mu _Q)| = |\mathrm{PBP}_M(\mu _P', \mu _Q')|\) for any column-0 swapped shape pair. </p>
 </div>
 
-    <a class="latex_link" href="sect0003.html#lem:10_3_M">LaTeX</a>
+    <a class="latex_link" href="sect0009.html#lem:10_3_M">LaTeX</a>
     
     
   <div class="tooltip">
       <span class="lean_link">Lean</span>
       <ul class="tooltip_list">
         
-           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/shapeShiftM_involution" class="lean_decl">shapeShiftM_involution</a></li>
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/card_PBPSet_M_shapeShift" class="lean_decl">card_PBPSet_M_shapeShift</a></li>
         
            <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/lemma_10_3_M" class="lean_decl">lemma_10_3_M</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lem:10_4_B_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lem:10_4_B" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">35</span><span class="lemma_thmtitle">Lemma 10.4 B — B\(\to \)M + signature is injective</span></div>
+    <div class="thm_thmcontent"><p>    For \(\gamma \in \{ B^+, B^-\} \) and \(\tau _1, \tau _2 \in \mathrm{PBP}_\gamma (\mu _P, \mu _Q)\) with the interlacing shape hypothesis \(\mathrm{dotScolLen}(\tau _i.\mathcal{P}, j) \geq \mathrm{dotScolLen}(\tau _i.\mathcal{Q}, j + 1)\): if \(\nabla _{BM}\tau _1 = \nabla _{BM}\tau _2\), \(\mathrm{Sign}(\tau _1) = \mathrm{Sign}(\tau _2)\), \(\varepsilon _{\tau _1} = \varepsilon _{\tau _2}\), then \(\tau _1 = \tau _2\). </p>
+</div>
+
+    <a class="latex_link" href="sect0014.html#lem:10_4_B">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/lemma_10_4_B" class="lean_decl">lemma_10_4_B</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/PBP.descent_inj_B" class="lean_decl">PBP.descent_inj_B</a></li>
         
       </ul>
   </div>
@@ -671,11 +2033,11 @@
       <span class="lemma_thmcaption">
       Lemma
       </span>
-      <span class="lemma_thmlabel">7</span><span class="lemma_thmtitle">Lemma 10.4 C: C→D descent injective</span></div>
-    <div class="thm_thmcontent"><p>   For \(\mu _Q.\text{shiftLeft} \leq \mu _P\), the C→D descent is injective on \(\mathrm{PBP}_C(\mu _P, \mu _Q)\). </p>
+      <span class="lemma_thmlabel">34</span><span class="lemma_thmtitle">Lemma 10.4 C — C\(\to \)D descent is injective</span></div>
+    <div class="thm_thmcontent"><p>    Let \(\mu _P, \mu _Q\) be shapes with \(\mathrm{shiftLeft}(\mu _Q) \leq \mu _P\). The map \(\nabla _{CD} : \mathrm{PBP}_C(\mu _P, \mu _Q) \to \mathrm{PBP}_D(\mu _P, \mathrm{shiftLeft}(\mu _Q))\) is injective. </p>
 </div>
 
-    <a class="latex_link" href="sect0004.html#lem:10_4_C">LaTeX</a>
+    <a class="latex_link" href="sect0014.html#lem:10_4_C">LaTeX</a>
     
     
   <div class="tooltip">
@@ -710,11 +2072,11 @@
       <span class="lemma_thmcaption">
       Lemma
       </span>
-      <span class="lemma_thmlabel">8</span><span class="lemma_thmtitle">Lemma 10.5 D: double descent D→C→D injective mod sig/eps</span></div>
-    <div class="thm_thmcontent"><p>   On \(\mathrm{PBP}_D(\mu _P, \mu _Q)\), the map \(\tau \mapsto (\nabla ^2\tau , \mathrm{Sign}(\tau ), \varepsilon _\tau )\) is injective. </p>
+      <span class="lemma_thmlabel">37</span><span class="lemma_thmtitle">Lemma 10.5 D — double descent + signature injective</span></div>
+    <div class="thm_thmcontent"><p>    On \(\mathrm{PBP}_D(\mu _P, \mu _Q)\), the map \(\tau \mapsto (\nabla ^2\tau , \mathrm{Sign}(\tau ), \varepsilon _\tau )\) is injective. </p>
 </div>
 
-    <a class="latex_link" href="sect0004.html#lem:10_5_D">LaTeX</a>
+    <a class="latex_link" href="sect0014.html#lem:10_5_D">LaTeX</a>
     
     
   <div class="tooltip">
@@ -724,6 +2086,47 @@
            <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/doubleDescent_D_injective_on_PBPSet" class="lean_decl">doubleDescent_D_injective_on_PBPSet</a></li>
         
            <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/lemma_10_5_D" class="lean_decl">lemma_10_5_D</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lem:10_5_M_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lem:10_5_M" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">36</span><span class="lemma_thmtitle">Lemma 10.5 M — M\(\to \)B descent is injective</span></div>
+    <div class="thm_thmcontent"><p>    Equal M\(\to \)B descent paints \(\Rightarrow \) equal M-type PBPs (same shapes). </p>
+</div>
+
+    <a class="latex_link" href="sect0014.html#lem:10_5_M">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/descentMB_PBP" class="lean_decl">descentMB_PBP</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/descentMB_injective" class="lean_decl">descentMB_injective</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/lemma_10_5_M" class="lean_decl">lemma_10_5_M</a></li>
         
       </ul>
   </div>
@@ -749,11 +2152,11 @@
       <span class="lemma_thmcaption">
       Lemma
       </span>
-      <span class="lemma_thmlabel">48</span><span class="lemma_thmtitle">Prop 11.11: no det twist</span></div>
-    <div class="thm_thmcontent"><p>    There exist no \(\tau _1, \tau _2\) with \(\mathcal{L}_\tau [_1] \otimes (1,1) = \mathcal{L}_\tau [_2]\). </p>
+      <span class="lemma_thmlabel">109</span><span class="lemma_thmtitle">Prop 11.11 — no det twist</span></div>
+    <div class="thm_thmcontent"><p>    There exist no \(\tau _1, \tau _2\) with \(\mathcal{L}_{\tau _1} \otimes (1, 1) = \mathcal{L}_{\tau _2}\) (the <em>det twist</em> would require impossible sign configurations). </p>
 </div>
 
-    <a class="latex_link" href="sect0017.html#lem:11_11">LaTeX</a>
+    <a class="latex_link" href="sect0038.html#lem:11_11">LaTeX</a>
     
     
   <div class="tooltip">
@@ -763,6 +2166,12 @@
            <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/prop_11_11_no_det" class="lean_decl">prop_11_11_no_det</a></li>
         
            <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/prop_11_11_PBP_D" class="lean_decl">prop_11_11_PBP_D</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/prop_11_11_PBP_Bplus" class="lean_decl">prop_11_11_PBP_Bplus</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/prop_11_11_PBP_Bminus" class="lean_decl">prop_11_11_PBP_Bminus</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/BMSZ.no_det_twist_same_sign" class="lean_decl">BMSZ.no_det_twist_same_sign</a></li>
         
       </ul>
   </div>
@@ -788,11 +2197,11 @@
       <span class="lemma_thmcaption">
       Lemma
       </span>
-      <span class="lemma_thmlabel">55</span><span class="lemma_thmtitle">Lemma 11.1(a) empty</span></div>
-    <div class="thm_thmcontent"><p>    Base case for \(|\check{\mathcal{O}}| = 0\). </p>
+      <span class="lemma_thmlabel">99</span><span class="lemma_thmtitle">Lemma 11.1(a): \(|\check{\mathcal{O}}| = 0\)</span></div>
+    <div class="thm_thmcontent"><p>    When \(|\check{\mathcal{O}}| = 0\): \(\mathcal{L}_\tau = \mathrm{AC.base}\, \gamma \). First entries: \((1, 0)\) for \(B^+\), \((0, -1)\) for \(B^-\), empty for \(C, D, M\). </p>
 </div>
 
-    <a class="latex_link" href="sect0019.html#lem:11_1_a_empty">LaTeX</a>
+    <a class="latex_link" href="sect0036.html#lem:11_1_a_empty">LaTeX</a>
     
     
   <div class="tooltip">
@@ -827,11 +2236,11 @@
       <span class="lemma_thmcaption">
       Lemma
       </span>
-      <span class="lemma_thmlabel">56</span><span class="lemma_thmtitle">Lemma 11.1(a) r₁=1</span></div>
-    <div class="thm_thmcontent"><p>   Base case \(r_1(\check{\mathcal{O}}) = 1\). </p>
+      <span class="lemma_thmlabel">100</span><span class="lemma_thmtitle">Lemma 11.1(a): \(\mathbf{r}_1(\check{\mathcal{O}}) = 1\)</span></div>
+    <div class="thm_thmcontent"><p>    When \(\mathbf{r}_1(\check{\mathcal{O}}) = 1\): \(\mathcal{L}_\tau \) is a single-row ILS \([(p_\tau , (-1)^{\varepsilon _\tau } q_\tau )]\). </p>
 </div>
 
-    <a class="latex_link" href="sect0019.html#lem:11_1_a_r1">LaTeX</a>
+    <a class="latex_link" href="sect0036.html#lem:11_1_a_r1">LaTeX</a>
     
     
   <div class="tooltip">
@@ -855,22 +2264,22 @@
 
 
     
-    <div class="dep-modal-container" id="lem:11_1_b_modal">
+    <div class="dep-modal-container" id="lem:11_1_b_abstract_modal">
       <div class="dep-modal-content">
           <button class="dep-closebtn">
 <svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
 </button>
         
-  <div class="thm" id="lem:11_1_b" style="display: none">
+  <div class="thm" id="lem:11_1_b_abstract" style="display: none">
     <div class="thm_thmheading">
       <span class="lemma_thmcaption">
       Lemma
       </span>
-      <span class="lemma_thmlabel">57</span><span class="lemma_thmtitle">Lemma 11.1(b) bijection</span></div>
-    <div class="thm_thmcontent"><p>    Abstract/concrete bijection for \(r_1(\check{\mathcal{O}}) = 1\) case; D-type specialization. </p>
+      <span class="lemma_thmlabel">102</span><span class="lemma_thmtitle">Lemma 11.1(b) — abstract bijection</span></div>
+    <div class="thm_thmcontent"><p>    Abstract form: given finite types \(\alpha \simeq \beta \) of equal cardinality and an injection \(f : \alpha \to \beta \), \(f\) is a bijection. </p>
 </div>
 
-    <a class="latex_link" href="sect0019.html#lem:11_1_b">LaTeX</a>
+    <a class="latex_link" href="sect0036.html#lem:11_1_b_abstract">LaTeX</a>
     
     
   <div class="tooltip">
@@ -880,8 +2289,6 @@
            <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/lemma_11_1_b_bijection" class="lean_decl">lemma_11_1_b_bijection</a></li>
         
            <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/lemma_11_1_b_bijection_concrete" class="lean_decl">lemma_11_1_b_bijection_concrete</a></li>
-        
-           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/lemma_11_1_b_bijection_D" class="lean_decl">lemma_11_1_b_bijection_D</a></li>
         
       </ul>
   </div>
@@ -896,25 +2303,34 @@
 
 
     
-    <div class="dep-modal-container" id="lem:11_5_atomic_modal">
+    <div class="dep-modal-container" id="lem:11_1_b_D_modal">
       <div class="dep-modal-content">
           <button class="dep-closebtn">
 <svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
 </button>
         
-  <div class="thm" id="lem:11_5_atomic" style="display: none">
+  <div class="thm" id="lem:11_1_b_D" style="display: none">
     <div class="thm_thmheading">
       <span class="lemma_thmcaption">
       Lemma
       </span>
-      <span class="lemma_thmlabel">40</span><span class="lemma_thmtitle">Lemma 11.5 atomic 3-fact discharge (PBP-level)</span></div>
-    <div class="thm_thmcontent"><p>    PBP-level wrapper discharging three primitive cell-count facts via PBP.signature_sum_D, PBP.residual_identity_D, and <span class="ttfamily">rfl</span>. </p>
+      <span class="lemma_thmlabel">103</span><span class="lemma_thmtitle">Lemma 11.1(b) D-type bijection</span></div>
+    <div class="thm_thmcontent"><p>    D-type specialisation: when \(\mathbf{r}_1(\check{\mathcal{O}}) = 1\), the map \(\mathrm{PBP}_D(\check{\mathcal{O}}) \times \mathrm{Fin}\, 2 \to \mathbf{MYD}_D(\mathcal{O})\) given by \((\tau , \varepsilon ) \mapsto \mathcal{L}_\tau \otimes (\varepsilon , \varepsilon )\) is a bijection, with explicit \(|\mathrm{PBP}_D(\ldots )| = 4m + 4\) card match. </p>
 </div>
 
-    <a class="latex_link" href="sect0013.html#lem:11_5_atomic">LaTeX</a>
+    <a class="latex_link" href="sect0036.html#lem:11_1_b_D">LaTeX</a>
     
     
-  <a class="lean_link lean_decl" href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/prop_11_5_D_atomic_pbp_discharged">Lean</a>
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/lemma_11_1_b_bijection_D" class="lean_decl">lemma_11_1_b_bijection_D</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/PBPExt_at_r1_eq_1_D" class="lean_decl">PBPExt_at_r1_eq_1_D</a></li>
+        
+      </ul>
+  </div>
     
     
   
@@ -926,22 +2342,83 @@
 
 
     
-    <div class="dep-modal-container" id="lem:11_5_D_modal">
+    <div class="dep-modal-container" id="lem:11_3_modal">
       <div class="dep-modal-content">
           <button class="dep-closebtn">
 <svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
 </button>
         
-  <div class="thm" id="lem:11_5_D" style="display: none">
+  <div class="thm" id="lem:11_3" style="display: none">
     <div class="thm_thmheading">
       <span class="lemma_thmcaption">
       Lemma
       </span>
-      <span class="lemma_thmlabel">39</span><span class="lemma_thmtitle">Lemma 11.5 D (ILS-level, unconditional)</span></div>
-    <div class="thm_thmcontent"><p>    Given an ILS \(E\) with firstColSign invariant and tail signature hypotheses, the inner ILS \(T^j(\mathrm{augment}(n_0, n_0)\, E)\) satisfies the tail signature identity. </p>
+      <span class="lemma_thmlabel">87</span><span class="lemma_thmtitle">Prop 11.3 — characterisation of \(x_\tau \) via signatures and \(\varepsilon \)</span></div>
+    <div class="thm_thmcontent"><p>    Assume \(\mathcal{P}.\mathrm{colLen}(0) {\gt} \mathcal{Q}.\mathrm{colLen}(0)\). Then: </p>
+<ol class="enumerate">
+  <li><p>\(\varepsilon _\tau = 0 \iff x_\tau = d\). </p>
+</li>
+  <li><p>\(p_{\tau _t} = 0 \iff x_\tau = s\). </p>
+</li>
+  <li><p>\(q_{\tau _t} = 0 \iff x_\tau = r\). </p>
+</li>
+</ol>
 </div>
 
-    <a class="latex_link" href="sect0013.html#lem:11_5_D">LaTeX</a>
+    <a class="latex_link" href="sect0029.html#lem:11_3">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/tailSymbol_eq_d_iff_epsilon_zero" class="lean_decl">tailSymbol_eq_d_iff_epsilon_zero</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/tailSignature_p_zero_iff_s" class="lean_decl">tailSignature_p_zero_iff_s</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/tailSignature_q_zero_iff_r" class="lean_decl">tailSignature_q_zero_iff_r</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lem:11_5_D_ILS_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lem:11_5_D_ILS" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">91</span><span class="lemma_thmtitle">Lemma 11.5 D (primitive case, ILS-level, unconditional)</span></div>
+    <div class="thm_thmcontent"><p>    Given an ILS \(E\) (intended as \(\mathcal{L}_{\tau ''}\)) with the firstColSign invariant </p>
+<div class="displaymath" id="a0000000111">
+  \[  \mathrm{fcSign}(E) = (\mathrm{Sign}(E).1 - n_{\mathrm{prev}},\  \mathrm{Sign}(E).2 - n_{\mathrm{prev}})  \]
+</div>
+<p> and target tail signature \((p_t, q_t)\) satisfying </p>
+<div class="displaymath" id="a0000000112">
+  \[  p_\tau - 2 n_{\mathrm{inner}} + \mathrm{Sign}(E).2 = p_t,\quad q_\tau - 2 n_{\mathrm{inner}} + \mathrm{Sign}(E).1 = q_t,  \]
+</div>
+<p> define \(n_0 := n_{\mathrm{inner}} - \mathrm{Sign}(E).1 - \mathrm{Sign}(E).2 + n_{\mathrm{prev}}\) and \(E_{\mathrm{inner}} := T^{\gamma _1}\big(E \oplus (n_0, n_0)\big)\). Then: </p>
+<div class="displaymath" id="a0000000113">
+  \begin{align*}  p_\tau - \mathrm{Sign}(E_{\mathrm{inner}}).1 - \mathrm{fcSign}(E_{\mathrm{inner}}).2 & = p_t, \\ q_\tau - \mathrm{Sign}(E_{\mathrm{inner}}).2 - \mathrm{fcSign}(E_{\mathrm{inner}}).1 & = q_t. \end{align*}
+</div>
+<p> These are the “outer augment” parameters consumed by the outer C\(\to \)D or M\(\to \)B lift. </p>
+</div>
+
+    <a class="latex_link" href="sect0033.html#lem:11_5_D_ILS">LaTeX</a>
     
     
   <div class="tooltip">
@@ -951,6 +2428,10 @@
            <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/ILS.lemma_11_5_D_unconditional" class="lean_decl">ILS.lemma_11_5_D_unconditional</a></li>
         
            <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/prop_11_5_D_unconditional" class="lean_decl">prop_11_5_D_unconditional</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/ILS.lemma_11_5_D" class="lean_decl">ILS.lemma_11_5_D</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/prop_11_5_D" class="lean_decl">prop_11_5_D</a></li>
         
       </ul>
   </div>
@@ -976,11 +2457,11 @@
       <span class="lemma_thmcaption">
       Lemma
       </span>
-      <span class="lemma_thmlabel">42</span><span class="lemma_thmtitle">Lemma 11.6 B⁺/B⁻</span></div>
-    <div class="thm_thmcontent"><p>    Mirror of D case for \(B^+, B^-\). </p>
+      <span class="lemma_thmlabel">97</span><span class="lemma_thmtitle">Lemma 11.6 \(B^+ / B^-\)</span></div>
+    <div class="thm_thmcontent"><p>    Parallel statements for \(\gamma \in \{ B^+, B^-\} \), using \(\hat\vartheta _{MB}\). </p>
 </div>
 
-    <a class="latex_link" href="sect0014.html#lem:11_6_B">LaTeX</a>
+    <a class="latex_link" href="sect0035.html#lem:11_6_B">LaTeX</a>
     
     
   <div class="tooltip">
@@ -1015,14 +2496,149 @@
       <span class="lemma_thmcaption">
       Lemma
       </span>
-      <span class="lemma_thmlabel">41</span><span class="lemma_thmtitle">Lemma 11.6 D (AC-level, unconditional)</span></div>
-    <div class="thm_thmcontent"><p>    For \(\gamma = D\) (no C/M pre-twist), AC.step output first entry equals \((p - \text{source\_ sig.1} - \text{source\_ fcSig.2},\,  \pm (q - \text{source\_ sig.2} - \text{source\_ fcSig.1}))\). </p>
+      <span class="lemma_thmlabel">96</span><span class="lemma_thmtitle">Lemma 11.6 D (AC-level, unconditional)</span></div>
+    <div class="thm_thmcontent"><p>    Let \(\gamma = D\) (no C/M pre-twist). For <span class="ttfamily">source : ACResult</span> with uniform \(\mathrm{Sign}= \mathrm{src\_ sig}\) and uniform \(\mathrm{fcSign} = \mathrm{src\_ fcSig}\) satisfying the standard-case condition (\(p - \mathrm{src\_ sig}.1 - \mathrm{src\_ fcSig}.2 \geq 0\), etc.): every branch \(r \in \mathrm{AC.step}(\mathrm{source}, D, p, q, \varepsilon _\tau , \varepsilon _\wp )\) has </p>
+<div class="displaymath" id="a0000000117">
+  \[  r.2.\mathrm{head?} = \mathrm{some}\big(p - \mathrm{src\_ sig}.1 - \mathrm{src\_ fcSig}.2,\  (-1)^{\varepsilon _\tau }(q - \mathrm{src\_ sig}.2 - \mathrm{src\_ fcSig}.1)\big).  \]
+</div>
 </div>
 
-    <a class="latex_link" href="sect0014.html#lem:11_6_D">LaTeX</a>
+    <a class="latex_link" href="sect0035.html#lem:11_6_D">LaTeX</a>
     
     
   <a class="lean_link lean_decl" href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/AC.lemma_11_6_D_unconditional">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lem:augment_sign_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lem:augment_sign" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">66</span><span class="lemma_thmtitle">Augmentation signature formula</span></div>
+    <div class="thm_thmcontent"><p>    For \(p_0, q_0 \geq 0\): </p>
+<div class="displaymath" id="a0000000091">
+  \[  \mathrm{Sign}\big((p_0, q_0) :: \mathcal{E}\big) = \big(p_0 + \mathrm{Sign}(\mathcal{E}).1 + \mathrm{fcSign}(\mathcal{E}).2,\  q_0 + \mathrm{Sign}(\mathcal{E}).2 + \mathrm{fcSign}(\mathcal{E}).1\big).  \]
+</div>
+</div>
+
+    <a class="latex_link" href="sect0022.html#lem:augment_sign">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/ILS.sign_cons_nonneg">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lem:fact1_sig_sum_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lem:fact1_sig_sum" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">92</span><span class="lemma_thmtitle">Fact 1 — signature sum D</span></div>
+    <div class="thm_thmcontent"><p>    \(p_\tau + q_\tau = 2|\tau |\). </p>
+</div>
+
+    <a class="latex_link" href="sect0034.html#lem:fact1_sig_sum">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/PBP.signature_sum_D" class="lean_decl">PBP.signature_sum_D</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/PaintedYoungDiagram.card_eq_sum_countSym" class="lean_decl">PaintedYoungDiagram.card_eq_sum_countSym</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lem:fact2_descent_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lem:fact2_descent" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">93</span><span class="lemma_thmtitle">Fact 2 — descent cell-count definitional</span></div>
+    <div class="thm_thmcontent"><p>   \(|\tau | - \mathbf{c}_1 = \) single-descent cell count (by definition of cells - col 0). </p>
+</div>
+
+    <a class="latex_link" href="sect0034.html#lem:fact2_descent">LaTeX</a>
+    
+    
+  
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lem:fact3_residual_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lem:fact3_residual" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">94</span><span class="lemma_thmtitle">Fact 3 — tail residual</span></div>
+    <div class="thm_thmcontent"><p>    \(p_{\tau _t} + q_{\tau _t} = 2 \mathbf{c}_1 - 2 \mathbf{c}_2\). </p>
+</div>
+
+    <a class="latex_link" href="sect0034.html#lem:fact3_residual">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/PBP.residual_identity_D">Lean</a>
     
     
   
@@ -1045,14 +2661,115 @@
       <span class="lemma_thmcaption">
       Lemma
       </span>
-      <span class="lemma_thmlabel">37</span><span class="lemma_thmtitle">Tail signature sum identity</span></div>
-    <div class="thm_thmcontent"><p>    \(p_{\tau _t} + q_{\tau _t} = 2 c_1(O) - 2 c_2(O)\). </p>
+      <span class="lemma_thmlabel">89</span><span class="lemma_thmtitle">Tail residual identity</span></div>
+    <div class="thm_thmcontent"><p>    For \(\tau \in \mathrm{PBP}_D\): </p>
+<div class="displaymath" id="a0000000106">
+  \[  p_{\tau _t} + q_{\tau _t} = 2 \cdot \mathbf{c}_1(\mathcal{O}) - 2 \cdot \mathbf{c}_2(\mathcal{O}).  \]
+</div>
 </div>
 
-    <a class="latex_link" href="sect0011.html#lem:residual_D">LaTeX</a>
+    <a class="latex_link" href="sect0030.html#lem:residual_D">LaTeX</a>
     
     
   <a class="lean_link lean_decl" href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/PBP.residual_identity_D">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lem:shapeShiftC_id_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lem:shapeShiftC_id" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">24</span><span class="lemma_thmtitle">shape shift C identity instance</span></div>
+    <div class="thm_thmcontent"><p>    The identity instance (parameterised by the trivial col-0 paint) returns the original PBP. Used as a degenerate witness. </p>
+</div>
+
+    <a class="latex_link" href="sect0010.html#lem:shapeShiftC_id">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/shapeShiftC_id" class="lean_decl">shapeShiftC_id</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/shapeShiftC_id_eq" class="lean_decl">shapeShiftC_id_eq</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lem:shapeShiftC_valid_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lem:shapeShiftC_valid" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">23</span><span class="lemma_thmtitle">\(\)</span></div>
+    <div class="thm_thmcontent"></div>
+
+    <a class="latex_link" href="sect0010.html#lem:shapeShiftC_valid">LaTeX</a>
+    
+    
+  
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lem:shapeShiftM_involution_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lem:shapeShiftM_involution" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">19</span><span class="lemma_thmtitle">shape shift M is an involution</span></div>
+    <div class="thm_thmcontent"><p>    \(\mathrm{shapeShiftM} \circ \mathrm{shapeShiftM} = \mathrm{id}\). </p>
+</div>
+
+    <a class="latex_link" href="sect0009.html#lem:shapeShiftM_involution">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/shapeShiftM_involution">Lean</a>
     
     
   
@@ -1075,11 +2792,15 @@
       <span class="lemma_thmcaption">
       Lemma
       </span>
-      <span class="lemma_thmlabel">36</span><span class="lemma_thmtitle">PBP signature sum, D type</span></div>
-    <div class="thm_thmcontent"><p>    \(p_\tau + q_\tau = 2 \cdot |\tau |\) for D-type PBP. </p>
+      <span class="lemma_thmlabel">88</span><span class="lemma_thmtitle">D-type signature sum</span></div>
+    <div class="thm_thmcontent"><p>    For \(\tau \in \mathrm{PBP}_D\): </p>
+<div class="displaymath" id="a0000000104">
+  \[  p_\tau + q_\tau = 2\cdot |\tau |.  \]
+</div>
+<p> (Each cell contributes exactly \(2\) to the total \(p + q\).) </p>
 </div>
 
-    <a class="latex_link" href="sect0011.html#lem:sig_sum_D">LaTeX</a>
+    <a class="latex_link" href="sect0030.html#lem:sig_sum_D">LaTeX</a>
     
     
   <a class="lean_link lean_decl" href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/PBP.signature_sum_D">Lean</a>
@@ -1105,14 +2826,152 @@
       <span class="lemma_thmcaption">
       Lemma
       </span>
-      <span class="lemma_thmlabel">22</span><span class="lemma_thmtitle">\(T^2 = \mathrm{id}\)</span></div>
-    <div class="thm_thmcontent"><p>    The character twist \(T\) is an involution: \(T^2 = \mathrm{id}\). </p>
+      <span class="lemma_thmlabel">61</span><span class="lemma_thmtitle">\(T^2 = \mathrm{id}\)</span></div>
+    <div class="thm_thmcontent"><p>    The character twist is an involution. </p>
 </div>
 
-    <a class="latex_link" href="sect0008.html#lem:T_squared">LaTeX</a>
+    <a class="latex_link" href="sect0021.html#lem:T_squared">LaTeX</a>
     
     
   <a class="lean_link lean_decl" href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/ILS.charTwistCM_involutive">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lem:tailSig_nonneg_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lem:tailSig_nonneg" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">86</span><span class="lemma_thmtitle">Tail signature non-negativity</span></div>
+    <div class="thm_thmcontent"><p>    \(p_{\tau _t} \geq 0\) and \(q_{\tau _t} \geq 0\). </p>
+</div>
+
+    <a class="latex_link" href="sect0028.html#lem:tailSig_nonneg">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/PBP.tailSignature_D_nonneg">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lem:tailSig_sum_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lem:tailSig_sum" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">85</span><span class="lemma_thmtitle">Tail signature sum identity</span></div>
+    <div class="thm_thmcontent"><p>    \(p_{\tau _t} + q_{\tau _t} = 2k\) where \(k\) is the tail length. </p>
+</div>
+
+    <a class="latex_link" href="sect0028.html#lem:tailSig_sum">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/PBP.tailSignature_D_sum_eq">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lem:twist_fcSign_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lem:twist_fcSign" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">65</span><span class="lemma_thmtitle">Twist preserves first-column signature</span></div>
+    <div class="thm_thmcontent"><p>    \(\mathrm{fcSign}(\mathcal{E} \otimes (\varepsilon ^+, \varepsilon ^-)) = \mathrm{fcSign}(\mathcal{E})\) and \(\mathrm{fcSign}(T^j \mathcal{E}) = \mathrm{fcSign}(\mathcal{E})\). </p>
+</div>
+
+    <a class="latex_link" href="sect0022.html#lem:twist_fcSign">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/ILS.twistBD_firstColSign" class="lean_decl">ILS.twistBD_firstColSign</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/ILS.charTwistCM_firstColSign" class="lean_decl">ILS.charTwistCM_firstColSign</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lem:twist_sign_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lem:twist_sign" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">64</span><span class="lemma_thmtitle">Twist preserves signature</span></div>
+    <div class="thm_thmcontent"><p>    \(\mathrm{Sign}(\mathcal{E} \otimes (\varepsilon ^+, \varepsilon ^-)) = \mathrm{Sign}(\mathcal{E})\) and \(\mathrm{Sign}(T^j \mathcal{E}) = \mathrm{Sign}(\mathcal{E})\). </p>
+</div>
+
+    <a class="latex_link" href="sect0022.html#lem:twist_sign">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/ILS.twistBD_sign" class="lean_decl">ILS.twistBD_sign</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/ILS.charTwistCM_sign" class="lean_decl">ILS.charTwistCM_sign</a></li>
+        
+      </ul>
+  </div>
     
     
   
@@ -1135,14 +2994,14 @@
       <span class="proposition_thmcaption">
       Proposition
       </span>
-      <span class="proposition_thmlabel">15</span><span class="proposition_thmtitle">Prop 10.11 B: counting for B type</span></div>
-    <div class="thm_thmcontent"><p>    For any valid B-type dual partition \(dp\) (sorted \(\geq \), even, positive) with shape match \((\mu _P, \mu _Q)\): </p>
-<div class="displaymath" id="a0000000025">
-  \[  |\mathrm{PBP}_{B^+}(\mu _P, \mu _Q)| + |\mathrm{PBP}_{B^-}(\mu _P, \mu _Q)| = \mathrm{tripleSum}\, (\mathrm{countPBP\_ B}\, dp).  \]
+      <span class="proposition_thmlabel">50</span><span class="proposition_thmtitle">Prop 10.11 B — counting for B type</span></div>
+    <div class="thm_thmcontent"><p>    For any valid B-type dual partition \(dp\) with shape \((\mu _P, \mu _Q)\) derived from \(dp\): </p>
+<div class="displaymath" id="a0000000081">
+  \[  |\mathrm{PBP}_{B^+}(\mu _P, \mu _Q)| + |\mathrm{PBP}_{B^-}(\mu _P, \mu _Q)| = \mathrm{tripleSum}\big(\mathrm{countPBP\_ B}(dp)\big).  \]
 </div>
 </div>
 
-    <a class="latex_link" href="sect0007.html#prop:10_11_B">LaTeX</a>
+    <a class="latex_link" href="sect0017.html#prop:10_11_B">LaTeX</a>
     
     
   <div class="tooltip">
@@ -1152,6 +3011,8 @@
            <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/card_PBPSet_B_eq_tripleSum_countPBP_B" class="lean_decl">card_PBPSet_B_eq_tripleSum_countPBP_B</a></li>
         
            <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/prop_10_11_B" class="lean_decl">prop_10_11_B</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/card_B_combined" class="lean_decl">card_B_combined</a></li>
         
       </ul>
   </div>
@@ -1177,14 +3038,14 @@
       <span class="proposition_thmcaption">
       Proposition
       </span>
-      <span class="proposition_thmlabel">16</span><span class="proposition_thmtitle">Prop 10.11 D: counting for D type</span></div>
-    <div class="thm_thmcontent"><p>    For any valid D-type dual partition \(dp\) (sorted \(\geq \), odd) with shape match: </p>
-<div class="displaymath" id="a0000000026">
-  \[  |\mathrm{PBP}_D(\mu _P, \mu _Q)| = \mathrm{tripleSum}\, (\mathrm{countPBP\_ D}\, dp).  \]
+      <span class="proposition_thmlabel">51</span><span class="proposition_thmtitle">Prop 10.11 D — counting for D type</span></div>
+    <div class="thm_thmcontent"><p>    For any valid D-type dual partition \(dp\): </p>
+<div class="displaymath" id="a0000000082">
+  \[  |\mathrm{PBP}_D(\mu _P, \mu _Q)| = \mathrm{tripleSum}\big(\mathrm{countPBP\_ D}(dp)\big).  \]
 </div>
 </div>
 
-    <a class="latex_link" href="sect0007.html#prop:10_11_D">LaTeX</a>
+    <a class="latex_link" href="sect0017.html#prop:10_11_D">LaTeX</a>
     
     
   <div class="tooltip">
@@ -1219,14 +3080,14 @@
       <span class="proposition_thmcaption">
       Proposition
       </span>
-      <span class="proposition_thmlabel">17</span><span class="proposition_thmtitle">Prop 10.12 C: counting for C type</span></div>
-    <div class="thm_thmcontent"><p>    For any valid C-type dual partition \(dp\) (sorted, odd, nonempty) with shape match: </p>
-<div class="displaymath" id="a0000000027">
-  \[  |\mathrm{PBP}_C(\mu _P, \mu _Q)| = \mathrm{countPBP\_ C}\, dp.  \]
+      <span class="proposition_thmlabel">52</span><span class="proposition_thmtitle">Prop 10.12 C — counting for C type</span></div>
+    <div class="thm_thmcontent"><p>    For any valid C-type dual partition \(dp\) (with \(dp \neq []\)): </p>
+<div class="displaymath" id="a0000000083">
+  \[  |\mathrm{PBP}_C(\mu _P, \mu _Q)| = \mathrm{countPBP\_ C}(dp).  \]
 </div>
 </div>
 
-    <a class="latex_link" href="sect0007.html#prop:10_12_C">LaTeX</a>
+    <a class="latex_link" href="sect0017.html#prop:10_12_C">LaTeX</a>
     
     
   <div class="tooltip">
@@ -1261,14 +3122,14 @@
       <span class="proposition_thmcaption">
       Proposition
       </span>
-      <span class="proposition_thmlabel">18</span><span class="proposition_thmtitle">Prop 10.12 M: counting for M type</span></div>
-    <div class="thm_thmcontent"><p>    For any valid M-type dual partition \(dp\) (sorted, even, positive) with shape match: </p>
-<div class="displaymath" id="a0000000028">
-  \[  |\mathrm{PBP}_M(\mu _P, \mu _Q)| = \mathrm{countPBP\_ M}\, dp.  \]
+      <span class="proposition_thmlabel">53</span><span class="proposition_thmtitle">Prop 10.12 M — counting for M type</span></div>
+    <div class="thm_thmcontent"><p>    For any valid M-type dual partition \(dp\): </p>
+<div class="displaymath" id="a0000000084">
+  \[  |\mathrm{PBP}_M(\mu _P, \mu _Q)| = \mathrm{countPBP\_ M}(dp).  \]
 </div>
 </div>
 
-    <a class="latex_link" href="sect0007.html#prop:10_12_M">LaTeX</a>
+    <a class="latex_link" href="sect0017.html#prop:10_12_M">LaTeX</a>
     
     
   <div class="tooltip">
@@ -1292,6 +3153,75 @@
 
 
     
+    <div class="dep-modal-container" id="prop:10_2_BD_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="prop:10_2_BD" style="display: none">
+    <div class="thm_thmheading">
+      <span class="proposition_thmcaption">
+      Proposition
+      </span>
+      <span class="proposition_thmlabel">27</span><span class="proposition_thmtitle">Prop 10.2 B / D — trivial</span></div>
+    <div class="thm_thmcontent"><p>    \(|\mathrm{PBP}_\gamma (\mu _P, \mu _Q)| = |\mathrm{PBP}_\gamma (\mu _P, \mu _Q)|\) for \(\gamma \in \{ B^+, B^-, D\} \). (Reflexive statement; the genuine content for B/D is the internal paint-permutation bijection, not captured at the Lean level.) </p>
+</div>
+
+    <a class="latex_link" href="sect0011.html#prop:10_2_BD">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/prop_10_2_PBP_B" class="lean_decl">prop_10_2_PBP_B</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/prop_10_2_PBP_D" class="lean_decl">prop_10_2_PBP_D</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="prop:10_2_C_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="prop:10_2_C" style="display: none">
+    <div class="thm_thmheading">
+      <span class="proposition_thmcaption">
+      Proposition
+      </span>
+      <span class="proposition_thmlabel">26</span><span class="proposition_thmtitle">Prop 10.2 C — PBP count independent of \(\wp \)</span></div>
+    <div class="thm_thmcontent">
+</div>
+
+    <a class="latex_link" href="sect0010.html#prop:10_2_C">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/prop_10_2_PBP_C">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
     <div class="dep-modal-container" id="prop:10_2_M_modal">
       <div class="dep-modal-content">
           <button class="dep-closebtn">
@@ -1303,20 +3233,53 @@
       <span class="proposition_thmcaption">
       Proposition
       </span>
-      <span class="proposition_thmlabel">6</span><span class="proposition_thmtitle">Prop 10.2 M: PBP count independent of \(\wp \)</span></div>
-    <div class="thm_thmcontent"><p>    For any shapes \((\mu _P', \mu _Q')\) related to \((\mu _P, \mu _Q)\) by col-0 swap, \(|\mathrm{PBP}_M(\mu _P, \mu _Q)| = |\mathrm{PBP}_M(\mu _P', \mu _Q')|\). </p>
+      <span class="proposition_thmlabel">21</span><span class="proposition_thmtitle">Prop 10.2 M — PBP count independent of \(\wp \)</span></div>
+    <div class="thm_thmcontent"><p>    The cardinality equality extends to arbitrary column-0 swap sequences. </p>
 </div>
 
-    <a class="latex_link" href="sect0003.html#prop:10_2_M">LaTeX</a>
+    <a class="latex_link" href="sect0009.html#prop:10_2_M">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/prop_10_2_PBP_M">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="prop:10_8_C_bal_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="prop:10_8_C_bal" style="display: none">
+    <div class="thm_thmheading">
+      <span class="proposition_thmcaption">
+      Proposition
+      </span>
+      <span class="proposition_thmlabel">39</span><span class="proposition_thmtitle">Prop 10.8(b) C balanced</span></div>
+    <div class="thm_thmcontent"><p>    If \(\mu _P.\mathrm{colLen}(0) = \mu _Q.\mathrm{colLen}(0) + 1\) (<em>balanced case</em>), the C\(\to \)D descent image is \(\{ \sigma \in \mathrm{PBP}_D \mid \mathrm{tailClass}(\sigma ) \in \{ \mathrm{DD}, \mathrm{RC}\} \} \): </p>
+<div class="displaymath" id="a0000000076">
+  \[  |\mathrm{PBP}_C(\mu _P, \mu _Q)| = \# \{ \mathrm{DD}\}  + \# \{ \mathrm{RC}\} .  \]
+</div>
+</div>
+
+    <a class="latex_link" href="sect0015.html#prop:10_8_C_bal">LaTeX</a>
     
     
   <div class="tooltip">
       <span class="lean_link">Lean</span>
       <ul class="tooltip_list">
         
-           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/card_PBPSet_M_shapeShift" class="lean_decl">card_PBPSet_M_shapeShift</a></li>
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/card_C_eq_DD_plus_RC_balanced" class="lean_decl">card_C_eq_DD_plus_RC_balanced</a></li>
         
-           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/prop_10_2_PBP_M" class="lean_decl">prop_10_2_PBP_M</a></li>
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/prop_10_8_C_balanced" class="lean_decl">prop_10_8_C_balanced</a></li>
         
       </ul>
   </div>
@@ -1342,11 +3305,14 @@
       <span class="proposition_thmcaption">
       Proposition
       </span>
-      <span class="proposition_thmlabel">9</span><span class="proposition_thmtitle">Prop 10.8 C primitive case</span></div>
-    <div class="thm_thmcontent"><p>    If \(\mu _Q.\text{colLen}\, 0 \geq \mu _P.\text{colLen}\, 0\), the C→D descent is bijective: \(|\mathrm{PBP}_C(\mu _P, \mu _Q)| = |\mathrm{PBP}_D(\mu _P, \mu _Q.\text{shiftLeft})|\). </p>
+      <span class="proposition_thmlabel">38</span><span class="proposition_thmtitle">Prop 10.8(a) C primitive</span></div>
+    <div class="thm_thmcontent"><p>    If \(\mu _Q.\mathrm{colLen}(0) \geq \mu _P.\mathrm{colLen}(0)\) (<em>primitive case</em>), then </p>
+<div class="displaymath" id="a0000000075">
+  \[  |\mathrm{PBP}_C(\mu _P, \mu _Q)| = |\mathrm{PBP}_D(\mu _P, \mathrm{shiftLeft}(\mu _Q))|.  \]
+</div>
 </div>
 
-    <a class="latex_link" href="sect0005.html#prop:10_8_C_prim">LaTeX</a>
+    <a class="latex_link" href="sect0015.html#prop:10_8_C_prim">LaTeX</a>
     
     
   <div class="tooltip">
@@ -1381,11 +3347,14 @@
       <span class="proposition_thmcaption">
       Proposition
       </span>
-      <span class="proposition_thmlabel">11</span><span class="proposition_thmtitle">Prop 10.8 M balanced case</span></div>
-    <div class="thm_thmcontent"><p>   If \(\mu _P.\text{colLen}\, 0 = \mu _Q.\text{colLen}\, 0 {\gt} 0\): the M→B descent image is all of \(B^+\) plus the subset of \(B^-\) with bottom-Q layerOrd&#160;\({\gt} 1\). </p>
+      <span class="proposition_thmlabel">41</span><span class="proposition_thmtitle">Prop 10.8(b) M balanced</span></div>
+    <div class="thm_thmcontent"><p>    If \(\mu _P.\mathrm{colLen}(0) = \mu _Q.\mathrm{colLen}(0) {\gt} 0\): </p>
+<div class="displaymath" id="a0000000078">
+  \[  |\mathrm{PBP}_M(\mu _P, \mu _Q)| = |\mathrm{PBP}_{B^+}(\cdots )| + |\{ \sigma \in \mathrm{PBP}_{B^-}(\cdots ) : \mathrm{layerOrd}(\sigma .\mathcal{Q}(c_2 - 1, 0)) {\gt} 1\} |.  \]
+</div>
 </div>
 
-    <a class="latex_link" href="sect0005.html#prop:10_8_M_bal">LaTeX</a>
+    <a class="latex_link" href="sect0015.html#prop:10_8_M_bal">LaTeX</a>
     
     
   <div class="tooltip">
@@ -1420,11 +3389,14 @@
       <span class="proposition_thmcaption">
       Proposition
       </span>
-      <span class="proposition_thmlabel">10</span><span class="proposition_thmtitle">Prop 10.8 M primitive case</span></div>
-    <div class="thm_thmcontent"><p>   If \(\mu _P.\text{colLen}\, 0 {\gt} \mu _Q.\text{colLen}\, 0\): \(|\mathrm{PBP}_M(\mu _P, \mu _Q)| = |\mathrm{PBP}_{B^+}(\mu _P.\text{shiftLeft}, \mu _Q)| + |\mathrm{PBP}_{B^-}(\mu _P.\text{shiftLeft}, \mu _Q)|\). </p>
+      <span class="proposition_thmlabel">40</span><span class="proposition_thmtitle">Prop 10.8(a) M primitive</span></div>
+    <div class="thm_thmcontent"><p>    If \(\mu _P.\mathrm{colLen}(0) {\gt} \mu _Q.\mathrm{colLen}(0)\) (<em>primitive</em>): </p>
+<div class="displaymath" id="a0000000077">
+  \[  |\mathrm{PBP}_M(\mu _P, \mu _Q)| = |\mathrm{PBP}_{B^+}(\mathrm{shiftLeft}(\mu _P), \mu _Q)| + |\mathrm{PBP}_{B^-}(\mathrm{shiftLeft}(\mu _P), \mu _Q)|.  \]
+</div>
 </div>
 
-    <a class="latex_link" href="sect0005.html#prop:10_8_M_prim">LaTeX</a>
+    <a class="latex_link" href="sect0015.html#prop:10_8_M_prim">LaTeX</a>
     
     
   <div class="tooltip">
@@ -1459,11 +3431,11 @@
       <span class="proposition_thmcaption">
       Proposition
       </span>
-      <span class="proposition_thmlabel">13</span><span class="proposition_thmtitle">Prop 10.9 B: double descent injective for B type</span></div>
-    <div class="thm_thmcontent"><p>   Same for \(\gamma \in \{ B^+, B^-\} \) with additional interlacing shape constraint. </p>
+      <span class="proposition_thmlabel">43</span><span class="proposition_thmtitle">Prop 10.9 B — double descent injective</span></div>
+    <div class="thm_thmcontent"><p>    Analogue for \(\gamma \in \{ B^+, B^-\} \), under the interlacing constraint. </p>
 </div>
 
-    <a class="latex_link" href="sect0006.html#prop:10_9_B">LaTeX</a>
+    <a class="latex_link" href="chap-ddescent.html#prop:10_9_B">LaTeX</a>
     
     
   <div class="tooltip">
@@ -1498,11 +3470,11 @@
       <span class="proposition_thmcaption">
       Proposition
       </span>
-      <span class="proposition_thmlabel">12</span><span class="proposition_thmtitle">Prop 10.9 D: double descent injective for D type</span></div>
-    <div class="thm_thmcontent"><p>    For D-type PBPs with same shape, same double descent paint, same signature, and same epsilon: \(\tau _1 = \tau _2\). </p>
+      <span class="proposition_thmlabel">42</span><span class="proposition_thmtitle">Prop 10.9 D — double descent is injective modulo \((\mathrm{Sign}, \varepsilon )\)</span></div>
+    <div class="thm_thmcontent"><p>    For D-type PBPs \(\tau _1, \tau _2\) with identical shapes, identical \(\nabla ^2\tau \), identical \(\mathrm{Sign}\), and identical \(\varepsilon \): \(\tau _1 = \tau _2\). </p>
 </div>
 
-    <a class="latex_link" href="sect0006.html#prop:10_9_D">LaTeX</a>
+    <a class="latex_link" href="chap-ddescent.html#prop:10_9_D">LaTeX</a>
     
     
   <div class="tooltip">
@@ -1526,6 +3498,36 @@
 
 
     
+    <div class="dep-modal-container" id="prop:11_10_D_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="prop:11_10_D" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">108</span><span class="lemma_thmtitle">Prop 11.10 — tail signatures equal from equal AC</span></div>
+    <div class="thm_thmcontent"><p>    If \(L_1 = L_2 \in \mathrm{ACResult}\) are non-empty with each branch having the same first entry formula as \(\tau _1, \tau _2\), then \((p_{\tau _1, t}, q_{\tau _1, t}) = (p_{\tau _2, t}, q_{\tau _2, t})\). </p>
+</div>
+
+    <a class="latex_link" href="sect0038.html#prop:11_10_D">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/prop_11_10_PBP_D">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
     <div class="dep-modal-container" id="prop:11_12_modal">
       <div class="dep-modal-content">
           <button class="dep-closebtn">
@@ -1537,11 +3539,11 @@
       <span class="proposition_thmcaption">
       Proposition
       </span>
-      <span class="proposition_thmlabel">49</span><span class="proposition_thmtitle">Prop 11.12: injectivity modulo twist</span></div>
-    <div class="thm_thmcontent"><p>    \(\mathcal{L}_\tau [_1] \otimes (\varepsilon _1, \varepsilon _1) = \mathcal{L}_\tau [_2] \otimes (\varepsilon _2, \varepsilon _2)\) implies \(\varepsilon _1 = \varepsilon _2\), \(\varepsilon _{\tau _1} = \varepsilon _{\tau _2}\), \(\mathcal{L}_\tau [_1] = \mathcal{L}_\tau [_2]\). </p>
+      <span class="proposition_thmlabel">110</span><span class="proposition_thmtitle">Prop 11.12 — injectivity modulo \(\varepsilon \)</span></div>
+    <div class="thm_thmcontent"><p>    If \(\mathcal{L}_{\tau _1} \otimes (\varepsilon _1, \varepsilon _1) = \mathcal{L}_{\tau _2} \otimes (\varepsilon _2, \varepsilon _2)\), then \(\varepsilon _1 = \varepsilon _2\), \(\varepsilon _{\tau _1} = \varepsilon _{\tau _2}\), and \(\mathcal{L}_{\tau _1} = \mathcal{L}_{\tau _2}\). </p>
 </div>
 
-    <a class="latex_link" href="sect0017.html#prop:11_12">LaTeX</a>
+    <a class="latex_link" href="sect0038.html#prop:11_12">LaTeX</a>
     
     
   <div class="tooltip">
@@ -1551,6 +3553,8 @@
            <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/prop_11_12" class="lean_decl">prop_11_12</a></li>
         
            <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/prop_11_12_PBP_D" class="lean_decl">prop_11_12_PBP_D</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/prop_11_12_PBP" class="lean_decl">prop_11_12_PBP</a></li>
         
            <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/prop_11_12_PBP_Bplus" class="lean_decl">prop_11_12_PBP_Bplus</a></li>
         
@@ -1580,11 +3584,11 @@
       <span class="proposition_thmcaption">
       Proposition
       </span>
-      <span class="proposition_thmlabel">50</span><span class="proposition_thmtitle">Prop 11.13: chain injectivity</span></div>
-    <div class="thm_thmcontent"><p>    Full chain injectivity for AC.fold chains. </p>
+      <span class="proposition_thmlabel">111</span><span class="proposition_thmtitle">Prop 11.13 — chain injectivity</span></div>
+    <div class="thm_thmcontent"><p>    Full AC.fold chain injectivity: equal outputs \(\Rightarrow \) equal chains \(\Rightarrow \) equal input PBPs. </p>
 </div>
 
-    <a class="latex_link" href="sect0017.html#prop:11_13">LaTeX</a>
+    <a class="latex_link" href="sect0038.html#prop:11_13">LaTeX</a>
     
     
   <div class="tooltip">
@@ -1596,6 +3600,8 @@
            <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/prop_11_13_PBP_Bplus" class="lean_decl">prop_11_13_PBP_Bplus</a></li>
         
            <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/prop_11_13_PBP_Bminus" class="lean_decl">prop_11_13_PBP_Bminus</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/BMSZ.ac_chain_injective" class="lean_decl">BMSZ.ac_chain_injective</a></li>
         
       </ul>
   </div>
@@ -1621,11 +3627,12 @@
       <span class="proposition_thmcaption">
       Proposition
       </span>
-      <span class="proposition_thmlabel">51</span><span class="proposition_thmtitle">Prop 11.14 surjectivity from counting</span></div>
-    <div class="thm_thmcontent"><p>    Given \(\alpha \simeq \beta \) (equal cardinality) and an injective \(f : \alpha \to \beta \), \(f\) is surjective. </p>
+      <span class="proposition_thmlabel">112</span><span class="proposition_thmtitle">Prop 11.14 — surjectivity from counting</span></div>
+    <div class="thm_thmcontent"><p>    Given a finite \(\alpha \), a finite \(\beta \), an injection \(f : \alpha \to \beta \), and an equivalence \(e : \alpha \simeq \beta \) witnessing \(|\alpha | = |\beta |\): \(f\) is surjective. </p>
+<p>Applied with \(\alpha = \mathrm{PBP}_\gamma \times \mathrm{Fin}\, 2\) and \(\beta = \mathbf{MYD}_\gamma \), with injectivity from Prop&#160;<a href="sect0038.html#prop:11_12">110</a> and card match from Section&#160;10 counting. </p>
 </div>
 
-    <a class="latex_link" href="sect0018.html#prop:11_14">LaTeX</a>
+    <a class="latex_link" href="sect0039.html#prop:11_14">LaTeX</a>
     
     
   <div class="tooltip">
@@ -1638,6 +3645,8 @@
         
            <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/prop_11_14_PBP_Bminus" class="lean_decl">prop_11_14_PBP_Bminus</a></li>
         
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/BMSZ.surjectivity_from_counting" class="lean_decl">BMSZ.surjectivity_from_counting</a></li>
+        
       </ul>
   </div>
     
@@ -1651,31 +3660,47 @@
 
 
     
-    <div class="dep-modal-container" id="prop:11_15_B_modal">
+    <div class="dep-modal-container" id="prop:11_15_modal">
       <div class="dep-modal-content">
           <button class="dep-closebtn">
 <svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
 </button>
         
-  <div class="thm" id="prop:11_15_B" style="display: none">
+  <div class="thm" id="prop:11_15" style="display: none">
     <div class="thm_thmheading">
       <span class="proposition_thmcaption">
       Proposition
       </span>
-      <span class="proposition_thmlabel">53</span><span class="proposition_thmtitle">Prop 11.15 B±: main bijection</span></div>
-    <div class="thm_thmcontent"><p>    Mirror for \(B^\pm \) types. </p>
+      <span class="proposition_thmlabel">113</span><span class="proposition_thmtitle">Prop 11.15 — main bijection for B/D types</span></div>
+    <div class="thm_thmcontent"><p>    The map \((\tau , \varepsilon ) \mapsto \mathcal{L}_\tau \otimes (\varepsilon , \varepsilon )\) is a bijection </p>
+<div class="displaymath" id="a0000000124">
+  \[  \mathrm{PBP}_\gamma (\check{\mathcal{O}}) \times \mathrm{Fin}\, 2 \  \xrightarrow {\sim }\  \mathbf{MYD}_\gamma (\mathcal{O})  \]
+</div>
+<p> for \(\gamma \in \{ D, B^+, B^-\} \). </p>
 </div>
 
-    <a class="latex_link" href="sect0018.html#prop:11_15_B">LaTeX</a>
+    <a class="latex_link" href="sect0039.html#prop:11_15">LaTeX</a>
     
     
   <div class="tooltip">
       <span class="lean_link">Lean</span>
       <ul class="tooltip_list">
         
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/prop_11_15" class="lean_decl">prop_11_15</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/prop_11_15_PBP" class="lean_decl">prop_11_15_PBP</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/prop_11_15_PBP_D_complete" class="lean_decl">prop_11_15_PBP_D_complete</a></li>
+        
            <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/prop_11_15_PBP_Bplus_complete" class="lean_decl">prop_11_15_PBP_Bplus_complete</a></li>
         
            <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/prop_11_15_PBP_Bminus_complete" class="lean_decl">prop_11_15_PBP_Bminus_complete</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/prop_11_15_complete" class="lean_decl">prop_11_15_complete</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/prop_11_15_injectivity" class="lean_decl">prop_11_15_injectivity</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/prop_11_15_PBP_D_injective_full" class="lean_decl">prop_11_15_PBP_D_injective_full</a></li>
         
       </ul>
   </div>
@@ -1690,25 +3715,34 @@
 
 
     
-    <div class="dep-modal-container" id="prop:11_15_D_modal">
+    <div class="dep-modal-container" id="prop:11_16_modal">
       <div class="dep-modal-content">
           <button class="dep-closebtn">
 <svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
 </button>
         
-  <div class="thm" id="prop:11_15_D" style="display: none">
+  <div class="thm" id="prop:11_16" style="display: none">
     <div class="thm_thmheading">
       <span class="proposition_thmcaption">
       Proposition
       </span>
-      <span class="proposition_thmlabel">52</span><span class="proposition_thmtitle">Prop 11.15 D: main bijection</span></div>
-    <div class="thm_thmcontent"><p>    The map \((\tau , \varepsilon ) \mapsto \mathcal{L}_\tau \otimes (\varepsilon , \varepsilon )\) is bijective onto \(\mathbf{MYD}_D(\mathcal{O})\). </p>
+      <span class="proposition_thmlabel">114</span><span class="proposition_thmtitle">Prop 11.16 — C/\(\tilde{C}\) bijection from counting</span></div>
+    <div class="thm_thmcontent"><p>    Abstract form of Prop 11.16 for C and \(\tilde{C}\) types, via counting + injectivity. </p>
 </div>
 
-    <a class="latex_link" href="sect0018.html#prop:11_15_D">LaTeX</a>
+    <a class="latex_link" href="sect0039.html#prop:11_16">LaTeX</a>
     
     
-  <a class="lean_link lean_decl" href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/prop_11_15_PBP_D_complete">Lean</a>
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/prop_11_16_PBP_C" class="lean_decl">prop_11_16_PBP_C</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/prop_11_16_PBP_M" class="lean_decl">prop_11_16_PBP_M</a></li>
+        
+      </ul>
+  </div>
     
     
   
@@ -1731,20 +3765,28 @@
       <span class="proposition_thmcaption">
       Proposition
       </span>
-      <span class="proposition_thmlabel">54</span><span class="proposition_thmtitle">Prop 11.17 C/M: main bijection</span></div>
-    <div class="thm_thmcontent"><p>    For \(\star \in \{ C, \tilde{C}\} \): \(\tau \mapsto \mathcal{L}_\tau \) is bijective onto \(\mathbf{MYD}_\star (\mathcal{O})\). </p>
+      <span class="proposition_thmlabel">115</span><span class="proposition_thmtitle">Prop 11.17 — main bijection for C/\(\tilde{C}\)</span></div>
+    <div class="thm_thmcontent"><p>    For \(\star \in \{ C, \tilde{C}\} \): \(\tau \mapsto \mathcal{L}_\tau \) is a bijection \(\mathrm{PBP}_\star (\check{\mathcal{O}}) \xrightarrow {\sim } \mathbf{MYD}_\star (\mathcal{O})\). </p>
 </div>
 
-    <a class="latex_link" href="sect0018.html#prop:11_17">LaTeX</a>
+    <a class="latex_link" href="sect0039.html#prop:11_17">LaTeX</a>
     
     
   <div class="tooltip">
       <span class="lean_link">Lean</span>
       <ul class="tooltip_list">
         
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/prop_11_17" class="lean_decl">prop_11_17</a></li>
+        
            <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/prop_11_17_PBP_C" class="lean_decl">prop_11_17_PBP_C</a></li>
         
            <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/prop_11_17_PBP_M" class="lean_decl">prop_11_17_PBP_M</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/prop_11_17_PBP_C_injective" class="lean_decl">prop_11_17_PBP_C_injective</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/prop_11_17_PBP_M_injective" class="lean_decl">prop_11_17_PBP_M_injective</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/prop_11_17_injectivity" class="lean_decl">prop_11_17_injectivity</a></li>
         
       </ul>
   </div>
@@ -1770,11 +3812,19 @@
       <span class="proposition_thmcaption">
       Proposition
       </span>
-      <span class="proposition_thmlabel">38</span><span class="proposition_thmtitle">Prop 11.4: D-type signature decomposition</span></div>
-    <div class="thm_thmcontent"><p>    \(\mathrm{Sign}(\tau )\) decomposes as \(\mu _Q.\text{colLen}\, 0 + \text{colGe1 contribution} + \text{tail contribution}\) per component. </p>
+      <span class="proposition_thmlabel">90</span><span class="proposition_thmtitle">Prop 11.4 D — signature decomposition (Eq 11.7)</span></div>
+    <div class="thm_thmcontent"><p>    (Primitive case \(\mathbf{r}_2(\check{\mathcal{O}}) {\gt} \mathbf{r}_3(\check{\mathcal{O}})\).) The signature splits as </p>
+<div class="displaymath" id="a0000000108">
+  \[  \mathrm{Sign}(\tau ) = (\mathbf{c}_2(\mathcal{O}), \mathbf{c}_2(\mathcal{O})) + \mathrm{Sign}(\nabla ^2\tau ) + \mathrm{tailSig}(\tau ).  \]
+</div>
+<p> More explicitly (Lean form): </p>
+<div class="displaymath" id="a0000000109">
+  \begin{align*}  p_\tau & = \mathbf{c}_2(\mathcal{O}) + p_{\nabla ^2\tau } + p_{\tau _t} \\ q_\tau & = \mathbf{c}_2(\mathcal{O}) + q_{\nabla ^2\tau } + q_{\tau _t} \end{align*}
+</div>
+<p> where \(\mathbf{c}_2(\mathcal{O}) = \tau .\mathcal{Q}.\mathrm{colLen}(0)\). </p>
 </div>
 
-    <a class="latex_link" href="sect0012.html#prop:11_4">LaTeX</a>
+    <a class="latex_link" href="sect0031.html#prop:11_4">LaTeX</a>
     
     
   <div class="tooltip">
@@ -1811,11 +3861,11 @@
       <span class="proposition_thmcaption">
       Proposition
       </span>
-      <span class="proposition_thmlabel">44</span><span class="proposition_thmtitle">Prop 11.7: \(\mathcal{L}_\tau \) is multiplicity free</span></div>
-    <div class="thm_thmcontent"><p>    By induction. Sign twist, \(T\), augmentation, truncation all preserve multiplicity free. </p>
+      <span class="proposition_thmlabel">81</span><span class="proposition_thmtitle">Prop 11.7 — \(\mathcal{L}_\tau \) is multiplicity free</span></div>
+    <div class="thm_thmcontent"><p>    The AC output \(\mathcal{L}_\tau \in \mathbb {Z}[\mathbf{MYD}_\star ]\) is multiplicity free. </p>
 </div>
 
-    <a class="latex_link" href="sect0015.html#prop:11_7">LaTeX</a>
+    <a class="latex_link" href="sect0027.html#prop:11_7">LaTeX</a>
     
     
   <a class="lean_link lean_decl" href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/prop_11_7_multiplicityFree">Lean</a>
@@ -1841,11 +3891,21 @@
       <span class="proposition_thmcaption">
       Proposition
       </span>
-      <span class="proposition_thmlabel">45</span><span class="proposition_thmtitle">Prop 11.8 (ACResult-level)</span></div>
-    <div class="thm_thmcontent"><p>    Truncation conditions on \(\mathcal{L}_\tau ^\pm \) based on tail symbol \(x_\tau \). </p>
+      <span class="proposition_thmlabel">104</span><span class="proposition_thmtitle">Prop 11.8 (AC level)</span></div>
+    <div class="thm_thmcontent"><p>    For \(\gamma \in \{ D, B^+, B^-\} \) and tail symbol \(x_\tau \): </p>
+<ol class="enumerate">
+  <li><p>\(\mathcal{L}_\tau \neq 0\). </p>
+</li>
+  <li><p>\(x_\tau = s \Rightarrow \mathcal{L}_\tau ^+ = 0\) and \(\mathcal{L}_\tau ^- = 0\). </p>
+</li>
+  <li><p>\(x_\tau \in \{ r, c\}  \Rightarrow \mathcal{L}_\tau ^+ \neq 0\) and \(\mathcal{L}_\tau ^- = 0\). </p>
+</li>
+  <li><p>\(x_\tau = d \Rightarrow \mathcal{L}_\tau ^+ \neq 0\) and \(\mathcal{L}_\tau ^- \neq 0\). </p>
+</li>
+</ol>
 </div>
 
-    <a class="latex_link" href="sect0016.html#prop:11_8_ac">LaTeX</a>
+    <a class="latex_link" href="sect0037.html#prop:11_8_ac">LaTeX</a>
     
     
   <div class="tooltip">
@@ -1855,6 +3915,8 @@
            <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/prop_11_8" class="lean_decl">prop_11_8</a></li>
         
            <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/prop_11_8_nonzero" class="lean_decl">prop_11_8_nonzero</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/prop_11_8_PBP" class="lean_decl">prop_11_8_PBP</a></li>
         
       </ul>
   </div>
@@ -1880,11 +3942,11 @@
       <span class="proposition_thmcaption">
       Proposition
       </span>
-      <span class="proposition_thmlabel">46</span><span class="proposition_thmtitle">Prop 11.8 PBP-level closed wrapper</span></div>
-    <div class="thm_thmcontent"><p>    PBP wrapper for \(\gamma \in \{ D, B^+, B^-\} \). </p>
+      <span class="proposition_thmlabel">105</span><span class="proposition_thmtitle">Prop 11.8 (PBP level wrappers)</span></div>
+    <div class="thm_thmcontent">
 </div>
 
-    <a class="latex_link" href="sect0016.html#prop:11_8_pbp">LaTeX</a>
+    <a class="latex_link" href="sect0037.html#prop:11_8_pbp">LaTeX</a>
     
     
   <div class="tooltip">
@@ -1910,65 +3972,31 @@
 
 
     
-    <div class="dep-modal-container" id="prop:11_9_D_modal">
+    <div class="dep-modal-container" id="prop:11_9_B_modal">
       <div class="dep-modal-content">
           <button class="dep-closebtn">
 <svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
 </button>
         
-  <div class="thm" id="prop:11_9_D" style="display: none">
+  <div class="thm" id="prop:11_9_B" style="display: none">
     <div class="thm_thmheading">
       <span class="lemma_thmcaption">
       Lemma
       </span>
-      <span class="lemma_thmlabel">47</span><span class="lemma_thmtitle">Prop 11.9 D numerical</span></div>
-    <div class="thm_thmcontent"><p>    Numerical constraint on D-type tail signatures under cross-twist equation. </p>
+      <span class="lemma_thmlabel">107</span><span class="lemma_thmtitle">Prop 11.9 B variants</span></div>
+    <div class="thm_thmcontent">
 </div>
 
-    <a class="latex_link" href="sect0017.html#prop:11_9_D">LaTeX</a>
-    
-    
-  <a class="lean_link lean_decl" href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/prop_11_9_PBP_D_numerical">Lean</a>
-    
-    
-  
-    
-  </div>
-    
-      </div>
-    </div>
-
-
-    
-    <div class="dep-modal-container" id="thm:AC_step_fcSign_BD_modal">
-      <div class="dep-modal-content">
-          <button class="dep-closebtn">
-<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
-</button>
-        
-  <div class="thm" id="thm:AC_step_fcSign_BD" style="display: none">
-    <div class="thm_thmheading">
-      <span class="theorem_thmcaption">
-      Theorem
-      </span>
-      <span class="theorem_thmlabel">32</span><span class="theorem_thmtitle">firstColSign invariant for B/D step</span></div>
-    <div class="thm_thmcontent"><p>    \(\mathrm{firstColSign}(\text{AC.step output}) = (p - \text{prev\_ sig.1}, q - \text{prev\_ sig.2})\). </p>
-</div>
-
-    <a class="latex_link" href="sect0010.html#thm:AC_step_fcSign_BD">LaTeX</a>
+    <a class="latex_link" href="sect0038.html#prop:11_9_B">LaTeX</a>
     
     
   <div class="tooltip">
       <span class="lean_link">Lean</span>
       <ul class="tooltip_list">
         
-           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/AC.step_firstColSign_D" class="lean_decl">AC.step_firstColSign_D</a></li>
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/prop_11_9_PBP_Bplus_abstract" class="lean_decl">prop_11_9_PBP_Bplus_abstract</a></li>
         
-           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/AC.step_firstColSign_Bplus" class="lean_decl">AC.step_firstColSign_Bplus</a></li>
-        
-           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/AC.step_firstColSign_Bminus" class="lean_decl">AC.step_firstColSign_Bminus</a></li>
-        
-           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/AC.chain_firstColSign_eq_diff_sign" class="lean_decl">AC.chain_firstColSign_eq_diff_sign</a></li>
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/prop_11_9_PBP_Bminus_abstract" class="lean_decl">prop_11_9_PBP_Bminus_abstract</a></li>
         
       </ul>
   </div>
@@ -1983,31 +4011,191 @@
 
 
     
-    <div class="dep-modal-container" id="thm:AC_step_fcSign_CM_modal">
+    <div class="dep-modal-container" id="prop:11_9_D_modal">
       <div class="dep-modal-content">
           <button class="dep-closebtn">
 <svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
 </button>
         
-  <div class="thm" id="thm:AC_step_fcSign_CM" style="display: none">
+  <div class="thm" id="prop:11_9_D" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">106</span><span class="lemma_thmtitle">Prop 11.9 D — numerical constraint on cross-twist</span></div>
+    <div class="thm_thmcontent"><p>    Assume \(\tau _1, \tau _2 \in \mathrm{PBP}_D\) with \(h_{\mathrm{tail}}\) satisfied, \(x_{\tau _1} = d\), and the cross-twist first-component equation \(-p_{\tau _1, t} = p_{\tau _2, t} - 1\), plus \(x_{\tau _2} \neq s\): <em>contradiction</em>. </p>
+</div>
+
+    <a class="latex_link" href="sect0038.html#prop:11_9_D">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/prop_11_9_PBP_D_numerical">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:11_5_atomic_pbp_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:11_5_atomic_pbp" style="display: none">
     <div class="thm_thmheading">
       <span class="theorem_thmcaption">
       Theorem
       </span>
-      <span class="theorem_thmlabel">33</span><span class="theorem_thmtitle">firstColSign invariant for C/M step</span></div>
-    <div class="thm_thmcontent"><p>    Analog for \(\gamma \in \{ C, M\} \) with pre-twist. </p>
+      <span class="theorem_thmlabel">95</span><span class="theorem_thmtitle">Lemma 11.5 atomic discharge at PBP level</span></div>
+    <div class="thm_thmcontent"><p>    Given the canonical choices of \(|\tau |, \mathbf{c}_1, \mathbf{c}_2,\) tail signatures, the three atomic cell-count hypotheses of <span class="ttfamily">prop_11_5_D_atomic</span> are discharged automatically; the remaining inputs are: </p>
+<ul class="itemize">
+  <li><p>\((E, n_{\mathrm{prev}}, p_{\mathrm{prev}}, q_{\mathrm{prev}})\): an inner ILS + its Sign and prev-sig. </p>
+</li>
+  <li><p>\(h_{\mathrm{fc}}, h_{\mathrm{sign}}\): firstColSign/Sign relations on \(E\) (auto by AC.fold). </p>
+</li>
+  <li><p>\(h_{\mathrm{prop11.4}}\): signature decomposition (Prop&#160;<a href="sect0031.html#prop:11_4">90</a>). </p>
+</li>
+  <li><p>\(h_{n_0}\): \(n_0 \geq 0\). </p>
+</li>
+</ul>
 </div>
 
-    <a class="latex_link" href="sect0010.html#thm:AC_step_fcSign_CM">LaTeX</a>
+    <a class="latex_link" href="sect0034.html#thm:11_5_atomic_pbp">LaTeX</a>
     
     
   <div class="tooltip">
       <span class="lean_link">Lean</span>
       <ul class="tooltip_list">
         
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/prop_11_5_D_atomic" class="lean_decl">prop_11_5_D_atomic</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/prop_11_5_D_atomic_pbp_discharged" class="lean_decl">prop_11_5_D_atomic_pbp_discharged</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:AC_base_sign_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:AC_base_sign" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">76</span><span class="theorem_thmtitle">AC.base signature</span></div>
+    <div class="thm_thmcontent"><p>    \(\mathrm{Sign}(\mathrm{AC.base}\, \gamma ) = (0, 0)\) for \(\gamma \in \{ C, D, M\} \); \(\mathrm{Sign}(\mathrm{AC.base}\, B^+) = (1, 0)\); \(\mathrm{Sign}(\mathrm{AC.base}\, B^-) = (0, 1)\). </p>
+</div>
+
+    <a class="latex_link" href="sect0025.html#thm:AC_base_sign">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/AC.base_sign">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:AC_step_fcSign_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:AC_step_fcSign" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">78</span><span class="theorem_thmtitle">AC.step fcSign invariant — per \(\gamma \)</span></div>
+    <div class="thm_thmcontent"><p>    For each \(\gamma \in \{ D, B^+, B^-, C, M\} \), every branch of \(\mathrm{AC.step}\)’s output has \(\mathrm{fcSign}(r.2) = (p - \mathrm{prev\_ sig}.1,\  q - \mathrm{prev\_ sig}.2)\) where \(\mathrm{prev\_ sig} = \mathrm{Sign}(\text{source})\). </p>
+</div>
+
+    <a class="latex_link" href="sect0026.html#thm:AC_step_fcSign">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/AC.step_firstColSign_D" class="lean_decl">AC.step_firstColSign_D</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/AC.step_firstColSign_Bplus" class="lean_decl">AC.step_firstColSign_Bplus</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/AC.step_firstColSign_Bminus" class="lean_decl">AC.step_firstColSign_Bminus</a></li>
+        
            <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/AC.step_firstColSign_C" class="lean_decl">AC.step_firstColSign_C</a></li>
         
            <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/AC.step_firstColSign_M" class="lean_decl">AC.step_firstColSign_M</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/AC.step_firstColSign_BD" class="lean_decl">AC.step_firstColSign_BD</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:AC_step_sign_all_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:AC_step_sign_all" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">75</span><span class="theorem_thmtitle">AC.step preserves signature (all \(\gamma \))</span></div>
+    <div class="thm_thmcontent"><p>    Parallel statements for \(\gamma \in \{ B^+, B^-, C, M\} \). </p>
+</div>
+
+    <a class="latex_link" href="sect0025.html#thm:AC_step_sign_all">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/AC.step_sign_Bplus" class="lean_decl">AC.step_sign_Bplus</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/AC.step_sign_Bminus" class="lean_decl">AC.step_sign_Bminus</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/AC.step_sign_C" class="lean_decl">AC.step_sign_C</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/AC.step_sign_M" class="lean_decl">AC.step_sign_M</a></li>
         
       </ul>
   </div>
@@ -2033,11 +4221,14 @@
       <span class="theorem_thmcaption">
       Theorem
       </span>
-      <span class="theorem_thmlabel">31</span><span class="theorem_thmtitle">AC step sign preservation, D type</span></div>
-    <div class="thm_thmcontent"><p>    \(\mathrm{Sign}\) of AC.step output equals the \((p, q)\) parameter. </p>
+      <span class="theorem_thmlabel">74</span><span class="theorem_thmtitle">AC.step preserves signature (\(\gamma = D\))</span></div>
+    <div class="thm_thmcontent"><p>    Every branch of the output has \(\mathrm{Sign}= (p, q)\): </p>
+<div class="displaymath" id="a0000000094">
+  \[  \forall r \in \mathrm{AC.step}_{D}(\mathrm{source}, p, q, \varepsilon _\tau , \varepsilon _\wp ),\quad \mathrm{Sign}(r.2) = (p, q).  \]
+</div>
 </div>
 
-    <a class="latex_link" href="sect0010.html#thm:AC_step_sign_D">LaTeX</a>
+    <a class="latex_link" href="sect0025.html#thm:AC_step_sign_D">LaTeX</a>
     
     
   <a class="lean_link lean_decl" href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/AC.step_sign_D">Lean</a>
@@ -2052,25 +4243,236 @@
 
 
     
-    <div class="dep-modal-container" id="thm:thetaLift_CD_sign_modal">
+    <div class="dep-modal-container" id="thm:fcSign_diff_modal">
       <div class="dep-modal-content">
           <button class="dep-closebtn">
 <svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
 </button>
         
-  <div class="thm" id="thm:thetaLift_CD_sign" style="display: none">
+  <div class="thm" id="thm:fcSign_diff" style="display: none">
     <div class="thm_thmheading">
       <span class="theorem_thmcaption">
       Theorem
       </span>
-      <span class="theorem_thmlabel">27</span><span class="theorem_thmtitle">Theta lift sign preservation (C→D)</span></div>
-    <div class="thm_thmcontent"><p>    For the C→D lift with target \((p, q)\): \(\mathrm{Sign}(\hat\vartheta (E')) = (p, q)\). </p>
+      <span class="theorem_thmlabel">77</span><span class="theorem_thmtitle">firstColSign diff invariant</span></div>
+    <div class="thm_thmcontent"><p>    Let \(\mathcal{L}_\tau = \mathrm{AC.fold}\, \gamma \, (\mathrm{descent\  chain})\), with the descent chain producing signatures \(\mathrm{Sign}(\mathcal{L}_\tau )\) and \(\mathrm{Sign}(\mathcal{L}_{\tau ''})\) at successive levels. Then </p>
+<div class="displaymath" id="a0000000096">
+  \[  \mathrm{fcSign}(\mathcal{L}_\tau ) = \mathrm{Sign}(\mathcal{L}_\tau ) - \mathrm{Sign}(\mathcal{L}_{\tau ''}).  \]
+</div>
+<p> Equivalently: </p>
+<div class="displaymath" id="a0000000097">
+  \[  \mathrm{fcSign}(\mathcal{L}_\tau ) = (p_\tau - p_{\tau ''},\  q_\tau - q_{\tau ''}).  \]
+</div>
 </div>
 
-    <a class="latex_link" href="sect0009.html#thm:thetaLift_CD_sign">LaTeX</a>
+    <a class="latex_link" href="sect0026.html#thm:fcSign_diff">LaTeX</a>
     
     
-  <a class="lean_link lean_decl" href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/ILS.thetaLift_CD_sign">Lean</a>
+  <a class="lean_link lean_decl" href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/AC.chain_firstColSign_eq_diff_sign">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:postTwist_first_entry_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:postTwist_first_entry" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">79</span><span class="theorem_thmtitle">ACResult.postTwist first entry</span></div>
+    <div class="thm_thmcontent"><p>    After the B/D post-twist \(\otimes (1, -1)\) (when \(\varepsilon _\tau = 1\)), the first entry of every branch transforms by \((a, b) \mapsto (a, -b)\). </p>
+</div>
+
+    <a class="latex_link" href="sect0026.html#thm:postTwist_first_entry">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/ACResult.postTwist_BD_first_entry">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:SignTargetSet_card_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:SignTargetSet_card" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">101</span><span class="theorem_thmtitle">SignTargetSet cardinality formula</span></div>
+    <div class="thm_thmcontent"><p>    For \((p, q) \in \mathbb {N}^2\), the set \(\{ (\varepsilon ^+, \varepsilon ^-) \in \mathbb {Z}^2 : (\varepsilon ^+, \varepsilon ^-) \in \{ (p, q), (p, -q), (-p, q), (-p, -q)\} \} \) has cardinality \(4m + 4\) when \(p {\gt} 0, q {\gt} 0\) (after suitable deduplication for \(p = 0\) or \(q = 0\)). </p>
+</div>
+
+    <a class="latex_link" href="sect0036.html#thm:SignTargetSet_card">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/SignTargetSet" class="lean_decl">SignTargetSet</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/Fintype.card_SignTargetSet" class="lean_decl">Fintype.card_SignTargetSet</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:thetaLift_fcSign_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:thetaLift_fcSign" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">69</span><span class="theorem_thmtitle">Theta lift first-column signature</span></div>
+    <div class="thm_thmcontent"><p>    \(\mathrm{fcSign}(\hat\vartheta (\mathcal{E})) = (p - \mathrm{Sign}(\mathcal{E}).1,\  q - \mathrm{Sign}(\mathcal{E}).2)\) (the key <em>firstColSign invariant</em>). </p>
+</div>
+
+    <a class="latex_link" href="sect0023.html#thm:thetaLift_fcSign">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/ILS.thetaLift_CD_firstColSign" class="lean_decl">ILS.thetaLift_CD_firstColSign</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/ILS.thetaLift_DC_firstColSign" class="lean_decl">ILS.thetaLift_DC_firstColSign</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/ILS.thetaLift_MB_firstColSign" class="lean_decl">ILS.thetaLift_MB_firstColSign</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/ILS.thetaLift_BM_firstColSign" class="lean_decl">ILS.thetaLift_BM_firstColSign</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:thetaLift_first_entry_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:thetaLift_first_entry" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">70</span><span class="theorem_thmtitle">Theta lift first-entry formula</span></div>
+    <div class="thm_thmcontent"><p>    The first entry of \(\hat\vartheta (\mathcal{E})\) is \((p - \mathrm{Sign}(\mathcal{E}).1 - \mathrm{fcSign}(\mathcal{E}).2,\  q - \mathrm{Sign}(\mathcal{E}).2 - \mathrm{fcSign}(\mathcal{E}).1)\). </p>
+</div>
+
+    <a class="latex_link" href="sect0023.html#thm:thetaLift_first_entry">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/ILS.thetaLift_CD_first_entry" class="lean_decl">ILS.thetaLift_CD_first_entry</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/ILS.thetaLift_DC_first_entry_std" class="lean_decl">ILS.thetaLift_DC_first_entry_std</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/ILS.thetaLift_MB_first_entry" class="lean_decl">ILS.thetaLift_MB_first_entry</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/ILS.thetaLift_BM_first_entry_std" class="lean_decl">ILS.thetaLift_BM_first_entry_std</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/ILS.twistBD_first_entry" class="lean_decl">ILS.twistBD_first_entry</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:thetaLift_sign_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:thetaLift_sign" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">68</span><span class="theorem_thmtitle">Theta lift signature preservation</span></div>
+    <div class="thm_thmcontent"><p>    For each theta-lift direction with target \((p, q)\) satisfying the standard-case condition (\(p - \mathrm{Sign}(\mathcal{E}).1 - \mathrm{fcSign}(\mathcal{E}).2 \geq 0\), etc.): \(\mathrm{Sign}(\hat\vartheta (\mathcal{E})) = (p, q)\) (or \((n, n)\) in D\(\to \)C split). </p>
+</div>
+
+    <a class="latex_link" href="sect0023.html#thm:thetaLift_sign">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/ILS.thetaLift_CD_sign" class="lean_decl">ILS.thetaLift_CD_sign</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/ILS.thetaLift_DC_sign_std" class="lean_decl">ILS.thetaLift_DC_sign_std</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/ILS.thetaLift_DC_sign_split" class="lean_decl">ILS.thetaLift_DC_sign_split</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/ILS.thetaLift_MB_sign" class="lean_decl">ILS.thetaLift_MB_sign</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/ILS.thetaLift_BM_sign_std" class="lean_decl">ILS.thetaLift_BM_sign_std</a></li>
+        
+           <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/ILS.thetaLift_BM_sign_split" class="lean_decl">ILS.thetaLift_BM_sign_split</a></li>
+        
+      </ul>
+  </div>
     
     
   
@@ -2098,7 +4500,7 @@ graphContainer.graphviz({useWorker: true})
     .width(width)
     .height(height)
     .fit(true)
-    .renderDot(`strict digraph "" {	graph [bgcolor=transparent];	node [label="\N",		penwidth=1.8	];	edge [arrowhead=vee];	"def:PBP"	[color=green,		fillcolor="#B0ECA3",		label=PBP,		shape=box,		style=filled];	"def:tailSignature"	[color=green,		fillcolor="#B0ECA3",		label=tailSignature,		shape=box,		style=filled];	"def:PBP" -> "def:tailSignature"	[style=dashed];	"def:shapeShiftM"	[color=green,		fillcolor="#B0ECA3",		label=shapeShiftM,		shape=box,		style=filled];	"def:PBP" -> "def:shapeShiftM"	[style=dashed];	"lem:sig_sum_D"	[color=green,		label=sig_sum_D,		shape=ellipse];	"def:PBP" -> "lem:sig_sum_D"	[style=dashed];	"def:tailSymbol"	[color=green,		fillcolor="#B0ECA3",		label=tailSymbol,		shape=box,		style=filled];	"def:PBP" -> "def:tailSymbol"	[style=dashed];	"def:PBPSet"	[color=green,		fillcolor="#B0ECA3",		label=PBPSet,		shape=box,		style=filled];	"def:PBP" -> "def:PBPSet"	[style=dashed];	"lem:10_3_C"	[color=green,		label="10_3_C",		shape=ellipse];	"def:PBP" -> "lem:10_3_C"	[style=dashed];	"lem:residual_D"	[color=green,		label=residual_D,		shape=ellipse];	"def:tailSignature" -> "lem:residual_D"	[style=dashed];	"prop:11_9_D"	[color=green,		label="11_9_D",		shape=ellipse];	"def:tailSignature" -> "prop:11_9_D"	[style=dashed];	"prop:11_4"	[color=green,		label="11_4",		shape=ellipse];	"def:tailSignature" -> "prop:11_4"	[style=dashed];	"lem:10_3_M"	[color=green,		fillcolor="#1CAC78",		label="10_3_M",		shape=ellipse,		style=filled];	"def:shapeShiftM" -> "lem:10_3_M"	[style=dashed];	"lem:11_5_atomic"	[color=green,		label="11_5_atomic",		shape=ellipse];	"lem:sig_sum_D" -> "lem:11_5_atomic"	[style=dashed];	"def:tailSymbol" -> "prop:11_9_D"	[style=dashed];	"lem:residual_D" -> "lem:11_5_atomic"	[style=dashed];	"lem:11_5_D"	[color=green,		label="11_5_D",		shape=ellipse];	"prop:11_4" -> "lem:11_5_D"	[style=dashed];	"prop:10_2_M"	[color=green,		label="10_2_M",		shape=ellipse];	"lem:10_3_M" -> "prop:10_2_M"	[style=dashed];	"lem:11_5_D" -> "lem:11_5_atomic"	[style=dashed];	"lem:11_6_D"	[color=green,		label="11_6_D",		shape=ellipse];	"lem:11_5_D" -> "lem:11_6_D"	[style=dashed];	"lem:11_6_B"	[color=green,		label="11_6_B",		shape=ellipse];	"lem:11_5_D" -> "lem:11_6_B"	[style=dashed];	"lem:10_5_D"	[color=green,		label="10_5_D",		shape=ellipse];	"prop:10_9_D"	[color=green,		label="10_9_D",		shape=ellipse];	"lem:10_5_D" -> "prop:10_9_D"	[style=dashed];	"cor:10_10"	[color=green,		label="10_10",		shape=ellipse];	"prop:10_9_D" -> "cor:10_10"	[style=dashed];	"prop:10_11_B"	[color=green,		label="10_11_B",		shape=ellipse];	"cor:10_10" -> "prop:10_11_B"	[style=dashed];	"prop:10_11_D"	[color=green,		label="10_11_D",		shape=ellipse];	"cor:10_10" -> "prop:10_11_D"	[style=dashed];	"lem:11_11"	[color=green,		label="11_11",		shape=ellipse];	"prop:11_12"	[color=green,		label="11_12",		shape=ellipse];	"lem:11_11" -> "prop:11_12"	[style=dashed];	"prop:11_17"	[color=green,		label="11_17",		shape=ellipse];	"prop:11_12" -> "prop:11_17"	[style=dashed];	"prop:11_13"	[color=green,		label="11_13",		shape=ellipse];	"prop:11_12" -> "prop:11_13"	[style=dashed];	"prop:11_14"	[color=green,		label="11_14",		shape=ellipse];	"prop:11_12" -> "prop:11_14"	[style=dashed];	"prop:11_15_B"	[color=green,		label="11_15_B",		shape=ellipse];	"prop:11_14" -> "prop:11_15_B"	[style=dashed];	"prop:11_15_D"	[color=green,		label="11_15_D",		shape=ellipse];	"prop:11_14" -> "prop:11_15_D"	[style=dashed];	"lem:11_1_a_empty"	[color=green,		label="11_1_a_empty",		shape=ellipse];	"prop:10_12_C"	[color=green,		label="10_12_C",		shape=ellipse];	"thm:thetaLift_CD_sign"	[color=green,		label=thetaLift_CD_sign,		shape=ellipse];	"thm:AC_step_sign_D"	[color=green,		label=AC_step_sign_D,		shape=ellipse];	"thm:thetaLift_CD_sign" -> "thm:AC_step_sign_D"	[style=dashed];	"thm:AC_step_sign_D" -> "lem:11_6_D"	[style=dashed];	"prop:11_7"	[color=green,		label="11_7",		shape=ellipse];	"lem:11_6_D" -> "prop:11_7"	[style=dashed];	"thm:AC_step_fcSign_CM"	[color=green,		label=AC_step_fcSign_CM,		shape=ellipse];	"def:mfree"	[color=green,		fillcolor="#B0ECA3",		label=mfree,		shape=box,		style=filled];	"def:mfree" -> "prop:11_7"	[style=dashed];	"prop:11_8_ac"	[color=green,		label="11_8_ac",		shape=ellipse];	"prop:11_7" -> "prop:11_8_ac"	[style=dashed];	"prop:11_8_ac" -> "lem:11_11"	[style=dashed];	"prop:11_8_pbp"	[color=green,		label="11_8_pbp",		shape=ellipse];	"prop:11_8_ac" -> "prop:11_8_pbp"	[style=dashed];	"lem:11_1_b"	[color=green,		label="11_1_b",		shape=ellipse];	"prop:10_9_B"	[color=green,		label="10_9_B",		shape=ellipse];	"prop:10_9_B" -> "cor:10_10"	[style=dashed];	"def:thetaLift"	[color=green,		fillcolor="#B0ECA3",		label=thetaLift,		shape=box,		style=filled];	"def:thetaLift" -> "thm:thetaLift_CD_sign"	[style=dashed];	"def:AC_step"	[color=green,		fillcolor="#B0ECA3",		label=AC_step,		shape=box,		style=filled];	"def:thetaLift" -> "def:AC_step"	[style=dashed];	"def:AC_step" -> "lem:11_5_D"	[style=dashed];	"def:AC_step" -> "thm:AC_step_sign_D"	[style=dashed];	"def:AC_step" -> "thm:AC_step_fcSign_CM"	[style=dashed];	"thm:AC_step_fcSign_BD"	[color=green,		label=AC_step_fcSign_BD,		shape=ellipse];	"def:AC_step" -> "thm:AC_step_fcSign_BD"	[style=dashed];	"def:AC_fold"	[color=green,		fillcolor="#B0ECA3",		label=AC_fold,		shape=box,		style=filled];	"def:AC_step" -> "def:AC_fold"	[style=dashed];	"thm:AC_step_fcSign_BD" -> "lem:11_6_D"	[style=dashed];	"prop:10_8_M_bal"	[color=green,		label="10_8_M_bal",		shape=ellipse];	"prop:10_12_M"	[color=green,		label="10_12_M",		shape=ellipse];	"prop:10_8_M_bal" -> "prop:10_12_M"	[style=dashed];	"prop:10_8_C_prim"	[color=green,		label="10_8_C_prim",		shape=ellipse];	"prop:10_8_C_prim" -> "prop:10_12_C"	[style=dashed];	"def:charTwistCM"	[color=green,		fillcolor="#B0ECA3",		label=charTwistCM,		shape=box,		style=filled];	"def:charTwistCM" -> "def:thetaLift"	[style=dashed];	"lem:T_squared"	[color=green,		fillcolor="#1CAC78",		label=T_squared,		shape=ellipse,		style=filled];	"def:charTwistCM" -> "lem:T_squared"	[style=dashed];	"lem:T_squared" -> "prop:11_7"	[style=dashed];	"def:sign"	[color=green,		fillcolor="#B0ECA3",		label=sign,		shape=box,		style=filled];	"def:sign" -> "lem:sig_sum_D"	[style=dashed];	"def:sign" -> "thm:thetaLift_CD_sign"	[style=dashed];	"lem:11_1_a_r1"	[color=green,		label="11_1_a_r1",		shape=ellipse];	"lem:11_1_a_r1" -> "lem:11_1_b"	[style=dashed];	"def:augment"	[color=green,		fillcolor="#B0ECA3",		label=augment,		shape=box,		style=filled];	"def:augment" -> "def:thetaLift"	[style=dashed];	"def:firstColSign"	[color=green,		fillcolor="#B0ECA3",		label=firstColSign,		shape=box,		style=filled];	"def:firstColSign" -> "thm:AC_step_fcSign_CM"	[style=dashed];	"def:firstColSign" -> "thm:AC_step_fcSign_BD"	[style=dashed];	"def:AC_base"	[color=green,		fillcolor="#B0ECA3",		label=AC_base,		shape=box,		style=filled];	"def:AC_base" -> "lem:11_1_a_empty"	[style=dashed];	"def:AC_base" -> "def:AC_fold"	[style=dashed];	"def:ILS"	[color=green,		fillcolor="#B0ECA3",		label=ILS,		shape=box,		style=filled];	"def:ILS" -> "def:charTwistCM"	[style=dashed];	"def:ILS" -> "def:sign"	[style=dashed];	"def:ILS" -> "def:augment"	[style=dashed];	"def:ILS" -> "def:firstColSign"	[style=dashed];	"def:twistBD"	[color=green,		fillcolor="#B0ECA3",		label=twistBD,		shape=box,		style=filled];	"def:ILS" -> "def:twistBD"	[style=dashed];	"def:twistBD" -> "def:AC_step"	[style=dashed];	"lem:10_4_C"	[color=green,		label="10_4_C",		shape=ellipse];	"lem:10_4_C" -> "prop:10_8_C_prim"	[style=dashed];	"prop:10_8_M_prim"	[color=green,		label="10_8_M_prim",		shape=ellipse];	"prop:10_8_M_prim" -> "prop:10_12_M"	[style=dashed];}`)
+    .renderDot(`strict digraph "" {	graph [bgcolor=transparent];	node [label="\N",		penwidth=1.8	];	edge [arrowhead=vee];	"def:countPBP_M"	[color=green,		fillcolor="#B0ECA3",		label=countPBP_M,		shape=box,		style=filled];	"prop:10_12_M"	[color=green,		label="10_12_M",		shape=ellipse];	"def:countPBP_M" -> "prop:10_12_M"	[style=dashed];	"prop:11_14"	[color=green,		label="11_14",		shape=ellipse];	"prop:10_12_M" -> "prop:11_14"	[style=dashed];	"prop:11_15"	[color=green,		label="11_15",		shape=ellipse];	"prop:11_14" -> "prop:11_15"	[style=dashed];	"prop:11_16"	[color=green,		label="11_16",		shape=ellipse];	"prop:11_14" -> "prop:11_16"	[style=dashed];	"thm:thetaLift_sign"	[color=green,		label=thetaLift_sign,		shape=ellipse];	"thm:AC_step_sign_D"	[color=green,		label=AC_step_sign_D,		shape=ellipse];	"thm:thetaLift_sign" -> "thm:AC_step_sign_D"	[style=dashed];	"thm:AC_step_sign_all"	[color=green,		label=AC_step_sign_all,		shape=ellipse];	"thm:AC_step_sign_D" -> "thm:AC_step_sign_all"	[style=dashed];	"thm:fcSign_diff"	[color=green,		fillcolor="#9CEC8B",		label=fcSign_diff,		shape=ellipse,		style=filled];	"thm:AC_step_sign_D" -> "thm:fcSign_diff"	[style=dashed];	"lem:11_1_a_r1"	[color=green,		fillcolor="#A3D6FF",		label="11_1_a_r1",		shape=ellipse,		style=filled];	"thm:AC_step_sign_all" -> "lem:11_1_a_r1";	"prop:11_7"	[color=green,		fillcolor="#A3D6FF",		label="11_7",		shape=ellipse,		style=filled];	"thm:AC_step_sign_all" -> "prop:11_7";	"thm:AC_step_fcSign"	[color=green,		label=AC_step_fcSign,		shape=ellipse];	"thm:fcSign_diff" -> "thm:AC_step_fcSign"	[style=dashed];	"cor:10_10"	[color=green,		label="10_10",		shape=ellipse];	"prop:10_11_B"	[color=green,		fillcolor="#9CEC8B",		label="10_11_B",		shape=ellipse,		style=filled];	"cor:10_10" -> "prop:10_11_B"	[style=dashed];	"prop:10_11_D"	[color=green,		label="10_11_D",		shape=ellipse];	"cor:10_10" -> "prop:10_11_D"	[style=dashed];	"prop:10_11_B" -> "prop:10_12_M"	[style=dashed];	"prop:10_12_C"	[color=green,		label="10_12_C",		shape=ellipse];	"prop:10_11_D" -> "prop:10_12_C"	[style=dashed];	"prop:10_12_C" -> "prop:11_14"	[style=dashed];	"def:PBP"	[color=green,		fillcolor="#B0ECA3",		label=PBP,		shape=box,		style=filled];	"def:cardCells"	[color=green,		fillcolor="#B0ECA3",		label=cardCells,		shape=box,		style=filled];	"def:PBP" -> "def:cardCells"	[style=dashed];	"def:PBPSet"	[color=green,		fillcolor="#B0ECA3",		label=PBPSet,		shape=box,		style=filled];	"def:PBP" -> "def:PBPSet"	[style=dashed];	"def:descentPaint_MB"	[color=green,		fillcolor="#B0ECA3",		label=descentPaint_MB,		shape=box,		style=filled];	"def:PBP" -> "def:descentPaint_MB"	[style=dashed];	"def:shapeShiftC_paint"	[color=green,		fillcolor="#B0ECA3",		label=shapeShiftC_paint,		shape=box,		style=filled];	"def:PBP" -> "def:shapeShiftC_paint"	[style=dashed];	"def:tailLen"	[color=green,		fillcolor="#B0ECA3",		label=tailLen,		shape=box,		style=filled];	"def:PBP" -> "def:tailLen"	[style=dashed];	"def:signature_pbp"	[color=green,		fillcolor="#B0ECA3",		label=signature_pbp,		shape=box,		style=filled];	"def:PBP" -> "def:signature_pbp"	[style=dashed];	"def:shapeShiftM"	[color=green,		fillcolor="#B0ECA3",		label=shapeShiftM,		shape=box,		style=filled];	"def:PBP" -> "def:shapeShiftM"	[style=dashed];	"def:descentPaint_DC"	[color=green,		fillcolor="#B0ECA3",		label=descentPaint_DC,		shape=box,		style=filled];	"def:PBP" -> "def:descentPaint_DC"	[style=dashed];	"def:descentPaint_BM"	[color=green,		fillcolor="#B0ECA3",		label=descentPaint_BM,		shape=box,		style=filled];	"def:PBP" -> "def:descentPaint_BM"	[style=dashed];	"def:epsilon_pbp"	[color=green,		fillcolor="#B0ECA3",		label=epsilon_pbp,		shape=box,		style=filled];	"def:PBP" -> "def:epsilon_pbp"	[style=dashed];	"def:tailClass_D"	[color=green,		fillcolor="#B0ECA3",		label=tailClass_D,		shape=box,		style=filled];	"def:PBP" -> "def:tailClass_D"	[style=dashed];	"def:descentPaint_CD"	[color=green,		fillcolor="#B0ECA3",		label=descentPaint_CD,		shape=box,		style=filled];	"def:PBP" -> "def:descentPaint_CD"	[style=dashed];	"lem:sig_sum_D"	[color=green,		fillcolor="#1CAC78",		label=sig_sum_D,		shape=ellipse,		style=filled];	"def:cardCells" -> "lem:sig_sum_D"	[style=dashed];	"lem:fact1_sig_sum"	[color=green,		label=fact1_sig_sum,		shape=ellipse];	"def:cardCells" -> "lem:fact1_sig_sum"	[style=dashed];	"lem:fact2_descent"	[color=blue,		label=fact2_descent,		shape=ellipse];	"def:cardCells" -> "lem:fact2_descent"	[style=dashed];	"prop:10_2_BD"	[color=green,		label="10_2_BD",		shape=ellipse];	"def:PBPSet" -> "prop:10_2_BD"	[style=dashed];	"def:doubleDescent_B"	[color=green,		fillcolor="#B0ECA3",		label=doubleDescent_B,		shape=box,		style=filled];	"def:descentPaint_MB" -> "def:doubleDescent_B"	[style=dashed];	"lem:10_5_M"	[color=green,		label="10_5_M",		shape=ellipse];	"def:descentPaint_MB" -> "lem:10_5_M"	[style=dashed];	"lem:shapeShiftC_id"	[color=green,		label=shapeShiftC_id,		shape=ellipse];	"def:shapeShiftC_paint" -> "lem:shapeShiftC_id"	[style=dashed];	"def:tailSignature"	[color=green,		fillcolor="#B0ECA3",		label=tailSignature,		shape=box,		style=filled];	"def:tailLen" -> "def:tailSignature"	[style=dashed];	"def:tailSymbol"	[color=green,		fillcolor="#B0ECA3",		label=tailSymbol,		shape=box,		style=filled];	"def:tailLen" -> "def:tailSymbol"	[style=dashed];	"def:signature_pbp" -> "lem:sig_sum_D"	[style=dashed];	"def:signature_pbp" -> "lem:fact1_sig_sum"	[style=dashed];	"lem:10_4_B"	[color=green,		label="10_4_B",		shape=ellipse];	"def:signature_pbp" -> "lem:10_4_B"	[style=dashed];	"lem:10_5_D"	[color=green,		label="10_5_D",		shape=ellipse];	"def:signature_pbp" -> "lem:10_5_D"	[style=dashed];	"prop:11_4"	[color=green,		fillcolor="#1CAC78",		label="11_4",		shape=ellipse,		style=filled];	"def:signature_pbp" -> "prop:11_4"	[style=dashed];	"lem:shapeShiftM_involution"	[color=green,		fillcolor="#1CAC78",		label=shapeShiftM_involution,		shape=ellipse,		style=filled];	"def:shapeShiftM" -> "lem:shapeShiftM_involution"	[style=dashed];	"def:doubleDescent_D"	[color=green,		fillcolor="#B0ECA3",		label=doubleDescent_D,		shape=box,		style=filled];	"def:descentPaint_DC" -> "def:doubleDescent_D"	[style=dashed];	"def:descentPaint_BM" -> "def:doubleDescent_B"	[style=dashed];	"def:descentPaint_BM" -> "lem:10_4_B"	[style=dashed];	"def:epsilon_pbp" -> "lem:10_4_B"	[style=dashed];	"def:epsilon_pbp" -> "lem:10_5_D"	[style=dashed];	"lem:11_3"	[color=green,		fillcolor="#1CAC78",		label="11_3",		shape=ellipse,		style=filled];	"def:epsilon_pbp" -> "lem:11_3"	[style=dashed];	"def:countPBP_D"	[color=green,		fillcolor="#B0ECA3",		label=countPBP_D,		shape=box,		style=filled];	"def:tailClass_D" -> "def:countPBP_D"	[style=dashed];	"def:descentPaint_CD" -> "def:doubleDescent_D"	[style=dashed];	"lem:10_4_C"	[color=green,		label="10_4_C",		shape=ellipse];	"def:descentPaint_CD" -> "lem:10_4_C"	[style=dashed];	"lem:11_5_D_ILS"	[color=green,		fillcolor="#9CEC8B",		label="11_5_D_ILS",		shape=ellipse,		style=filled];	"lem:sig_sum_D" -> "lem:11_5_D_ILS";	"thm:11_5_atomic_pbp"	[color=green,		label="11_5_atomic_pbp",		shape=ellipse];	"lem:fact1_sig_sum" -> "thm:11_5_atomic_pbp"	[style=dashed];	"lem:fact2_descent" -> "thm:11_5_atomic_pbp"	[style=dashed];	"prop:10_8_M_bal"	[color=green,		label="10_8_M_bal",		shape=ellipse];	"lem:10_5_M" -> "prop:10_8_M_bal"	[style=dashed];	"prop:10_8_M_prim"	[color=green,		label="10_8_M_prim",		shape=ellipse];	"lem:10_5_M" -> "prop:10_8_M_prim"	[style=dashed];	"lem:10_3_C"	[color=green,		label="10_3_C",		shape=ellipse];	"lem:shapeShiftC_id" -> "lem:10_3_C"	[style=dashed];	"def:tailSignature" -> "prop:11_4"	[style=dashed];	"def:tailSignature" -> "lem:11_3"	[style=dashed];	"lem:tailSig_nonneg"	[color=green,		label=tailSig_nonneg,		shape=ellipse];	"def:tailSignature" -> "lem:tailSig_nonneg"	[style=dashed];	"lem:fact3_residual"	[color=green,		label=fact3_residual,		shape=ellipse];	"def:tailSignature" -> "lem:fact3_residual"	[style=dashed];	"lem:tailSig_sum"	[color=green,		label=tailSig_sum,		shape=ellipse];	"def:tailSignature" -> "lem:tailSig_sum"	[style=dashed];	"def:tailSymbol" -> "lem:11_3"	[style=dashed];	"prop:10_9_B"	[color=green,		label="10_9_B",		shape=ellipse];	"lem:10_4_B" -> "prop:10_9_B"	[style=dashed];	"prop:10_9_D"	[color=green,		label="10_9_D",		shape=ellipse];	"lem:10_5_D" -> "prop:10_9_D"	[style=dashed];	"prop:11_4" -> "lem:11_5_D_ILS"	[style=dashed];	"lem:10_3_M"	[color=green,		fillcolor="#1CAC78",		label="10_3_M",		shape=ellipse,		style=filled];	"lem:shapeShiftM_involution" -> "lem:10_3_M"	[style=dashed];	"def:doubleDescent_D" -> "lem:fact2_descent"	[style=dashed];	"def:doubleDescent_D" -> "lem:10_5_D"	[style=dashed];	"def:doubleDescent_D" -> "prop:11_4"	[style=dashed];	"prop:11_8_ac"	[color=green,		fillcolor="#A3D6FF",		label="11_8_ac",		shape=ellipse,		style=filled];	"lem:11_3" -> "prop:11_8_ac"	[style=dashed];	"def:countPBP_D" -> "prop:10_11_D"	[style=dashed];	"def:countPBP_C"	[color=green,		fillcolor="#B0ECA3",		label=countPBP_C,		shape=box,		style=filled];	"def:countPBP_D" -> "def:countPBP_C"	[style=dashed];	"def:countPBP_B"	[color=green,		fillcolor="#B0ECA3",		label=countPBP_B,		shape=box,		style=filled];	"def:countPBP_D" -> "def:countPBP_B"	[style=dashed];	"prop:10_8_C_prim"	[color=green,		label="10_8_C_prim",		shape=ellipse];	"lem:10_4_C" -> "prop:10_8_C_prim"	[style=dashed];	"prop:10_8_C_bal"	[color=green,		label="10_8_C_bal",		shape=ellipse];	"lem:10_4_C" -> "prop:10_8_C_bal"	[style=dashed];	a0000000067	[color=blue,		label=a0000000067,		shape=ellipse];	"lem:11_6_B"	[color=green,		label="11_6_B",		shape=ellipse];	"lem:11_5_D_ILS" -> "lem:11_6_B"	[style=dashed];	"lem:11_6_D"	[color=green,		fillcolor="#9CEC8B",		label="11_6_D",		shape=ellipse,		style=filled];	"lem:11_5_D_ILS" -> "lem:11_6_D"	[style=dashed];	"lem:11_5_D_ILS" -> "thm:11_5_atomic_pbp"	[style=dashed];	"prop:11_10_D"	[color=green,		label="11_10_D",		shape=ellipse];	"lem:11_6_D" -> "prop:11_10_D"	[style=dashed];	"cor:11_6_pbp"	[color=green,		label="11_6_pbp",		shape=ellipse];	"lem:11_6_D" -> "cor:11_6_pbp"	[style=dashed];	"lem:11_6_D" -> "prop:11_8_ac"	[style=dashed];	"prop:10_2_C"	[color=green,		label="10_2_C",		shape=ellipse];	"prop:10_2_C" -> "prop:10_12_C"	[style=dashed];	"def:tailContrib"	[color=green,		fillcolor="#B0ECA3",		label=tailContrib,		shape=box,		style=filled];	"def:tailContrib" -> "def:tailSignature"	[style=dashed];	"prop:11_9_D"	[color=green,		fillcolor="#9CEC8B",		label="11_9_D",		shape=ellipse,		style=filled];	"lem:tailSig_nonneg" -> "prop:11_9_D"	[style=dashed];	"lem:fact3_residual" -> "thm:11_5_atomic_pbp"	[style=dashed];	"lem:residual_D"	[color=green,		fillcolor="#9CEC8B",		label=residual_D,		shape=ellipse,		style=filled];	"lem:tailSig_sum" -> "lem:residual_D"	[style=dashed];	"lem:11_1_b_abstract"	[color=green,		label="11_1_b_abstract",		shape=ellipse];	"lem:11_1_a_r1" -> "lem:11_1_b_abstract"	[style=dashed];	"prop:11_7" -> "prop:11_8_ac"	[style=dashed];	"thm:AC_step_fcSign" -> "lem:11_5_D_ILS"	[style=dashed];	"lem:11_11"	[color=green,		fillcolor="#A3D6FF",		label="11_11",		shape=ellipse,		style=filled];	"prop:11_10_D" -> "lem:11_11"	[style=dashed];	"prop:11_8_pbp"	[color=green,		label="11_8_pbp",		shape=ellipse];	"prop:11_8_ac" -> "prop:11_8_pbp"	[style=dashed];	"prop:11_8_ac" -> "prop:11_9_D"	[style=dashed];	"prop:11_8_ac" -> "lem:11_11"	[style=dashed];	"prop:10_9_B" -> "cor:10_10"	[style=dashed];	"lem:11_1_b_D"	[color=green,		label="11_1_b_D",		shape=ellipse];	"lem:11_1_b_abstract" -> "lem:11_1_b_D"	[style=dashed];	"lem:11_1_b_D" -> "prop:11_15"	[style=dashed];	"prop:11_17"	[color=green,		label="11_17",		shape=ellipse];	"prop:11_15" -> "prop:11_17"	[style=dashed];	"lem:10_3_C" -> "prop:10_2_C"	[style=dashed];	"prop:10_9_D" -> "cor:10_10"	[style=dashed];	"prop:10_9_D" -> "def:countPBP_D"	[style=dashed];	"lem:twist_fcSign"	[color=green,		label=twist_fcSign,		shape=ellipse];	"lem:twist_fcSign" -> "lem:11_5_D_ILS";	"thm:thetaLift_fcSign"	[color=green,		label=thetaLift_fcSign,		shape=ellipse];	"lem:twist_fcSign" -> "thm:thetaLift_fcSign"	[style=dashed];	"def:layerOrd"	[color=green,		fillcolor="#B0ECA3",		label=layerOrd,		shape=box,		style=filled];	"def:pyd"	[color=green,		fillcolor="#B0ECA3",		label=pyd,		shape=box,		style=filled];	"def:layerOrd" -> "def:pyd"	[style=dashed];	"def:pyd" -> "def:PBP"	[style=dashed];	"def:dotScolLen"	[color=green,		fillcolor="#B0ECA3",		label=dotScolLen,		shape=box,		style=filled];	"def:pyd" -> "def:dotScolLen"	[style=dashed];	"def:dotScolLen" -> "def:descentPaint_MB"	[style=dashed];	"def:dotScolLen" -> "def:descentPaint_DC"	[style=dashed];	"def:dotScolLen" -> "def:descentPaint_BM"	[style=dashed];	"def:dotScolLen" -> "def:descentPaint_CD"	[style=dashed];	"def:countPBP_C" -> "prop:10_12_C"	[style=dashed];	"prop:10_8_C_prim" -> "def:countPBP_D"	[style=dashed];	"def:countPBP_B" -> "def:countPBP_M"	[style=dashed];	"def:countPBP_B" -> "prop:10_11_B"	[style=dashed];	"def:augment"	[color=green,		fillcolor="#B0ECA3",		label=augment,		shape=box,		style=filled];	"def:thetaLift"	[color=green,		fillcolor="#B0ECA3",		label=thetaLift,		shape=box,		style=filled];	"def:augment" -> "def:thetaLift"	[style=dashed];	"lem:augment_sign"	[color=green,		label=augment_sign,		shape=ellipse];	"def:augment" -> "lem:augment_sign"	[style=dashed];	"def:thetaLift" -> "thm:thetaLift_sign"	[style=dashed];	"def:thetaLift" -> "thm:thetaLift_fcSign"	[style=dashed];	"thm:thetaLift_first_entry"	[color=green,		label=thetaLift_first_entry,		shape=ellipse];	"def:thetaLift" -> "thm:thetaLift_first_entry"	[style=dashed];	"def:AC_step"	[color=green,		fillcolor="#B0ECA3",		label=AC_step,		shape=box,		style=filled];	"def:thetaLift" -> "def:AC_step"	[style=dashed];	"lem:augment_sign" -> "thm:thetaLift_sign"	[style=dashed];	"def:AC_step" -> "thm:AC_step_sign_D"	[style=dashed];	"thm:postTwist_first_entry"	[color=green,		label=postTwist_first_entry,		shape=ellipse];	"def:AC_step" -> "thm:postTwist_first_entry"	[style=dashed];	"def:AC_fold"	[color=green,		fillcolor="#B0ECA3",		label=AC_fold,		shape=box,		style=filled];	"def:AC_step" -> "def:AC_fold"	[style=dashed];	"def:truncate"	[color=green,		fillcolor="#B0ECA3",		label=truncate,		shape=box,		style=filled];	"def:truncate" -> "def:thetaLift"	[style=dashed];	"thm:postTwist_first_entry" -> "lem:11_6_D"	[style=dashed];	"def:AC_fold" -> "thm:fcSign_diff"	[style=dashed];	"def:mfree"	[color=green,		fillcolor="#B0ECA3",		label=mfree,		shape=box,		style=filled];	"def:mfree" -> "prop:11_7"	[style=dashed];	"def:sym_allowed"	[color=blue,		fillcolor="#A3D6FF",		label=sym_allowed,		shape=box,		style=filled];	"def:sym_allowed" -> "def:PBP"	[style=dashed];	"def:twistBD"	[color=green,		fillcolor="#B0ECA3",		label=twistBD,		shape=box,		style=filled];	"def:twistBD" -> "lem:twist_fcSign"	[style=dashed];	"def:twistBD" -> "thm:thetaLift_first_entry"	[style=dashed];	"def:twistBD" -> "def:AC_step"	[style=dashed];	"lem:twist_sign"	[color=green,		fillcolor="#1CAC78",		label=twist_sign,		shape=ellipse,		style=filled];	"def:twistBD" -> "lem:twist_sign"	[style=dashed];	"lem:twist_sign" -> "thm:thetaLift_sign"	[style=dashed];	"def:DualPart"	[color=green,		fillcolor="#B0ECA3",		label=DualPart,		shape=box,		style=filled];	"def:DualPart" -> "def:countPBP_D"	[style=dashed];	"def:dpartColLens"	[color=green,		fillcolor="#B0ECA3",		label=dpartColLens,		shape=box,		style=filled];	"def:DualPart" -> "def:dpartColLens"	[style=dashed];	"def:ILS"	[color=green,		fillcolor="#B0ECA3",		label=ILS,		shape=box,		style=filled];	"def:ILS" -> "def:augment"	[style=dashed];	"def:ILS" -> "def:truncate"	[style=dashed];	"def:ILS" -> "def:mfree"	[style=dashed];	"def:ILS" -> "def:twistBD"	[style=dashed];	"def:charTwistCM"	[color=green,		fillcolor="#B0ECA3",		label=charTwistCM,		shape=box,		style=filled];	"def:ILS" -> "def:charTwistCM"	[style=dashed];	"def:AC_base"	[color=green,		fillcolor="#B0ECA3",		label=AC_base,		shape=box,		style=filled];	"def:ILS" -> "def:AC_base"	[style=dashed];	"thm:SignTargetSet_card"	[color=green,		label=SignTargetSet_card,		shape=ellipse];	"def:ILS" -> "thm:SignTargetSet_card"	[style=dashed];	"def:signRow"	[color=green,		fillcolor="#B0ECA3",		label=signRow,		shape=box,		style=filled];	"def:ILS" -> "def:signRow"	[style=dashed];	"def:firstColSignRow"	[color=green,		fillcolor="#B0ECA3",		label=firstColSignRow,		shape=box,		style=filled];	"def:ILS" -> "def:firstColSignRow"	[style=dashed];	"def:charTwistCM" -> "lem:twist_fcSign"	[style=dashed];	"def:charTwistCM" -> "def:thetaLift"	[style=dashed];	"def:charTwistCM" -> "lem:twist_sign"	[style=dashed];	"lem:T_squared"	[color=green,		fillcolor="#1CAC78",		label=T_squared,		shape=ellipse,		style=filled];	"def:charTwistCM" -> "lem:T_squared"	[style=dashed];	"def:AC_base" -> "def:AC_step"	[style=dashed];	"thm:AC_base_sign"	[color=green,		label=AC_base_sign,		shape=ellipse];	"def:AC_base" -> "thm:AC_base_sign"	[style=dashed];	"lem:11_1_a_empty"	[color=green,		label="11_1_a_empty",		shape=ellipse];	"def:AC_base" -> "lem:11_1_a_empty"	[style=dashed];	"thm:SignTargetSet_card" -> "lem:11_1_b_D"	[style=dashed];	"def:sign"	[color=green,		fillcolor="#B0ECA3",		label=sign,		shape=box,		style=filled];	"def:signRow" -> "def:sign"	[style=dashed];	"def:firstColSign"	[color=green,		fillcolor="#B0ECA3",		label=firstColSign,		shape=box,		style=filled];	"def:firstColSignRow" -> "def:firstColSign"	[style=dashed];	"lem:T_squared" -> "prop:11_7"	[style=dashed];	"lem:11_1_a_empty" -> "lem:11_1_a_r1"	[style=dashed];	"def:sign" -> "lem:augment_sign"	[style=dashed];	"def:sign" -> "lem:twist_sign"	[style=dashed];	"def:sign" -> "thm:AC_base_sign"	[style=dashed];	"def:firstColSign" -> "lem:twist_fcSign"	[style=dashed];	"def:firstColSign" -> "lem:augment_sign"	[style=dashed];	"prop:11_16" -> "prop:11_17"	[style=dashed];	"prop:10_8_M_bal" -> "def:countPBP_B"	[style=dashed];	"prop:10_8_M_prim" -> "def:countPBP_B"	[style=dashed];	"prop:11_9_B"	[color=green,		label="11_9_B",		shape=ellipse];	"prop:11_9_D" -> "prop:11_9_B"	[style=dashed];	"def:drc_symbols"	[color=green,		fillcolor="#B0ECA3",		label=drc_symbols,		shape=box,		style=filled];	"def:drc_symbols" -> "def:tailContrib"	[style=dashed];	"def:drc_symbols" -> "def:layerOrd"	[style=dashed];	"def:drc_symbols" -> "def:sym_allowed"	[style=dashed];	"def:translateM"	[color=green,		fillcolor="#B0ECA3",		label=translateM,		shape=box,		style=filled];	"def:drc_symbols" -> "def:translateM"	[style=dashed];	"def:translateM" -> "def:shapeShiftM"	[style=dashed];	"prop:10_8_C_bal" -> "def:countPBP_C"	[style=dashed];	"prop:11_12"	[color=green,		fillcolor="#9CEC8B",		label="11_12",		shape=ellipse,		style=filled];	"lem:11_11" -> "prop:11_12"	[style=dashed];	"prop:11_12" -> "prop:11_14"	[style=dashed];	"prop:11_13"	[color=green,		label="11_13",		shape=ellipse];	"prop:11_12" -> "prop:11_13"	[style=dashed];	"def:yd"	[color=green,		fillcolor="#B0ECA3",		label=yd,		shape=box,		style=filled];	"def:yd" -> "def:pyd"	[style=dashed];	"def:RootType"	[color=green,		fillcolor="#B0ECA3",		label=RootType,		shape=box,		style=filled];	"def:RootType" -> "def:sym_allowed"	[style=dashed];	"lem:residual_D" -> "lem:11_5_D_ILS";	"prop:11_13" -> "prop:11_15"	[style=dashed];	"prop:10_2_M"	[color=green,		label="10_2_M",		shape=ellipse];	"lem:10_3_M" -> "prop:10_2_M"	[style=dashed];	"prop:10_2_M" -> "prop:10_12_M"	[style=dashed];	a0000000065	[color=blue,		fillcolor="#A3D6FF",		label=a0000000065,		shape=box,		style=filled];	"lem:shapeShiftC_valid"	[color=blue,		label=shapeShiftC_valid,		shape=ellipse];	"lem:shapeShiftC_valid" -> "lem:10_3_C"	[style=dashed];}`)
     .on("end", interactive);
 
 latexLabelEscaper = function(label) {

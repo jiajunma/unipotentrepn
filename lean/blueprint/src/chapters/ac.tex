@@ -1,0 +1,147 @@
+\chapter{AC Recursion and firstColSign Invariant}
+\label{chap:ac}
+
+Reference: [BMSZ] Equation~(11.2); internal blueprint
+\texttt{firstColSign\_invariant.md}.
+
+\section{AC recursion (Equation 11.2)}
+
+\begin{definition}[AC base case]
+  \label{def:AC_base}
+  \lean{AC.base}
+  \leanok
+  \uses{def:ILS}
+  When $|\check{\mathcal{O}}| = 0$ the base $\mathcal{L}_\tau$ is determined by $\gamma$:
+  \[
+    \mathrm{AC.base}\,\gamma = \begin{cases}
+      [(1,\ [(1, 0)])] & \gamma = B^+ \\
+      [(1,\ [(0, -1)])] & \gamma = B^- \\
+      [(1,\ [])] & \gamma \in \{C, D, M\}.
+    \end{cases}
+  \]
+  (Each list entry is an \texttt{ACResult} branch: \texttt{(coeff, ILS)}.)
+\end{definition}
+
+\begin{definition}[AC step — single recursion step]
+  \label{def:AC_step}
+  \lean{AC.step}
+  \leanok
+  \uses{def:AC_base, def:thetaLift, def:twistBD, def:charTwistCM}
+  Given a source $\mathrm{ACResult}$ and target $\gamma$, together with parameters
+  $(p, q, \eps_\tau, \eps_\wp) \in \mathbb{Z}^2 \times \{0, 1\}^2$, define:
+  \begin{itemize}
+    \item If $\gamma \in \{D, B^+, B^-\}$ (no C/M pre-twist):
+    \[
+      \mathrm{AC.step} =
+      \begin{cases}
+        (\mathrm{source.thetaLift}\,\gamma\,p\,q)\otimes(1, -1) & \eps_\tau = 1 \\
+        \mathrm{source.thetaLift}\,\gamma\,p\,q & \eps_\tau = 0
+      \end{cases}
+    \]
+    \item If $\gamma \in \{C, M\}$: first pre-twist the source by $\otimes(-1, -1)^{\eps_\wp}$, then theta lift.
+  \end{itemize}
+  The resulting \texttt{ACResult} carries all branches.
+\end{definition}
+
+\begin{definition}[AC fold — chain of AC.step]
+  \label{def:AC_fold}
+  \lean{AC.fold}
+  \leanok
+  \uses{def:AC_base, def:AC_step}
+  Given a descent chain \texttt{chain : List ACStepData}, inductively apply
+  \texttt{AC.step} from \texttt{AC.base} to get the final \texttt{ACResult},
+  yielding $\mathcal{L}_\tau$ when the chain is $\tau$'s descent sequence.
+\end{definition}
+
+\section{Sign preservation through AC.step}
+
+\begin{theorem}[AC.step preserves signature ($\gamma = D$)]
+  \label{thm:AC_step_sign_D}
+  \lean{AC.step_sign_D}
+  \leanok
+  \uses{def:AC_step, thm:thetaLift_sign, lem:twist_sign}
+  Every branch of the output has $\Sign = (p, q)$:
+  \[ \forall r \in \mathrm{AC.step}_{D}(\mathrm{source}, p, q, \eps_\tau, \eps_\wp),\quad \Sign(r.2) = (p, q). \]
+\end{theorem}
+
+\begin{theorem}[AC.step preserves signature (all $\gamma$)]
+  \label{thm:AC_step_sign_all}
+  \lean{AC.step_sign_Bplus, AC.step_sign_Bminus, AC.step_sign_C, AC.step_sign_M}
+  \leanok
+  \uses{thm:AC_step_sign_D}
+  Parallel statements for $\gamma \in \{B^+, B^-, C, M\}$.
+\end{theorem}
+
+\begin{theorem}[AC.base signature]
+  \label{thm:AC_base_sign}
+  \lean{AC.base_sign}
+  \leanok
+  \uses{def:AC_base, def:sign}
+  $\Sign(\mathrm{AC.base}\,\gamma) = (0, 0)$ for $\gamma \in \{C, D, M\}$; $\Sign(\mathrm{AC.base}\,B^+) = (1, 0)$; $\Sign(\mathrm{AC.base}\,B^-) = (0, 1)$.
+\end{theorem}
+
+\section{firstColSign invariant (the key structural lemma)}
+
+This section extracts the main content of
+\texttt{docs/blueprints/firstColSign\_invariant.md}.
+
+\begin{theorem}[firstColSign diff invariant]
+  \label{thm:fcSign_diff}
+  \lean{AC.chain_firstColSign_eq_diff_sign}
+  \leanok
+  \uses{def:firstColSign, def:AC_fold, thm:AC_step_sign_D}
+  Let $\mathcal{L}_\tau = \mathrm{AC.fold}\,\gamma\,(\mathrm{descent\ chain})$, with
+  the descent chain producing signatures $\Sign(\mathcal{L}_\tau)$ and
+  $\Sign(\mathcal{L}_{\tau''})$ at successive levels. Then
+  \[ \mathrm{fcSign}(\mathcal{L}_\tau) = \Sign(\mathcal{L}_\tau) - \Sign(\mathcal{L}_{\tau''}). \]
+  Equivalently:
+  \[ \mathrm{fcSign}(\mathcal{L}_\tau) = (p_\tau - p_{\tau''},\ q_\tau - q_{\tau''}). \]
+\end{theorem}
+
+\begin{proof}
+  \leanok
+  By induction on the descent chain length. Base: $\mathrm{fcSign}(\mathrm{AC.base}) = \Sign(\mathrm{AC.base})$ (\texttt{AC.base\_firstColSign\_eq\_sign}).
+  Step: Given $\mathrm{fcSign}(\text{prev}) = \Sign(\text{prev}) - \Sign(\text{prev}')$, the post-twist and theta-lift formulas (Thm~\ref{thm:thetaLift_fcSign}, Lem~\ref{lem:twist_fcSign}) give
+  \[ \mathrm{fcSign}(\text{curr}) = (\text{current } p - \Sign(\text{prev}).1,\ \text{current } q - \Sign(\text{prev}).2) \]
+  $= (p_\tau - p_{\tau''},\ q_\tau - q_{\tau''})$ since the current parameters are $\Sign(\tau) = (p_\tau, q_\tau)$ and the previous source has $\Sign = \Sign(\tau'')$ by IH.
+\end{proof}
+
+\begin{theorem}[AC.step fcSign invariant — per $\gamma$]
+  \label{thm:AC_step_fcSign}
+  \lean{AC.step_firstColSign_D, AC.step_firstColSign_Bplus, AC.step_firstColSign_Bminus, AC.step_firstColSign_C, AC.step_firstColSign_M, AC.step_firstColSign_BD}
+  \leanok
+  \uses{thm:fcSign_diff}
+  For each $\gamma \in \{D, B^+, B^-, C, M\}$, every branch of $\mathrm{AC.step}$'s output has
+  $\mathrm{fcSign}(r.2) = (p - \mathrm{prev\_sig}.1,\ q - \mathrm{prev\_sig}.2)$ where $\mathrm{prev\_sig} = \Sign(\text{source})$.
+\end{theorem}
+
+\begin{theorem}[ACResult.postTwist first entry]
+  \label{thm:postTwist_first_entry}
+  \lean{ACResult.postTwist_BD_first_entry}
+  \leanok
+  \uses{def:twistBD, def:AC_step}
+  After the B/D post-twist $\otimes(1, -1)$ (when $\eps_\tau = 1$), the first entry of every branch transforms by $(a, b) \mapsto (a, -b)$.
+\end{theorem}
+
+\section{Multiplicity-free}
+
+\begin{definition}[MultiplicityFree]
+  \label{def:mfree}
+  \lean{ACResult.MultiplicityFree}
+  \leanok
+  \uses{def:ILS}
+  An $\mathrm{ACResult}$ is \emph{multiplicity free} if no two branches carry the same ILS.
+\end{definition}
+
+\begin{proposition}[Prop 11.7 — $\mathcal{L}_\tau$ is multiplicity free]
+  \label{prop:11_7}
+  \lean{prop_11_7_multiplicityFree}
+  \leanok
+  \uses{def:AC_step, def:mfree, lem:T_squared}
+  The AC output $\mathcal{L}_\tau \in \mathbb{Z}[\MYD_\star]$ is multiplicity free.
+\end{proposition}
+\begin{proof}
+  \uses{thm:AC_step_sign_all, lem:T_squared, lem:twist_sign}
+  By induction. Base: \texttt{AC.base}'s single branch is trivially multiplicity free.
+  Inductive step: the four operations (sign twist, $T$, augmentation, truncation) are either injective or extend uniformly across branches, and AC.step preserves distinct ILS's by tracking sign/fcSign differences.
+\end{proof}

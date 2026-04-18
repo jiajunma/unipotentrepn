@@ -1,0 +1,140 @@
+\chapter{Tail PBP, Prop 11.3--11.4}
+\label{chap:tail}
+
+Reference: [BMSZb] Section~10.5 (tail definition); [BMSZ] Prop~11.3, 11.4;
+internal blueprint \texttt{tail\_definition.md}, \texttt{lemma\_11\_5\_PBP\_identity.md}.
+
+\section{The tail PBP}
+
+\begin{definition}[Tail length $k$]
+  \label{def:tailLen}
+  \lean{PBP.tailLen_D, PBP.tailLen_B}
+  \leanok
+  \uses{def:PBP}
+  For $\tau \in \PBP_D$ with $\mathcal{P}$ col~0 longer than $\mathcal{Q}$ col~0, the
+  \emph{tail length} is
+  \[ k := \tau.\mathcal{P}.\mathrm{colLen}(0) - \tau.\mathcal{Q}.\mathrm{colLen}(0). \]
+  Equivalently $k = (\mathbf{r}_1(\check{\mathcal{O}}) - \mathbf{r}_2(\check{\mathcal{O}}))/2 + 1$ via the BV dual correspondence.
+\end{definition}
+
+\begin{definition}[Tail symbol $x_\tau$]
+  \label{def:tailSymbol}
+  \lean{PBP.tailSymbol_D, PBP.tailSymbol_B}
+  \leanok
+  \uses{def:tailLen}
+  For D type: $x_\tau := \mathcal{P}_\tau(\mathcal{P}.\mathrm{colLen}(0) - 1, 0)$ — the paint at the bottom of $\mathcal{P}$'s column~0 tail region. For B type: analog in $\mathcal{Q}$.
+\end{definition}
+
+\begin{definition}[Tail signature $\mathrm{tailSig}(\tau) = (p_{\tau_t}, q_{\tau_t})$]
+  \label{def:tailSignature}
+  \lean{PBP.tailSignature_D, PBP.tailSignature_B}
+  \leanok
+  \uses{def:tailLen, def:tailContrib}
+  \[ \mathrm{tailSig}(\tau) := \sum_{i = \tau.\mathcal{Q}.\mathrm{colLen}(0)}^{\tau.\mathcal{P}.\mathrm{colLen}(0) - 1} \mathrm{tailContrib}(\mathcal{P}_\tau(i, 0)). \]
+  Each cell contributes $\mathrm{tailContrib}$ (Def.~\ref{def:tailContrib}); components sum to~$2$ per cell.
+\end{definition}
+
+\begin{lemma}[Tail signature sum identity]
+  \label{lem:tailSig_sum}
+  \lean{PBP.tailSignature_D_sum_eq}
+  \leanok
+  \uses{def:tailSignature}
+  $p_{\tau_t} + q_{\tau_t} = 2k$ where $k$ is the tail length.
+\end{lemma}
+
+\begin{lemma}[Tail signature non-negativity]
+  \label{lem:tailSig_nonneg}
+  \lean{PBP.tailSignature_D_nonneg}
+  \leanok
+  \uses{def:tailSignature}
+  $p_{\tau_t} \geq 0$ and $q_{\tau_t} \geq 0$.
+\end{lemma}
+
+\section{Proposition 11.3 — tail symbol characterisations}
+
+\begin{lemma}[Prop 11.3 — characterisation of $x_\tau$ via signatures and $\eps$]
+  \label{lem:11_3}
+  \lean{tailSymbol_eq_d_iff_epsilon_zero, tailSignature_p_zero_iff_s, tailSignature_q_zero_iff_r}
+  \leanok
+  \uses{def:tailSymbol, def:tailSignature, def:epsilon_pbp}
+  Assume $\mathcal{P}.\mathrm{colLen}(0) > \mathcal{Q}.\mathrm{colLen}(0)$. Then:
+  \begin{enumerate}
+    \item $\eps_\tau = 0 \iff x_\tau = d$.
+    \item $p_{\tau_t} = 0 \iff x_\tau = s$.
+    \item $q_{\tau_t} = 0 \iff x_\tau = r$.
+  \end{enumerate}
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  By layer monotonicity, a symbol $d$ (layerOrd~4) can only appear at the
+  bottom of column~0. Conversely, $\eps_\tau = 0$ iff $d$ is present in column~0,
+  which forces it to the bottom.
+
+  For (2): if $x_\tau = s$, layer monotonicity bounds all tail-cell
+  $\mathrm{layerOrd} \leq 1$, so each is $\bullet$ or $s$. The non-$\bullet$ ones
+  are forced to be $s$ by the non-dot condition at the boundary. By the
+  row-$s$ constraint, each row has at most one $s$, so the full tail is $s$ with
+  $\mathrm{tailContrib} = (0, 2)$ each; summed $p$-component is $0$.
+  Conversely, if $x_\tau \neq s$, the bottom cell contributes $\geq 1$ to $p$
+  (since $r \mapsto (2, 0)$, $c \mapsto (1, 1)$, $d \mapsto (1, 1)$).
+
+  (3) is symmetric.
+\end{proof}
+
+\section{Signature sum and residual identity}
+
+\begin{lemma}[D-type signature sum]
+  \label{lem:sig_sum_D}
+  \lean{PBP.signature_sum_D}
+  \leanok
+  \uses{def:signature_pbp, def:cardCells}
+  For $\tau \in \PBP_D$:
+  \[ p_\tau + q_\tau = 2\cdot|\tau|. \]
+  (Each cell contributes exactly $2$ to the total $p + q$.)
+\end{lemma}
+\begin{proof}
+  \leanok
+  Combine $p_\tau = \#_\bullet + \#_s + 2\#_r + \#_c + \#_d$ and the symmetric expression for $q_\tau$. Since $\mathcal{Q}$ is all $\bullet$ for D type, the non-dot counts come from $\mathcal{P}$ only, and $p_\tau + q_\tau = 2 \cdot |\mathcal{P}| + 2 \cdot |\mathcal{Q}| = 2|\tau|$.
+\end{proof}
+
+\begin{lemma}[Tail residual identity]
+  \label{lem:residual_D}
+  \lean{PBP.residual_identity_D}
+  \leanok
+  \uses{def:tailSignature, lem:tailSig_sum}
+  For $\tau \in \PBP_D$:
+  \[ p_{\tau_t} + q_{\tau_t} = 2 \cdot \mathbf{c}_1(\mathcal{O}) - 2 \cdot \mathbf{c}_2(\mathcal{O}). \]
+\end{lemma}
+\begin{proof}
+  \leanok
+  $k = \mathbf{c}_1 - \mathbf{c}_2$ by the BV dual column-length relations (specifically $\mathcal{P}.\mathrm{colLen}(0) = \mathbf{c}_1$, $\mathcal{Q}.\mathrm{colLen}(0) = \mathbf{c}_2$). Apply Lem.~\ref{lem:tailSig_sum}.
+\end{proof}
+
+\section{Proposition 11.4 — signature decomposition}
+
+\begin{proposition}[Prop 11.4 D — signature decomposition (Eq 11.7)]
+  \label{prop:11_4}
+  \lean{PBP.signature_fst_decomp_D, PBP.signature_snd_decomp_D, prop_11_4_signature_decomp_D}
+  \leanok
+  \uses{def:signature_pbp, def:tailSignature, def:doubleDescent_D}
+  (Primitive case $\mathbf{r}_2(\check{\mathcal{O}}) > \mathbf{r}_3(\check{\mathcal{O}})$.) The signature splits as
+  \[ \Sign(\tau) = (\mathbf{c}_2(\mathcal{O}), \mathbf{c}_2(\mathcal{O})) + \Sign(\nabla^2\tau) + \mathrm{tailSig}(\tau). \]
+  More explicitly (Lean form):
+  \begin{align*}
+    p_\tau &= \mathbf{c}_2(\mathcal{O}) + p_{\nabla^2\tau} + p_{\tau_t} \\
+    q_\tau &= \mathbf{c}_2(\mathcal{O}) + q_{\nabla^2\tau} + q_{\tau_t}
+  \end{align*}
+  where $\mathbf{c}_2(\mathcal{O}) = \tau.\mathcal{Q}.\mathrm{colLen}(0)$.
+\end{proposition}
+
+\begin{proof}
+  \leanok
+  Decompose $\mathcal{P}$'s cells into three groups:
+  \begin{enumerate}
+    \item \emph{Column~0 below $\mathcal{Q}$'s col~0} ($i < \mathcal{Q}.\mathrm{colLen}(0)$): these are all $\bullet$ by the dot\_match axiom, contributing $\mathbf{c}_2(\mathcal{O}) \cdot (1, 1) / 2$ per cell... actually the direct expansion gives $\mathbf{c}_2(\mathcal{O})$ to both $p$ and $q$ via the $\bullet$ contribution to the signature formula.
+    \item \emph{Columns $\geq 1$}: these match $\nabla^2\tau$'s columns exactly (up to shift), contributing $\Sign(\nabla^2\tau)$ (on a shifted shape).
+    \item \emph{Tail cells} ($\mathcal{Q}.\mathrm{colLen}(0) \leq i < \mathcal{P}.\mathrm{colLen}(0)$ in column~0): contribute $\mathrm{tailSig}(\tau)$ by Def.~\ref{def:tailSignature}.
+  \end{enumerate}
+  Uses \texttt{countSym\_split}, \texttt{col0\_dot\_below\_Q\_D}, \texttt{Q\_countSym\_eq\_zero\_of\_D}, and the per-component $\mathrm{tailContrib}$ table.
+\end{proof}

@@ -1,0 +1,190 @@
+\chapter{Painted Bipartitions (PBP)}
+\label{chap:pbp}
+
+Painted Bipartitions are the basic combinatorial data parametrising local
+systems on nilpotent orbits (they encode both the $\wp$-decorations and the
+local system type). We adopt the definitions of [BMSZb] Section~2.
+
+\section{DRC symbols and layer order}
+
+\begin{definition}[DRC symbols]
+  \label{def:drc_symbols}
+  \lean{DRCSymbol}
+  \leanok
+  The five \emph{DRC symbols} are
+  \[ \{\bullet,\ s,\ r,\ c,\ d\}. \]
+  Symbols other than $\bullet$ are called \emph{non-dot}.
+\end{definition}
+
+\begin{definition}[Layer order]
+  \label{def:layerOrd}
+  \lean{DRCSymbol.layerOrd}
+  \leanok
+  \uses{def:drc_symbols}
+  The \emph{layer order} is a function $\mathrm{layerOrd} : \mathrm{DRCSymbol} \to \mathbb{N}$ given by
+  \[ \mathrm{layerOrd}(\bullet) = 0,\ \mathrm{layerOrd}(s) = 1,\ \mathrm{layerOrd}(r) = 2,\ \mathrm{layerOrd}(c) = 3,\ \mathrm{layerOrd}(d) = 4. \]
+  This is the linear order $\bullet < s < r < c < d$.
+\end{definition}
+
+\begin{definition}[Tail contribution]
+  \label{def:tailContrib}
+  \lean{DRCSymbol.tailContrib}
+  \leanok
+  \uses{def:drc_symbols}
+  Paper Eq.~(11.5). Each DRC symbol contributes a pair of non-negative integers
+  to the tail signature:
+  \[
+    \mathrm{tailContrib}(\bullet) = (1,1),\ \mathrm{tailContrib}(s) = (0, 2),\ \mathrm{tailContrib}(r) = (2, 0),
+  \]
+  \[
+    \mathrm{tailContrib}(c) = (1, 1),\ \mathrm{tailContrib}(d) = (1, 1).
+  \]
+  In particular the two components always sum to~$2$.
+\end{definition}
+
+\section{Painted Young diagrams}
+
+\begin{definition}[Young diagram]
+  \label{def:yd}
+  \lean{YoungDiagram}
+  \leanok
+  A Young diagram $\mu$ is a finite subset of $\mathbb{N}^2$ which is a
+  \emph{down-set} under $(i, j) \leq (i', j') \iff i \leq i' \land j \leq j'$.
+  Columns $j$ have lengths $\mu.\mathrm{colLen}(j) = |\{i : (i, j) \in \mu\}|$.
+\end{definition}
+
+\begin{definition}[Painted Young diagram]
+  \label{def:pyd}
+  \lean{PaintedYoungDiagram, PaintedYoungDiagram.layerMonotone}
+  \leanok
+  \uses{def:yd, def:layerOrd}
+  A \emph{painted Young diagram} is a triple $D = (\mu, \mathcal{P}, \mathrm{layerMono})$ where:
+  \begin{enumerate}
+    \item $\mu$ is a Young diagram (the \emph{shape}).
+    \item $\mathcal{P} : \mathbb{N}^2 \to \mathrm{DRCSymbol}$ is a paint function with
+      $\mathcal{P}(i, j) = \bullet$ for $(i, j) \notin \mu$ (paint outside the shape is $\bullet$).
+    \item \textbf{layer monotonicity}: for all $(i_1, j_1), (i_2, j_2)$ with $i_1 \leq i_2$ and $j_1 \leq j_2$,
+      if $(i_2, j_2) \in \mu$ then $\mathrm{layerOrd}(\mathcal{P}(i_1, j_1)) \leq \mathrm{layerOrd}(\mathcal{P}(i_2, j_2))$.
+  \end{enumerate}
+\end{definition}
+
+\begin{definition}[$\mathrm{dotScolLen}$ — dot-and-s column length]
+  \label{def:dotScolLen}
+  \lean{PBP.dotScolLen}
+  \leanok
+  \uses{def:pyd}
+  For a painted Young diagram $D$, $\mathrm{dotScolLen}(D, j)$ is the number of cells in column $j$ whose paint is $\bullet$ or $s$ (equivalently, the largest $k$ such that every cell $(i, j)$ with $i < k$ has $\mathrm{layerOrd}(\mathcal{P}(i, j)) \leq 1$).
+\end{definition}
+
+\section{Root type and symbol allowances}
+
+\begin{definition}[Root type]
+  \label{def:RootType}
+  \lean{RootType}
+  \leanok
+  A \emph{root type} $\gamma \in \{B^+,\ B^-,\ C,\ D,\ M\}$ selects a set of allowed paint symbols for $\mathcal{P}$ and $\mathcal{Q}$ (see below).
+\end{definition}
+
+\begin{definition}[Symbol allowances per root type]
+  \label{def:sym_allowed}
+  \uses{def:RootType, def:drc_symbols}
+  The following table gives the allowed DRC symbols for $\mathcal{P}$ and $\mathcal{Q}$ (paper Def.~2.25):
+  \[
+    \begin{array}{l|ll}
+      \gamma & \mathcal{P}\text{ allowed} & \mathcal{Q}\text{ allowed} \\\hline
+      B^+ / B^- & \{\bullet, c\} & \{\bullet, s, r, d\} \\
+      C        & \{\bullet, r, c, d\} & \{\bullet, s\} \\
+      D        & \{\bullet, s, r, c, d\} & \{\bullet\} \\
+      M = \tilde{C}        & \{\bullet, s, c\} & \{\bullet, r, d\} \\
+    \end{array}
+  \]
+  The $B^+/B^-$ distinction corresponds to a tag on the extended DRC diagram.
+\end{definition}
+
+\section{Painted Bipartition}
+
+\begin{definition}[Painted Bipartition]
+  \label{def:PBP}
+  \lean{PBP}
+  \leanok
+  \uses{def:pyd, def:sym_allowed}
+  A \emph{painted bipartition} (PBP) is $\tau = (\mathcal{P}, \mathcal{Q}, \gamma)$ where
+  $\mathcal{P}$ and $\mathcal{Q}$ are painted Young diagrams with root type $\gamma$
+  satisfying:
+  \begin{enumerate}
+    \item \textbf{sym\_P, sym\_Q}: $\mathcal{P}.\mathrm{paint}(i, j)$ is in the allowed set for $\mathcal{P}$ determined by $\gamma$ (Def.~\ref{def:sym_allowed}), and likewise for $\mathcal{Q}$.
+    \item \textbf{dot\_match}: $\mathcal{P}(i,j) = \bullet \Leftrightarrow \mathcal{Q}(i,j) = \bullet$ (the outside-shape convention makes this an equivalence between cell memberships).
+    \item \textbf{row\_s, row\_r}: each row contains at most one $s$ across $\mathcal{P} \cup \mathcal{Q}$; similarly at most one $r$.
+    \item \textbf{col\_c\_P / col\_c\_Q}: each column of $\mathcal{P}$ has at most one $c$; same for $\mathcal{Q}$.
+    \item \textbf{col\_d\_P / col\_d\_Q}: each column has at most one $d$.
+  \end{enumerate}
+\end{definition}
+
+\begin{remark}
+  The notation $\iota_\wp := \mathcal{P}$ and $\jmath_\wp := \mathcal{Q}$ appears in the paper and is used interchangeably. The index $\wp$ is a \emph{primitive pair set} which we usually omit, assuming the canonical $\wp$.
+\end{remark}
+
+\begin{definition}[PBPSet — PBPs of fixed shape]
+  \label{def:PBPSet}
+  \lean{PBPSet}
+  \leanok
+  \uses{def:PBP}
+  For $\gamma$ a root type and $\mu_P, \mu_Q$ Young diagrams,
+  \[ \PBP_\gamma(\mu_P, \mu_Q) := \{\tau \in \mathrm{PBP} \mid \tau.\gamma = \gamma,\ \tau.\mathcal{P}.\mathrm{shape} = \mu_P,\ \tau.\mathcal{Q}.\mathrm{shape} = \mu_Q\}. \]
+  Given a dual partition $dp$, we set $\PBP_\gamma(\check{\mathcal{O}}) := \PBP_\gamma(\mu_P(dp), \mu_Q(dp))$ where $\mu_P, \mu_Q$ are derived from $dp$.
+\end{definition}
+
+\section{Signature and epsilon}
+
+\begin{definition}[PBP signature $\Sign(\tau)$]
+  \label{def:signature_pbp}
+  \lean{PBP.signature}
+  \leanok
+  \uses{def:PBP}
+  The signature $\Sign(\tau) = (p_\tau, q_\tau) \in \mathbb{N}^2$ counts paint
+  symbols weighted by paint multiplicities (paper Eq.~(3.3)). Specifically,
+  denoting by $\#_\sigma$ the count of symbol $\sigma$ in $\mathcal{P}$ and $\mathcal{Q}$,
+  and by $n_s, n_r$ the total $s, r$ counts across both,
+  \[
+    p_\tau = n_r, \qquad q_\tau = n_s,
+  \]
+  with appropriate bookkeeping for $\bullet, c, d$ counts and per-$\gamma$ variations.
+  For D type: $p_\tau = \#_{\bullet,\iota} + \#_{\bullet,\jmath} + 2\#_{r,\iota} + \#_{c,\iota} + \#_{d,\iota}$ (and similarly for $q_\tau$ with $s$ in place of $r$).
+\end{definition}
+
+\begin{definition}[Epsilon $\eps_\tau$]
+  \label{def:epsilon_pbp}
+  \lean{PBP.epsilon}
+  \leanok
+  \uses{def:PBP}
+  (Paper Eq.~(3.6).) $\eps_\tau \in \{0, 1\}$ is $1$ iff column~0 of $\mathcal{P}$ (or $\mathcal{Q}$, per $\gamma$) contains a $d$.
+\end{definition}
+
+\begin{definition}[Total cell count $|\tau|$]
+  \label{def:cardCells}
+  \lean{PBP.cardCells}
+  \leanok
+  \uses{def:PBP}
+  $|\tau| := |\mathcal{P}.\mathrm{shape}.\mathrm{cells}| + |\mathcal{Q}.\mathrm{shape}.\mathrm{cells}|$.
+\end{definition}
+
+\section{Dual partitions and shape derivation}
+
+\begin{definition}[Dual partition legality]
+  \label{def:DualPart}
+  \lean{DualPart, DualPart.SortedGE}
+  \leanok
+  A \emph{dual partition} $dp$ is a \texttt{List ℕ} that is sorted $\geq$ (strictly decreasing with possible ties). Validity conditions:
+  \begin{itemize}
+    \item B-type / M-type: every entry is even and positive.
+    \item D-type / C-type: every entry is odd.
+  \end{itemize}
+\end{definition}
+
+\begin{definition}[Column lengths from dp]
+  \label{def:dpartColLens}
+  \lean{dpartColLensP_B, dpartColLensQ_B, dpartColLensP_D, dpartColLensQ_D, dpartColLensP_C, dpartColLensQ_C, dpartColLensP_M, dpartColLensQ_M}
+  \leanok
+  \uses{def:DualPart}
+  For each root type, functions compute the column-length lists of $\mu_P$ and $\mu_Q$ from $dp$. For example (D type): $\mu_P(dp)$ has column lengths $(dp_1 + 1)/2, (dp_2 + 1)/2, \ldots$, etc.
+\end{definition}

@@ -1,0 +1,125 @@
+\chapter{Main Counting Formulas (Prop 10.11, 10.12)}
+\label{chap:counting}
+
+These are the \textbf{main unconditional counting theorems} of [BMSZb]
+Section~10. They express the PBP count via a recursion over the dual
+partition. The statements only require shape / dual-partition legality; no
+auxiliary proof objects appear.
+
+\section{Recursive counting functions}
+
+\begin{definition}[Tail class for D type]
+  \label{def:tailClass_D}
+  \lean{tailClass_D, TailClass}
+  \leanok
+  \uses{def:PBP}
+  The \emph{tail class} of $\tau \in \PBP_D$ is one of $\{\mathrm{DD}, \mathrm{RC}, \mathrm{SS}\}$
+  determined by the tail symbol (Def.~\ref{def:tail}): $x_\tau = d$ gives $\mathrm{DD}$,
+  $x_\tau \in \{r, c\}$ gives $\mathrm{RC}$, $x_\tau = s$ gives $\mathrm{SS}$.
+\end{definition}
+
+\begin{definition}[countPBP\_D — recursion on D-type dp]
+  \label{def:countPBP_D}
+  \lean{countPBP_D, countPBP_D_of_YD, countPBP_D_of_YD_aux, tripleSum}
+  \leanok
+  \uses{def:DualPart, def:tailClass_D, prop:10_9_D, prop:10_8_C_prim}
+  $\mathrm{countPBP\_D}(dp) \in \mathbb{N}^3$ is a triple
+  $(n_{\mathrm{DD}}, n_{\mathrm{RC}}, n_{\mathrm{SS}})$ counting PBPs by tail class.
+
+  Base case: $dp = []$ gives $(0, 0, 0)$ (or $(1, 0, 0)$ for the empty orbit, depending on
+  the initial convention; see the Lean definition).
+
+  Step: remove the first part of $dp$, recursively count on the remaining orbit, and
+  combine via descent relations (Prop~\ref{prop:10_8_C_prim}, Prop~\ref{prop:10_8_C_bal},
+  or the balanced D split).
+
+  $\mathrm{tripleSum}(n_{\mathrm{DD}}, n_{\mathrm{RC}}, n_{\mathrm{SS}}) := n_{\mathrm{DD}} + n_{\mathrm{RC}} + n_{\mathrm{SS}}$ is the total count.
+\end{definition}
+
+\begin{definition}[countPBP\_B — recursion on B-type dp]
+  \label{def:countPBP_B}
+  \lean{countPBP_B}
+  \leanok
+  \uses{def:DualPart, def:countPBP_D, prop:10_8_M_prim, prop:10_8_M_bal}
+  $\mathrm{countPBP\_B}(dp) \in \mathbb{N}^3$ via analogous recursion, using
+  the M$\to$B descent (Prop~10.8 M) plus recursion to D on a shifted shape.
+\end{definition}
+
+\begin{definition}[countPBP\_C — recursion on C-type dp]
+  \label{def:countPBP_C}
+  \lean{countPBP_C}
+  \leanok
+  \uses{def:countPBP_D, prop:10_8_C_prim, prop:10_8_C_bal}
+  $\mathrm{countPBP\_C}(dp) \in \mathbb{N}$ via descent to D:
+  \[
+    \mathrm{countPBP\_C}(dp) =
+    \begin{cases}
+      \text{(primitive formula)} & \mu_Q.\mathrm{colLen}(0) \geq \mu_P.\mathrm{colLen}(0) \\
+      n_{\mathrm{DD}} + n_{\mathrm{RC}} & \text{balanced}
+    \end{cases}
+  \]
+\end{definition}
+
+\begin{definition}[countPBP\_M — recursion on M-type dp]
+  \label{def:countPBP_M}
+  \lean{countPBP_M}
+  \leanok
+  \uses{def:countPBP_B, prop:10_8_M_prim, prop:10_8_M_bal}
+  $\mathrm{countPBP\_M}(dp) \in \mathbb{N}$ via descent to B.
+\end{definition}
+
+\section{Main counting theorems}
+
+\begin{proposition}[Prop 10.11 B — counting for B type]
+  \label{prop:10_11_B}
+  \lean{card_PBPSet_B_eq_tripleSum_countPBP_B, prop_10_11_B, card_B_combined}
+  \leanok
+  \uses{cor:10_10, def:countPBP_B, prop:10_8_M_prim, prop:10_8_M_bal}
+  For any valid B-type dual partition $dp$ with shape $(\mu_P, \mu_Q)$ derived from $dp$:
+  \[ |\PBP_{B^+}(\mu_P, \mu_Q)| + |\PBP_{B^-}(\mu_P, \mu_Q)| = \mathrm{tripleSum}\big(\mathrm{countPBP\_B}(dp)\big). \]
+\end{proposition}
+\begin{proof}
+  \leanok
+  Joint induction on the ``Total'', ``A1'', ``A3'' components following the
+  B-type lifting structure (see \texttt{CorrespondenceB.lean}, main theorem
+  \texttt{card\_B\_combined}). The balanced cases use Prop~\ref{prop:10_8_M_bal}
+  and a fiber decomposition of $\PBP_{B^\pm}$ along bottom-$\mathcal{Q}$ paint.
+  Primitive cases use Prop~\ref{prop:10_8_M_prim} and the M-type balanced
+  bijection together with induction hypothesis on the shifted $\mu_P$.
+\end{proof}
+
+\begin{proposition}[Prop 10.11 D — counting for D type]
+  \label{prop:10_11_D}
+  \lean{card_PBPSet_D_eq_tripleSum_countPBP_D, prop_10_11_D}
+  \leanok
+  \uses{cor:10_10, def:countPBP_D}
+  For any valid D-type dual partition $dp$:
+  \[ |\PBP_D(\mu_P, \mu_Q)| = \mathrm{tripleSum}\big(\mathrm{countPBP\_D}(dp)\big). \]
+\end{proposition}
+
+\begin{proposition}[Prop 10.12 C — counting for C type]
+  \label{prop:10_12_C}
+  \lean{card_PBPSet_C_eq_countPBP_C, prop_10_12_C}
+  \leanok
+  \uses{prop:10_8_C_prim, prop:10_8_C_bal, prop:10_11_D, def:countPBP_C, prop:10_2_C}
+  For any valid C-type dual partition $dp$ (with $dp \neq []$):
+  \[ |\PBP_C(\mu_P, \mu_Q)| = \mathrm{countPBP\_C}(dp). \]
+\end{proposition}
+
+\begin{proposition}[Prop 10.12 M — counting for M type]
+  \label{prop:10_12_M}
+  \lean{card_PBPSet_M_eq_countPBP_M, prop_10_12_M}
+  \leanok
+  \uses{prop:10_8_M_prim, prop:10_8_M_bal, prop:10_11_B, def:countPBP_M, prop:10_2_M}
+  For any valid M-type dual partition $dp$:
+  \[ |\PBP_M(\mu_P, \mu_Q)| = \mathrm{countPBP\_M}(dp). \]
+\end{proposition}
+
+\section{Unconditional status}
+
+The counting recursion formulas (\ref{prop:10_11_B}, \ref{prop:10_11_D},
+\ref{prop:10_12_C}, \ref{prop:10_12_M}) are \textbf{fully unconditional in the
+following sense}: the hypotheses are only shape/dual-partition legality
+(\texttt{SortedGE}, parity, positivity, shape match), all of which are
+defining properties of ``valid B/D/C/M dual partition''. No auxiliary proof
+object (ACResult, ILS, L, twist equality) is needed.

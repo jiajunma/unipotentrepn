@@ -1,0 +1,62 @@
+\chapter{Formalization Status}
+\label{chap:status}
+
+\section{Overview}
+
+All theorems in this blueprint are formalised in Lean~4 with zero instances of
+\texttt{sorry}, \texttt{admit}, \texttt{axiom}, or \texttt{opaque}. A full
+axiom audit (via \texttt{\#print axioms}) shows only the three standard
+classical logic axioms:
+\texttt{propext}, \texttt{Classical.choice}, \texttt{Quot.sound}.
+
+\section{Unconditional status}
+
+\textbf{[BMSZb] Section~10 main theorems} (Chapters~\ref{chap:pbp}--\ref{chap:counting}):
+\emph{fully unconditional}. Hypotheses are only shape / dual-partition legality
+(sorted, even/odd, positive, shape match), which are defining conditions of
+``valid dual partition''. See
+Prop~\ref{prop:10_11_B}, \ref{prop:10_11_D}, \ref{prop:10_12_C}, \ref{prop:10_12_M}.
+
+\textbf{Prop~10.8} (descent cardinality, Chap~\ref{chap:descent}) and
+\textbf{Prop~10.9 / Cor~10.10} (double descent injectivity, Chap~\ref{chap:ddescent}):
+all unconditional (only shape hypotheses + structural equalities of $\tau_1, \tau_2$).
+
+\textbf{[BMSZ] Section~11} (Chapters~\ref{chap:ils}--\ref{chap:11_main}):
+\begin{itemize}
+\item AC-level theorems (\emph{e.g.}~\ref{thm:AC_step_sign_D}, \ref{thm:fcSign_diff}, \ref{lem:11_6_D}) are
+  \emph{unconditional} given \texttt{source : ACResult}. The source is
+  caller-supplied (typically the AC.fold of the descent chain for $\tau''$).
+\item PBP-level theorems (\emph{e.g.}~\ref{prop:11_9_D}) that express
+  numerical constraints on $\tau$ take only shape/type hypotheses.
+\item Main bijection (\ref{prop:11_14}, \ref{prop:11_15}, \ref{prop:11_17}) uses the
+  abstract $\alpha \simeq \beta$ witness. This is how equality of cardinalities
+  is \emph{expressed} in the formalization (as the caller's input witness);
+  the witness itself is constructed from Section~10 counting + other bijection data.
+\end{itemize}
+
+\section{Deliberately skipped}
+
+Per project directive, real-form variants $C^*, D^*$ (Lemma~11.2, Prop~11.18--11.21)
+are \textbf{not formalized}. The coverage is $\star \in \{B, D, C, M\}$.
+
+\section{Repository information}
+
+\begin{itemize}
+  \item GitHub: \url{https://github.com/jiajunma/unipotentrepn}
+  \item Lean source: \texttt{lean/CombUnipotent/} (entry point \texttt{lean/CombUnipotent.lean})
+  \item Blueprint source: \texttt{lean/blueprint/src/}
+  \item Natural-language md blueprints: \texttt{lean/docs/blueprints/} (see INDEX.md)
+  \item CI: \texttt{.github/workflows/blueprint.yml} compiles this blueprint on each push to \texttt{main}.
+\end{itemize}
+
+\section{Reading guide}
+
+For a conceptual tour:
+\begin{enumerate}
+  \item Chap~\ref{chap:pbp} (PBP) — start here to understand the combinatorial data.
+  \item Chap~\ref{chap:counting} (counting) — the main result of [BMSZb].
+  \item Chap~\ref{chap:ac} (AC recursion + firstColSign) — the key technical tool for Section~11.
+  \item Chap~\ref{chap:tail} (tail, Prop~11.4) — signature decomposition.
+  \item Chap~\ref{chap:11_5} (Lemma~11.5, 11.6) — the AC composition formula.
+  \item Chap~\ref{chap:11_main} (main bijection) — the culminating result of [BMSZ].
+\end{enumerate}

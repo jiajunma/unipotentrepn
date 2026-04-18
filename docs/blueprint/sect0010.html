@@ -12,10 +12,10 @@
 <meta name="generator" content="plasTeX" />
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>AC Recursion (Equation 11.2)</title>
-<link rel="next" href="sect0011.html" title="Lemma 11.3: Tail Properties" />
-<link rel="prev" href="sect0009.html" title="Theta Lift on MYD (Sections 9.5, 11.1–11.4)" />
-<link rel="up" href="chap-section11.html" title="Associated Cycles (BMSZ Section 11)" />
+<title>Shape-shift for C type (case analysis)</title>
+<link rel="next" href="sect0011.html" title="Trivial shape-shifts: B and D types" />
+<link rel="prev" href="sect0009.html" title="Shape-shift for M = C type" />
+<link rel="up" href="chap-shape_shift.html" title="Shape-shifting bijections (Lemma 10.3)" />
 <link rel="stylesheet" href="styles/theme-white.css" />
 <link rel="stylesheet" href="styles/amsthm.css" />
 <link rel="stylesheet" href="styles/showmore.css" />
@@ -33,85 +33,213 @@
 <nav class="toc">
 <ul class="sub-toc-0">
 <li class="">
-  <a href="sect0001.html"><span class="toc_ref">1</span> <span class="toc_entry">Introduction</span></a>
- </li>
-<li class="">
-  <a href="chap-section10.html"><span class="toc_ref">2</span> <span class="toc_entry">PBP Counting (BMSZb Section 10)</span></a>
+  <a href="chap-intro.html"><span class="toc_ref">1</span> <span class="toc_entry">Introduction</span></a>
   <span class="expand-toc">▶</span>
   <ul class="sub-toc-1">
      <li class="">
-  <a href="sect0002.html"><span class="toc_ref">2.1</span> <span class="toc_entry">PBP and Shape Conventions</span></a>
+  <a href="sect0001.html"><span class="toc_ref">1.1</span> <span class="toc_entry">Group / dual-partition conventions</span></a>
  </li>
 <li class="">
-  <a href="sect0003.html"><span class="toc_ref">2.2</span> <span class="toc_entry">Shape-Shifting (Lemma 10.3)</span></a>
+  <a href="sect0002.html"><span class="toc_ref">1.2</span> <span class="toc_entry">Scope and structure</span></a>
+ </li>
+
+  </ul>
  </li>
 <li class="">
-  <a href="sect0004.html"><span class="toc_ref">2.3</span> <span class="toc_entry">Descent Uniqueness (Lemmas 10.4, 10.5)</span></a>
+  <a href="chap-pbp.html"><span class="toc_ref">2</span> <span class="toc_entry">Painted Bipartitions (PBP)</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sect0003.html"><span class="toc_ref">2.1</span> <span class="toc_entry">DRC symbols and layer order</span></a>
  </li>
 <li class="">
-  <a href="sect0005.html"><span class="toc_ref">2.4</span> <span class="toc_entry">Descent Cardinality (Proposition 10.8)</span></a>
+  <a href="sect0004.html"><span class="toc_ref">2.2</span> <span class="toc_entry">Painted Young diagrams</span></a>
  </li>
 <li class="">
-  <a href="sect0006.html"><span class="toc_ref">2.5</span> <span class="toc_entry">Double Descent Injectivity (Propositions 10.9, 10.10)</span></a>
+  <a href="sect0005.html"><span class="toc_ref">2.3</span> <span class="toc_entry">Root type and symbol allowances</span></a>
  </li>
 <li class="">
-  <a href="sect0007.html"><span class="toc_ref">2.6</span> <span class="toc_entry">Main Counting Formulas (Propositions 10.11, 10.12)</span></a>
+  <a href="sect0006.html"><span class="toc_ref">2.4</span> <span class="toc_entry">Painted Bipartition</span></a>
+ </li>
+<li class="">
+  <a href="sect0007.html"><span class="toc_ref">2.5</span> <span class="toc_entry">Signature and epsilon</span></a>
+ </li>
+<li class="">
+  <a href="sect0008.html"><span class="toc_ref">2.6</span> <span class="toc_entry">Dual partitions and shape derivation</span></a>
  </li>
 
   </ul>
  </li>
 <li class=" active">
-  <a href="chap-section11.html"><span class="toc_ref">3</span> <span class="toc_entry">Associated Cycles (BMSZ Section 11)</span></a>
+  <a href="chap-shape_shift.html"><span class="toc_ref">3</span> <span class="toc_entry">Shape-shifting bijections (Lemma 10.3)</span></a>
   <span class="expand-toc">▼</span>
   <ul class="sub-toc-1 active">
      <li class="">
-  <a href="sect0008.html"><span class="toc_ref">3.1</span> <span class="toc_entry">MYD Operations (Section 9.4)</span></a>
- </li>
-<li class="">
-  <a href="sect0009.html"><span class="toc_ref">3.2</span> <span class="toc_entry">Theta Lift on MYD (Sections 9.5, 11.1–11.4)</span></a>
+  <a href="sect0009.html"><span class="toc_ref">3.1</span> <span class="toc_entry">Shape-shift for \(M = \tilde{C}\) type</span></a>
  </li>
 <li class=" active current">
-  <a href="sect0010.html"><span class="toc_ref">3.3</span> <span class="toc_entry">AC Recursion (Equation 11.2)</span></a>
+  <a href="sect0010.html"><span class="toc_ref">3.2</span> <span class="toc_entry">Shape-shift for C type (case analysis)</span></a>
  </li>
 <li class="">
-  <a href="sect0011.html"><span class="toc_ref">3.4</span> <span class="toc_entry">Lemma 11.3: Tail Properties</span></a>
- </li>
-<li class="">
-  <a href="sect0012.html"><span class="toc_ref">3.5</span> <span class="toc_entry">Proposition 11.4: Signature Decomposition</span></a>
- </li>
-<li class="">
-  <a href="sect0013.html"><span class="toc_ref">3.6</span> <span class="toc_entry">Lemma 11.5: Two-Step AC Formula</span></a>
- </li>
-<li class="">
-  <a href="sect0014.html"><span class="toc_ref">3.7</span> <span class="toc_entry">Lemma 11.6: First Entry</span></a>
- </li>
-<li class="">
-  <a href="sect0015.html"><span class="toc_ref">3.8</span> <span class="toc_entry">Proposition 11.7: Multiplicity Free</span></a>
- </li>
-<li class="">
-  <a href="sect0016.html"><span class="toc_ref">3.9</span> <span class="toc_entry">Proposition 11.8: Non-empty and PBP Wrappers</span></a>
- </li>
-<li class="">
-  <a href="sect0017.html"><span class="toc_ref">3.10</span> <span class="toc_entry">Propositions 11.9–11.13: Injectivity Lemmas</span></a>
- </li>
-<li class="">
-  <a href="sect0018.html"><span class="toc_ref">3.11</span> <span class="toc_entry">Main Bijection (Propositions 11.14, 11.15, 11.17)</span></a>
- </li>
-<li class="">
-  <a href="sect0019.html"><span class="toc_ref">3.12</span> <span class="toc_entry">Lemma 11.1: Base cases</span></a>
+  <a href="sect0011.html"><span class="toc_ref">3.3</span> <span class="toc_entry">Trivial shape-shifts: \(B\) and \(D\) types</span></a>
  </li>
 
   </ul>
  </li>
 <li class="">
-  <a href="sect0020.html"><span class="toc_ref">4</span> <span class="toc_entry">Status Summary</span></a>
+  <a href="chap-descent.html"><span class="toc_ref">4</span> <span class="toc_entry">Descent maps (Lemmas 10.4, 10.5, Prop 10.8)</span></a>
   <span class="expand-toc">▶</span>
   <ul class="sub-toc-1">
      <li class="">
-  <a href="sect0021.html"><span class="toc_ref">4.1</span> <span class="toc_entry">Formal status</span></a>
+  <a href="sect0012.html"><span class="toc_ref">4.1</span> <span class="toc_entry">Single naive descent paints</span></a>
  </li>
 <li class="">
-  <a href="sect0022.html"><span class="toc_ref">4.2</span> <span class="toc_entry">Skipped</span></a>
+  <a href="sect0013.html"><span class="toc_ref">4.2</span> <span class="toc_entry">Double descent \(\nabla ^2\)</span></a>
+ </li>
+<li class="">
+  <a href="sect0014.html"><span class="toc_ref">4.3</span> <span class="toc_entry">Lemmas 10.4, 10.5 — descent injectivity</span></a>
+ </li>
+<li class="">
+  <a href="sect0015.html"><span class="toc_ref">4.4</span> <span class="toc_entry">Proposition 10.8 — descent cardinality relations</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="chap-ddescent.html"><span class="toc_ref">5</span> <span class="toc_entry">Double-descent injectivity (Prop 10.9, Cor 10.10)</span></a>
+ </li>
+<li class="">
+  <a href="chap-counting.html"><span class="toc_ref">6</span> <span class="toc_entry">Main Counting Formulas (Prop 10.11, 10.12)</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sect0016.html"><span class="toc_ref">6.1</span> <span class="toc_entry">Recursive counting functions</span></a>
+ </li>
+<li class="">
+  <a href="sect0017.html"><span class="toc_ref">6.2</span> <span class="toc_entry">Main counting theorems</span></a>
+ </li>
+<li class="">
+  <a href="sect0018.html"><span class="toc_ref">6.3</span> <span class="toc_entry">Unconditional status</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="chap-ils.html"><span class="toc_ref">7</span> <span class="toc_entry">Integer List Sequences and MYD Operations</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sect0019.html"><span class="toc_ref">7.1</span> <span class="toc_entry">ILS definition</span></a>
+ </li>
+<li class="">
+  <a href="sect0020.html"><span class="toc_ref">7.2</span> <span class="toc_entry">Signatures</span></a>
+ </li>
+<li class="">
+  <a href="sect0021.html"><span class="toc_ref">7.3</span> <span class="toc_entry">ILS operations (Section 9.4)</span></a>
+ </li>
+<li class="">
+  <a href="sect0022.html"><span class="toc_ref">7.4</span> <span class="toc_entry">Signature preservation under operations</span></a>
+ </li>
+<li class="">
+  <a href="sect0023.html"><span class="toc_ref">7.5</span> <span class="toc_entry">Theta lifts (Section 9.5)</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="chap-ac.html"><span class="toc_ref">8</span> <span class="toc_entry">AC Recursion and firstColSign Invariant</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sect0024.html"><span class="toc_ref">8.1</span> <span class="toc_entry">AC recursion (Equation 11.2)</span></a>
+ </li>
+<li class="">
+  <a href="sect0025.html"><span class="toc_ref">8.2</span> <span class="toc_entry">Sign preservation through AC.step</span></a>
+ </li>
+<li class="">
+  <a href="sect0026.html"><span class="toc_ref">8.3</span> <span class="toc_entry">firstColSign invariant (the key structural lemma)</span></a>
+ </li>
+<li class="">
+  <a href="sect0027.html"><span class="toc_ref">8.4</span> <span class="toc_entry">Multiplicity-free</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="chap-tail.html"><span class="toc_ref">9</span> <span class="toc_entry">Tail PBP, Prop 11.3–11.4</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sect0028.html"><span class="toc_ref">9.1</span> <span class="toc_entry">The tail PBP</span></a>
+ </li>
+<li class="">
+  <a href="sect0029.html"><span class="toc_ref">9.2</span> <span class="toc_entry">Proposition 11.3 — tail symbol characterisations</span></a>
+ </li>
+<li class="">
+  <a href="sect0030.html"><span class="toc_ref">9.3</span> <span class="toc_entry">Signature sum and residual identity</span></a>
+ </li>
+<li class="">
+  <a href="sect0031.html"><span class="toc_ref">9.4</span> <span class="toc_entry">Proposition 11.4 — signature decomposition</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="chap-11_5.html"><span class="toc_ref">10</span> <span class="toc_entry">Lemma 11.5 and 11.6 — AC composition</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sect0032.html"><span class="toc_ref">10.1</span> <span class="toc_entry">Setup for Lemma 11.5</span></a>
+ </li>
+<li class="">
+  <a href="sect0033.html"><span class="toc_ref">10.2</span> <span class="toc_entry">Lemma 11.5 — PBP identity</span></a>
+ </li>
+<li class="">
+  <a href="sect0034.html"><span class="toc_ref">10.3</span> <span class="toc_entry">Lemma 11.5 atomic PBP discharge</span></a>
+ </li>
+<li class="">
+  <a href="sect0035.html"><span class="toc_ref">10.4</span> <span class="toc_entry">Lemma 11.6 — first entry of \(\mathcal{L}_\tau \)</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="chap-11_main.html"><span class="toc_ref">11</span> <span class="toc_entry">Section 11 injectivity + main bijection</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sect0036.html"><span class="toc_ref">11.1</span> <span class="toc_entry">Lemma 11.1 — base cases</span></a>
+ </li>
+<li class="">
+  <a href="sect0037.html"><span class="toc_ref">11.2</span> <span class="toc_entry">Proposition 11.8 — non-vanishing of \(\mathcal{L}_\tau ^\pm \)</span></a>
+ </li>
+<li class="">
+  <a href="sect0038.html"><span class="toc_ref">11.3</span> <span class="toc_entry">Propositions 11.9–11.12 — injectivity</span></a>
+ </li>
+<li class="">
+  <a href="sect0039.html"><span class="toc_ref">11.4</span> <span class="toc_entry">Main bijection (Prop 11.14, 11.15, 11.16, 11.17)</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="chap-status.html"><span class="toc_ref">12</span> <span class="toc_entry">Formalization Status</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sect0040.html"><span class="toc_ref">12.1</span> <span class="toc_entry">Overview</span></a>
+ </li>
+<li class="">
+  <a href="sect0041.html"><span class="toc_ref">12.2</span> <span class="toc_entry">Unconditional status</span></a>
+ </li>
+<li class="">
+  <a href="sect0042.html"><span class="toc_ref">12.3</span> <span class="toc_entry">Deliberately skipped</span></a>
+ </li>
+<li class="">
+  <a href="sect0043.html"><span class="toc_ref">12.4</span> <span class="toc_entry">Repository information</span></a>
+ </li>
+<li class="">
+  <a href="sect0044.html"><span class="toc_ref">12.5</span> <span class="toc_entry">Reading guide</span></a>
  </li>
 
   </ul>
@@ -125,14 +253,23 @@
 
 
 <div class="main-text">
-<h1 id="a0000000011">3.3 AC Recursion (Equation 11.2)</h1>
-<div class="definition_thmwrapper theorem-style-definition" id="def:AC_base">
+<h1 id="a0000000011">3.2 Shape-shift for C type (case analysis)</h1>
+<p>The C-type shape shift is more delicate: it modifies only column&#160;0 of \(\mathcal{P}\) (the roles of \(\mathcal{P}\) and \(\mathcal{Q}\) do <em>not</em> swap, unlike M type). The construction depends on the value of \(\mathcal{P}_\tau (\mathbf{c}_1(\iota _\wp ), 1)\), giving four sub-cases. </p>
+<h2 id="a0000000058">3.2.1 Setup</h2>
+<p>Let \(\tau \in \mathrm{PBP}_C(\check{\mathcal{O}}, \wp )\) with \((1, 2) \in \mathrm{PP}_\star (\check{\mathcal{O}})\) and \((1, 2) \notin \wp \). Set </p>
+<div class="displaymath" id="a0000000059">
+  \[  k := \mathbf{c}_1(\iota _\wp ),\qquad k_\uparrow := \mathbf{c}_1(\iota _{\wp _\uparrow }),  \]
+</div>
+<p> where \(\wp _\uparrow := \wp \cup \{ (1, 2)\} \). By the PP assumption, \(k_\uparrow {\gt} k \geq 1\). </p>
+<p>Since \(\)\(\) is unchanged, \(\)τ_.Q(i, j) := τ.Q(i, j)\(\) for all \((i, j)\). </p>
+<h2 id="a0000000060">3.2.2 Case analysis for \(\tau _\uparrow .\mathcal{P}\)</h2>
+<div class="definition_thmwrapper theorem-style-definition" id="def:shapeShiftC_paint">
   <div class="definition_thmheading">
     <span class="definition_thmcaption">
     Definition
     </span>
-    <span class="definition_thmlabel">28</span>
-    <span class="definition_thmtitle">AC base case</span>
+    <span class="definition_thmlabel">22</span>
+    <span class="definition_thmtitle">shape shift C — paint function</span>
     <div class="thm_header_extras">
 
     
@@ -140,8 +277,28 @@
         </div>
     <div class="thm_header_hidden_extras">
 
-    <a class="icon proof" href="sect0010.html#def:AC_base">#</a>
+    <a class="icon proof" href="sect0010.html#def:shapeShiftC_paint">#</a>
     
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0006.html#def:PBP">Definition 9</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
     
     
     <button class="modal lean">L∃∀N</button>
@@ -155,7 +312,9 @@
         
         <ul class="uses">
           
-          <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/AC.base" class="lean_decl">AC.base</a></li>
+          <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/shiftPaintP_C_concrete" class="lean_decl">shiftPaintP_C_concrete</a></li>
+          
+          <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/shapeShiftC" class="lean_decl">shapeShiftC</a></li>
           
         </ul>
     
@@ -166,85 +325,110 @@
         </div>
   </div>
   <div class="definition_thmcontent">
-  <p>   When \(|\check{\mathcal{O}}| = 0\): initial ACResult depending on \(\gamma \). </p>
+  <p>    There are four sub-cases, based on \(\mathcal{P}_\tau (k, 1)\): </p>
+<p><b class="bfseries">Case (a):</b> \(\mathcal{P}_\tau (k, 1) \neq \bullet \). Set \(\alpha _0 := \mathcal{P}_\tau (k, 1) \in \{ s, r, c, d\} \). </p>
+<p><b class="bfseries">Sub-case (a.1):</b> \(k \geq 2\) and \(\mathcal{P}_\tau (k - 1, 1) = c\). </p>
+<div class="displaymath" id="a0000000061">
+  \[  \tau _\uparrow .\mathcal{P}(i, j) = \begin{cases}  r &  j = 1,\  k - 1 \leq i \leq k_\uparrow - 2 \\ c &  (i, j) = (k_\uparrow - 1, 1) \\ d &  (i, j) = (k_\uparrow , 1) \\ \mathcal{P}_\tau (i, j) &  \text{otherwise} \end{cases}  \]
+</div>
+<p><b class="bfseries">Sub-case (a.2):</b> otherwise. </p>
+<div class="displaymath" id="a0000000062">
+  \[  \tau _\uparrow .\mathcal{P}(i, j) = \begin{cases}  r &  j = 1,\  k \leq i \leq k_\uparrow - 1 \\ \alpha _0 &  (i, j) = (k_\uparrow , 1) \\ \mathcal{P}_\tau (i, j) &  \text{otherwise} \end{cases}  \]
+</div>
+<p><b class="bfseries">Case (b):</b> \(\mathcal{P}_\tau (k, 1) = \bullet \). </p>
+<p><b class="bfseries">Sub-case (b.1):</b> \(\mathbf{c}_2(\iota _\wp ) = k\) and \(\mathcal{P}_\tau (k, 2) = r\). </p>
+<div class="displaymath" id="a0000000063">
+  \[  \tau _\uparrow .\mathcal{P}(i, j) = \begin{cases}  r &  j = 1,\  k \leq i \leq k_\uparrow - 1 \\ c &  (i, j) = (\mathbf{c}_2(\iota _\wp ), 2) \\ d &  (i, j) = (k_\uparrow , 1) \\ \mathcal{P}_\tau (i, j) &  \text{otherwise} \end{cases}  \]
+</div>
+<p> (Case b.1 modifies column&#160;1 of \(\)</p>
 
   </div>
 </div>
-<div class="definition_thmwrapper theorem-style-definition" id="def:AC_step">
+<p>\(\)-reachable cells; formalization of this case is deferred.) 
+<b class="bfseries">Sub-case (b.2):</b> otherwise. <div class="displaymath" id="a0000000064">
+  \[  \tau _\uparrow .\mathcal{P}(i, j) = \begin{cases}  r &  j = 1,\  k \leq i \leq k_\uparrow - 2 \\ c &  (i, j) = (k - 1, 1) \\ d &  (i, j) = (k_\uparrow , 1) \\ \mathcal{P}_\tau (i, j) &  \text{otherwise} \end{cases}  \]
+</div> <div class="definition_thmwrapper theorem-style-definition" id="a0000000065">
   <div class="definition_thmheading">
     <span class="definition_thmcaption">
     Definition
     </span>
-    <span class="definition_thmlabel">29</span>
-    <span class="definition_thmtitle">AC step</span>
     <div class="thm_header_extras">
 
-    
-    ✓
         </div>
     <div class="thm_header_hidden_extras">
 
-    <a class="icon proof" href="sect0010.html#def:AC_step">#</a>
+    <a class="icon proof" href="sect0010.html#a0000000065">#</a>
     
     
-    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
-</button>
-        <div class="modal-container">
-      <div class="modal-content">
-        <header>
-          <h1>Uses</h1>
-          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
-</button>
-        </header>
-        
-        <ul class="uses">
-          
-          <li><a href="sect0009.html#def:thetaLift">Definition 26</a></li>
-          
-          <li><a href="sect0008.html#def:twistBD">Definition 20</a></li>
-          
-          <li><a href="sect0008.html#def:charTwistCM">Definition 21</a></li>
-          
-        </ul>
-    
-      </div>
-    </div>
-
-    
-    
-    <button class="modal lean">L∃∀N</button>
-        <div class="modal-container">
-      <div class="modal-content">
-        <header>
-          <h1>Lean declarations</h1>
-          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
-</button>
-        </header>
-        
-        <ul class="uses">
-          
-          <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/AC.step" class="lean_decl">AC.step</a></li>
-          
-        </ul>
-    
-      </div>
-    </div>
-
     
         </div>
   </div>
   <div class="definition_thmcontent">
-  <p>    Recursive step: \(\mathcal{L}_\tau = \hat\vartheta (\mathcal{L}_\tau [']) \otimes \) (appropriate twist). </p>
+  
+  </div>
+</div> 
+<h2 id="a0000000066">3.2.3 Validity and bijectivity</h2>
+<div class="lemma_thmwrapper theorem-style-plain" id="lem:shapeShiftC_valid">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">23</span>
+    <span class="lemma_thmtitle">\(\)</span>
+    <div class="thm_header_extras">
 
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0010.html#lem:shapeShiftC_valid">#</a>
+    
+    
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  
   </div>
 </div>
-<div class="definition_thmwrapper theorem-style-definition" id="def:AC_fold">
-  <div class="definition_thmheading">
-    <span class="definition_thmcaption">
-    Definition
+τ_\(\) is a valid PBP]   The painted diagram \(\tau _\uparrow \) produced by any of the four sub-cases satisfies all PBP axioms: </p>
+<ul class="itemize">
+  <li><p><b class="bfseries">sym_P</b>: new paint is in \(\{ \bullet , s, r, c, d\} \) (the C-type \(\mathcal{P}\)-allowed set); </p>
+</li>
+  <li><p><b class="bfseries">mono_P</b>: the \(r \to c \to d\) layer ordering is preserved in column&#160;\(1\); </p>
+</li>
+  <li><p><b class="bfseries">col_c_P, col_d_P</b>: at most one \(c\) and one \(d\) per column (case (a.1) moves the \(c\) to a new position; the old \(c\) becomes \(r\)); </p>
+</li>
+  <li><p><b class="bfseries">row_s, row_r</b>: cross-row constraints preserved (C-type \(\mathcal{Q}\) only contains \(\{ \bullet , s\} \), so same-row \(s\) uniqueness is inherited). </p>
+</li>
+</ul>
+<p> Verification is by case analysis; see [BMSZb] p.&#160;66 and the Lean proof. </p>
+<div class="lemma_thmwrapper theorem-style-plain" id="a0000000067">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
     </span>
-    <span class="definition_thmlabel">30</span>
-    <span class="definition_thmtitle">AC fold — chain construction</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0010.html#a0000000067">#</a>
+    
+    
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  
+  </div>
+</div>
+<div class="lemma_thmwrapper theorem-style-plain" id="lem:shapeShiftC_id">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">24</span>
+    <span class="lemma_thmtitle">shape shift C identity instance</span>
     <div class="thm_header_extras">
 
     
@@ -252,7 +436,7 @@
         </div>
     <div class="thm_header_hidden_extras">
 
-    <a class="icon proof" href="sect0010.html#def:AC_fold">#</a>
+    <a class="icon proof" href="sect0010.html#lem:shapeShiftC_id">#</a>
     
     
     <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
@@ -267,9 +451,7 @@
         
         <ul class="uses">
           
-          <li><a href="sect0010.html#def:AC_base">Definition 28</a></li>
-          
-          <li><a href="sect0010.html#def:AC_step">Definition 29</a></li>
+          <li><a href="sect0010.html#def:shapeShiftC_paint">Definition 22</a></li>
           
         </ul>
     
@@ -289,7 +471,9 @@
         
         <ul class="uses">
           
-          <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/AC.fold" class="lean_decl">AC.fold</a></li>
+          <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/shapeShiftC_id" class="lean_decl">shapeShiftC_id</a></li>
+          
+          <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/shapeShiftC_id_eq" class="lean_decl">shapeShiftC_id_eq</a></li>
           
         </ul>
     
@@ -299,18 +483,18 @@
     
         </div>
   </div>
-  <div class="definition_thmcontent">
-  <p>    \(L_\tau \) as AC.fold of a descent chain. </p>
+  <div class="lemma_thmcontent">
+  <p>    The identity instance (parameterised by the trivial col-0 paint) returns the original PBP. Used as a degenerate witness. </p>
 
   </div>
 </div>
-<div class="theorem_thmwrapper theorem-style-plain" id="thm:AC_step_sign_D">
-  <div class="theorem_thmheading">
-    <span class="theorem_thmcaption">
-    Theorem
+<div class="lemma_thmwrapper theorem-style-plain" id="lem:10_3_C">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
     </span>
-    <span class="theorem_thmlabel">31</span>
-    <span class="theorem_thmtitle">AC step sign preservation, D type</span>
+    <span class="lemma_thmlabel">25</span>
+    <span class="lemma_thmtitle">Lemma 10.3 C — PBPSet cardinality</span>
     <div class="thm_header_extras">
 
     
@@ -318,7 +502,7 @@
         </div>
     <div class="thm_header_hidden_extras">
 
-    <a class="icon proof" href="sect0010.html#thm:AC_step_sign_D">#</a>
+    <a class="icon proof" href="sect0010.html#lem:10_3_C">#</a>
     
     
     <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
@@ -333,9 +517,9 @@
         
         <ul class="uses">
           
-          <li><a href="sect0010.html#def:AC_step">Definition 29</a></li>
+          <li><a href="sect0010.html#lem:shapeShiftC_id">Lemma 24</a></li>
           
-          <li><a href="sect0009.html#thm:thetaLift_CD_sign">Theorem 27</a></li>
+          <li><a href="sect0010.html#lem:shapeShiftC_valid">Lemma 23</a></li>
           
         </ul>
     
@@ -355,7 +539,9 @@
         
         <ul class="uses">
           
-          <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/AC.step_sign_D" class="lean_decl">AC.step_sign_D</a></li>
+          <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/lemma_10_3_C" class="lean_decl">lemma_10_3_C</a></li>
+          
+          <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/card_PBPSet_C_shapeShift" class="lean_decl">card_PBPSet_C_shapeShift</a></li>
           
         </ul>
     
@@ -365,19 +551,21 @@
     
         </div>
   </div>
-  <div class="theorem_thmcontent">
-  <p>    \(\mathrm{Sign}\) of AC.step output equals the \((p, q)\) parameter. </p>
+  <div class="lemma_thmcontent">
+  <p>    For shapes \((\mu _P', \mu _Q')\) reachable via C-type shape shift from \((\mu _P, \mu _Q)\): </p>
+<div class="displaymath" id="a0000000068">
+  \[  |\mathrm{PBP}_C(\mu _P, \mu _Q)| = |\mathrm{PBP}_C(\mu _P', \mu _Q')|.  \]
+</div>
 
   </div>
 </div>
-<h2 id="a0000000030">3.3.1 firstColSign Invariants</h2>
-<div class="theorem_thmwrapper theorem-style-plain" id="thm:AC_step_fcSign_BD">
-  <div class="theorem_thmheading">
-    <span class="theorem_thmcaption">
-    Theorem
+<div class="proposition_thmwrapper theorem-style-plain" id="prop:10_2_C">
+  <div class="proposition_thmheading">
+    <span class="proposition_thmcaption">
+    Proposition
     </span>
-    <span class="theorem_thmlabel">32</span>
-    <span class="theorem_thmtitle">firstColSign invariant for B/D step</span>
+    <span class="proposition_thmlabel">26</span>
+    <span class="proposition_thmtitle">Prop 10.2 C — PBP count independent of \(\wp \)</span>
     <div class="thm_header_extras">
 
     
@@ -385,7 +573,7 @@
         </div>
     <div class="thm_header_hidden_extras">
 
-    <a class="icon proof" href="sect0010.html#thm:AC_step_fcSign_BD">#</a>
+    <a class="icon proof" href="sect0010.html#prop:10_2_C">#</a>
     
     
     <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
@@ -400,9 +588,7 @@
         
         <ul class="uses">
           
-          <li><a href="sect0010.html#def:AC_step">Definition 29</a></li>
-          
-          <li><a href="sect0008.html#def:firstColSign">Definition 25</a></li>
+          <li><a href="sect0010.html#lem:10_3_C">Lemma 25</a></li>
           
         </ul>
     
@@ -422,13 +608,7 @@
         
         <ul class="uses">
           
-          <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/AC.step_firstColSign_D" class="lean_decl">AC.step_firstColSign_D</a></li>
-          
-          <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/AC.step_firstColSign_Bplus" class="lean_decl">AC.step_firstColSign_Bplus</a></li>
-          
-          <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/AC.step_firstColSign_Bminus" class="lean_decl">AC.step_firstColSign_Bminus</a></li>
-          
-          <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/AC.chain_firstColSign_eq_diff_sign" class="lean_decl">AC.chain_firstColSign_eq_diff_sign</a></li>
+          <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/prop_10_2_PBP_C" class="lean_decl">prop_10_2_PBP_C</a></li>
           
         </ul>
     
@@ -438,76 +618,8 @@
     
         </div>
   </div>
-  <div class="theorem_thmcontent">
-  <p>    \(\mathrm{firstColSign}(\text{AC.step output}) = (p - \text{prev\_ sig.1}, q - \text{prev\_ sig.2})\). </p>
-
-  </div>
-</div>
-<div class="theorem_thmwrapper theorem-style-plain" id="thm:AC_step_fcSign_CM">
-  <div class="theorem_thmheading">
-    <span class="theorem_thmcaption">
-    Theorem
-    </span>
-    <span class="theorem_thmlabel">33</span>
-    <span class="theorem_thmtitle">firstColSign invariant for C/M step</span>
-    <div class="thm_header_extras">
-
-    
-    ✓
-        </div>
-    <div class="thm_header_hidden_extras">
-
-    <a class="icon proof" href="sect0010.html#thm:AC_step_fcSign_CM">#</a>
-    
-    
-    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
-</button>
-        <div class="modal-container">
-      <div class="modal-content">
-        <header>
-          <h1>Uses</h1>
-          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
-</button>
-        </header>
-        
-        <ul class="uses">
-          
-          <li><a href="sect0010.html#def:AC_step">Definition 29</a></li>
-          
-          <li><a href="sect0008.html#def:firstColSign">Definition 25</a></li>
-          
-        </ul>
-    
-      </div>
-    </div>
-
-    
-    
-    <button class="modal lean">L∃∀N</button>
-        <div class="modal-container">
-      <div class="modal-content">
-        <header>
-          <h1>Lean declarations</h1>
-          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
-</button>
-        </header>
-        
-        <ul class="uses">
-          
-          <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/AC.step_firstColSign_C" class="lean_decl">AC.step_firstColSign_C</a></li>
-          
-          <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/AC.step_firstColSign_M" class="lean_decl">AC.step_firstColSign_M</a></li>
-          
-        </ul>
-    
-      </div>
-    </div>
-
-    
-        </div>
-  </div>
-  <div class="theorem_thmcontent">
-  <p>    Analog for \(\gamma \in \{ C, M\} \) with pre-twist. </p>
+  <div class="proposition_thmcontent">
+  
 
   </div>
 </div>
@@ -522,11 +634,11 @@
 
   <svg  id="showmore-plus" class="icon icon-eye-plus showmore"><use xlink:href="symbol-defs.svg#icon-eye-plus"></use></svg>
 
-  <a href="sect0009.html" title="Theta Lift on MYD (Sections 9.5, 11.1–11.4)"><svg  class="icon icon-arrow-left "><use xlink:href="symbol-defs.svg#icon-arrow-left"></use></svg>
+  <a href="sect0009.html" title="Shape-shift for \(M = \tilde{C}\) type"><svg  class="icon icon-arrow-left "><use xlink:href="symbol-defs.svg#icon-arrow-left"></use></svg>
 </a>
-  <a href="chap-section11.html" title="Associated Cycles (BMSZ Section 11)"><svg  class="icon icon-arrow-up "><use xlink:href="symbol-defs.svg#icon-arrow-up"></use></svg>
+  <a href="chap-shape_shift.html" title="Shape-shifting bijections (Lemma 10.3)"><svg  class="icon icon-arrow-up "><use xlink:href="symbol-defs.svg#icon-arrow-up"></use></svg>
 </a>
-  <a href="sect0011.html" title="Lemma 11.3: Tail Properties"><svg  class="icon icon-arrow-right "><use xlink:href="symbol-defs.svg#icon-arrow-right"></use></svg>
+  <a href="sect0011.html" title="Trivial shape-shifts: \(B\) and \(D\) types"><svg  class="icon icon-arrow-right "><use xlink:href="symbol-defs.svg#icon-arrow-right"></use></svg>
 </a>
 </nav>
 

@@ -12,10 +12,10 @@
 <meta name="generator" content="plasTeX" />
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Proposition 11.4: Signature Decomposition</title>
-<link rel="next" href="sect0013.html" title="Lemma 11.5: Two-Step AC Formula" />
-<link rel="prev" href="sect0011.html" title="Lemma 11.3: Tail Properties" />
-<link rel="up" href="chap-section11.html" title="Associated Cycles (BMSZ Section 11)" />
+<title>Single naive descent paints</title>
+<link rel="next" href="sect0013.html" title="Double descent ∇2" />
+<link rel="prev" href="chap-descent.html" title="Descent maps (Lemmas 10.4, 10.5, Prop 10.8)" />
+<link rel="up" href="chap-descent.html" title="Descent maps (Lemmas 10.4, 10.5, Prop 10.8)" />
 <link rel="stylesheet" href="styles/theme-white.css" />
 <link rel="stylesheet" href="styles/amsthm.css" />
 <link rel="stylesheet" href="styles/showmore.css" />
@@ -33,85 +33,213 @@
 <nav class="toc">
 <ul class="sub-toc-0">
 <li class="">
-  <a href="sect0001.html"><span class="toc_ref">1</span> <span class="toc_entry">Introduction</span></a>
- </li>
-<li class="">
-  <a href="chap-section10.html"><span class="toc_ref">2</span> <span class="toc_entry">PBP Counting (BMSZb Section 10)</span></a>
+  <a href="chap-intro.html"><span class="toc_ref">1</span> <span class="toc_entry">Introduction</span></a>
   <span class="expand-toc">▶</span>
   <ul class="sub-toc-1">
      <li class="">
-  <a href="sect0002.html"><span class="toc_ref">2.1</span> <span class="toc_entry">PBP and Shape Conventions</span></a>
+  <a href="sect0001.html"><span class="toc_ref">1.1</span> <span class="toc_entry">Group / dual-partition conventions</span></a>
  </li>
 <li class="">
-  <a href="sect0003.html"><span class="toc_ref">2.2</span> <span class="toc_entry">Shape-Shifting (Lemma 10.3)</span></a>
+  <a href="sect0002.html"><span class="toc_ref">1.2</span> <span class="toc_entry">Scope and structure</span></a>
+ </li>
+
+  </ul>
  </li>
 <li class="">
-  <a href="sect0004.html"><span class="toc_ref">2.3</span> <span class="toc_entry">Descent Uniqueness (Lemmas 10.4, 10.5)</span></a>
+  <a href="chap-pbp.html"><span class="toc_ref">2</span> <span class="toc_entry">Painted Bipartitions (PBP)</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sect0003.html"><span class="toc_ref">2.1</span> <span class="toc_entry">DRC symbols and layer order</span></a>
  </li>
 <li class="">
-  <a href="sect0005.html"><span class="toc_ref">2.4</span> <span class="toc_entry">Descent Cardinality (Proposition 10.8)</span></a>
+  <a href="sect0004.html"><span class="toc_ref">2.2</span> <span class="toc_entry">Painted Young diagrams</span></a>
  </li>
 <li class="">
-  <a href="sect0006.html"><span class="toc_ref">2.5</span> <span class="toc_entry">Double Descent Injectivity (Propositions 10.9, 10.10)</span></a>
+  <a href="sect0005.html"><span class="toc_ref">2.3</span> <span class="toc_entry">Root type and symbol allowances</span></a>
  </li>
 <li class="">
-  <a href="sect0007.html"><span class="toc_ref">2.6</span> <span class="toc_entry">Main Counting Formulas (Propositions 10.11, 10.12)</span></a>
+  <a href="sect0006.html"><span class="toc_ref">2.4</span> <span class="toc_entry">Painted Bipartition</span></a>
+ </li>
+<li class="">
+  <a href="sect0007.html"><span class="toc_ref">2.5</span> <span class="toc_entry">Signature and epsilon</span></a>
+ </li>
+<li class="">
+  <a href="sect0008.html"><span class="toc_ref">2.6</span> <span class="toc_entry">Dual partitions and shape derivation</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="chap-shape_shift.html"><span class="toc_ref">3</span> <span class="toc_entry">Shape-shifting bijections (Lemma 10.3)</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sect0009.html"><span class="toc_ref">3.1</span> <span class="toc_entry">Shape-shift for \(M = \tilde{C}\) type</span></a>
+ </li>
+<li class="">
+  <a href="sect0010.html"><span class="toc_ref">3.2</span> <span class="toc_entry">Shape-shift for C type (case analysis)</span></a>
+ </li>
+<li class="">
+  <a href="sect0011.html"><span class="toc_ref">3.3</span> <span class="toc_entry">Trivial shape-shifts: \(B\) and \(D\) types</span></a>
  </li>
 
   </ul>
  </li>
 <li class=" active">
-  <a href="chap-section11.html"><span class="toc_ref">3</span> <span class="toc_entry">Associated Cycles (BMSZ Section 11)</span></a>
+  <a href="chap-descent.html"><span class="toc_ref">4</span> <span class="toc_entry">Descent maps (Lemmas 10.4, 10.5, Prop 10.8)</span></a>
   <span class="expand-toc">▼</span>
   <ul class="sub-toc-1 active">
-     <li class="">
-  <a href="sect0008.html"><span class="toc_ref">3.1</span> <span class="toc_entry">MYD Operations (Section 9.4)</span></a>
+     <li class=" active current">
+  <a href="sect0012.html"><span class="toc_ref">4.1</span> <span class="toc_entry">Single naive descent paints</span></a>
  </li>
 <li class="">
-  <a href="sect0009.html"><span class="toc_ref">3.2</span> <span class="toc_entry">Theta Lift on MYD (Sections 9.5, 11.1–11.4)</span></a>
+  <a href="sect0013.html"><span class="toc_ref">4.2</span> <span class="toc_entry">Double descent \(\nabla ^2\)</span></a>
  </li>
 <li class="">
-  <a href="sect0010.html"><span class="toc_ref">3.3</span> <span class="toc_entry">AC Recursion (Equation 11.2)</span></a>
+  <a href="sect0014.html"><span class="toc_ref">4.3</span> <span class="toc_entry">Lemmas 10.4, 10.5 — descent injectivity</span></a>
  </li>
 <li class="">
-  <a href="sect0011.html"><span class="toc_ref">3.4</span> <span class="toc_entry">Lemma 11.3: Tail Properties</span></a>
- </li>
-<li class=" active current">
-  <a href="sect0012.html"><span class="toc_ref">3.5</span> <span class="toc_entry">Proposition 11.4: Signature Decomposition</span></a>
- </li>
-<li class="">
-  <a href="sect0013.html"><span class="toc_ref">3.6</span> <span class="toc_entry">Lemma 11.5: Two-Step AC Formula</span></a>
- </li>
-<li class="">
-  <a href="sect0014.html"><span class="toc_ref">3.7</span> <span class="toc_entry">Lemma 11.6: First Entry</span></a>
- </li>
-<li class="">
-  <a href="sect0015.html"><span class="toc_ref">3.8</span> <span class="toc_entry">Proposition 11.7: Multiplicity Free</span></a>
- </li>
-<li class="">
-  <a href="sect0016.html"><span class="toc_ref">3.9</span> <span class="toc_entry">Proposition 11.8: Non-empty and PBP Wrappers</span></a>
- </li>
-<li class="">
-  <a href="sect0017.html"><span class="toc_ref">3.10</span> <span class="toc_entry">Propositions 11.9–11.13: Injectivity Lemmas</span></a>
- </li>
-<li class="">
-  <a href="sect0018.html"><span class="toc_ref">3.11</span> <span class="toc_entry">Main Bijection (Propositions 11.14, 11.15, 11.17)</span></a>
- </li>
-<li class="">
-  <a href="sect0019.html"><span class="toc_ref">3.12</span> <span class="toc_entry">Lemma 11.1: Base cases</span></a>
+  <a href="sect0015.html"><span class="toc_ref">4.4</span> <span class="toc_entry">Proposition 10.8 — descent cardinality relations</span></a>
  </li>
 
   </ul>
  </li>
 <li class="">
-  <a href="sect0020.html"><span class="toc_ref">4</span> <span class="toc_entry">Status Summary</span></a>
+  <a href="chap-ddescent.html"><span class="toc_ref">5</span> <span class="toc_entry">Double-descent injectivity (Prop 10.9, Cor 10.10)</span></a>
+ </li>
+<li class="">
+  <a href="chap-counting.html"><span class="toc_ref">6</span> <span class="toc_entry">Main Counting Formulas (Prop 10.11, 10.12)</span></a>
   <span class="expand-toc">▶</span>
   <ul class="sub-toc-1">
      <li class="">
-  <a href="sect0021.html"><span class="toc_ref">4.1</span> <span class="toc_entry">Formal status</span></a>
+  <a href="sect0016.html"><span class="toc_ref">6.1</span> <span class="toc_entry">Recursive counting functions</span></a>
  </li>
 <li class="">
-  <a href="sect0022.html"><span class="toc_ref">4.2</span> <span class="toc_entry">Skipped</span></a>
+  <a href="sect0017.html"><span class="toc_ref">6.2</span> <span class="toc_entry">Main counting theorems</span></a>
+ </li>
+<li class="">
+  <a href="sect0018.html"><span class="toc_ref">6.3</span> <span class="toc_entry">Unconditional status</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="chap-ils.html"><span class="toc_ref">7</span> <span class="toc_entry">Integer List Sequences and MYD Operations</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sect0019.html"><span class="toc_ref">7.1</span> <span class="toc_entry">ILS definition</span></a>
+ </li>
+<li class="">
+  <a href="sect0020.html"><span class="toc_ref">7.2</span> <span class="toc_entry">Signatures</span></a>
+ </li>
+<li class="">
+  <a href="sect0021.html"><span class="toc_ref">7.3</span> <span class="toc_entry">ILS operations (Section 9.4)</span></a>
+ </li>
+<li class="">
+  <a href="sect0022.html"><span class="toc_ref">7.4</span> <span class="toc_entry">Signature preservation under operations</span></a>
+ </li>
+<li class="">
+  <a href="sect0023.html"><span class="toc_ref">7.5</span> <span class="toc_entry">Theta lifts (Section 9.5)</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="chap-ac.html"><span class="toc_ref">8</span> <span class="toc_entry">AC Recursion and firstColSign Invariant</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sect0024.html"><span class="toc_ref">8.1</span> <span class="toc_entry">AC recursion (Equation 11.2)</span></a>
+ </li>
+<li class="">
+  <a href="sect0025.html"><span class="toc_ref">8.2</span> <span class="toc_entry">Sign preservation through AC.step</span></a>
+ </li>
+<li class="">
+  <a href="sect0026.html"><span class="toc_ref">8.3</span> <span class="toc_entry">firstColSign invariant (the key structural lemma)</span></a>
+ </li>
+<li class="">
+  <a href="sect0027.html"><span class="toc_ref">8.4</span> <span class="toc_entry">Multiplicity-free</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="chap-tail.html"><span class="toc_ref">9</span> <span class="toc_entry">Tail PBP, Prop 11.3–11.4</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sect0028.html"><span class="toc_ref">9.1</span> <span class="toc_entry">The tail PBP</span></a>
+ </li>
+<li class="">
+  <a href="sect0029.html"><span class="toc_ref">9.2</span> <span class="toc_entry">Proposition 11.3 — tail symbol characterisations</span></a>
+ </li>
+<li class="">
+  <a href="sect0030.html"><span class="toc_ref">9.3</span> <span class="toc_entry">Signature sum and residual identity</span></a>
+ </li>
+<li class="">
+  <a href="sect0031.html"><span class="toc_ref">9.4</span> <span class="toc_entry">Proposition 11.4 — signature decomposition</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="chap-11_5.html"><span class="toc_ref">10</span> <span class="toc_entry">Lemma 11.5 and 11.6 — AC composition</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sect0032.html"><span class="toc_ref">10.1</span> <span class="toc_entry">Setup for Lemma 11.5</span></a>
+ </li>
+<li class="">
+  <a href="sect0033.html"><span class="toc_ref">10.2</span> <span class="toc_entry">Lemma 11.5 — PBP identity</span></a>
+ </li>
+<li class="">
+  <a href="sect0034.html"><span class="toc_ref">10.3</span> <span class="toc_entry">Lemma 11.5 atomic PBP discharge</span></a>
+ </li>
+<li class="">
+  <a href="sect0035.html"><span class="toc_ref">10.4</span> <span class="toc_entry">Lemma 11.6 — first entry of \(\mathcal{L}_\tau \)</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="chap-11_main.html"><span class="toc_ref">11</span> <span class="toc_entry">Section 11 injectivity + main bijection</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sect0036.html"><span class="toc_ref">11.1</span> <span class="toc_entry">Lemma 11.1 — base cases</span></a>
+ </li>
+<li class="">
+  <a href="sect0037.html"><span class="toc_ref">11.2</span> <span class="toc_entry">Proposition 11.8 — non-vanishing of \(\mathcal{L}_\tau ^\pm \)</span></a>
+ </li>
+<li class="">
+  <a href="sect0038.html"><span class="toc_ref">11.3</span> <span class="toc_entry">Propositions 11.9–11.12 — injectivity</span></a>
+ </li>
+<li class="">
+  <a href="sect0039.html"><span class="toc_ref">11.4</span> <span class="toc_entry">Main bijection (Prop 11.14, 11.15, 11.16, 11.17)</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="chap-status.html"><span class="toc_ref">12</span> <span class="toc_entry">Formalization Status</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sect0040.html"><span class="toc_ref">12.1</span> <span class="toc_entry">Overview</span></a>
+ </li>
+<li class="">
+  <a href="sect0041.html"><span class="toc_ref">12.2</span> <span class="toc_entry">Unconditional status</span></a>
+ </li>
+<li class="">
+  <a href="sect0042.html"><span class="toc_ref">12.3</span> <span class="toc_entry">Deliberately skipped</span></a>
+ </li>
+<li class="">
+  <a href="sect0043.html"><span class="toc_ref">12.4</span> <span class="toc_entry">Repository information</span></a>
+ </li>
+<li class="">
+  <a href="sect0044.html"><span class="toc_ref">12.5</span> <span class="toc_entry">Reading guide</span></a>
  </li>
 
   </ul>
@@ -125,14 +253,25 @@
 
 
 <div class="main-text">
-<h1 id="a0000000013">3.5 Proposition 11.4: Signature Decomposition</h1>
-<div class="proposition_thmwrapper theorem-style-plain" id="prop:11_4">
-  <div class="proposition_thmheading">
-    <span class="proposition_thmcaption">
-    Proposition
+<h1 id="a0000000013">4.1 Single naive descent paints</h1>
+<p>There are four single descent directions: </p>
+<ul class="itemize">
+  <li><p>D \(\to \) C: cut col&#160;0 of \(\mathcal{Q}\) and shift \(\mathcal{P}\) left by one column (refill top with \(\bullet \)). </p>
+</li>
+  <li><p>C \(\to \) D: cut col&#160;0 of \(\mathcal{P}\) (refill top/middle with \(\bullet , s\)). </p>
+</li>
+  <li><p>B \(\to \) M: cut col&#160;0 of \(\mathcal{Q}\) (refill \(\mathcal{P}\), translate). </p>
+</li>
+  <li><p>M \(\to \) B: cut col&#160;0 of \(\mathcal{P}\). </p>
+</li>
+</ul>
+<div class="definition_thmwrapper theorem-style-definition" id="def:descentPaint_DC">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
     </span>
-    <span class="proposition_thmlabel">38</span>
-    <span class="proposition_thmtitle">Prop 11.4: D-type signature decomposition</span>
+    <span class="definition_thmlabel">28</span>
+    <span class="definition_thmtitle">D \(\to \) C paints</span>
     <div class="thm_header_extras">
 
     
@@ -140,7 +279,7 @@
         </div>
     <div class="thm_header_hidden_extras">
 
-    <a class="icon proof" href="sect0012.html#prop:11_4">#</a>
+    <a class="icon proof" href="sect0012.html#def:descentPaint_DC">#</a>
     
     
     <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
@@ -155,7 +294,9 @@
         
         <ul class="uses">
           
-          <li><a href="sect0011.html#def:tailSignature">Definition 34</a></li>
+          <li><a href="sect0006.html#def:PBP">Definition 9</a></li>
+          
+          <li><a href="sect0004.html#def:dotScolLen">Definition 6</a></li>
           
         </ul>
     
@@ -175,11 +316,9 @@
         
         <ul class="uses">
           
-          <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/PBP.signature_fst_decomp_D" class="lean_decl">PBP.signature_fst_decomp_D</a></li>
+          <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/descentPaintL_DC" class="lean_decl">descentPaintL_DC</a></li>
           
-          <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/PBP.signature_snd_decomp_D" class="lean_decl">PBP.signature_snd_decomp_D</a></li>
-          
-          <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/prop_11_4_signature_decomp_D" class="lean_decl">prop_11_4_signature_decomp_D</a></li>
+          <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/descentPaintR_DC" class="lean_decl">descentPaintR_DC</a></li>
           
         </ul>
     
@@ -189,8 +328,225 @@
     
         </div>
   </div>
-  <div class="proposition_thmcontent">
-  <p>    \(\mathrm{Sign}(\tau )\) decomposes as \(\mu _Q.\text{colLen}\, 0 + \text{colGe1 contribution} + \text{tail contribution}\) per component. </p>
+  <div class="definition_thmcontent">
+  <p>    Let \(c_L(j) := \mathrm{dotScolLen}(\tau .\mathcal{P}, j + 1)\) and \(c_R(j) := \tau .\mathcal{Q}.\mathrm{colLen}(j)\). </p>
+<div class="displaymath" id="a0000000069">
+  \begin{align*}  (\nabla _{DC}\tau ).\mathcal{P}(i, j) & = \begin{cases}  \bullet &  i {\lt} c_L(j) \\ \tau .\mathcal{P}(i, j + 1) &  \text{otherwise} \end{cases}\\ (\nabla _{DC}\tau ).\mathcal{Q}(i, j) & = \begin{cases}  \bullet &  i {\lt} c_L(j) \\ s &  c_L(j) \leq i {\lt} c_R(j) \\ \bullet &  i \geq c_R(j) \end{cases}\end{align*}
+</div>
+
+  </div>
+</div>
+<div class="definition_thmwrapper theorem-style-definition" id="def:descentPaint_CD">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">29</span>
+    <span class="definition_thmtitle">C \(\to \) D paints</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0012.html#def:descentPaint_CD">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0006.html#def:PBP">Definition 9</a></li>
+          
+          <li><a href="sect0004.html#def:dotScolLen">Definition 6</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/descentPaintL_CD" class="lean_decl">descentPaintL_CD</a></li>
+          
+          <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/descentPaintR_CD" class="lean_decl">descentPaintR_CD</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>    \(c_L(j) := \mathrm{dotScolLen}(\tau .\mathcal{P}, j)\), \(c_R(j) := \tau .\mathcal{Q}.\mathrm{colLen}(j + 1)\). </p>
+<div class="displaymath" id="a0000000070">
+  \[  (\nabla _{CD}\tau ).\mathcal{P}(i, j) = \begin{cases}  \bullet &  i {\lt} c_R(j) \\ s &  c_R(j) \leq i {\lt} c_L(j) \\ \tau .\mathcal{P}(i, j) &  i \geq c_L(j) \end{cases}  \]
+</div>
+<p> \((\nabla _{CD}\tau ).\mathcal{Q}\) is all \(\bullet \) (D type has \(\mathcal{Q}\)-allowed \(= \{ \bullet \} \)). </p>
+
+  </div>
+</div>
+<div class="definition_thmwrapper theorem-style-definition" id="def:descentPaint_BM">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">30</span>
+    <span class="definition_thmtitle">B \(\to \) M paints</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0012.html#def:descentPaint_BM">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0006.html#def:PBP">Definition 9</a></li>
+          
+          <li><a href="sect0004.html#def:dotScolLen">Definition 6</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/descentPaintL_BM" class="lean_decl">descentPaintL_BM</a></li>
+          
+          <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/descentPaintR_BM" class="lean_decl">descentPaintR_BM</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>    \(c_L(j) := \mathrm{dotScolLen}(\tau .\mathcal{P}, j)\), \(c_R(j) := \mathrm{dotScolLen}(\tau .\mathcal{Q}, j + 1)\). </p>
+<div class="displaymath" id="a0000000071">
+  \begin{align*}  (\nabla _{BM}\tau ).\mathcal{P}(i, j) & = \begin{cases}  \bullet &  i {\lt} c_R(j) \\ s &  c_R(j) \leq i {\lt} c_L(j) \\ \tau .\mathcal{P}(i, j) &  i \geq c_L(j) \end{cases}\\ (\nabla _{BM}\tau ).\mathcal{Q}(i, j) & = \begin{cases}  \bullet &  i {\lt} c_R(j) \\ \tau .\mathcal{Q}(i, j + 1) &  i \geq c_R(j) \end{cases}\end{align*}
+</div>
+
+  </div>
+</div>
+<div class="definition_thmwrapper theorem-style-definition" id="def:descentPaint_MB">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">31</span>
+    <span class="definition_thmtitle">M \(\to \) B paints</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0012.html#def:descentPaint_MB">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0006.html#def:PBP">Definition 9</a></li>
+          
+          <li><a href="sect0004.html#def:dotScolLen">Definition 6</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/descentPaintL_MB" class="lean_decl">descentPaintL_MB</a></li>
+          
+          <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/descentPaintR_MB" class="lean_decl">descentPaintR_MB</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>    \(c_L(j) := \mathrm{dotScolLen}(\tau .\mathcal{P}, j + 1)\), \(c_R(j) := \mathrm{dotScolLen}(\tau .\mathcal{Q}, j)\). </p>
+<div class="displaymath" id="a0000000072">
+  \begin{align*}  (\nabla _{MB}\tau ).\mathcal{P}(i, j) & = \begin{cases}  \bullet &  i {\lt} c_L(j) \\ \tau .\mathcal{P}(i, j+1) &  i \geq c_L(j) \end{cases}\\ (\nabla _{MB}\tau ).\mathcal{Q}(i, j) & = \begin{cases}  \bullet &  i {\lt} c_L(j) \\ s &  c_L(j) \leq i {\lt} c_R(j) \\ \tau .\mathcal{Q}(i, j) &  i \geq c_R(j) \end{cases}\end{align*}
+</div>
 
   </div>
 </div>
@@ -205,11 +561,11 @@
 
   <svg  id="showmore-plus" class="icon icon-eye-plus showmore"><use xlink:href="symbol-defs.svg#icon-eye-plus"></use></svg>
 
-  <a href="sect0011.html" title="Lemma 11.3: Tail Properties"><svg  class="icon icon-arrow-left "><use xlink:href="symbol-defs.svg#icon-arrow-left"></use></svg>
+  <a href="chap-descent.html" title="Descent maps (Lemmas 10.4, 10.5, Prop 10.8)"><svg  class="icon icon-arrow-left "><use xlink:href="symbol-defs.svg#icon-arrow-left"></use></svg>
 </a>
-  <a href="chap-section11.html" title="Associated Cycles (BMSZ Section 11)"><svg  class="icon icon-arrow-up "><use xlink:href="symbol-defs.svg#icon-arrow-up"></use></svg>
+  <a href="chap-descent.html" title="Descent maps (Lemmas 10.4, 10.5, Prop 10.8)"><svg  class="icon icon-arrow-up "><use xlink:href="symbol-defs.svg#icon-arrow-up"></use></svg>
 </a>
-  <a href="sect0013.html" title="Lemma 11.5: Two-Step AC Formula"><svg  class="icon icon-arrow-right "><use xlink:href="symbol-defs.svg#icon-arrow-right"></use></svg>
+  <a href="sect0013.html" title="Double descent \(\nabla ^2\)"><svg  class="icon icon-arrow-right "><use xlink:href="symbol-defs.svg#icon-arrow-right"></use></svg>
 </a>
 </nav>
 

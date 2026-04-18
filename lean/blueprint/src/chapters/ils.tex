@@ -1,0 +1,209 @@
+\chapter{Integer List Sequences and MYD Operations}
+\label{chap:ils}
+
+Reference: [BMSZ] Definition~9.3 and Section~9.4. Integer List Sequences (ILS)
+are the computational representation of Marked Young Diagrams (MYDs).
+
+\section{ILS definition}
+
+\begin{definition}[ILS]
+  \label{def:ILS}
+  \lean{ILS}
+  \leanok
+  $\mathrm{ILS} := \mathrm{List}(\mathbb{Z} \times \mathbb{Z})$. The $i$-th entry
+  (0-indexed) represents row $i + 1$ of the associated MYD, carrying a mark
+  $(p_i, q_i) \in \mathbb{Z}^2$.
+\end{definition}
+
+\section{Signatures}
+
+\begin{definition}[Row contribution to signature]
+  \label{def:signRow}
+  \lean{ILS.signRow}
+  \leanok
+  \uses{def:ILS}
+  (Paper Eq.~(9.10).) For row $i$ (0-indexed) of length $\ell = i + 1$,
+  let $h := \lfloor \ell / 2 \rfloor$ and $r := \ell \bmod 2$. The row contribution is
+  \[
+    \mathrm{signRow}(i,\ (p, q)) := \big(|p|(h + r) + |q| h,\ |q|(h + r) + |p| h\big).
+  \]
+  Concretely: odd-length rows (i.e., $\ell$ odd, $r = 1$) get extra $|p|$ / $|q|$ contribution.
+\end{definition}
+
+\begin{definition}[ILS signature $\Sign(\mathcal{E})$]
+  \label{def:sign}
+  \lean{ILS.sign}
+  \leanok
+  \uses{def:signRow}
+  $\Sign(\mathcal{E}) := \sum_{i} \mathrm{signRow}(i, \mathcal{E}[i]) \in \mathbb{Z}^2$.
+  Since \texttt{signRow} is a sum of $|p|, |q|$ (non-negative integer)
+  contributions, $\Sign(\mathcal{E}).1, \Sign(\mathcal{E}).2 \geq 0$.
+\end{definition}
+
+\begin{definition}[First-column row contribution]
+  \label{def:firstColSignRow}
+  \lean{ILS.firstColSignRow}
+  \leanok
+  \uses{def:ILS}
+  (Paper Eq.~(9.12).) Per-row contribution to the first-column signature:
+  \[
+    \mathrm{firstColSignRow}(i,\ (p, q)) :=
+    \begin{cases}
+      (|p|, |q|) & i\text{ even} \\
+      (|q|, |p|) & i\text{ odd (swap!)}
+    \end{cases}
+  \]
+\end{definition}
+
+\begin{definition}[First-column signature $\mathrm{fcSign}$]
+  \label{def:firstColSign}
+  \lean{ILS.firstColSign}
+  \leanok
+  \uses{def:firstColSignRow}
+  $\mathrm{fcSign}(\mathcal{E}) := \sum_i \mathrm{firstColSignRow}(i, \mathcal{E}[i])$.
+\end{definition}
+
+\section{ILS operations (Section 9.4)}
+
+\begin{definition}[Sign twist $\otimes (\eps^+, \eps^-)$]
+  \label{def:twistBD}
+  \lean{ILS.twistBD, ILS.twistBDRow}
+  \leanok
+  \uses{def:ILS}
+  (Paper Eq.~(9.15).) For $(\eps^+, \eps^-) \in \mathbb{Z}^2$ (in practice $\{\pm 1\}^2$),
+  acts only on odd-length rows ($\ell = i + 1$ odd, $i$ even):
+  \[
+    \mathrm{twistBDRow}(i,\ \eps^+, \eps^-)(p, q) :=
+    \begin{cases}
+      (p, q) & \ell\text{ even} \\
+      (\eps^{+\,h + 1} \eps^{-\,h}\, p,\ \eps^{-\,h + 1} \eps^{+\,h}\, q) & \ell\text{ odd, } h = i / 2.
+    \end{cases}
+  \]
+  Common cases:
+  \begin{itemize}
+    \item $(1, -1)$: sign twist $\otimes 1^{+-}$ (B/D post-twist when $\eps_\tau = 1$).
+    \item $(-1, -1)$: det twist (C/M pre-twist when $\eps_\wp = 1$).
+    \item $(1, 1)$: identity.
+  \end{itemize}
+\end{definition}
+
+\begin{definition}[Character twist $T^j$]
+  \label{def:charTwistCM}
+  \lean{ILS.charTwistCM, ILS.charTwistCMRow}
+  \leanok
+  \uses{def:ILS}
+  (Paper Eq.~(9.16)--(9.17).) For $j \in \mathbb{Z}$, $T^j$ negates the pair at row index $i$ iff $j$ is odd and $(i + 1) \bmod 4 = 2$:
+  \[
+    \mathrm{charTwistCMRow}(j, i)(p, q) :=
+    \begin{cases}
+      (-p, -q) & j\text{ odd and } (i + 1) \bmod 4 = 2 \\
+      (p, q) & \text{otherwise}
+    \end{cases}
+  \]
+\end{definition}
+
+\begin{lemma}[$T^2 = \mathrm{id}$]
+  \label{lem:T_squared}
+  \lean{ILS.charTwistCM_involutive}
+  \leanok
+  \uses{def:charTwistCM}
+  The character twist is an involution.
+\end{lemma}
+\begin{proof}
+  \leanok
+  Per-row: each entry is negated twice (identity) or left unchanged; both yield identity.
+\end{proof}
+
+\begin{definition}[Augmentation $\oplus (p_0, q_0)$]
+  \label{def:augment}
+  \lean{ILS.augment}
+  \leanok
+  \uses{def:ILS}
+  $\mathrm{augment}((p_0, q_0), \mathcal{E}) := (p_0, q_0) :: \mathcal{E}$.
+  Prepend at position~0 (shift existing rows up by~1).
+\end{definition}
+
+\begin{definition}[Truncation $\Lambda_{(p_0, q_0)}$]
+  \label{def:truncate}
+  \lean{ILS.truncate}
+  \leanok
+  \uses{def:ILS}
+  Subtract $(p_0, q_0)$ from the first entry, defined when the containment condition
+  $\mathcal{E}[0] \supseteq (p_0, q_0)$ holds (both components non-negative and
+  $|\mathcal{E}[0]_i| \geq |(p_0, q_0)_i|$).
+\end{definition}
+
+\section{Signature preservation under operations}
+
+\begin{lemma}[Twist preserves signature]
+  \label{lem:twist_sign}
+  \lean{ILS.twistBD_sign, ILS.charTwistCM_sign}
+  \leanok
+  \uses{def:twistBD, def:charTwistCM, def:sign}
+  $\Sign(\mathcal{E} \otimes (\eps^+, \eps^-)) = \Sign(\mathcal{E})$ and $\Sign(T^j \mathcal{E}) = \Sign(\mathcal{E})$.
+\end{lemma}
+\begin{proof}
+  \leanok
+  $\Sign$ uses $|p|, |q|$, which are unchanged by sign twists.
+\end{proof}
+
+\begin{lemma}[Twist preserves first-column signature]
+  \label{lem:twist_fcSign}
+  \lean{ILS.twistBD_firstColSign, ILS.charTwistCM_firstColSign}
+  \leanok
+  \uses{def:twistBD, def:charTwistCM, def:firstColSign}
+  $\mathrm{fcSign}(\mathcal{E} \otimes (\eps^+, \eps^-)) = \mathrm{fcSign}(\mathcal{E})$ and $\mathrm{fcSign}(T^j \mathcal{E}) = \mathrm{fcSign}(\mathcal{E})$.
+\end{lemma}
+
+\begin{lemma}[Augmentation signature formula]
+  \label{lem:augment_sign}
+  \lean{ILS.sign_cons_nonneg}
+  \leanok
+  \uses{def:augment, def:sign, def:firstColSign}
+  For $p_0, q_0 \geq 0$:
+  \[
+    \Sign\big((p_0, q_0) :: \mathcal{E}\big) = \big(p_0 + \Sign(\mathcal{E}).1 + \mathrm{fcSign}(\mathcal{E}).2,\ q_0 + \Sign(\mathcal{E}).2 + \mathrm{fcSign}(\mathcal{E}).1\big).
+  \]
+\end{lemma}
+
+\section{Theta lifts (Section 9.5)}
+
+\begin{definition}[Theta lift $\hat\vartheta$]
+  \label{def:thetaLift}
+  \lean{ILS.thetaLift, ILS.thetaLift_CD, ILS.thetaLift_DC, ILS.thetaLift_BM, ILS.thetaLift_MB}
+  \leanok
+  \uses{def:charTwistCM, def:augment, def:truncate}
+  Four variants (paper Eq.~(9.29)--(9.30)):
+  \begin{itemize}
+    \item $\hat\vartheta_{CD} : \MYD_C \to \MYD_D$ (single branch): $\mathcal{E} \mapsto T^j(\mathrm{augment}((p, q), \mathcal{E}))$.
+    \item $\hat\vartheta_{DC} : \MYD_D \to \MYD_C$ (two branches: standard with $\mathrm{augment}((n, n), \mathcal{E})$; split with $\mathrm{augment}((-1, -1), \Lambda(\mathcal{E}))$).
+    \item $\hat\vartheta_{BM}, \hat\vartheta_{MB}$ analogous.
+  \end{itemize}
+\end{definition}
+
+\begin{theorem}[Theta lift signature preservation]
+  \label{thm:thetaLift_sign}
+  \lean{ILS.thetaLift_CD_sign, ILS.thetaLift_DC_sign_std, ILS.thetaLift_DC_sign_split, ILS.thetaLift_MB_sign, ILS.thetaLift_BM_sign_std, ILS.thetaLift_BM_sign_split}
+  \leanok
+  \uses{def:thetaLift, lem:augment_sign, lem:twist_sign}
+  For each theta-lift direction with target $(p, q)$ satisfying the
+  standard-case condition ($p - \Sign(\mathcal{E}).1 - \mathrm{fcSign}(\mathcal{E}).2 \geq 0$, etc.):
+  $\Sign(\hat\vartheta(\mathcal{E})) = (p, q)$ (or $(n, n)$ in D$\to$C split).
+\end{theorem}
+
+\begin{theorem}[Theta lift first-column signature]
+  \label{thm:thetaLift_fcSign}
+  \lean{ILS.thetaLift_CD_firstColSign, ILS.thetaLift_DC_firstColSign, ILS.thetaLift_MB_firstColSign, ILS.thetaLift_BM_firstColSign}
+  \leanok
+  \uses{def:thetaLift, lem:twist_fcSign}
+  $\mathrm{fcSign}(\hat\vartheta(\mathcal{E})) = (p - \Sign(\mathcal{E}).1,\ q - \Sign(\mathcal{E}).2)$
+  (the key \emph{firstColSign invariant}).
+\end{theorem}
+
+\begin{theorem}[Theta lift first-entry formula]
+  \label{thm:thetaLift_first_entry}
+  \lean{ILS.thetaLift_CD_first_entry, ILS.thetaLift_DC_first_entry_std, ILS.thetaLift_MB_first_entry, ILS.thetaLift_BM_first_entry_std, ILS.twistBD_first_entry}
+  \leanok
+  \uses{def:thetaLift, def:twistBD, def:augment}
+  The first entry of $\hat\vartheta(\mathcal{E})$ is $(p - \Sign(\mathcal{E}).1 - \mathrm{fcSign}(\mathcal{E}).2,\ q - \Sign(\mathcal{E}).2 - \mathrm{fcSign}(\mathcal{E}).1)$.
+\end{theorem}

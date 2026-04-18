@@ -1,0 +1,204 @@
+\chapter{Section 11 injectivity + main bijection}
+\label{chap:11_main}
+
+Reference: [BMSZ] Prop~11.8 (non-vanishing), 11.9--11.12 (injectivity),
+11.14--11.15/17 (main bijection). Internal blueprints
+\texttt{lemma\_11\_9\_detailed.md}, \texttt{lemma\_11\_1\_*.md}.
+
+\section{Lemma 11.1 — base cases}
+
+\begin{lemma}[Lemma 11.1(a): $|\check{\mathcal{O}}| = 0$]
+  \label{lem:11_1_a_empty}
+  \lean{lemma_11_1_a_empty, lemma_11_1_a_empty_first_entry}
+  \leanok
+  \uses{def:AC_base}
+  When $|\check{\mathcal{O}}| = 0$: $\mathcal{L}_\tau = \mathrm{AC.base}\,\gamma$.
+  First entries: $(1, 0)$ for $B^+$, $(0, -1)$ for $B^-$, empty for $C, D, M$.
+\end{lemma}
+
+\begin{lemma}[Lemma 11.1(a): $\mathbf{r}_1(\check{\mathcal{O}}) = 1$]
+  \label{lem:11_1_a_r1}
+  \lean{lemma_11_1_a_r1_one, lemma_11_1_a_r1_one_first_entry}
+  \leanok
+  \uses{lem:11_1_a_empty, def:AC_step}
+  When $\mathbf{r}_1(\check{\mathcal{O}}) = 1$: $\mathcal{L}_\tau$ is a single-row ILS
+  $[(p_\tau, (-1)^{\eps_\tau} q_\tau)]$.
+\end{lemma}
+
+\begin{proof}
+  \uses{lem:11_1_a_empty, def:AC_base, def:AC_step, thm:AC_step_sign_all}
+  Apply AC.step once to the empty base. For single-row ILS, $\Sign$ on row~0 gives $(|p|, |q|)$ exactly, so the post-twist by $\eps_\tau$ produces the claimed form.
+\end{proof}
+
+\begin{theorem}[SignTargetSet cardinality formula]
+  \label{thm:SignTargetSet_card}
+  \lean{SignTargetSet, Fintype.card_SignTargetSet}
+  \leanok
+  \uses{def:ILS}
+  For $(p, q) \in \mathbb{N}^2$, the set $\{(\eps^+, \eps^-) \in \mathbb{Z}^2 : (\eps^+, \eps^-) \in \{(p, q), (p, -q), (-p, q), (-p, -q)\}\}$ has cardinality
+  $4m + 4$ when $p > 0, q > 0$ (after suitable deduplication for $p = 0$ or $q = 0$).
+\end{theorem}
+
+\begin{lemma}[Lemma 11.1(b) — abstract bijection]
+  \label{lem:11_1_b_abstract}
+  \lean{lemma_11_1_b_bijection, lemma_11_1_b_bijection_concrete}
+  \leanok
+  \uses{lem:11_1_a_r1}
+  Abstract form: given finite types $\alpha \simeq \beta$ of equal cardinality and an injection $f : \alpha \to \beta$, $f$ is a bijection.
+\end{lemma}
+
+\begin{lemma}[Lemma 11.1(b) D-type bijection]
+  \label{lem:11_1_b_D}
+  \lean{lemma_11_1_b_bijection_D, PBPExt_at_r1_eq_1_D}
+  \leanok
+  \uses{lem:11_1_a_r1, lem:11_1_b_abstract, thm:SignTargetSet_card}
+  D-type specialisation: when $\mathbf{r}_1(\check{\mathcal{O}}) = 1$, the map
+  $\PBP_D(\check{\mathcal{O}}) \times \mathrm{Fin}\,2 \to \MYD_D(\mathcal{O})$ given by $(\tau, \eps) \mapsto \mathcal{L}_\tau \otimes (\eps, \eps)$
+  is a bijection, with explicit $|\PBP_D(\ldots)| = 4m + 4$ card match.
+\end{lemma}
+
+\section{Proposition 11.8 — non-vanishing of $\mathcal{L}_\tau^\pm$}
+
+\begin{proposition}[Prop 11.8 (AC level)]
+  \label{prop:11_8_ac}
+  \lean{prop_11_8, prop_11_8_nonzero, prop_11_8_PBP}
+  \leanok
+  \uses{lem:11_3, lem:11_6_D, prop:11_7}
+  For $\gamma \in \{D, B^+, B^-\}$ and tail symbol $x_\tau$:
+  \begin{enumerate}
+    \item[(a)] $\mathcal{L}_\tau \neq 0$.
+    \item[(b)] $x_\tau = s \Rightarrow \mathcal{L}_\tau^+ = 0$ and $\mathcal{L}_\tau^- = 0$.
+    \item[(c)] $x_\tau \in \{r, c\} \Rightarrow \mathcal{L}_\tau^+ \neq 0$ and $\mathcal{L}_\tau^- = 0$.
+    \item[(d)] $x_\tau = d \Rightarrow \mathcal{L}_\tau^+ \neq 0$ and $\mathcal{L}_\tau^- \neq 0$.
+  \end{enumerate}
+\end{proposition}
+
+\begin{proof}
+  \uses{lem:11_3, lem:11_6_D}
+  By case on $x_\tau$. From Lem~\ref{lem:11_6_D}:
+  $\mathcal{E}(1) = (p_{\tau_t}, (-1)^{\eps_\tau} q_{\tau_t})$.
+  \begin{itemize}
+    \item $x_\tau = s$: by Lem~\ref{lem:11_3}, $p_{\tau_t} = 0$ and $\eps_\tau = 1$ (since $x_\tau \neq d$), $q_{\tau_t} \geq 2$. Truncations $\Lambda_{(1, 0)}$ and $\Lambda_{(0, 1)}$ both fail (containment checks).
+    \item $x_\tau \in \{r, c\}$: $p_{\tau_t} \geq 1$, $\eps_\tau = 1$. $\Lambda_{(1, 0)}$ succeeds; $\Lambda_{(0, 1)}$ fails (since the second component is non-positive).
+    \item $x_\tau = d$: $p_{\tau_t} \geq 1, q_{\tau_t} \geq 1, \eps_\tau = 0$. Both truncations succeed.
+  \end{itemize}
+\end{proof}
+
+\begin{proposition}[Prop 11.8 (PBP level wrappers)]
+  \label{prop:11_8_pbp}
+  \lean{prop_11_8_PBP_D_closed, prop_11_8_PBP_Bplus_closed, prop_11_8_PBP_Bminus_closed}
+  \leanok
+  \uses{prop:11_8_ac}
+\end{proposition}
+
+\section{Propositions 11.9--11.12 — injectivity}
+
+\begin{lemma}[Prop 11.9 D — numerical constraint on cross-twist]
+  \label{prop:11_9_D}
+  \lean{prop_11_9_PBP_D_numerical}
+  \leanok
+  \uses{def:tailSymbol, def:tailSignature, prop:11_8_ac, lem:11_3, lem:tailSig_nonneg}
+  Assume $\tau_1, \tau_2 \in \PBP_D$ with $h_{\mathrm{tail}}$ satisfied, $x_{\tau_1} = d$, and the cross-twist first-component equation
+  $-p_{\tau_1, t} = p_{\tau_2, t} - 1$, plus $x_{\tau_2} \neq s$: \emph{contradiction}.
+\end{lemma}
+
+\begin{proof}
+  \uses{lem:11_3, lem:tailSig_nonneg}
+  \leanok
+  $x_{\tau_1} = d$ and $x_{\tau_1} \neq s$ $\Rightarrow p_{\tau_1, t} \geq 1$ (by Lem~\ref{lem:11_3}).
+  So $-p_{\tau_1, t} \leq -1$.
+  Then $p_{\tau_2, t} - 1 \leq -1$ $\Rightarrow p_{\tau_2, t} \leq 0$. With $p_{\tau_2, t} \geq 0$ (Lem~\ref{lem:tailSig_nonneg}), $p_{\tau_2, t} = 0$.
+  By Lem~\ref{lem:11_3}, $p_{\tau_2, t} = 0 \iff x_{\tau_2} = s$, contradicting $x_{\tau_2} \neq s$.
+\end{proof}
+
+\begin{lemma}[Prop 11.9 B variants]
+  \label{prop:11_9_B}
+  \lean{prop_11_9_PBP_Bplus_abstract, prop_11_9_PBP_Bminus_abstract}
+  \leanok
+  \uses{prop:11_9_D}
+\end{lemma}
+
+\begin{lemma}[Prop 11.10 — tail signatures equal from equal AC]
+  \label{prop:11_10_D}
+  \lean{prop_11_10_PBP_D}
+  \leanok
+  \uses{lem:11_6_D}
+  If $L_1 = L_2 \in \mathrm{ACResult}$ are non-empty with each branch having the
+  same first entry formula as $\tau_1, \tau_2$, then $(p_{\tau_1, t}, q_{\tau_1, t}) = (p_{\tau_2, t}, q_{\tau_2, t})$.
+\end{lemma}
+
+\begin{lemma}[Prop 11.11 — no det twist]
+  \label{lem:11_11}
+  \lean{prop_11_11_no_det, prop_11_11_PBP_D, prop_11_11_PBP_Bplus, prop_11_11_PBP_Bminus, BMSZ.no_det_twist_same_sign}
+  \leanok
+  \uses{prop:11_8_ac, prop:11_10_D}
+  There exist no $\tau_1, \tau_2$ with $\mathcal{L}_{\tau_1} \otimes (1, 1) = \mathcal{L}_{\tau_2}$ (the \emph{det twist} would require impossible sign configurations).
+\end{lemma}
+
+\begin{proof}
+  \uses{prop:11_8_ac}
+  The $\otimes(1, 1)$ twist negates the first entry: $(\mathcal{L}_{\tau_1} \otimes (1, 1))^+ = 0$ always. So $\mathcal{L}_{\tau_2}^+ = 0$, forcing $x_{\tau_2} = s$ (Prop~\ref{prop:11_8_ac}(b)). But then $(\mathcal{L}_{\tau_1} \otimes (1, 1))^- \neq 0$ while $\mathcal{L}_{\tau_2}^- = 0$: contradiction.
+\end{proof}
+
+\begin{proposition}[Prop 11.12 — injectivity modulo $\eps$]
+  \label{prop:11_12}
+  \lean{prop_11_12, prop_11_12_PBP_D, prop_11_12_PBP, prop_11_12_PBP_Bplus, prop_11_12_PBP_Bminus}
+  \leanok
+  \uses{lem:11_11, prop:11_8_ac}
+  If $\mathcal{L}_{\tau_1} \otimes (\eps_1, \eps_1) = \mathcal{L}_{\tau_2} \otimes (\eps_2, \eps_2)$,
+  then $\eps_1 = \eps_2$, $\eps_{\tau_1} = \eps_{\tau_2}$, and $\mathcal{L}_{\tau_1} = \mathcal{L}_{\tau_2}$.
+\end{proposition}
+
+\begin{proof}
+  \uses{lem:11_11, prop:11_8_ac}
+  \leanok
+  If $\eps_1 \neq \eps_2$, the equation $\mathcal{L}_{\tau_1} \otimes (1, 1) = \mathcal{L}_{\tau_2}$ arises (via $\eps_1 \oplus \eps_2 = 1$), forbidden by Lem~\ref{lem:11_11}. So $\eps_1 = \eps_2$; cancellation gives $\mathcal{L}_{\tau_1} = \mathcal{L}_{\tau_2}$. Then $\eps_{\tau_1} = \eps_{\tau_2}$ follows from Prop~\ref{prop:11_8_ac}'s truncation pattern.
+\end{proof}
+
+\begin{proposition}[Prop 11.13 — chain injectivity]
+  \label{prop:11_13}
+  \lean{prop_11_13_PBP_D, prop_11_13_PBP_Bplus, prop_11_13_PBP_Bminus, BMSZ.ac_chain_injective}
+  \leanok
+  \uses{prop:11_12}
+  Full AC.fold chain injectivity: equal outputs $\Rightarrow$ equal chains $\Rightarrow$ equal input PBPs.
+\end{proposition}
+
+\section{Main bijection (Prop 11.14, 11.15, 11.16, 11.17)}
+
+\begin{proposition}[Prop 11.14 — surjectivity from counting]
+  \label{prop:11_14}
+  \lean{prop_11_14_PBP_D, prop_11_14_PBP_Bplus, prop_11_14_PBP_Bminus, BMSZ.surjectivity_from_counting}
+  \leanok
+  \uses{prop:11_12, prop:10_11_B, prop:10_11_D, prop:10_12_C, prop:10_12_M}
+  Given a finite $\alpha$, a finite $\beta$, an injection $f : \alpha \to \beta$, and an equivalence $e : \alpha \simeq \beta$ witnessing $|\alpha| = |\beta|$:
+  $f$ is surjective.
+
+  Applied with $\alpha = \PBP_\gamma \times \mathrm{Fin}\,2$ and $\beta = \MYD_\gamma$, with injectivity from Prop~\ref{prop:11_12} and card match from Section~10 counting.
+\end{proposition}
+
+\begin{proposition}[Prop 11.15 — main bijection for B/D types]
+  \label{prop:11_15}
+  \lean{prop_11_15, prop_11_15_PBP, prop_11_15_PBP_D_complete, prop_11_15_PBP_Bplus_complete, prop_11_15_PBP_Bminus_complete, prop_11_15_complete, prop_11_15_injectivity, prop_11_15_PBP_D_injective_full}
+  \leanok
+  \uses{prop:11_14, prop:11_12, prop:11_13, lem:11_1_b_D}
+  The map $(\tau, \eps) \mapsto \mathcal{L}_\tau \otimes (\eps, \eps)$ is a bijection
+  \[ \PBP_\gamma(\check{\mathcal{O}}) \times \mathrm{Fin}\,2 \ \xrightarrow{\sim}\ \MYD_\gamma(\mathcal{O}) \]
+  for $\gamma \in \{D, B^+, B^-\}$.
+\end{proposition}
+
+\begin{proposition}[Prop 11.16 — C/$\tilde{C}$ bijection from counting]
+  \label{prop:11_16}
+  \lean{prop_11_16_PBP_C, prop_11_16_PBP_M}
+  \leanok
+  \uses{prop:11_14, prop:10_12_C, prop:10_12_M}
+  Abstract form of Prop 11.16 for C and $\tilde{C}$ types, via counting + injectivity.
+\end{proposition}
+
+\begin{proposition}[Prop 11.17 — main bijection for C/$\tilde{C}$]
+  \label{prop:11_17}
+  \lean{prop_11_17, prop_11_17_PBP_C, prop_11_17_PBP_M, prop_11_17_PBP_C_injective, prop_11_17_PBP_M_injective, prop_11_17_injectivity}
+  \leanok
+  \uses{prop:11_15, prop:10_12_C, prop:10_12_M, prop:11_14, prop:11_16}
+  For $\star \in \{C, \tilde{C}\}$: $\tau \mapsto \mathcal{L}_\tau$ is a bijection
+  $\PBP_\star(\check{\mathcal{O}}) \xrightarrow{\sim} \MYD_\star(\mathcal{O})$.
+\end{proposition}

@@ -1,0 +1,200 @@
+\chapter{Descent maps (Lemmas 10.4, 10.5, Prop 10.8)}
+\label{chap:descent}
+
+Descent maps remove the left-most column of $\mathcal{P}$, of $\mathcal{Q}$, or
+of both, producing a PBP on a shifted shape. They are the central structural
+tool of [BMSZb] Section~10.
+
+\section{Single naive descent paints}
+
+There are four single descent directions:
+\begin{itemize}
+\item D $\to$ C: cut col~0 of $\mathcal{Q}$ and shift $\mathcal{P}$ left by one column (refill top with $\bullet$).
+\item C $\to$ D: cut col~0 of $\mathcal{P}$ (refill top/middle with $\bullet, s$).
+\item B $\to$ M: cut col~0 of $\mathcal{Q}$ (refill $\mathcal{P}$, translate).
+\item M $\to$ B: cut col~0 of $\mathcal{P}$.
+\end{itemize}
+
+\begin{definition}[D $\to$ C paints]
+  \label{def:descentPaint_DC}
+  \lean{descentPaintL_DC, descentPaintR_DC}
+  \leanok
+  \uses{def:PBP, def:dotScolLen}
+  Let $c_L(j) := \mathrm{dotScolLen}(\tau.\mathcal{P}, j + 1)$ and $c_R(j) := \tau.\mathcal{Q}.\mathrm{colLen}(j)$.
+  \begin{align*}
+    (\nabla_{DC}\tau).\mathcal{P}(i, j) &= \begin{cases} \bullet & i < c_L(j) \\ \tau.\mathcal{P}(i, j + 1) & \text{otherwise} \end{cases} \\
+    (\nabla_{DC}\tau).\mathcal{Q}(i, j) &= \begin{cases} \bullet & i < c_L(j) \\ s & c_L(j) \leq i < c_R(j) \\ \bullet & i \geq c_R(j) \end{cases}
+  \end{align*}
+\end{definition}
+
+\begin{definition}[C $\to$ D paints]
+  \label{def:descentPaint_CD}
+  \lean{descentPaintL_CD, descentPaintR_CD}
+  \leanok
+  \uses{def:PBP, def:dotScolLen}
+  $c_L(j) := \mathrm{dotScolLen}(\tau.\mathcal{P}, j)$, $c_R(j) := \tau.\mathcal{Q}.\mathrm{colLen}(j + 1)$.
+  \[
+    (\nabla_{CD}\tau).\mathcal{P}(i, j) = \begin{cases} \bullet & i < c_R(j) \\ s & c_R(j) \leq i < c_L(j) \\ \tau.\mathcal{P}(i, j) & i \geq c_L(j) \end{cases}
+  \]
+  $(\nabla_{CD}\tau).\mathcal{Q}$ is all $\bullet$ (D type has $\mathcal{Q}$-allowed $= \{\bullet\}$).
+\end{definition}
+
+\begin{definition}[B $\to$ M paints]
+  \label{def:descentPaint_BM}
+  \lean{descentPaintL_BM, descentPaintR_BM}
+  \leanok
+  \uses{def:PBP, def:dotScolLen}
+  $c_L(j) := \mathrm{dotScolLen}(\tau.\mathcal{P}, j)$, $c_R(j) := \mathrm{dotScolLen}(\tau.\mathcal{Q}, j + 1)$.
+  \begin{align*}
+    (\nabla_{BM}\tau).\mathcal{P}(i, j) &= \begin{cases} \bullet & i < c_R(j) \\ s & c_R(j) \leq i < c_L(j) \\ \tau.\mathcal{P}(i, j) & i \geq c_L(j) \end{cases} \\
+    (\nabla_{BM}\tau).\mathcal{Q}(i, j) &= \begin{cases} \bullet & i < c_R(j) \\ \tau.\mathcal{Q}(i, j + 1) & i \geq c_R(j) \end{cases}
+  \end{align*}
+\end{definition}
+
+\begin{definition}[M $\to$ B paints]
+  \label{def:descentPaint_MB}
+  \lean{descentPaintL_MB, descentPaintR_MB}
+  \leanok
+  \uses{def:PBP, def:dotScolLen}
+  $c_L(j) := \mathrm{dotScolLen}(\tau.\mathcal{P}, j + 1)$, $c_R(j) := \mathrm{dotScolLen}(\tau.\mathcal{Q}, j)$.
+  \begin{align*}
+    (\nabla_{MB}\tau).\mathcal{P}(i, j) &= \begin{cases} \bullet & i < c_L(j) \\ \tau.\mathcal{P}(i, j+1) & i \geq c_L(j) \end{cases} \\
+    (\nabla_{MB}\tau).\mathcal{Q}(i, j) &= \begin{cases} \bullet & i < c_L(j) \\ s & c_L(j) \leq i < c_R(j) \\ \tau.\mathcal{Q}(i, j) & i \geq c_R(j) \end{cases}
+  \end{align*}
+\end{definition}
+
+\section{Double descent $\nabla^2$}
+
+\begin{definition}[Double descent D type]
+  \label{def:doubleDescent_D}
+  \lean{doubleDescent_D_paintL}
+  \leanok
+  \uses{def:descentPaint_DC, def:descentPaint_CD, def:dotScolLen}
+  Composite D $\xrightarrow{\nabla_{DC}}$ C $\xrightarrow{\nabla_{CD}}$ D.
+  After simplification:
+  \[
+    (\nabla^2_D \tau).\mathcal{P}(i, j) = \begin{cases}
+      \bullet & i < \tau.\mathcal{Q}.\mathrm{colLen}(j + 1) \\
+      s & \tau.\mathcal{Q}.\mathrm{colLen}(j + 1) \leq i < \mathrm{dotScolLen}(\tau.\mathcal{P}, j + 1) \\
+      \tau.\mathcal{P}(i, j + 1) & i \geq \mathrm{dotScolLen}(\tau.\mathcal{P}, j + 1)
+    \end{cases}
+  \]
+  (The resulting $\mathcal{Q}$ is all $\bullet$.)
+\end{definition}
+
+\begin{definition}[Double descent B type]
+  \label{def:doubleDescent_B}
+  \lean{doubleDescent_B_paintL, doubleDescent_B_paintR}
+  \leanok
+  \uses{def:descentPaint_BM, def:descentPaint_MB, def:dotScolLen}
+  Composite B $\xrightarrow{\nabla_{BM}}$ M $\xrightarrow{\nabla_{MB}}$ B.
+  \begin{align*}
+    (\nabla^2_B \tau).\mathcal{P}(i, j) &= \begin{cases} \bullet & i < \mathrm{dotScolLen}(\tau.\mathcal{P}, j + 1) \\ \tau.\mathcal{P}(i, j + 1) & i \geq \ldots \end{cases} \\
+    (\nabla^2_B \tau).\mathcal{Q}(i, j) &= \begin{cases} \bullet & i < \mathrm{dotScolLen}(\tau.\mathcal{P}, j + 1) \\ s & \mathrm{dotScolLen}(\tau.\mathcal{P}, j + 1) \leq i < \mathrm{dotScolLen}(\tau.\mathcal{Q}, j + 1) \\ \tau.\mathcal{Q}(i, j + 1) & i \geq \ldots \end{cases}
+  \end{align*}
+\end{definition}
+
+\section{Lemmas 10.4, 10.5 — descent injectivity}
+
+\begin{lemma}[Lemma 10.4 C — C$\to$D descent is injective]
+  \label{lem:10_4_C}
+  \lean{descentCD_injective, lemma_10_4_C}
+  \leanok
+  \uses{def:descentPaint_CD}
+  Let $\mu_P, \mu_Q$ be shapes with $\mathrm{shiftLeft}(\mu_Q) \leq \mu_P$.
+  The map $\nabla_{CD} : \PBP_C(\mu_P, \mu_Q) \to \PBP_D(\mu_P, \mathrm{shiftLeft}(\mu_Q))$ is injective.
+\end{lemma}
+
+\begin{lemma}[Lemma 10.4 B — B$\to$M + signature is injective]
+  \label{lem:10_4_B}
+  \lean{lemma_10_4_B, PBP.descent_inj_B}
+  \leanok
+  \uses{def:descentPaint_BM, def:signature_pbp, def:epsilon_pbp, def:dotScolLen}
+  For $\gamma \in \{B^+, B^-\}$ and $\tau_1, \tau_2 \in \PBP_\gamma(\mu_P, \mu_Q)$
+  with the interlacing shape hypothesis $\mathrm{dotScolLen}(\tau_i.\mathcal{P}, j) \geq \mathrm{dotScolLen}(\tau_i.\mathcal{Q}, j + 1)$:
+  if $\nabla_{BM}\tau_1 = \nabla_{BM}\tau_2$, $\Sign(\tau_1) = \Sign(\tau_2)$, $\eps_{\tau_1} = \eps_{\tau_2}$,
+  then $\tau_1 = \tau_2$.
+\end{lemma}
+
+\begin{lemma}[Lemma 10.5 M — M$\to$B descent is injective]
+  \label{lem:10_5_M}
+  \lean{descentMB_PBP, descentMB_injective, lemma_10_5_M}
+  \leanok
+  \uses{def:descentPaint_MB}
+  Equal M$\to$B descent paints $\Rightarrow$ equal M-type PBPs (same shapes).
+\end{lemma}
+
+\begin{lemma}[Lemma 10.5 D — double descent + signature injective]
+  \label{lem:10_5_D}
+  \lean{doubleDescent_D_injective_on_PBPSet, lemma_10_5_D}
+  \leanok
+  \uses{def:doubleDescent_D, def:signature_pbp, def:epsilon_pbp}
+  On $\PBP_D(\mu_P, \mu_Q)$, the map $\tau \mapsto (\nabla^2\tau, \Sign(\tau), \eps_\tau)$ is injective.
+\end{lemma}
+
+\section{Proposition 10.8 — descent cardinality relations}
+
+We now turn these injectivity statements into cardinality equalities.
+
+\begin{proposition}[Prop 10.8(a) C primitive]
+  \label{prop:10_8_C_prim}
+  \lean{card_C_eq_card_D_primitive, prop_10_8_C_primitive}
+  \leanok
+  \uses{lem:10_4_C}
+  If $\mu_Q.\mathrm{colLen}(0) \geq \mu_P.\mathrm{colLen}(0)$ (\emph{primitive case}), then
+  \[ |\PBP_C(\mu_P, \mu_Q)| = |\PBP_D(\mu_P, \mathrm{shiftLeft}(\mu_Q))|. \]
+\end{proposition}
+
+\begin{proposition}[Prop 10.8(b) C balanced]
+  \label{prop:10_8_C_bal}
+  \lean{card_C_eq_DD_plus_RC_balanced, prop_10_8_C_balanced}
+  \leanok
+  \uses{lem:10_4_C}
+  If $\mu_P.\mathrm{colLen}(0) = \mu_Q.\mathrm{colLen}(0) + 1$ (\emph{balanced case}), the C$\to$D descent image is $\{\sigma \in \PBP_D \mid \mathrm{tailClass}(\sigma) \in \{\mathrm{DD}, \mathrm{RC}\}\}$:
+  \[ |\PBP_C(\mu_P, \mu_Q)| = \#\{\mathrm{DD}\} + \#\{\mathrm{RC}\}. \]
+\end{proposition}
+
+\begin{proposition}[Prop 10.8(a) M primitive]
+  \label{prop:10_8_M_prim}
+  \lean{descent_bijective_primitive, prop_10_8_M_primitive}
+  \leanok
+  \uses{lem:10_5_M}
+  If $\mu_P.\mathrm{colLen}(0) > \mu_Q.\mathrm{colLen}(0)$ (\emph{primitive}):
+  \[ |\PBP_M(\mu_P, \mu_Q)| = |\PBP_{B^+}(\mathrm{shiftLeft}(\mu_P), \mu_Q)| + |\PBP_{B^-}(\mathrm{shiftLeft}(\mu_P), \mu_Q)|. \]
+\end{proposition}
+
+\begin{proposition}[Prop 10.8(b) M balanced]
+  \label{prop:10_8_M_bal}
+  \lean{descent_image_balanced, prop_10_8_M_balanced}
+  \leanok
+  \uses{lem:10_5_M}
+  If $\mu_P.\mathrm{colLen}(0) = \mu_Q.\mathrm{colLen}(0) > 0$:
+  \[ |\PBP_M(\mu_P, \mu_Q)| = |\PBP_{B^+}(\cdots)| + |\{\sigma \in \PBP_{B^-}(\cdots) : \mathrm{layerOrd}(\sigma.\mathcal{Q}(c_2 - 1, 0)) > 1\}|. \]
+\end{proposition}
+
+\chapter{Double-descent injectivity (Prop 10.9, Cor 10.10)}
+\label{chap:ddescent}
+
+\begin{proposition}[Prop 10.9 D — double descent is injective modulo $(\Sign, \eps)$]
+  \label{prop:10_9_D}
+  \lean{PBP.ddescent_inj_D, prop_10_9_D}
+  \leanok
+  \uses{lem:10_5_D, def:signature_pbp, def:epsilon_pbp}
+  For D-type PBPs $\tau_1, \tau_2$ with identical shapes, identical $\nabla^2\tau$, identical $\Sign$, and identical $\eps$: $\tau_1 = \tau_2$.
+\end{proposition}
+
+\begin{proposition}[Prop 10.9 B — double descent injective]
+  \label{prop:10_9_B}
+  \lean{PBP.ddescent_inj_B, prop_10_9_B}
+  \leanok
+  \uses{lem:10_4_B, def:signature_pbp, def:epsilon_pbp}
+  Analogue for $\gamma \in \{B^+, B^-\}$, under the interlacing constraint.
+\end{proposition}
+
+\begin{corollary}[Cor 10.10 D/B — PBPSet injectivity]
+  \label{cor:10_10}
+  \lean{cor_10_10_D, cor_10_10_B}
+  \leanok
+  \uses{prop:10_9_D, prop:10_9_B}
+  The map $\tau \mapsto (\nabla^2\tau, \Sign(\tau), \eps_\tau)$ is injective on $\PBP_\gamma(\mu_P, \mu_Q)$ for $\gamma \in \{D, B^+, B^-\}$.
+\end{corollary}
