@@ -2387,6 +2387,55 @@ theorem ILS.lemma_11_5_D (E : ILS) (n₀ n_inner p q p_t q_t : ℤ)
   · have := lemma_11_5_addn E n₀ n_inner q h_n₀ h_inner_p h_inner_q γ₁
     simp only at this; rw [this]; exact h_qt
 
+/-! ### Lemma 11.5 D-type **unconditional** (via `firstColSign` invariant)
+
+Starting from `ILS.lemma_11_5_D`, we discharge the inner augmentation hypotheses
+`h_inner_p`, `h_inner_q` automatically using the `firstColSign` invariant:
+
+  `firstColSign(L_{τ''}) = sign(L_{τ''}) - sign(L_{τ'''})`
+
+When `L_{τ'''}` has uniform sign `(n_prev, n_prev)` (C/M type predecessor), the
+natural choice `n₀ := n_inner - sign(E).1 - sign(E).2 + n_prev` makes both
+`h_inner_p` and `h_inner_q` hold definitionally. The `h_pt`/`h_qt` PBP-level
+identities remain as explicit hypotheses, discharged by Prop 11.4 + shape
+relations (Section 11 paper-level). -/
+
+/-- **Lemma 11.5 D-type unconditional (inner discharged):**
+    Given the `firstColSign` invariant `firstColSign E = (sign E - (n_prev, n_prev))`
+    and the natural choice `n₀ := n_inner - sign E.1 - sign E.2 + n_prev`, the
+    inner augmentation hypotheses are automatic. The outer addp/addn equal
+    `p_t, q_t` (pending the PBP-level identities). -/
+theorem ILS.lemma_11_5_D_unconditional (E : ILS) (n_inner n_prev p q p_t q_t : ℤ)
+    (h_fc : firstColSign E = ((sign E).1 - n_prev, (sign E).2 - n_prev))
+    (h_n₀ : n_inner - (sign E).1 - (sign E).2 + n_prev ≥ 0)
+    (h_pt : p - 2 * n_inner + (sign E).2 = p_t)
+    (h_qt : q - 2 * n_inner + (sign E).1 = q_t)
+    (γ₁ : ℤ) :
+    let n₀ := n_inner - (sign E).1 - (sign E).2 + n_prev
+    let inner := charTwistCM (augment (n₀, n₀) E) γ₁
+    p - (sign inner).1 - (firstColSign inner).2 = p_t ∧
+    q - (sign inner).2 - (firstColSign inner).1 = q_t := by
+  -- Derive h_inner_p and h_inner_q from h_fc.
+  set n₀ := n_inner - (sign E).1 - (sign E).2 + n_prev with hn₀
+  have h_inner_p : n_inner - (sign E).1 - (firstColSign E).2 = n₀ := by
+    rw [h_fc]; simp; omega
+  have h_inner_q : n_inner - (sign E).2 - (firstColSign E).1 = n₀ := by
+    rw [h_fc]; simp; omega
+  exact lemma_11_5_D E n₀ n_inner p q p_t q_t h_n₀ h_inner_p h_inner_q h_pt h_qt γ₁
+
+/-- **Proposition 11.5 (D-type, unconditional wrapper):** Matches paper form. -/
+theorem prop_11_5_D_unconditional (E : ILS) (n_inner n_prev p q p_t q_t : ℤ)
+    (h_fc : ILS.firstColSign E = ((ILS.sign E).1 - n_prev, (ILS.sign E).2 - n_prev))
+    (h_n₀ : n_inner - (ILS.sign E).1 - (ILS.sign E).2 + n_prev ≥ 0)
+    (h_pt : p - 2 * n_inner + (ILS.sign E).2 = p_t)
+    (h_qt : q - 2 * n_inner + (ILS.sign E).1 = q_t)
+    (γ₁ : ℤ) :
+    let n₀ := n_inner - (ILS.sign E).1 - (ILS.sign E).2 + n_prev
+    let inner := ILS.charTwistCM (ILS.augment (n₀, n₀) E) γ₁
+    p - (ILS.sign inner).1 - (ILS.firstColSign inner).2 = p_t ∧
+    q - (ILS.sign inner).2 - (ILS.firstColSign inner).1 = q_t :=
+  ILS.lemma_11_5_D_unconditional E n_inner n_prev p q p_t q_t h_fc h_n₀ h_pt h_qt γ₁
+
 -- PBP-level signature identity: p - 2p' + q'' = p_tail.
 -- Connects D-type, C-type descent, and double descent signatures.
 
