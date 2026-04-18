@@ -46,7 +46,7 @@ local system type). We adopt the definitions of [BMSZb] Section~2.
 
 \begin{definition}[Young diagram]
   \label{def:yd}
-  \lean{YoungDiagram}
+  % YoungDiagram from Mathlib
   \leanok
   A Young diagram $\mu$ is a finite subset of $\mathbb{N}^2$ which is a
   \emph{down-set} under $(i, j) \leq (i', j') \iff i \leq i' \land j \leq j'$.
@@ -55,7 +55,7 @@ local system type). We adopt the definitions of [BMSZb] Section~2.
 
 \begin{definition}[Painted Young diagram]
   \label{def:pyd}
-  \lean{PaintedYoungDiagram, PaintedYoungDiagram.layerMonotone}
+  \lean{PaintedYoungDiagram.layerMonotone}
   \leanok
   \uses{def:yd, def:layerOrd}
   A \emph{painted Young diagram} is a triple $D = (\mu, \mathcal{P}, \mathrm{layerMono})$ where:
@@ -172,7 +172,7 @@ local system type). We adopt the definitions of [BMSZb] Section~2.
 
 \begin{definition}[Dual partition legality]
   \label{def:DualPart}
-  \lean{DualPart, DualPart.SortedGE}
+  \lean{DualPart, }
   \leanok
   A \emph{dual partition} $dp$ is a \texttt{List ℕ} that is sorted $\geq$ (strictly decreasing with possible ties). Validity conditions:
   \begin{itemize}

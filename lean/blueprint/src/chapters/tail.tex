@@ -44,7 +44,7 @@ internal blueprint \texttt{tail\_definition.md}, \texttt{lemma\_11\_5\_PBP\_iden
 
 \begin{lemma}[Tail signature non-negativity]
   \label{lem:tailSig_nonneg}
-  \lean{PBP.tailSignature_D_nonneg}
+  \lean{tailSig_nonneg_D}
   \leanok
   \uses{def:tailSignature}
   $p_{\tau_t} \geq 0$ and $q_{\tau_t} \geq 0$.
@@ -54,7 +54,7 @@ internal blueprint \texttt{tail\_definition.md}, \texttt{lemma\_11\_5\_PBP\_iden
 
 \begin{lemma}[Prop 11.3 — characterisation of $x_\tau$ via signatures and $\eps$]
   \label{lem:11_3}
-  \lean{tailSymbol_eq_d_iff_epsilon_zero, tailSignature_p_zero_iff_s, tailSignature_q_zero_iff_r}
+  \lean{epsilon_zero_iff_tailSymbol_d, tailSig_fst_zero_iff_tailSymbol_s}
   \leanok
   \uses{def:tailSymbol, def:tailSignature, def:epsilon_pbp}
   Assume $\mathcal{P}.\mathrm{colLen}(0) > \mathcal{Q}.\mathrm{colLen}(0)$. Then:

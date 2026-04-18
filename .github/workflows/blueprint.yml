@@ -6,6 +6,9 @@ on:
       - main
     paths:
       - 'lean/blueprint/src/**'
+      - 'lean/CombUnipotent/**/*.lean'
+      - 'tools/extract_lean_decls.py'
+      - 'tools/check_blueprint_alignment.py'
       - '.github/workflows/blueprint.yml'
   workflow_dispatch:
 
@@ -31,37 +34,41 @@ jobs:
         run: |
           python3 -m pip install --upgrade pip
           python3 -m pip install pygraphviz plasTeX leanblueprint \
-            plastexdepgraph plastexshowmore jinja2
+            plastexdepgraph plastexshowmore
 
-      - name: Compile PDF (best effort)
-        working-directory: lean/blueprint/src
+      - name: Extract Lean declarations (decl → file:line table)
         run: |
-          latexmk -pdf -halt-on-error print.tex || true
-          mkdir -p ../print && cp -f print.pdf ../print/print.pdf 2>/dev/null || true
+          python3 tools/extract_lean_decls.py \
+            --root lean/CombUnipotent \
+            --repo-root . \
+            --out lean/blueprint/src/lean_decls.json
+
+      - name: Verify blueprint → Lean alignment
+        run: |
+          python3 tools/check_blueprint_alignment.py \
+            --blueprint lean/blueprint/src \
+            --decls lean/blueprint/src/lean_decls.json \
+            --strict
 
       - name: Compile web version
         working-directory: lean/blueprint/src
         run: |
           plastex -c plastex.cfg web.tex
 
-      - name: List produced files
-        run: |
-          echo "--- lean/blueprint/web ---"
-          ls lean/blueprint/web/ | head -40
-
       - name: Sync HTML to docs/blueprint
         run: |
-          # Preserve the find/ redirect page we host for Lean decl links.
+          # Preserve find/index.html; regenerate find/lean_decls.json from source.
           if [ -f docs/blueprint/find/index.html ]; then
             cp docs/blueprint/find/index.html /tmp/find-index.html
           fi
           mkdir -p docs/blueprint
           rm -rf docs/blueprint/*
           cp -R lean/blueprint/web/* docs/blueprint/
+          mkdir -p docs/blueprint/find
           if [ -f /tmp/find-index.html ]; then
-            mkdir -p docs/blueprint/find
             cp /tmp/find-index.html docs/blueprint/find/index.html
           fi
+          cp lean/blueprint/src/lean_decls.json docs/blueprint/find/lean_decls.json
           touch docs/.nojekyll
 
       - name: Commit updated blueprint (if changed)
