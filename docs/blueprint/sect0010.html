@@ -262,14 +262,15 @@
 </div>
 <p> where \(\wp _\uparrow := \wp \cup \{ (1, 2)\} \). By the PP assumption, \(k_\uparrow {\gt} k \geq 1\). </p>
 <p>Since \(\)\(\) is unchanged, \(\)τ_.Q(i, j) := τ.Q(i, j)\(\) for all \((i, j)\). </p>
-<h2 id="a0000000061">3.2.2 Case analysis for \(\tau _\uparrow .\mathcal{P}\)</h2>
+<h2 id="a0000000061">3.2.2 Case analysis for the new paint</h2>
+<p>The construction of \(\mathcal{P}_{\tau _\uparrow }\) splits into four sub-cases based on the value of \(\mathcal{P}_\tau (k, 1)\). Each sub-case is a separate definition corresponding to its own Lean helper. </p>
 <div class="definition_thmwrapper theorem-style-definition" id="def:shapeShiftC_paint">
   <div class="definition_thmheading">
     <span class="definition_thmcaption">
     Definition
     </span>
     <span class="definition_thmlabel">22</span>
-    <span class="definition_thmtitle">shape shift C — paint function</span>
+    <span class="definition_thmtitle">shape shift C — main dispatcher</span>
     <div class="thm_header_extras">
 
     
@@ -325,29 +326,213 @@
         </div>
   </div>
   <div class="definition_thmcontent">
-  <p>    There are four sub-cases, based on \(\mathcal{P}_\tau (k, 1)\): </p>
-<p><b class="bfseries">Case (a):</b> \(\mathcal{P}_\tau (k, 1) \neq \bullet \). Set \(\alpha _0 := \mathcal{P}_\tau (k, 1) \in \{ s, r, c, d\} \). </p>
-<p><b class="bfseries">Sub-case (a.1):</b> \(k \geq 2\) and \(\mathcal{P}_\tau (k - 1, 1) = c\). </p>
-<div class="displaymath" id="a0000000062">
-  \[  \tau _\uparrow .\mathcal{P}(i, j) = \begin{cases}  r &  j = 1,\  k - 1 \leq i \leq k_\uparrow - 2 \\ c &  (i, j) = (k_\uparrow - 1, 1) \\ d &  (i, j) = (k_\uparrow , 1) \\ \mathcal{P}_\tau (i, j) &  \text{otherwise} \end{cases}  \]
-</div>
-<p><b class="bfseries">Sub-case (a.2):</b> otherwise. </p>
-<div class="displaymath" id="a0000000063">
-  \[  \tau _\uparrow .\mathcal{P}(i, j) = \begin{cases}  r &  j = 1,\  k \leq i \leq k_\uparrow - 1 \\ \alpha _0 &  (i, j) = (k_\uparrow , 1) \\ \mathcal{P}_\tau (i, j) &  \text{otherwise} \end{cases}  \]
-</div>
-<p><b class="bfseries">Case (b):</b> \(\mathcal{P}_\tau (k, 1) = \bullet \). </p>
-<p><b class="bfseries">Sub-case (b.1):</b> \(\mathbf{c}_2(\iota _\wp ) = k\) and \(\mathcal{P}_\tau (k, 2) = r\). </p>
-<div class="displaymath" id="a0000000064">
-  \[  \tau _\uparrow .\mathcal{P}(i, j) = \begin{cases}  r &  j = 1,\  k \leq i \leq k_\uparrow - 1 \\ c &  (i, j) = (\mathbf{c}_2(\iota _\wp ), 2) \\ d &  (i, j) = (k_\uparrow , 1) \\ \mathcal{P}_\tau (i, j) &  \text{otherwise} \end{cases}  \]
-</div>
-<p> (Case b.1 modifies column&#160;1 of \(\)</p>
+  <p>    The paint function \(\mathcal{P}_{\tau _\uparrow }\) dispatches to one of the four sub-case formulas (Def.&#160;<a href="sect0010.html#def:shapeShiftC_case_a1">23</a>, <a href="sect0010.html#def:shapeShiftC_case_a2">24</a>, <a href="sect0010.html#def:shapeShiftC_case_b1">25</a>, <a href="sect0010.html#def:shapeShiftC_case_b2">26</a>) according to \(\mathcal{P}_\tau (k, 1)\) and \(\mathcal{P}_\tau (k - 1, 1)\), where \(k := \mathbf{c}_1(\iota _\wp )\) and \(k_\uparrow := \mathbf{c}_1(\iota _{\wp _\uparrow })\). Set \(\alpha _0 := \mathcal{P}_\tau (k, 1)\) when non-\(\bullet \). </p>
 
   </div>
 </div>
-<p>\(\)-reachable cells; formalization of this case is deferred.) 
-<b class="bfseries">Sub-case (b.2):</b> otherwise. <div class="displaymath" id="a0000000065">
-  \[  \tau _\uparrow .\mathcal{P}(i, j) = \begin{cases}  r &  j = 1,\  k \leq i \leq k_\uparrow - 2 \\ c &  (i, j) = (k - 1, 1) \\ d &  (i, j) = (k_\uparrow , 1) \\ \mathcal{P}_\tau (i, j) &  \text{otherwise} \end{cases}  \]
-</div> <div class="definition_thmwrapper theorem-style-definition" id="a0000000066">
+<div class="definition_thmwrapper theorem-style-definition" id="def:shapeShiftC_case_a1">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">23</span>
+    <span class="definition_thmtitle">sub-case (a.1): previous-cell is c</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0010.html#def:shapeShiftC_case_a1">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0006.html#def:PBP">Definition 9</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/shiftPaintP_C_concrete_case_a1" class="lean_decl">shiftPaintP_C_concrete_case_a1</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>    Applies when \(\alpha _0 \neq \bullet \), \(k \geq 2\), and \(\mathcal{P}_\tau (k - 1, 1) = c\). The new paint is </p>
+<div class="displaymath" id="a0000000062">
+  \[  \mathcal{P}_{\tau _\uparrow }(i, j) = \begin{cases}  r &  j = 1,\  k - 1 \leq i \leq k_\uparrow - 2 \\ c &  (i, j) = (k_\uparrow - 1, 1) \\ d &  (i, j) = (k_\uparrow , 1) \\ \mathcal{P}_\tau (i, j) &  \text{otherwise.} \end{cases}  \]
+</div>
+
+  </div>
+</div>
+
+<div class="definition_thmwrapper theorem-style-definition" id="def:shapeShiftC_case_a2">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">24</span>
+    <span class="definition_thmtitle">sub-case (a.2): default for non-dot top</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0010.html#def:shapeShiftC_case_a2">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0006.html#def:PBP">Definition 9</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/shiftPaintP_C_concrete_case_a2" class="lean_decl">shiftPaintP_C_concrete_case_a2</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>    Applies when \(\alpha _0 \neq \bullet \) and the (a.1) condition on \(\mathcal{P}_\tau (k - 1, 1)\) fails. The new paint is </p>
+<div class="displaymath" id="a0000000063">
+  \[  \mathcal{P}_{\tau _\uparrow }(i, j) = \begin{cases}  r &  j = 1,\  k \leq i \leq k_\uparrow - 1 \\ \alpha _0 &  (i, j) = (k_\uparrow , 1) \\ \mathcal{P}_\tau (i, j) &  \text{otherwise.} \end{cases}  \]
+</div>
+
+  </div>
+</div>
+
+<div class="definition_thmwrapper theorem-style-definition" id="def:shapeShiftC_case_b1">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">25</span>
+    <span class="definition_thmtitle">sub-case (b.1): Q col-2 lift (deferred)</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0010.html#def:shapeShiftC_case_b1">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0006.html#def:PBP">Definition 9</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/shiftPaintP_C_concrete_case_b1_fallback" class="lean_decl">shiftPaintP_C_concrete_case_b1_fallback</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>    Applies when \(\alpha _0 = \bullet \), \(\mathbf{c}_2(\iota _\wp ) = k\), and \(\mathcal{P}_\tau (k, 2) = r\). The new paint formula modifies column&#160;1 of \(\)</p>
+
+  </div>
+</div>
+<p>\(\)-reachable cells: <div class="displaymath" id="a0000000064">
+  \[  \mathcal{P}_{\tau _\uparrow }(i, j) = \begin{cases}  r &  j = 1,\  k \leq i \leq k_\uparrow - 1 \\ c &  (i, j) = (\mathbf{c}_2(\iota _\wp ), 2) \\ d &  (i, j) = (k_\uparrow , 1) \\ \mathcal{P}_\tau (i, j) &  \text{otherwise.} \end{cases}  \]
+</div> The Lean formalization uses a fallback constructor (<span class="ttfamily">shiftPaintP_C_concrete_case_b1_fallback</span>); a full constructive case (b.1) handler is deferred future work. <div class="definition_thmwrapper theorem-style-definition" id="a0000000065">
   <div class="definition_thmheading">
     <span class="definition_thmcaption">
     Definition
@@ -357,7 +542,7 @@
         </div>
     <div class="thm_header_hidden_extras">
 
-    <a class="icon proof" href="sect0010.html#a0000000066">#</a>
+    <a class="icon proof" href="sect0010.html#a0000000065">#</a>
     
     
     
@@ -367,13 +552,101 @@
   
   </div>
 </div> 
-<h2 id="a0000000067">3.2.3 Validity and bijectivity</h2>
+
+<div class="definition_thmwrapper theorem-style-definition" id="def:shapeShiftC_case_b2">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">26</span>
+    <span class="definition_thmtitle">sub-case (b.2): default for dot top</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0010.html#def:shapeShiftC_case_b2">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0006.html#def:PBP">Definition 9</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://jiajunma.github.io/unipotentrepn/blueprint/find/#doc/shiftPaintP_C_concrete_case_b2" class="lean_decl">shiftPaintP_C_concrete_case_b2</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>    Applies when \(\)</p>
+
+  </div>
+</div>α_0 = •\(\) and the (b.1) condition fails. The new paint is </p>
+<div class="displaymath" id="a0000000066">
+  \[  \mathcal{P}_{\tau _\uparrow }(i, j) = \begin{cases}  r &  j = 1,\  k \leq i \leq k_\uparrow - 2 \\ c &  (i, j) = (k - 1, 1) \\ d &  (i, j) = (k_\uparrow , 1) \\ \mathcal{P}_\tau (i, j) &  \text{otherwise.} \end{cases}  \]
+</div>
+<div class="definition_thmwrapper theorem-style-definition" id="a0000000067">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0010.html#a0000000067">#</a>
+    
+    
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  
+  </div>
+</div>
+<h2 id="a0000000068">3.2.3 Validity and bijectivity</h2>
 <div class="lemma_thmwrapper theorem-style-plain" id="cor:shapeShiftC_valid">
   <div class="lemma_thmheading">
     <span class="lemma_thmcaption">
     Lemma
     </span>
-    <span class="lemma_thmlabel">23</span>
+    <span class="lemma_thmlabel">27</span>
     <span class="lemma_thmtitle">Shape shift C produces a valid PBP</span>
     <div class="thm_header_extras">
 
@@ -383,6 +656,9 @@
     <div class="thm_header_hidden_extras">
 
     <a class="icon proof" href="sect0010.html#cor:shapeShiftC_valid">#</a>
+    
+    <a class="icon proof" href="sect0010.html#a0000000069"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
     
     
     <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
@@ -428,29 +704,8 @@
         </div>
   </div>
   <div class="lemma_thmcontent">
-  <p>    The painted diagram \(\)</p>
+  <p>    The painted diagram produced by any of the four sub-cases of Def.&#160;<a href="sect0010.html#def:shapeShiftC_paint">22</a> satisfies all PBP axioms: the allowed symbol sets (<span class="ttfamily">sym_P</span>, <span class="ttfamily">sym_Q</span>), layer monotonicity, the <span class="ttfamily">dot_match</span> invariant, and the row / column uniqueness conditions (<span class="ttfamily">row_s</span>, <span class="ttfamily">row_r</span>, <span class="ttfamily">col_c_P</span>, <span class="ttfamily">col_c_Q</span>, <span class="ttfamily">col_d_P</span>, <span class="ttfamily">col_d_Q</span>). </p>
 
-  </div>
-</div>
-τ_\(\) produced by any of the four sub-cases of Def.&#160;<a href="sect0010.html#def:shapeShiftC_paint">22</a> satisfies all PBP axioms: the allowed symbol sets (<span class="ttfamily">sym_P</span>, <span class="ttfamily">sym_Q</span>), layer monotonicity, the <span class="ttfamily">dot_match</span> invariant, and the row / column uniqueness conditions (<span class="ttfamily">row_s</span>, <span class="ttfamily">row_r</span>, <span class="ttfamily">col_c_P</span>, <span class="ttfamily">col_c_Q</span>, <span class="ttfamily">col_d_P</span>, <span class="ttfamily">col_d_Q</span>). </p>
-<div class="lemma_thmwrapper theorem-style-plain" id="a0000000068">
-  <div class="lemma_thmheading">
-    <span class="lemma_thmcaption">
-    Lemma
-    </span>
-    <div class="thm_header_extras">
-
-        </div>
-    <div class="thm_header_hidden_extras">
-
-    <a class="icon proof" href="sect0010.html#a0000000068">#</a>
-    
-    
-    
-        </div>
-  </div>
-  <div class="lemma_thmcontent">
-  
   </div>
 </div>
 <div class="proof_wrapper" id="a0000000069">
@@ -477,7 +732,7 @@
     <span class="lemma_thmcaption">
     Lemma
     </span>
-    <span class="lemma_thmlabel">24</span>
+    <span class="lemma_thmlabel">28</span>
     <span class="lemma_thmtitle">shape shift C identity instance</span>
     <div class="thm_header_extras">
 
@@ -558,7 +813,7 @@
     <span class="lemma_thmcaption">
     Lemma
     </span>
-    <span class="lemma_thmlabel">25</span>
+    <span class="lemma_thmlabel">29</span>
     <span class="lemma_thmtitle">Lemma 10.3 C — PBPSet cardinality</span>
     <div class="thm_header_extras">
 
@@ -585,9 +840,9 @@
         
         <ul class="uses">
           
-          <li><a href="sect0010.html#lem:shapeShiftC_id">Lemma 24</a></li>
+          <li><a href="sect0010.html#lem:shapeShiftC_id">Lemma 28</a></li>
           
-          <li><a href="sect0010.html#cor:shapeShiftC_valid">Lemma 23</a></li>
+          <li><a href="sect0010.html#cor:shapeShiftC_valid">Lemma 27</a></li>
           
         </ul>
     
@@ -635,7 +890,7 @@
     <span class="expand-proof">▶</span>
   </div>
   <div class="proof_content">
-  <p>The shape-shift is a bijection \((\wp , \tau ) \leftrightarrow (\wp \cup \{ (1,2)\} , \tau _\uparrow )\) via the case analysis in Def.&#160;<a href="sect0010.html#def:shapeShiftC_paint">22</a>. In particular \(\mathrm{shapeShiftC\_ id}\) is its own inverse (Lemma&#160;<a href="sect0010.html#lem:shapeShiftC_id">24</a>). </p>
+  <p>The shape-shift is a bijection \((\wp , \tau ) \leftrightarrow (\wp \cup \{ (1,2)\} , \tau _\uparrow )\) via the case analysis in Def.&#160;<a href="sect0010.html#def:shapeShiftC_paint">22</a>. In particular \(\mathrm{shapeShiftC\_ id}\) is its own inverse (Lemma&#160;<a href="sect0010.html#lem:shapeShiftC_id">28</a>). </p>
 
   </div>
 </div>
@@ -644,7 +899,7 @@
     <span class="proposition_thmcaption">
     Proposition
     </span>
-    <span class="proposition_thmlabel">26</span>
+    <span class="proposition_thmlabel">30</span>
     <span class="proposition_thmtitle">Prop 10.2 C — PBP count independent of \(\wp \)</span>
     <div class="thm_header_extras">
 
@@ -671,7 +926,7 @@
         
         <ul class="uses">
           
-          <li><a href="sect0010.html#lem:10_3_C">Lemma 25</a></li>
+          <li><a href="sect0010.html#lem:10_3_C">Lemma 29</a></li>
           
         </ul>
     
@@ -714,7 +969,7 @@
     <span class="expand-proof">▶</span>
   </div>
   <div class="proof_content">
-  <p>By iterating Lemma&#160;<a href="sect0010.html#lem:10_3_C">25</a> (or its identity instance) on \(\wp \)-modifications. </p>
+  <p>By iterating Lemma&#160;<a href="sect0010.html#lem:10_3_C">29</a> (or its identity instance) on \(\wp \)-modifications. </p>
 
   </div>
 </div>
