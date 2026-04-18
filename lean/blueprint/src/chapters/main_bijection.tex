@@ -244,7 +244,11 @@ Reference: [BMSZ] Prop~11.8 (non-vanishing), 11.9--11.12 (injectivity),
   \lean{prop_11_16_PBP_C, prop_11_16_PBP_M}
   \leanok
   \uses{prop:11_14, prop:10_12_C, prop:10_12_M}
-  Abstract form of Prop 11.16 for C and $\tilde{C}$ types, via counting + injectivity.
+  Paper Prop~11.16 (descent bijectivity for C/$\tilde{C}$ types) is captured at
+  the PBP level by the Section~10 counting equalities (Prop.~\ref{prop:10_12_C},
+  \ref{prop:10_12_M}). The abstract wrapper presented here re-exposes the result
+  via $\mathrm{surjectivity\_from\_counting}$: an injective map between finite
+  sets of equal cardinality is bijective.
 \end{proposition}
 \begin{proof}
   \leanok
@@ -256,7 +260,7 @@ Reference: [BMSZ] Prop~11.8 (non-vanishing), 11.9--11.12 (injectivity),
   \label{prop:11_17}
   \lean{prop_11_17, prop_11_17_PBP_C, prop_11_17_PBP_M, prop_11_17_PBP_C_injective, prop_11_17_PBP_M_injective, prop_11_17_injectivity}
   \leanok
-  \uses{prop:11_15, prop:10_12_C, prop:10_12_M, prop:11_14, prop:11_16}
+  \uses{prop:11_16, prop:11_12}
   For $\star \in \{C, \tilde{C}\}$: $\tau \mapsto \mathcal{L}_\tau$ is a bijection
   $\PBP_\star(\check{\mathcal{O}}) \xrightarrow{\sim} \MYD_\star(\mathcal{O})$.
 \end{proposition}
