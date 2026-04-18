@@ -1,5 +1,10 @@
 # Lemma 11.1 自然语言证明
 
+## Lean 形式化
+- (a) empty: `lemma_11_1_a_empty`, `lemma_11_1_a_empty_first_entry` in `CombUnipotent/MYD.lean`
+- (a) r₁=1: `lemma_11_1_a_r1_one`, `lemma_11_1_a_r1_one_first_entry` in `CombUnipotent/MYD.lean`
+- (b) bijection: `lemma_11_1_b_bijection`, `lemma_11_1_b_bijection_concrete`, `PBPExt_at_r1_eq_1_D` in `MYD.lean`, `CombUnipotent/MYD/Lemma11_1_b.lean`
+
 ## 陈述
 
 设 ★ ∈ {B, D}。

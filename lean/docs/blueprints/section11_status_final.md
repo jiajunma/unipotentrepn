@@ -1,5 +1,9 @@
 # [BMSZ] Section 11 Formalization — Status
 
+## Lean 形式化
+核心实现全部在 `CombUnipotent/MYD.lean` 及其子目录 `CombUnipotent/MYD/*.lean`。
+详细定理对照见 [INDEX.md](INDEX.md)。
+
 ## 总览
 
 Section 11 Associated Cycles combinatorial aspect (for ★ ∈ {B, D, C, M = C̃};

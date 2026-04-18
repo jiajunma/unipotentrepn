@@ -2,6 +2,10 @@
 
 Reference: [BMSZb] Sections 10.2–10.6, Propositions 10.8, 10.9, 10.11, 10.12.
 
+## Lean 形式化
+- Section 10 wrappers：`prop_10_8_M_*`, `prop_10_9_B`, `cor_10_10_B`, `prop_10_11_B/D`, `prop_10_12_M` in `CountingProof/Section10.lean`
+- 底层证明：`CountingProof/CorrespondenceB.lean`, `CountingProof/CorrespondenceM.lean`, `CountingProof/Prop10_8_M.lean`, `CountingProof/Correspondence.lean`
+
 ---
 
 ## Part 0: Notations and Conventions

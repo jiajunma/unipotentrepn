@@ -1,5 +1,8 @@
 # Lemma 11.9 — Detailed Case Analysis
 
+## Lean 形式化
+- `prop_11_9_PBP_D_numerical`, `prop_11_9_PBP_Bplus_abstract`, `prop_11_9_PBP_Bminus_abstract` in `CombUnipotent/MYD.lean`
+
 ## 陈述
 
 设 $\star \in \{B, D\}$ 且 $\mathbf{r}_1(\check{\mathcal{O}}) > \mathbf{r}_3(\check{\mathcal{O}})$。则不存在 $\tau_1, \tau_2 \in \text{PBP}^{\text{ext}}_\star(\check{\mathcal{O}})$ 使得

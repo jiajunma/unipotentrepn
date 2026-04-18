@@ -2,6 +2,11 @@
 
 Reference: [BMSZb] Section 10, Propositions 10.11 and 10.12.
 
+## Lean 形式化
+- Section 10 wrappers：`prop_10_11_B`, `prop_10_12_M` in `CountingProof/Section10.lean`
+- B-type 证明：`card_PBPSet_B_eq_tripleSum_countPBP_B` in `CountingProof/CorrespondenceB.lean`
+- M-type 证明：`card_PBPSet_M_eq_countPBP_M` in `CountingProof/Prop10_8_M.lean`
+
 ## 1. Critical Insight: Tail is Always D-type
 
 From [BMSZb] Section 10.5 (p.70):

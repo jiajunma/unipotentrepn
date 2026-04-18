@@ -2,6 +2,11 @@
 
 Reference: [BMSZb] Propositions 10.9 and 10.11.
 
+## Lean 形式化
+- 主定理（unconditional）：`prop_10_11_B` in `CombUnipotent/CountingProof/Section10.lean`
+- 证明：`card_PBPSet_B_eq_tripleSum_countPBP_B` in `CombUnipotent/CountingProof/CorrespondenceB.lean`
+- Joint theorem Total+A1+A3：`card_B_combined` in `CombUnipotent/CountingProof/CorrespondenceB.lean`
+
 ## 0. Setup
 
 ★ = B. Ǒ has even row lengths r₁ ≥ r₂ ≥ ... ≥ rₘ > 0. r₂(Ǒ) > 0.

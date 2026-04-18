@@ -1,5 +1,10 @@
 # Lemma 11.5 核心 PBP Identity — 自然语言证明
 
+## Lean 形式化
+- Shape identity reduction：`ILS.lemma_11_5_D_shape_identity_bridge`, `ILS.lemma_11_5_D_via_shape_identity`, `prop_11_5_D_shape` in `CombUnipotent/MYD.lean`
+- cellcount 形式：`ILS.lemma_11_5_D_shape_from_cellcount`, `ILS.lemma_11_5_D_via_cellcount`, `prop_11_5_D_cellcount`, `prop_11_5_D_pbp_reduced` in `CombUnipotent/MYD.lean`
+- Atomic 3-fact 版本：`CombUnipotent/MYD/Prop11_5_AtomicDischarge.lean`
+
 ## 目标
 
 设 ★ ∈ {B, D}，$\check{\mathcal{O}}$ 有 good parity 且 $\mathbf{r}_2(\check{\mathcal{O}}) > \mathbf{r}_3(\check{\mathcal{O}})$（primitive case）。令：

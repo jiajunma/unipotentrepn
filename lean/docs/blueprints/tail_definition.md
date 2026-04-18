@@ -3,6 +3,11 @@
 ## Source
 [BMSZb] Section 10.5, pages 70-71.
 
+## Lean 形式化
+- `CombUnipotent/Tail.lean`: `PBP.tailLen_D/B`, `tailSymbol_D/B`, `tailContrib`
+- `CombUnipotent/MYD.lean`: `PBP.tailSignature_D`, `PBP.tailSignature_D_sum_eq`
+- `CombUnipotent/MYD/Prop11_5_AtomicDischarge.lean`: `PBP.residual_identity_D`
+
 ## The tail multiset {x_1, ..., x_k}
 
 For ★ ∈ {B, D, C*}, k := (r₁(Ǒ) - r₂(Ǒ))/2 + 1.

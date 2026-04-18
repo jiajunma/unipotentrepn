@@ -2,6 +2,11 @@
 
 Reference: [BMSZb] Section 10.5–10.6, Propositions 10.11–10.12.
 
+## Lean 形式化
+- **Prop 10.11 B**（unconditional）：`prop_10_11_B` in `CountingProof/Section10.lean`
+- **Prop 10.12 M**（unconditional）：`prop_10_12_M` in `CountingProof/Section10.lean`
+- 底层 bijection 构造：`CountingProof/CorrespondenceB.lean`, `CountingProof/Prop10_8_M.lean`
+
 ---
 
 ## Part I: 论文的精确定义

@@ -1,5 +1,10 @@
 # Lemma 10.3 C-type — Shape Shifting 自然语言证明
 
+## Lean 形式化
+- 主定理：`lemma_10_3_C`, `prop_10_2_PBP_C` in `CountingProof/Section10.lean`
+- `shapeShiftC`, `shapeShiftC_id`, `card_PBPSet_C_shapeShift` in `CountingProof/ShapeShiftC.lean`
+- Case a.1, a.2, b.2 已具体实现，Case b.1 (涉及 col 1 修改) 延迟
+
 ## 陈述
 
 设 ★ = C，$\check{\mathcal{O}}$ 具 good parity，$(1,2) \in \text{PP}_\star(\check{\mathcal{O}})$。令 $\wp \subseteq \text{PP}_\star(\check{\mathcal{O}})$ 且 $(1,2) \notin \wp$，$\wp_\uparrow := \wp \cup \{(1,2)\}$。

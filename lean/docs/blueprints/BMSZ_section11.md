@@ -2,6 +2,11 @@
 
 Source: [BMSZ] arXiv:1712.05552v6, pages 62-68.
 
+## Lean 形式化（总览）
+- 核心：`CombUnipotent/MYD.lean`（ILS / AC.step / AC.fold / 所有 Section 11 定理）
+- 子模块：`CombUnipotent/MYD/Prop11_5_AtomicDischarge.lean`, `CombUnipotent/MYD/SignatureDecomp.lean`, `CombUnipotent/MYD/Lemma11_1_b.lean`
+- 索引：[INDEX.md](INDEX.md)
+
 ## Dependency Map: Paper → Lean
 
 | Paper | Lean declaration | Status |

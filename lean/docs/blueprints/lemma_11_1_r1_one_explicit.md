@@ -1,5 +1,8 @@
 # Lemma 11.1(a) r₁=1 Case — Explicit Sign/firstColSign Computation
 
+## Lean 形式化
+- `lemma_11_1_a_r1_one`, `lemma_11_1_a_r1_one_first_entry` in `CombUnipotent/MYD.lean`
+
 ## 目标
 
 补 `lemma_11_1_proof.md` 的 Case 2（$\mathbf{r}_1(\mathcal{O}) = 1$）证明中缺失的 sign、firstColSign 具体计算。

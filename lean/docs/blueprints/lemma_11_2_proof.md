@@ -1,5 +1,8 @@
 # Lemma 11.2 自然语言证明
 
+## Lean 形式化
+**NOTE**: Lemma 11.2 is about ★ = C*（real form），按 `feedback_skip_cstar_dstar.md` **跳过 C*/D***。保留本 blueprint 仅供参考，未形式化。
+
 ## 陈述
 
 设 ★ = C* 且 $\mathbf{r}_1(\mathcal{O}) \leq 1$。则 $\mathcal{L}_\tau \in \text{MYD}_\star(\mathcal{O})$ 且

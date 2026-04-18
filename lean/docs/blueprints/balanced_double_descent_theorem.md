@@ -1,5 +1,9 @@
 # Balanced Double Descent Theorem for B-type
 
+## Lean 形式化
+- `prop_10_9_B`, `cor_10_10_B` in `CountingProof/Section10.lean`
+- 底层：`PBP.ddescent_inj_B`, `doubleDescent_B_injective_on_PBPSet` in `CombUnipotent/Tail.lean`
+
 ## Goal
 
 Build a balanced-case analog of `card_PBPSet_Bplus_primitive_step_top_Q`. Once this is

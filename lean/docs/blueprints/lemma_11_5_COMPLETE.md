@@ -1,5 +1,10 @@
 # Lemma 11.5 — 完成状态
 
+## Lean 形式化
+- ILS 层（unconditional）：`ILS.lemma_11_5_D_unconditional`, `prop_11_5_D_unconditional` in `CombUnipotent/MYD.lean`
+- Atomic 3-fact 版本：`prop_11_5_D_atomic`, `prop_11_5_D_atomic_pbp_discharged` in `CombUnipotent/MYD/Prop11_5_AtomicDischarge.lean`
+- 附带 3 facts：`PBP.signature_sum_D`, `PBP.residual_identity_D`, `PBP.tailSignature_D_sum_eq`
+
 ## 摘要
 
 **Lemma 11.5 (D-type primitive case) 在 ILS/AC 层已基本完成形式化**。

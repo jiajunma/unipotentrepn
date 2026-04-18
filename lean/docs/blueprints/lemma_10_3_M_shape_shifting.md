@@ -2,6 +2,10 @@
 
 Reference: [BMSZb] Section 10.2, Lemma 10.3.
 
+## Lean 形式化
+- 主定理：`lemma_10_3_M`, `prop_10_2_PBP_M` in `CountingProof/Section10.lean`
+- Shape-shift 构造：`shapeShiftM`, `shapeShiftM_involution`, `card_PBPSet_M_shapeShift` in `CountingProof/ShapeShift.lean`
+
 ---
 
 ## 0. 记号

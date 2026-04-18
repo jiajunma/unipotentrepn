@@ -1,5 +1,10 @@
 # Lemma 11.1(b) Bijection — 显式枚举
 
+## Lean 形式化
+- 抽象形式：`lemma_11_1_b_bijection`, `lemma_11_1_b_bijection_concrete` in `CombUnipotent/MYD.lean`
+- D 型 PBPExt 具体化：`PBPExt_at_r1_eq_1_D`, `lemma_11_1_b_bijection_D` in `CombUnipotent/MYD/Lemma11_1_b.lean`
+- 支撑 SignTargetSet：`SignTargetSet`, `Fintype.card_SignTargetSet` in `CombUnipotent/MYD.lean`
+
 ## 目标
 
 补 `lemma_11_1_proof.md` 中 (b) 的证明，具体给出 $\mathbf{r}_1(\mathcal{O}) = 1$ 情形双射的枚举。
