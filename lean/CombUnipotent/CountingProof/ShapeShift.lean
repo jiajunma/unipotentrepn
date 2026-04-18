@@ -25,13 +25,13 @@ def translateM : DRCSymbol → DRCSymbol
   | .c   => .d
   | .d   => .c
 
-@[simp] theorem translateM_dot : translateM .dot = .dot := rfl
-@[simp] theorem translateM_s : translateM .s = .r := rfl
-@[simp] theorem translateM_r : translateM .r = .s := rfl
-@[simp] theorem translateM_c : translateM .c = .d := rfl
-@[simp] theorem translateM_d : translateM .d = .c := rfl
+theorem translateM_dot : translateM .dot = .dot := rfl
+theorem translateM_s : translateM .s = .r := rfl
+theorem translateM_r : translateM .r = .s := rfl
+theorem translateM_c : translateM .c = .d := rfl
+theorem translateM_d : translateM .d = .c := rfl
 
-@[simp] theorem translateM_invol (x : DRCSymbol) : translateM (translateM x) = x := by
+theorem translateM_invol (x : DRCSymbol) : translateM (translateM x) = x := by
   cases x <;> rfl
 
 theorem translateM_eq_dot_iff {x : DRCSymbol} : translateM x = .dot ↔ x = .dot := by
@@ -87,16 +87,16 @@ noncomputable def shiftPaintP (τ : PBP) (i j : ℕ) : DRCSymbol :=
 noncomputable def shiftPaintQ (τ : PBP) (i j : ℕ) : DRCSymbol :=
   if j = 0 then (τ.P.paint i 0).translateM else τ.Q.paint i j
 
-@[simp] theorem shiftPaintP_zero (τ : PBP) (i : ℕ) :
+theorem shiftPaintP_zero (τ : PBP) (i : ℕ) :
     shiftPaintP τ i 0 = (τ.Q.paint i 0).translateM := if_pos rfl
 
-@[simp] theorem shiftPaintP_succ (τ : PBP) (i j : ℕ) :
+theorem shiftPaintP_succ (τ : PBP) (i j : ℕ) :
     shiftPaintP τ i (j + 1) = τ.P.paint i (j + 1) := if_neg (by omega)
 
-@[simp] theorem shiftPaintQ_zero (τ : PBP) (i : ℕ) :
+theorem shiftPaintQ_zero (τ : PBP) (i : ℕ) :
     shiftPaintQ τ i 0 = (τ.P.paint i 0).translateM := if_pos rfl
 
-@[simp] theorem shiftPaintQ_succ (τ : PBP) (i j : ℕ) :
+theorem shiftPaintQ_succ (τ : PBP) (i j : ℕ) :
     shiftPaintQ τ i (j + 1) = τ.Q.paint i (j + 1) := if_neg (by omega)
 
 /-! ## Helper lemmas for row_s/row_r -/
@@ -291,24 +291,24 @@ noncomputable def shapeShiftM (τ : PBP) (hγ : τ.γ = .M)
         rw [DRCSymbol.translateM_eq_dot_iff] at hpaintP'
         have hmemQ := (hP'0 i).mp hmemP'
         have ⟨hmemP, hpaintP⟩ := (τ.dot_match i 0).mpr ⟨hmemQ, hpaintP'⟩
-        exact ⟨(hQ'0 i).mpr hmemP, by simp [hpaintP]⟩
+        exact ⟨(hQ'0 i).mpr hmemP, by simp [hpaintP, DRCSymbol.translateM_dot, shiftPaintQ_zero]⟩
       | succ j' =>
         simp only [shiftPaintP_succ] at hpaintP'
         have hmemP := (hP'S i j').mp hmemP'
         have ⟨hmemQ, hpaintQ⟩ := (τ.dot_match i (j' + 1)).mp ⟨hmemP, hpaintP'⟩
-        exact ⟨(hQ'S i j').mpr hmemQ, by simp [hpaintQ]⟩
+        exact ⟨(hQ'S i j').mpr hmemQ, by simp [hpaintQ, shiftPaintQ_succ]⟩
     · intro ⟨hmemQ', hpaintQ'⟩; cases j with
       | zero =>
         simp only [shiftPaintQ_zero] at hpaintQ'
         rw [DRCSymbol.translateM_eq_dot_iff] at hpaintQ'
         have hmemP := (hQ'0 i).mp hmemQ'
         have ⟨hmemQ, hpaintQ⟩ := (τ.dot_match i 0).mp ⟨hmemP, hpaintQ'⟩
-        exact ⟨(hP'0 i).mpr hmemQ, by simp [hpaintQ]⟩
+        exact ⟨(hP'0 i).mpr hmemQ, by simp [hpaintQ, DRCSymbol.translateM_dot, shiftPaintP_zero]⟩
       | succ j' =>
         simp only [shiftPaintQ_succ] at hpaintQ'
         have hmemQ := (hQ'S i j').mp hmemQ'
         have ⟨hmemP, hpaintP⟩ := (τ.dot_match i (j' + 1)).mpr ⟨hmemQ, hpaintQ'⟩
-        exact ⟨(hP'S i j').mpr hmemP, by simp [hpaintP]⟩
+        exact ⟨(hP'S i j').mpr hmemP, by simp [hpaintP, shiftPaintP_succ]⟩
   mono_P := by
     intro i₁ j₁ i₂ j₂ hi hj hmem₂
     show (shiftPaintP τ i₁ j₁).layerOrd ≤ (shiftPaintP τ i₂ j₂).layerOrd
@@ -321,7 +321,7 @@ noncomputable def shapeShiftM (τ : PBP) (hγ : τ.γ = .M)
       · exact DRCSymbol.translateM_mono_R
           (hγ ▸ τ.sym_Q i₁ 0 hmemQ₁) (hγ ▸ τ.sym_Q i₂ 0 hmemQ₂)
           (τ.mono_Q i₁ 0 i₂ 0 hi le_rfl hmemQ₂)
-      · rw [τ.Q.paint_outside i₁ 0 hmemQ₁]; simp [DRCSymbol.layerOrd]
+      · rw [τ.Q.paint_outside i₁ 0 hmemQ₁]; simp [DRCSymbol.layerOrd, DRCSymbol.translateM_dot]
     | j₁' + 1, j₂' + 1, hj =>
       -- Case 1: both col ≥ 1
       simp only [shiftPaintP_succ]
@@ -336,7 +336,7 @@ noncomputable def shapeShiftM (τ : PBP) (hγ : τ.γ = .M)
           have hsymQ := hγ ▸ τ.sym_Q i₁ 0 hmemQ₁
           simp [DRCSymbol.allowed] at hsymQ
           rcases hsymQ with hQdot | hQr | hQd
-          · rw [hQdot]; simp [DRCSymbol.layerOrd]
+          · rw [hQdot]; simp [DRCSymbol.layerOrd, DRCSymbol.translateM_dot]
           · -- Q = r → translateM = s (lo=1)
             rw [hQr]; simp [DRCSymbol.translateM, DRCSymbol.layerOrd]
             have hP_ne_dot : τ.P.paint i₁ 0 ≠ .dot := by
@@ -399,7 +399,7 @@ noncomputable def shapeShiftM (τ : PBP) (hγ : τ.γ = .M)
             Prod.mk_le_mk.mpr ⟨hi, by omega⟩) hmemP₂)
       · -- Sub-case 4a: (i₁,0) ∉ μQ
         rw [τ.Q.paint_outside i₁ 0 hmemQ₁]
-        simp [DRCSymbol.layerOrd]
+        simp [DRCSymbol.layerOrd, DRCSymbol.translateM_dot]
   mono_Q := by
     intro i₁ j₁ i₂ j₂ hi hj hmem₂
     show (shiftPaintQ τ i₁ j₁).layerOrd ≤ (shiftPaintQ τ i₂ j₂).layerOrd
@@ -411,7 +411,7 @@ noncomputable def shapeShiftM (τ : PBP) (hγ : τ.γ = .M)
       · exact DRCSymbol.translateM_mono_L
           (hγ ▸ τ.sym_P i₁ 0 hmemP₁) (hγ ▸ τ.sym_P i₂ 0 hmemP₂)
           (τ.mono_P i₁ 0 i₂ 0 hi le_rfl hmemP₂)
-      · rw [τ.P.paint_outside i₁ 0 hmemP₁]; simp [DRCSymbol.layerOrd]
+      · rw [τ.P.paint_outside i₁ 0 hmemP₁]; simp [DRCSymbol.layerOrd, DRCSymbol.translateM_dot]
     | j₁' + 1, j₂' + 1, hj =>
       simp only [shiftPaintQ_succ]
       exact τ.mono_Q i₁ (j₁' + 1) i₂ (j₂' + 1) hi hj ((hQ'S i₂ j₂').mp hmem₂)
@@ -424,7 +424,7 @@ noncomputable def shapeShiftM (τ : PBP) (hγ : τ.γ = .M)
           have hsymP := hγ ▸ τ.sym_P i₁ 0 hmemP₁
           simp [DRCSymbol.allowed] at hsymP
           rcases hsymP with hPdot | hPs | hPc
-          · rw [hPdot]; simp [DRCSymbol.layerOrd]
+          · rw [hPdot]; simp [DRCSymbol.layerOrd, DRCSymbol.translateM_dot]
           · -- P = s → translateM = r (lo=2)
             rw [hPs]; simp [DRCSymbol.translateM, DRCSymbol.layerOrd]
             have hQ_ne_dot : τ.Q.paint i₁ 0 ≠ .dot := by
@@ -487,7 +487,7 @@ noncomputable def shapeShiftM (τ : PBP) (hγ : τ.γ = .M)
             Prod.mk_le_mk.mpr ⟨hi, by omega⟩) hmemQ₂)
       · -- Sub-case 4a: (i₁,0) ∉ μP
         rw [τ.P.paint_outside i₁ 0 hmemP₁]
-        simp [DRCSymbol.layerOrd]
+        simp [DRCSymbol.layerOrd, DRCSymbol.translateM_dot]
   row_s := by
     intro i s₁ s₂ j₁ j₂ h₁ h₂
     -- Goal: s₁ = s₂ ∧ j₁ = j₂
@@ -704,7 +704,7 @@ theorem shapeShiftM_involution (τ : PBP) (hγ : τ.γ = .M)
     · ext i j
       simp [shapeShiftM]
       cases j with
-      | zero => simp [shiftPaintP, shiftPaintQ]
+      | zero => simp [shiftPaintP, shiftPaintQ, DRCSymbol.translateM_invol]
       | succ j' => simp [shiftPaintP]
   · -- Q: symmetric
     apply PaintedYoungDiagram.ext'
@@ -712,7 +712,7 @@ theorem shapeShiftM_involution (τ : PBP) (hγ : τ.γ = .M)
     · ext i j
       simp [shapeShiftM]
       cases j with
-      | zero => simp [shiftPaintP, shiftPaintQ]
+      | zero => simp [shiftPaintP, shiftPaintQ, DRCSymbol.translateM_invol]
       | succ j' => simp [shiftPaintQ]
 
 /-! ## Proposition 10.2: card equality -/
@@ -764,14 +764,14 @@ theorem card_PBPSet_M_shapeShift {μP μQ μP' μQ' : YoungDiagram}
       · ext i j
         simp [shapeShiftM]
         cases j with
-        | zero => simp [shiftPaintP, shiftPaintQ]
+        | zero => simp [shiftPaintP, shiftPaintQ, DRCSymbol.translateM_invol]
         | succ j' => simp [shiftPaintP]
     · apply PaintedYoungDiagram.ext'
       · simp [shapeShiftM]; exact τ.prop.2.2.symm
       · ext i j
         simp [shapeShiftM]
         cases j with
-        | zero => simp [shiftPaintP, shiftPaintQ]
+        | zero => simp [shiftPaintP, shiftPaintQ, DRCSymbol.translateM_invol]
         | succ j' => simp [shiftPaintQ]
   · -- right_inv: shift back ∘ shift = id (symmetric)
     apply Subtype.ext
@@ -783,12 +783,12 @@ theorem card_PBPSet_M_shapeShift {μP μQ μP' μQ' : YoungDiagram}
       · ext i j
         simp [shapeShiftM]
         cases j with
-        | zero => simp [shiftPaintP, shiftPaintQ]
+        | zero => simp [shiftPaintP, shiftPaintQ, DRCSymbol.translateM_invol]
         | succ j' => simp [shiftPaintP]
     · apply PaintedYoungDiagram.ext'
       · simp [shapeShiftM]; exact τ.prop.2.2.symm
       · ext i j
         simp [shapeShiftM]
         cases j with
-        | zero => simp [shiftPaintP, shiftPaintQ]
+        | zero => simp [shiftPaintP, shiftPaintQ, DRCSymbol.translateM_invol]
         | succ j' => simp [shiftPaintQ]

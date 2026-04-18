@@ -37,11 +37,11 @@ noncomputable def liftPaintP_naive (σ : PBP) (μP : YoungDiagram) (i j : ℕ) :
 
 /-! ## Simp lemmas -/
 
-@[simp] theorem liftPaintQ_naive_outside {σ : PBP} {i j : ℕ}
+theorem liftPaintQ_naive_outside {σ : PBP} {i j : ℕ}
     (h : (i, j) ∉ σ.Q.shape) : liftPaintQ_naive σ i j = .dot := by
   simp [liftPaintQ_naive, h]
 
-@[simp] theorem liftPaintP_naive_outside {σ : PBP} {μP : YoungDiagram} {i j : ℕ}
+theorem liftPaintP_naive_outside {σ : PBP} {μP : YoungDiagram} {i j : ℕ}
     (h : (i, j) ∉ μP) : liftPaintP_naive σ μP i j = .dot := by
   simp [liftPaintP_naive, h]
 

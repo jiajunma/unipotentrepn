@@ -55,12 +55,12 @@ def truncLast {X : Type*} {k : ℕ} (v : Fin (k + 1) → X) : Fin k → X :=
 def snocLast {X : Type*} {k : ℕ} (v : Fin k → X) (x : X) : Fin (k + 1) → X :=
   fun i => if h : i.val < k then v ⟨i.val, h⟩ else x
 
-@[simp] lemma truncLast_snocLast {X : Type*} {k : ℕ} (v : Fin k → X) (x : X) :
+lemma truncLast_snocLast {X : Type*} {k : ℕ} (v : Fin k → X) (x : X) :
     truncLast (snocLast v x) = v := by
   funext i
   simp [truncLast, snocLast, i.isLt]
 
-@[simp] lemma snocLast_last {X : Type*} {k : ℕ} (v : Fin k → X) (x : X) :
+lemma snocLast_last {X : Type*} {k : ℕ} (v : Fin k → X) (x : X) :
     snocLast v x ⟨k, Nat.lt_succ_self k⟩ = x := by
   simp [snocLast]
 

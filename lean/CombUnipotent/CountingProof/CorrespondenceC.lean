@@ -524,19 +524,19 @@ noncomputable def liftCD_PBP {μP μQ : YoungDiagram}
   ⟨liftCD_raw σ.val σ.prop.1 μP μQ σ.prop.2.1 σ.prop.2.2 h_sub h_j0_s, ⟨rfl, rfl, rfl⟩⟩
 
 -- Access lemmas for liftCD_PBP
-@[simp] lemma liftCD_PBP_γ {μP μQ : YoungDiagram}
+lemma liftCD_PBP_γ {μP μQ : YoungDiagram}
     (σ : PBPSet .D μP (YoungDiagram.shiftLeft μQ)) (h_sub : YoungDiagram.shiftLeft μQ ≤ μP)
     (h_j0_s : ∀ i, (i, 0) ∈ σ.val.P.shape → σ.val.P.paint i 0 = .s → i < μQ.colLen 0) :
     (liftCD_PBP σ h_sub h_j0_s).val.γ = .C := (liftCD_PBP σ h_sub h_j0_s).prop.1
-@[simp] lemma liftCD_PBP_P_shape {μP μQ : YoungDiagram}
+lemma liftCD_PBP_P_shape {μP μQ : YoungDiagram}
     (σ : PBPSet .D μP (YoungDiagram.shiftLeft μQ)) (h_sub : YoungDiagram.shiftLeft μQ ≤ μP)
     (h_j0_s : ∀ i, (i, 0) ∈ σ.val.P.shape → σ.val.P.paint i 0 = .s → i < μQ.colLen 0) :
     (liftCD_PBP σ h_sub h_j0_s).val.P.shape = μP := (liftCD_PBP σ h_sub h_j0_s).prop.2.1
-@[simp] lemma liftCD_PBP_Q_shape {μP μQ : YoungDiagram}
+lemma liftCD_PBP_Q_shape {μP μQ : YoungDiagram}
     (σ : PBPSet .D μP (YoungDiagram.shiftLeft μQ)) (h_sub : YoungDiagram.shiftLeft μQ ≤ μP)
     (h_j0_s : ∀ i, (i, 0) ∈ σ.val.P.shape → σ.val.P.paint i 0 = .s → i < μQ.colLen 0) :
     (liftCD_PBP σ h_sub h_j0_s).val.Q.shape = μQ := (liftCD_PBP σ h_sub h_j0_s).prop.2.2
-@[simp] lemma liftCD_PBP_P_paint {μP μQ : YoungDiagram}
+lemma liftCD_PBP_P_paint {μP μQ : YoungDiagram}
     (σ : PBPSet .D μP (YoungDiagram.shiftLeft μQ)) (h_sub : YoungDiagram.shiftLeft μQ ≤ μP)
     (h_j0_s : ∀ i, (i, 0) ∈ σ.val.P.shape → σ.val.P.paint i 0 = .s → i < μQ.colLen 0) (i j : ℕ) :
     (liftCD_PBP σ h_sub h_j0_s).val.P.paint i j = liftPaintP_CD σ.val i j := by

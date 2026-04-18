@@ -53,7 +53,7 @@ theorem shiftPaintP_C_succ (τ : PBP) (pPaint0 : ℕ → DRCSymbol) (i j : ℕ) 
     shiftPaintP_C τ pPaint0 i (j + 1) = τ.P.paint i (j + 1) := by
   simp [shiftPaintP_C]
 
-@[simp] theorem shiftPaintQ_C_eq (τ : PBP) (i j : ℕ) :
+theorem shiftPaintQ_C_eq (τ : PBP) (i j : ℕ) :
     shiftPaintQ_C τ i j = τ.Q.paint i j := rfl
 
 /-! ## Main construction: shapeShiftC -/
@@ -202,19 +202,19 @@ noncomputable def shapeShiftC (τ : PBP) (hγ : τ.γ = .C)
   col_d_Q := τ.col_d_Q
 
 /-- Shape-shift γ = C. -/
-@[simp] theorem shapeShiftC_γ (τ : PBP) (hγ : τ.γ = .C)
+theorem shapeShiftC_γ (τ : PBP) (hγ : τ.γ = .C)
     (μP' : YoungDiagram) (pPaint0 : ℕ → DRCSymbol) hP'S h_p0_out h_p0_al
     h_dm h_mc0 h_mcs h_rs h_rr h_cc h_cd :
     (shapeShiftC τ hγ μP' pPaint0 hP'S h_p0_out h_p0_al h_dm h_mc0 h_mcs h_rs h_rr h_cc h_cd).γ = .C := rfl
 
 /-- Shape-shift P.shape = μP'. -/
-@[simp] theorem shapeShiftC_P_shape (τ : PBP) (hγ : τ.γ = .C)
+theorem shapeShiftC_P_shape (τ : PBP) (hγ : τ.γ = .C)
     (μP' : YoungDiagram) (pPaint0 : ℕ → DRCSymbol) hP'S h_p0_out h_p0_al
     h_dm h_mc0 h_mcs h_rs h_rr h_cc h_cd :
     (shapeShiftC τ hγ μP' pPaint0 hP'S h_p0_out h_p0_al h_dm h_mc0 h_mcs h_rs h_rr h_cc h_cd).P.shape = μP' := rfl
 
 /-- Shape-shift Q = τ.Q. -/
-@[simp] theorem shapeShiftC_Q (τ : PBP) (hγ : τ.γ = .C)
+theorem shapeShiftC_Q (τ : PBP) (hγ : τ.γ = .C)
     (μP' : YoungDiagram) (pPaint0 : ℕ → DRCSymbol) hP'S h_p0_out h_p0_al
     h_dm h_mc0 h_mcs h_rs h_rr h_cc h_cd :
     (shapeShiftC τ hγ μP' pPaint0 hP'S h_p0_out h_p0_al h_dm h_mc0 h_mcs h_rs h_rr h_cc h_cd).Q = τ.Q := rfl

@@ -351,7 +351,7 @@ noncomputable def liftPBP_RC_D {μP μQ : YoungDiagram}
 
 /-! ## Round-trip and injectivity for `liftPBP_RC_D` -/
 
-@[simp] lemma liftPBP_RC_D_paint_eq {μP μQ : YoungDiagram}
+lemma liftPBP_RC_D_paint_eq {μP μQ : YoungDiagram}
     (σ : PBPSet .D (YoungDiagram.shiftLeft μP) (YoungDiagram.shiftLeft μQ))
     (v : ValidCol0 μP μQ)
     (h_cond : LiftCondition_RC σ)
@@ -1582,8 +1582,8 @@ def allDotPYD (μ : YoungDiagram) : PaintedYoungDiagram where
   paint := fun _ _ => .dot
   paint_outside := fun _ _ _ => rfl
 
-@[simp] lemma allDotPYD_shape (μ : YoungDiagram) : (allDotPYD μ).shape = μ := rfl
-@[simp] lemma allDotPYD_paint (μ : YoungDiagram) (i j : ℕ) :
+lemma allDotPYD_shape (μ : YoungDiagram) : (allDotPYD μ).shape = μ := rfl
+lemma allDotPYD_paint (μ : YoungDiagram) (i j : ℕ) :
     (allDotPYD μ).paint i j = .dot := rfl
 
 /-- The all-dot PBP of shape (μ, μ). -/
@@ -1592,20 +1592,20 @@ def allDotPBP (μ : YoungDiagram) : PBP where
   P := allDotPYD μ
   Q := allDotPYD μ
   sym_P := fun _ _ _ => by trivial
-  sym_Q := fun _ _ _ => by simp [DRCSymbol.allowed]
+  sym_Q := fun _ _ _ => by simp [DRCSymbol.allowed, allDotPYD_paint]
   dot_match := fun _ _ => Iff.rfl
-  mono_P := fun _ _ _ _ _ _ _ => by simp [DRCSymbol.layerOrd]
-  mono_Q := fun _ _ _ _ _ _ _ => by simp [DRCSymbol.layerOrd]
+  mono_P := fun _ _ _ _ _ _ _ => by simp [DRCSymbol.layerOrd, allDotPYD_paint]
+  mono_Q := fun _ _ _ _ _ _ _ => by simp [DRCSymbol.layerOrd, allDotPYD_paint]
   row_s := by
     intro _ s₁ _ _ _ h₁ _
-    cases s₁ <;> (simp [paintBySide] at h₁)
+    cases s₁ <;> (simp [paintBySide, allDotPYD_paint] at h₁)
   row_r := by
     intro _ s₁ _ _ _ h₁ _
-    cases s₁ <;> (simp [paintBySide] at h₁)
-  col_c_P := by intro _ _ _ h _; simp at h
-  col_c_Q := by intro _ _ _ h _; simp at h
-  col_d_P := by intro _ _ _ h _; simp at h
-  col_d_Q := by intro _ _ _ h _; simp at h
+    cases s₁ <;> (simp [paintBySide, allDotPYD_paint] at h₁)
+  col_c_P := by intro _ _ _ h _; simp [allDotPYD_paint] at h
+  col_c_Q := by intro _ _ _ h _; simp [allDotPYD_paint] at h
+  col_d_P := by intro _ _ _ h _; simp [allDotPYD_paint] at h
+  col_d_Q := by intro _ _ _ h _; simp [allDotPYD_paint] at h
 
 /-- When `μQ = μP`, the PBPSet has exactly one element: the all-dot PBP. -/
 lemma card_PBPSet_D_when_μP_eq_μQ (μ : YoungDiagram) :

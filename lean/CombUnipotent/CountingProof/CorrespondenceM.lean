@@ -945,7 +945,7 @@ private lemma mkQpaint_M_nondot_imp {μQ : YoungDiagram} {m : MSeq (μQ.colLen 0
     {i j : ℕ} (h : mkQpaint_M μQ m i j ≠ .dot) : j = 0 ∧ i < μQ.colLen 0 := by
   unfold mkQpaint_M at h; split_ifs at h with hc; exact hc; exact absurd rfl h
 
-@[simp] private lemma mkQpaint_M_col0 {μQ : YoungDiagram} {m : MSeq (μQ.colLen 0)}
+private lemma mkQpaint_M_col0 {μQ : YoungDiagram} {m : MSeq (μQ.colLen 0)}
     {i : ℕ} (hi : i < μQ.colLen 0) : mkQpaint_M μQ m i 0 = m.val ⟨i, hi⟩ := by
   simp [mkQpaint_M, hi]
 
@@ -1211,7 +1211,7 @@ private lemma mkPpaint_M_nondot_imp {μP : YoungDiagram} {m : SCSeq (μP.colLen 
     {i j : ℕ} (h : mkPpaint_M μP m i j ≠ .dot) : j = 0 ∧ i < μP.colLen 0 := by
   unfold mkPpaint_M at h; split_ifs at h with hc; exact hc; exact absurd rfl h
 
-@[simp] private lemma mkPpaint_M_col0 {μP : YoungDiagram} {m : SCSeq (μP.colLen 0)}
+private lemma mkPpaint_M_col0 {μP : YoungDiagram} {m : SCSeq (μP.colLen 0)}
     {i : ℕ} (hi : i < μP.colLen 0) : mkPpaint_M μP m i 0 = m.val ⟨i, hi⟩ := by
   simp [mkPpaint_M, hi]
 

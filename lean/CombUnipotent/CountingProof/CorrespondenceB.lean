@@ -100,7 +100,7 @@ private instance (k : ℕ) : Fintype (DSeq k) := by unfold DSeq; infer_instance
 
 /-- Swap c ↔ d preserves the relative order s < r < {c, d}. -/
 private def swapCD : DRCSymbol → DRCSymbol | .c => .d | .d => .c | x => x
-@[simp] private lemma swapCD_invol (x : DRCSymbol) : swapCD (swapCD x) = x := by cases x <;> rfl
+private lemma swapCD_invol (x : DRCSymbol) : swapCD (swapCD x) = x := by cases x <;> rfl
 
 private lemma swapCD_mono_srd {a b : DRCSymbol}
     (ha : a = .s ∨ a = .r ∨ a = .d) (hb : b = .s ∨ b = .r ∨ b = .d)
@@ -130,8 +130,8 @@ private noncomputable def DSeq_equiv_GSeq (k : ℕ) : DSeq k ≃ GSeq k where
     · rcases g.prop.1 i with h | h | h <;> simp [h, swapCD]
     · rcases g.prop.1 i with h | h | h <;> simp [h, swapCD] at hi ⊢ <;> exact h
     · rcases g.prop.1 j with h | h | h <;> simp [h, swapCD] at hj ⊢ <;> exact h⟩
-  left_inv d := by apply Subtype.ext; funext i; simp
-  right_inv g := by apply Subtype.ext; funext i; simp
+  left_inv d := by apply Subtype.ext; funext i; simp [swapCD_invol]
+  right_inv g := by apply Subtype.ext; funext i; simp [swapCD_invol]
 
 private theorem DSeq_card (k : ℕ) : Fintype.card (DSeq k) = 2 * k + 1 :=
   (Fintype.card_congr (DSeq_equiv_GSeq k)).trans (GSeq_card k)
@@ -144,7 +144,7 @@ private lemma mkQpaint_nondot_imp {μQ : YoungDiagram} {d : DSeq (μQ.colLen 0)}
     {i j : ℕ} (h : mkQpaint μQ d i j ≠ .dot) : j = 0 ∧ i < μQ.colLen 0 := by
   unfold mkQpaint at h; split_ifs at h with hc; exact hc; exact absurd rfl h
 
-@[simp] private lemma mkQpaint_col0 {μQ : YoungDiagram} {d : DSeq (μQ.colLen 0)}
+private lemma mkQpaint_col0 {μQ : YoungDiagram} {d : DSeq (μQ.colLen 0)}
     {i : ℕ} (hi : i < μQ.colLen 0) : mkQpaint μQ d i 0 = d.val ⟨i, hi⟩ := by
   simp [mkQpaint, hi]
 

@@ -178,13 +178,13 @@ noncomputable def swappedP_PYD {μP μQ : YoungDiagram}
     · rw [swappedPaint_off_col0 _ _ _ _ _ hj]
       exact σ.val.P.paint_outside i j hmem
 
-@[simp] lemma swappedP_PYD_shape {μP μQ : YoungDiagram}
+lemma swappedP_PYD_shape {μP μQ : YoungDiagram}
     (h_bal : (YoungDiagram.shiftLeft μP).colLen 0 = μQ.colLen 0 + 1)
     (σ : PBPSet .D (YoungDiagram.shiftLeft μP) (YoungDiagram.shiftLeft μQ))
     (newS : DRCSymbol) :
     (swappedP_PYD h_bal σ newS).shape = σ.val.P.shape := rfl
 
-@[simp] lemma swappedP_PYD_paint {μP μQ : YoungDiagram}
+lemma swappedP_PYD_paint {μP μQ : YoungDiagram}
     (h_bal : (YoungDiagram.shiftLeft μP).colLen 0 = μQ.colLen 0 + 1)
     (σ : PBPSet .D (YoungDiagram.shiftLeft μP) (YoungDiagram.shiftLeft μQ))
     (newS : DRCSymbol) :
