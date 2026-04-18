@@ -17,12 +17,19 @@ internal blueprint \texttt{tail\_definition.md}, \texttt{lemma\_11\_5\_PBP\_iden
   Equivalently $k = (\mathbf{r}_1(\check{\mathcal{O}}) - \mathbf{r}_2(\check{\mathcal{O}}))/2 + 1$ via the BV dual correspondence.
 \end{definition}
 
-\begin{definition}[Tail symbol $x_\tau$]
+\begin{definition}[Tail symbol $x_\tau$ and top-of-tail symbol $x_1$]
   \label{def:tailSymbol}
   \lean{PBP.tailSymbol_D, PBP.tailSymbol_B}
   \leanok
   \uses{def:tailLen}
-  For D type: $x_\tau := \mathcal{P}_\tau(\mathcal{P}.\mathrm{colLen}(0) - 1, 0)$ — the paint at the bottom of $\mathcal{P}$'s column~0 tail region. For B type: analog in $\mathcal{Q}$.
+  For D type, the tail is the sequence of cells
+  $(\mathcal{Q}.\mathrm{colLen}(0), 0),\ (\mathcal{Q}.\mathrm{colLen}(0) + 1, 0),\ \ldots,\ (\mathcal{P}.\mathrm{colLen}(0) - 1, 0)$
+  in $\mathcal{P}$'s column~0. We write:
+  \begin{itemize}
+    \item $x_\tau := \mathcal{P}_\tau(\mathcal{P}.\mathrm{colLen}(0) - 1, 0)$ — \emph{bottom} tail cell (maximum $\mathrm{layerOrd}$ by layer monotonicity).
+    \item $x_1 := \mathcal{P}_\tau(\mathcal{Q}.\mathrm{colLen}(0), 0)$ — \emph{top} tail cell (minimum $\mathrm{layerOrd}$).
+  \end{itemize}
+  For B type: analogous symbols in $\mathcal{Q}$.
 \end{definition}
 
 \begin{definition}[Tail signature $\mathrm{tailSig}(\tau) = (p_{\tau_t}, q_{\tau_t})$]
@@ -52,40 +59,57 @@ internal blueprint \texttt{tail\_definition.md}, \texttt{lemma\_11\_5\_PBP\_iden
 
 \section{Proposition 11.3 — tail symbol characterisations}
 
-\begin{lemma}[Prop 11.3 — characterisation of $x_\tau$ via signatures and $\eps$]
+\begin{lemma}[Prop 11.3 — characterisation of $x_\tau$, $x_1$ via signatures and $\eps$]
   \label{lem:11_3}
-  \lean{epsilon_zero_iff_tailSymbol_d, tailSig_fst_zero_iff_tailSymbol_s}
+  \lean{epsilon_zero_iff_tailSymbol_d, tailSig_fst_zero_iff_tailSymbol_s, tailSig_snd_zero_iff_tail_all_r}
   \leanok
-  \uses{def:tailSymbol, def:tailSignature, def:epsilon_pbp}
+  \uses{def:tailSymbol, def:tailSignature, def:epsilon_pbp, def:tailContrib}
   Assume $\mathcal{P}.\mathrm{colLen}(0) > \mathcal{Q}.\mathrm{colLen}(0)$. Then:
   \begin{enumerate}
     \item $\eps_\tau = 0 \iff x_\tau = d$.
-    \item $p_{\tau_t} = 0 \iff x_\tau = s$.
+    \item $p_{\tau_t} = 0 \iff x_\tau = s \iff $ every tail cell is $s$.
+    \item $q_{\tau_t} = 0 \iff $ every tail cell is $r$ $\iff x_1 = r$ and $x_\tau = r$.
   \end{enumerate}
-  \begin{remark}
-    The converse-parity claim ``$q_{\tau_t} = 0 \iff x_\tau = r$'' from the
-    paper is \emph{not} formalized here. The tail contributions
-    $\mathrm{tailContrib}(c) = (1, 1)$ and $\mathrm{tailContrib}(d) = (1, 1)$
-    have $q$-component~$\geq 1$, so $q_{\tau_t} = 0$ can fail even when
-    $x_\tau \in \{c, d\}$; the full iff requires additional structure beyond
-    what the other two parts establish.
-  \end{remark}
 \end{lemma}
 
 \begin{proof}
   \leanok
-  By layer monotonicity, a symbol $d$ (layerOrd~4) can only appear at the
-  bottom of column~0. Conversely, $\eps_\tau = 0$ iff $d$ is present in column~0,
-  which forces it to the bottom.
+  \uses{def:tailContrib}
 
-  For (2): if $x_\tau = s$, layer monotonicity bounds all tail-cell
-  $\mathrm{layerOrd} \leq 1$, so each is $\bullet$ or $s$. The non-$\bullet$ ones
-  are forced to be $s$ by the non-dot condition at the boundary. By the
-  row-$s$ constraint, each row has at most one $s$, so the full tail is $s$ with
-  $\mathrm{tailContrib} = (0, 2)$ each; summed $p$-component is $0$.
-  Conversely, if $x_\tau \neq s$, the bottom cell contributes $\geq 1$ to $p$
-  (since $r \mapsto (2, 0)$, $c \mapsto (1, 1)$, $d \mapsto (1, 1)$).
+  \textbf{(1)} By layer monotonicity in column~0, a symbol $d$ (with maximal
+  $\mathrm{layerOrd} = 4$) can only appear at the bottom.
+  Conversely, $\eps_\tau = 0$ iff $d$ is present somewhere in column~0, which
+  by monotonicity forces it to the bottom, i.e., $x_\tau = d$.
+
+  \textbf{(2)} $p_{\tau_t} = \sum_i \mathrm{tailContrib}(x_i).p$, and
+  $\mathrm{tailContrib}(\sigma).p = 0$ only for $\sigma = s$. Combined with
+  the non-negativity of each term, $p_{\tau_t} = 0 \iff $ every tail cell is $s$.
+
+  Now the equivalence ``every tail cell is $s$'' $\iff$ $x_\tau = s$ follows
+  from layer monotonicity: $x_\tau = s$ means the $\mathrm{layerOrd}$ at the
+  bottom is $1$; all cells above have $\mathrm{layerOrd} \leq 1$; combined
+  with non-dot (every tail cell is non-$\bullet$ by $\mathrm{dot\_match}$),
+  every cell has $\mathrm{layerOrd} = 1$, i.e., equals $s$.
+
+  \textbf{(3)} $q_{\tau_t} = \sum_i \mathrm{tailContrib}(x_i).q$, and
+  $\mathrm{tailContrib}(\sigma).q = 0$ only for $\sigma = r$. So
+  $q_{\tau_t} = 0 \iff$ every tail cell is $r$.
+
+  The second equivalence: ``every tail cell is $r$'' $\iff$ $x_1 = r$ and
+  $x_\tau = r$. Layer monotonicity gives
+  $\mathrm{layerOrd}(x_1) \leq \mathrm{layerOrd}(x_i) \leq \mathrm{layerOrd}(x_\tau)$
+  for every tail cell $x_i$. If $x_1 = x_\tau = r$ (both equal $2$), then
+  every $x_i$ has $\mathrm{layerOrd}$ sandwiched as $2 \leq \mathrm{layerOrd}(x_i) \leq 2$,
+  so $\mathrm{layerOrd}(x_i) = 2$, i.e., $x_i = r$. The converse is trivial.
 \end{proof}
+
+\begin{remark}
+  Unlike part~(2), part~(3) cannot be stated purely in terms of the bottom
+  symbol $x_\tau$: the tail can have an $s$ cell above an $r$ bottom (layer
+  orders $1 \leq 2$), giving $q_{\tau_t} = 2 \neq 0$. The correct statement
+  requires either every tail cell to be $r$ or, equivalently, both $x_1$ and
+  $x_\tau$ to be $r$.
+\end{remark}
 
 \section{Signature sum and residual identity}
 

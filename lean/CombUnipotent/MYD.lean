@@ -4223,6 +4223,57 @@ theorem tailSig_nonneg_D (τ : PBP) (hγ : τ.γ = .D) :
   · exact fold_add_pair_fst_nonneg _ _ fun i _ => (DRCSymbol.tailContrib_nonneg _).1
   · exact fold_add_pair_snd_nonneg _ _ fun i _ => (DRCSymbol.tailContrib_nonneg _).2
 
+/-- **Lemma 11.3(c) at PBP level (corrected form):**
+    `q_{τ_t} = 0` iff every cell in the tail (P col 0 from Q.colLen 0 up to P.colLen 0) is r.
+
+    The naïve paper formulation `q_{τ_t} = 0 ↔ x_τ = r` (with `x_τ` the bottom cell)
+    is insufficient: the tail can contain an `s` cell above an `r` bottom, giving
+    `q_{τ_t} ≥ 2`. Layer monotonicity alone only constrains the bottom to be an
+    upper bound on layer order.
+
+    The correct iff is that _every_ tail cell is `r`, which by
+    `tailContrib_snd_eq_zero_iff` is exactly the condition `q_{τ_t} = 0`. -/
+theorem tailSig_snd_zero_iff_tail_all_r (τ : PBP) (hγ : τ.γ = .D)
+    (h_tail : τ.Q.shape.colLen 0 < τ.P.shape.colLen 0) :
+    (PBP.tailSignature_D τ).2 = 0 ↔
+      ∀ i, τ.Q.shape.colLen 0 ≤ i → i < τ.P.shape.colLen 0 → τ.P.paint i 0 = .r := by
+  simp only [PBP.tailSignature_D]
+  set n := τ.P.shape.colLen 0 - τ.Q.shape.colLen 0 with hn_def
+  set f := fun i => (τ.P.paint (τ.Q.shape.colLen 0 + i) 0).tailContrib with hf_def
+  have hn_pos : 0 < n := by omega
+  constructor
+  · -- q_t = 0 ⟹ every tail cell is r
+    intro h0 i hi_ge hi_lt
+    -- The cell (i, 0) corresponds to index k := i - Q.colLen 0 in the fold.
+    set k := i - τ.Q.shape.colLen 0 with hk_def
+    have hk : k ∈ Finset.range n := Finset.mem_range.mpr (by omega)
+    have h_all_zero := fold_snd_eq_zero_all (Finset.range n) f
+      (fun j _ => (DRCSymbol.tailContrib_nonneg _).2) h0
+    have h_snd_zero := h_all_zero k hk
+    simp only [hf_def] at h_snd_zero
+    rw [show τ.Q.shape.colLen 0 + k = i from by omega] at h_snd_zero
+    exact (DRCSymbol.tailContrib_snd_eq_zero_iff _).mp h_snd_zero
+  · -- All tail cells r ⟹ q_t = 0
+    intro h_all_r
+    -- Each f j has snd = 0 since tailContrib(r).2 = 0.
+    have h_each_zero : ∀ j ∈ Finset.range n, (f j).2 = 0 := by
+      intro j hj; rw [Finset.mem_range] at hj
+      have h_cell : τ.P.paint (τ.Q.shape.colLen 0 + j) 0 = .r :=
+        h_all_r _ (by omega) (by omega)
+      show (τ.P.paint (τ.Q.shape.colLen 0 + j) 0).tailContrib.2 = 0
+      rw [h_cell]; rfl
+    -- Fold of zeros = 0.
+    have h_fold_zero : ∀ (s : Finset ℕ) (g : ℕ → ℤ × ℤ),
+        (∀ j ∈ s, (g j).2 = 0) → (s.fold HAdd.hAdd (0, 0) g).2 = 0 := by
+      intro s
+      refine Finset.cons_induction ?_ ?_ (s := s)
+      · intro g _; simp
+      · intro a s' ha ih g hg
+        rw [Finset.fold_cons ha]; simp only [Prod.snd_add]
+        rw [hg a (Finset.mem_cons_self a s'),
+            ih g (fun j hj => hg j (Finset.mem_cons_of_mem hj))]; ring
+    exact h_fold_zero _ f h_each_zero
+
 /-! ### Prop 11.8 at PBP level -/
 
 /-- **Prop 11.8 at PBP level:** Truncation pattern of L_τ is determined

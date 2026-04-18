@@ -1,8 +1,8 @@
 {
   "generated_by": "tools/extract_lean_decls.py",
-  "count": 1489,
+  "count": 1491,
   "duplicates_dropped": 5,
-  "short_aliases_added": 372,
+  "short_aliases_added": 373,
   "decls": {
     "RootType": {
       "name": "RootType",
@@ -4944,275 +4944,280 @@
       "file": "lean/CombUnipotent/MYD.lean",
       "line": 4219
     },
+    "PBPInstantiation.tailSig_snd_zero_iff_tail_all_r": {
+      "name": "PBPInstantiation.tailSig_snd_zero_iff_tail_all_r",
+      "file": "lean/CombUnipotent/MYD.lean",
+      "line": 4236
+    },
     "PBPInstantiation.prop_11_8_PBP": {
       "name": "PBPInstantiation.prop_11_8_PBP",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 4236
+      "line": 4287
     },
     "PBPInstantiation.prop_11_8_PBP_D_closed": {
       "name": "PBPInstantiation.prop_11_8_PBP_D_closed",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 4336
+      "line": 4387
     },
     "PBPInstantiation.prop_11_8_PBP_Bplus_closed": {
       "name": "PBPInstantiation.prop_11_8_PBP_Bplus_closed",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 4389
+      "line": 4440
     },
     "PBPInstantiation.prop_11_8_PBP_Bminus_closed": {
       "name": "PBPInstantiation.prop_11_8_PBP_Bminus_closed",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 4432
+      "line": 4483
     },
     "PBPInstantiation.prop_11_9_PBP_D_numerical": {
       "name": "PBPInstantiation.prop_11_9_PBP_D_numerical",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 4483
+      "line": 4534
     },
     "BMSZ.prop_11_9_abstract": {
       "name": "BMSZ.prop_11_9_abstract",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 4515
+      "line": 4566
     },
     "PBPInstantiation.prop_11_10_PBP_D": {
       "name": "PBPInstantiation.prop_11_10_PBP_D",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 4531
+      "line": 4582
     },
     "PBPInstantiation.prop_11_12_PBP": {
       "name": "PBPInstantiation.prop_11_12_PBP",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 4564
+      "line": 4615
     },
     "PBPInstantiation.lemma_11_13_PBP": {
       "name": "PBPInstantiation.lemma_11_13_PBP",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 4576
+      "line": 4627
     },
     "PBPInstantiation.prop_11_15_PBP": {
       "name": "PBPInstantiation.prop_11_15_PBP",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 4595
+      "line": 4646
     },
     "ILS.thetaLift_CD_nonempty": {
       "name": "ILS.thetaLift_CD_nonempty",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 4628
+      "line": 4679
     },
     "ILS.thetaLift_MB_nonempty": {
       "name": "ILS.thetaLift_MB_nonempty",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 4637
+      "line": 4688
     },
     "ACResult.thetaLift_nonempty": {
       "name": "ACResult.thetaLift_nonempty",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 4647
+      "line": 4698
     },
     "AC.step_nonzero_BD": {
       "name": "AC.step_nonzero_BD",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 4661
+      "line": 4712
     },
     "ILS.charTwistCM_surjective": {
       "name": "ILS.charTwistCM_surjective",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 4696
+      "line": 4747
     },
     "ILS.twistBD_surjective": {
       "name": "ILS.twistBD_surjective",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 4702
+      "line": 4753
     },
     "ILS.augment_preimage": {
       "name": "ILS.augment_preimage",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 4708
+      "line": 4759
     },
     "ACResult.charTwistCM_surjective": {
       "name": "ACResult.charTwistCM_surjective",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 4712
+      "line": 4763
     },
     "ACResult.twistBD_surjective": {
       "name": "ACResult.twistBD_surjective",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 4720
+      "line": 4771
     },
     "BMSZ.no_det_twist_same_sign": {
       "name": "BMSZ.no_det_twist_same_sign",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 4733
+      "line": 4784
     },
     "BMSZ.prop_11_15_complete": {
       "name": "BMSZ.prop_11_15_complete",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 4757
+      "line": 4808
     },
     "BMSZ.ac_twist_charTwist_surjective": {
       "name": "BMSZ.ac_twist_charTwist_surjective",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 4780
+      "line": 4831
     },
     "BMSZ.surjectivity_from_counting": {
       "name": "BMSZ.surjectivity_from_counting",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 4799
+      "line": 4850
     },
     "prop_11_8_nonzero": {
       "name": "prop_11_8_nonzero",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 4812
+      "line": 4863
     },
     "prop_11_11_no_det": {
       "name": "prop_11_11_no_det",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 4821
+      "line": 4872
     },
     "prop_11_12": {
       "name": "prop_11_12",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 4832
+      "line": 4883
     },
     "prop_11_15": {
       "name": "prop_11_15",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 4841
+      "line": 4892
     },
     "prop_11_17": {
       "name": "prop_11_17",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 4850
+      "line": 4901
     },
     "PBPInstantiation.prop_11_11_PBP_D": {
       "name": "PBPInstantiation.prop_11_11_PBP_D",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 4872
+      "line": 4923
     },
     "PBPInstantiation.prop_11_12_PBP_D": {
       "name": "PBPInstantiation.prop_11_12_PBP_D",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 4924
+      "line": 4975
     },
     "PBPInstantiation.prop_11_15_PBP_D_injective_full": {
       "name": "PBPInstantiation.prop_11_15_PBP_D_injective_full",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 4967
+      "line": 5018
     },
     "PBPInstantiation.prop_11_9_PBP_Bplus_abstract": {
       "name": "PBPInstantiation.prop_11_9_PBP_Bplus_abstract",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 5005
+      "line": 5056
     },
     "PBPInstantiation.prop_11_9_PBP_Bminus_abstract": {
       "name": "PBPInstantiation.prop_11_9_PBP_Bminus_abstract",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 5014
+      "line": 5065
     },
     "PBPInstantiation.prop_11_10_PBP_Bplus": {
       "name": "PBPInstantiation.prop_11_10_PBP_Bplus",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 5024
+      "line": 5075
     },
     "PBPInstantiation.prop_11_10_PBP_Bminus": {
       "name": "PBPInstantiation.prop_11_10_PBP_Bminus",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 5051
+      "line": 5102
     },
     "PBPInstantiation.prop_11_11_PBP_Bplus": {
       "name": "PBPInstantiation.prop_11_11_PBP_Bplus",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 5079
+      "line": 5130
     },
     "PBPInstantiation.prop_11_11_PBP_Bminus": {
       "name": "PBPInstantiation.prop_11_11_PBP_Bminus",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 5123
+      "line": 5174
     },
     "PBPInstantiation.prop_11_12_PBP_Bplus": {
       "name": "PBPInstantiation.prop_11_12_PBP_Bplus",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 5167
+      "line": 5218
     },
     "PBPInstantiation.prop_11_12_PBP_Bminus": {
       "name": "PBPInstantiation.prop_11_12_PBP_Bminus",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 5198
+      "line": 5249
     },
     "PBPInstantiation.prop_11_13_PBP_D": {
       "name": "PBPInstantiation.prop_11_13_PBP_D",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 5241
+      "line": 5292
     },
     "PBPInstantiation.prop_11_13_PBP_Bplus": {
       "name": "PBPInstantiation.prop_11_13_PBP_Bplus",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 5253
+      "line": 5304
     },
     "PBPInstantiation.prop_11_13_PBP_Bminus": {
       "name": "PBPInstantiation.prop_11_13_PBP_Bminus",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 5264
+      "line": 5315
     },
     "PBPInstantiation.prop_11_14_PBP_D": {
       "name": "PBPInstantiation.prop_11_14_PBP_D",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 5290
+      "line": 5341
     },
     "PBPInstantiation.prop_11_14_PBP_Bplus": {
       "name": "PBPInstantiation.prop_11_14_PBP_Bplus",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 5296
+      "line": 5347
     },
     "PBPInstantiation.prop_11_14_PBP_Bminus": {
       "name": "PBPInstantiation.prop_11_14_PBP_Bminus",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 5302
+      "line": 5353
     },
     "PBPInstantiation.prop_11_15_PBP_D_complete": {
       "name": "PBPInstantiation.prop_11_15_PBP_D_complete",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 5320
+      "line": 5371
     },
     "PBPInstantiation.prop_11_15_PBP_Bplus_complete": {
       "name": "PBPInstantiation.prop_11_15_PBP_Bplus_complete",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 5326
+      "line": 5377
     },
     "PBPInstantiation.prop_11_15_PBP_Bminus_complete": {
       "name": "PBPInstantiation.prop_11_15_PBP_Bminus_complete",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 5332
+      "line": 5383
     },
     "PBPInstantiation.prop_11_16_PBP_C": {
       "name": "PBPInstantiation.prop_11_16_PBP_C",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 5350
+      "line": 5401
     },
     "PBPInstantiation.prop_11_16_PBP_M": {
       "name": "PBPInstantiation.prop_11_16_PBP_M",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 5358
+      "line": 5409
     },
     "PBPInstantiation.prop_11_17_PBP_C_injective": {
       "name": "PBPInstantiation.prop_11_17_PBP_C_injective",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 5372
+      "line": 5423
     },
     "PBPInstantiation.prop_11_17_PBP_M_injective": {
       "name": "PBPInstantiation.prop_11_17_PBP_M_injective",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 5382
+      "line": 5433
     },
     "PBPInstantiation.prop_11_17_PBP_C": {
       "name": "PBPInstantiation.prop_11_17_PBP_C",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 5399
+      "line": 5450
     },
     "PBPInstantiation.prop_11_17_PBP_M": {
       "name": "PBPInstantiation.prop_11_17_PBP_M",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 5406
+      "line": 5457
     },
     "PaintedYoungDiagram": {
       "name": "PaintedYoungDiagram",
@@ -6869,230 +6874,235 @@
       "file": "lean/CombUnipotent/MYD.lean",
       "line": 4219
     },
+    "tailSig_snd_zero_iff_tail_all_r": {
+      "name": "PBPInstantiation.tailSig_snd_zero_iff_tail_all_r",
+      "file": "lean/CombUnipotent/MYD.lean",
+      "line": 4236
+    },
     "prop_11_8_PBP": {
       "name": "PBPInstantiation.prop_11_8_PBP",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 4236
+      "line": 4287
     },
     "prop_11_8_PBP_D_closed": {
       "name": "PBPInstantiation.prop_11_8_PBP_D_closed",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 4336
+      "line": 4387
     },
     "prop_11_8_PBP_Bplus_closed": {
       "name": "PBPInstantiation.prop_11_8_PBP_Bplus_closed",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 4389
+      "line": 4440
     },
     "prop_11_8_PBP_Bminus_closed": {
       "name": "PBPInstantiation.prop_11_8_PBP_Bminus_closed",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 4432
+      "line": 4483
     },
     "prop_11_9_PBP_D_numerical": {
       "name": "PBPInstantiation.prop_11_9_PBP_D_numerical",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 4483
+      "line": 4534
     },
     "prop_11_9_abstract": {
       "name": "BMSZ.prop_11_9_abstract",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 4515
+      "line": 4566
     },
     "prop_11_10_PBP_D": {
       "name": "PBPInstantiation.prop_11_10_PBP_D",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 4531
+      "line": 4582
     },
     "prop_11_12_PBP": {
       "name": "PBPInstantiation.prop_11_12_PBP",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 4564
+      "line": 4615
     },
     "lemma_11_13_PBP": {
       "name": "PBPInstantiation.lemma_11_13_PBP",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 4576
+      "line": 4627
     },
     "prop_11_15_PBP": {
       "name": "PBPInstantiation.prop_11_15_PBP",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 4595
+      "line": 4646
     },
     "thetaLift_CD_nonempty": {
       "name": "ILS.thetaLift_CD_nonempty",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 4628
+      "line": 4679
     },
     "thetaLift_MB_nonempty": {
       "name": "ILS.thetaLift_MB_nonempty",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 4637
+      "line": 4688
     },
     "thetaLift_nonempty": {
       "name": "ACResult.thetaLift_nonempty",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 4647
+      "line": 4698
     },
     "step_nonzero_BD": {
       "name": "AC.step_nonzero_BD",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 4661
+      "line": 4712
     },
     "augment_preimage": {
       "name": "ILS.augment_preimage",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 4708
+      "line": 4759
     },
     "no_det_twist_same_sign": {
       "name": "BMSZ.no_det_twist_same_sign",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 4733
+      "line": 4784
     },
     "prop_11_15_complete": {
       "name": "BMSZ.prop_11_15_complete",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 4757
+      "line": 4808
     },
     "ac_twist_charTwist_surjective": {
       "name": "BMSZ.ac_twist_charTwist_surjective",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 4780
+      "line": 4831
     },
     "surjectivity_from_counting": {
       "name": "BMSZ.surjectivity_from_counting",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 4799
+      "line": 4850
     },
     "prop_11_11_PBP_D": {
       "name": "PBPInstantiation.prop_11_11_PBP_D",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 4872
+      "line": 4923
     },
     "prop_11_12_PBP_D": {
       "name": "PBPInstantiation.prop_11_12_PBP_D",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 4924
+      "line": 4975
     },
     "prop_11_15_PBP_D_injective_full": {
       "name": "PBPInstantiation.prop_11_15_PBP_D_injective_full",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 4967
+      "line": 5018
     },
     "prop_11_9_PBP_Bplus_abstract": {
       "name": "PBPInstantiation.prop_11_9_PBP_Bplus_abstract",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 5005
+      "line": 5056
     },
     "prop_11_9_PBP_Bminus_abstract": {
       "name": "PBPInstantiation.prop_11_9_PBP_Bminus_abstract",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 5014
+      "line": 5065
     },
     "prop_11_10_PBP_Bplus": {
       "name": "PBPInstantiation.prop_11_10_PBP_Bplus",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 5024
+      "line": 5075
     },
     "prop_11_10_PBP_Bminus": {
       "name": "PBPInstantiation.prop_11_10_PBP_Bminus",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 5051
+      "line": 5102
     },
     "prop_11_11_PBP_Bplus": {
       "name": "PBPInstantiation.prop_11_11_PBP_Bplus",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 5079
+      "line": 5130
     },
     "prop_11_11_PBP_Bminus": {
       "name": "PBPInstantiation.prop_11_11_PBP_Bminus",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 5123
+      "line": 5174
     },
     "prop_11_12_PBP_Bplus": {
       "name": "PBPInstantiation.prop_11_12_PBP_Bplus",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 5167
+      "line": 5218
     },
     "prop_11_12_PBP_Bminus": {
       "name": "PBPInstantiation.prop_11_12_PBP_Bminus",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 5198
+      "line": 5249
     },
     "prop_11_13_PBP_D": {
       "name": "PBPInstantiation.prop_11_13_PBP_D",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 5241
+      "line": 5292
     },
     "prop_11_13_PBP_Bplus": {
       "name": "PBPInstantiation.prop_11_13_PBP_Bplus",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 5253
+      "line": 5304
     },
     "prop_11_13_PBP_Bminus": {
       "name": "PBPInstantiation.prop_11_13_PBP_Bminus",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 5264
+      "line": 5315
     },
     "prop_11_14_PBP_D": {
       "name": "PBPInstantiation.prop_11_14_PBP_D",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 5290
+      "line": 5341
     },
     "prop_11_14_PBP_Bplus": {
       "name": "PBPInstantiation.prop_11_14_PBP_Bplus",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 5296
+      "line": 5347
     },
     "prop_11_14_PBP_Bminus": {
       "name": "PBPInstantiation.prop_11_14_PBP_Bminus",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 5302
+      "line": 5353
     },
     "prop_11_15_PBP_D_complete": {
       "name": "PBPInstantiation.prop_11_15_PBP_D_complete",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 5320
+      "line": 5371
     },
     "prop_11_15_PBP_Bplus_complete": {
       "name": "PBPInstantiation.prop_11_15_PBP_Bplus_complete",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 5326
+      "line": 5377
     },
     "prop_11_15_PBP_Bminus_complete": {
       "name": "PBPInstantiation.prop_11_15_PBP_Bminus_complete",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 5332
+      "line": 5383
     },
     "prop_11_16_PBP_C": {
       "name": "PBPInstantiation.prop_11_16_PBP_C",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 5350
+      "line": 5401
     },
     "prop_11_16_PBP_M": {
       "name": "PBPInstantiation.prop_11_16_PBP_M",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 5358
+      "line": 5409
     },
     "prop_11_17_PBP_C_injective": {
       "name": "PBPInstantiation.prop_11_17_PBP_C_injective",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 5372
+      "line": 5423
     },
     "prop_11_17_PBP_M_injective": {
       "name": "PBPInstantiation.prop_11_17_PBP_M_injective",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 5382
+      "line": 5433
     },
     "prop_11_17_PBP_C": {
       "name": "PBPInstantiation.prop_11_17_PBP_C",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 5399
+      "line": 5450
     },
     "prop_11_17_PBP_M": {
       "name": "PBPInstantiation.prop_11_17_PBP_M",
       "file": "lean/CombUnipotent/MYD.lean",
-      "line": 5406
+      "line": 5457
     },
     "layerMonotone": {
       "name": "PaintedYoungDiagram.layerMonotone",
