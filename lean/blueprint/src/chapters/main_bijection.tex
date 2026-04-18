@@ -25,7 +25,7 @@ Reference: [BMSZ] Prop~11.8 (non-vanishing), 11.9--11.12 (injectivity),
   \label{lem:11_1_a_r1}
   \lean{lemma_11_1_a_r1_one, lemma_11_1_a_r1_one_first_entry}
   \leanok
-  \uses{lem:11_1_a_empty, def:AC_step}
+  \uses{def:AC_base, def:AC_step, def:RootType, def:augment, def:charTwistCM, def:firstColSign, def:sign, def:thetaLift, def:twistBD, lem:11_1_a_empty}
   When $\mathbf{r}_1(\check{\mathcal{O}}) = 1$: $\mathcal{L}_\tau$ is a single-row ILS
   $[(p_\tau, (-1)^{\eps_\tau} q_\tau)]$.
 \end{lemma}
@@ -54,7 +54,7 @@ Reference: [BMSZ] Prop~11.8 (non-vanishing), 11.9--11.12 (injectivity),
   \label{lem:11_1_b_abstract}
   \lean{lemma_11_1_b_bijection, lemma_11_1_b_bijection_concrete, lemma_11_1_signed_first_entry, lemma_11_1_signed_first_entry_fst_natAbs, lemma_11_1_signed_first_entry_snd_natAbs, lemma_11_1_signed_first_entry_mem_SignTargetSet, lemma_11_1_signed_injective_pq}
   \leanok
-  \uses{lem:11_1_a_r1}
+  \uses{lem:11_1_a_r1, thm:SignTargetSet_card}
   Abstract form: given finite types $\alpha \simeq \beta$ of equal cardinality and an injection $f : \alpha \to \beta$, $f$ is a bijection.
 \end{lemma}
 \begin{proof}
@@ -67,7 +67,7 @@ Reference: [BMSZ] Prop~11.8 (non-vanishing), 11.9--11.12 (injectivity),
   \label{lem:11_1_b_D}
   \lean{lemma_11_1_b_bijection_D, PBPExt_at_r1_eq_1_D}
   \leanok
-  \uses{lem:11_1_a_r1, lem:11_1_b_abstract, thm:SignTargetSet_card}
+  \uses{def:PBP, def:PBPSet, def:countPBP_D, def:dotScolLen, def:dpartColLens, def:drc_symbols, def:layerOrd, def:pyd, def:sym_allowed, def:tailClass_D, def:tailLen, def:tailSymbol, lem:11_1_a_r1, lem:11_1_b_abstract, thm:SignTargetSet_card}
   D-type specialisation: when $\mathbf{r}_1(\check{\mathcal{O}}) = 1$, the map
   $\PBP_D(\check{\mathcal{O}}) \times \mathrm{Fin}\,2 \to \MYD_D(\mathcal{O})$ given by $(\tau, \eps) \mapsto \mathcal{L}_\tau \otimes (\eps, \eps)$
   is a bijection, with explicit $|\PBP_D(\ldots)| = 4m + 4$ card match.
@@ -84,7 +84,7 @@ Reference: [BMSZ] Prop~11.8 (non-vanishing), 11.9--11.12 (injectivity),
   \label{prop:11_8_ac}
   \lean{prop_11_8, prop_11_8_nonzero, prop_11_8_PBP}
   \leanok
-  \uses{lem:11_3, lem:11_6_D, prop:11_7}
+  \uses{def:drc_symbols, def:epsilon_pbp, def:layerOrd, def:sym_allowed, def:tailContrib, def:tailSignature, def:tailSymbol, lem:11_3, lem:11_6_D, prop:11_7}
   For $\gamma \in \{D, B^+, B^-\}$ and tail symbol $x_\tau$:
   \begin{enumerate}
     \item[(a)] $\mathcal{L}_\tau \neq 0$.
@@ -110,7 +110,7 @@ Reference: [BMSZ] Prop~11.8 (non-vanishing), 11.9--11.12 (injectivity),
   \label{prop:11_8_pbp}
   \lean{prop_11_8_PBP_D_closed, prop_11_8_PBP_Bplus_closed, prop_11_8_PBP_Bminus_closed}
   \leanok
-  \uses{prop:11_8_ac}
+  \uses{cor:11_6_pbp, def:AC_step, def:drc_symbols, def:epsilon_pbp, def:layerOrd, def:signature_pbp, def:sym_allowed, def:tailContrib, def:tailSignature, def:tailSymbol, lem:11_6_B, lem:11_6_D, prop:11_8_ac}
 \end{proposition}
 \begin{proof}
   \leanok
@@ -124,7 +124,7 @@ Reference: [BMSZ] Prop~11.8 (non-vanishing), 11.9--11.12 (injectivity),
   \label{prop:11_9_D}
   \lean{prop_11_9_PBP_D_numerical, prop_11_9_abstract}
   \leanok
-  \uses{def:tailSymbol, def:tailSignature, prop:11_8_ac, lem:11_3, lem:tailSig_nonneg}
+  \uses{def:layerOrd, def:tailContrib, def:tailSignature, def:tailSymbol, lem:11_3, lem:tailSig_nonneg, prop:11_8_ac}
   Assume $\tau_1, \tau_2 \in \PBP_D$ with $h_{\mathrm{tail}}$ satisfied, $x_{\tau_1} = d$, and the cross-twist first-component equation
   $-p_{\tau_1, t} = p_{\tau_2, t} - 1$, plus $x_{\tau_2} \neq s$: \emph{contradiction}.
 \end{lemma}
@@ -154,7 +154,7 @@ Reference: [BMSZ] Prop~11.8 (non-vanishing), 11.9--11.12 (injectivity),
   \label{prop:11_10_D}
   \lean{prop_11_10_PBP_D, prop_11_10_PBP_Bplus, prop_11_10_PBP_Bminus}
   \leanok
-  \uses{lem:11_6_D}
+  \uses{def:tailSignature, lem:11_6_D}
   If $L_1 = L_2 \in \mathrm{ACResult}$ are non-empty with each branch having the
   same first entry formula as $\tau_1, \tau_2$, then $(p_{\tau_1, t}, q_{\tau_1, t}) = (p_{\tau_2, t}, q_{\tau_2, t})$.
 \end{lemma}
@@ -168,7 +168,7 @@ Reference: [BMSZ] Prop~11.8 (non-vanishing), 11.9--11.12 (injectivity),
   \label{lem:11_11}
   \lean{prop_11_11_no_det, prop_11_11_PBP_D, prop_11_11_PBP_Bplus, prop_11_11_PBP_Bminus, BMSZ.no_det_twist_same_sign}
   \leanok
-  \uses{prop:11_8_ac, prop:11_10_D}
+  \uses{def:tailSignature, def:twistBD, prop:11_10_D, prop:11_8_ac}
   There exist no $\tau_1, \tau_2$ with $\mathcal{L}_{\tau_1} \otimes (1, 1) = \mathcal{L}_{\tau_2}$ (the \emph{det twist} would require impossible sign configurations).
 \end{lemma}
 
@@ -182,7 +182,7 @@ Reference: [BMSZ] Prop~11.8 (non-vanishing), 11.9--11.12 (injectivity),
   \label{prop:11_12}
   \lean{prop_11_12, prop_11_12_PBP_D, prop_11_12_PBP, prop_11_12_PBP_Bplus, prop_11_12_PBP_Bminus}
   \leanok
-  \uses{lem:11_11, prop:11_8_ac}
+  \uses{def:ILS, def:tailSignature, def:twistBD, lem:11_11, prop:11_8_ac}
   If $\mathcal{L}_{\tau_1} \otimes (\eps_1, \eps_1) = \mathcal{L}_{\tau_2} \otimes (\eps_2, \eps_2)$,
   then $\eps_1 = \eps_2$, $\eps_{\tau_1} = \eps_{\tau_2}$, and $\mathcal{L}_{\tau_1} = \mathcal{L}_{\tau_2}$.
 \end{proposition}
@@ -228,7 +228,7 @@ Reference: [BMSZ] Prop~11.8 (non-vanishing), 11.9--11.12 (injectivity),
   \label{prop:11_15}
   \lean{prop_11_15, prop_11_15_PBP, prop_11_15_PBP_D_complete, prop_11_15_PBP_Bplus_complete, prop_11_15_PBP_Bminus_complete, prop_11_15_complete, prop_11_15_injectivity, prop_11_15_PBP_D_injective_full}
   \leanok
-  \uses{prop:11_14, prop:11_12, prop:11_13, lem:11_1_b_D}
+  \uses{def:ILS, def:tailSignature, def:twistBD, lem:11_11, lem:11_1_b_D, prop:11_12, prop:11_13, prop:11_14}
   The map $(\tau, \eps) \mapsto \mathcal{L}_\tau \otimes (\eps, \eps)$ is a bijection
   \[ \PBP_\gamma(\check{\mathcal{O}}) \times \mathrm{Fin}\,2 \ \xrightarrow{\sim}\ \MYD_\gamma(\mathcal{O}) \]
   for $\gamma \in \{D, B^+, B^-\}$.
@@ -243,7 +243,7 @@ Reference: [BMSZ] Prop~11.8 (non-vanishing), 11.9--11.12 (injectivity),
   \label{prop:11_16}
   \lean{prop_11_16_PBP_C, prop_11_16_PBP_M}
   \leanok
-  \uses{prop:11_14, prop:10_12_C, prop:10_12_M}
+  \uses{prop:10_12_C, prop:10_12_M, prop:11_14}
   Paper Prop~11.16 (descent bijectivity for C/$\tilde{C}$ types) is captured at
   the PBP level by the Section~10 counting equalities (Prop.~\ref{prop:10_12_C},
   \ref{prop:10_12_M}). The abstract wrapper presented here re-exposes the result
@@ -260,7 +260,7 @@ Reference: [BMSZ] Prop~11.8 (non-vanishing), 11.9--11.12 (injectivity),
   \label{prop:11_17}
   \lean{prop_11_17, prop_11_17_PBP_C, prop_11_17_PBP_M, prop_11_17_PBP_C_injective, prop_11_17_PBP_M_injective, prop_11_17_injectivity}
   \leanok
-  \uses{prop:11_16, prop:11_12}
+  \uses{def:ILS, def:twistBD, prop:11_12, prop:11_14, prop:11_16}
   For $\star \in \{C, \tilde{C}\}$: $\tau \mapsto \mathcal{L}_\tau$ is a bijection
   $\PBP_\star(\check{\mathcal{O}}) \xrightarrow{\sim} \MYD_\star(\mathcal{O})$.
 \end{proposition}

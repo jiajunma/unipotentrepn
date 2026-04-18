@@ -26,7 +26,7 @@ Reference: [BMSZ] Equation~(11.2); internal blueprint
   \label{def:AC_step}
   \lean{AC.step}
   \leanok
-  \uses{def:AC_base, def:thetaLift, def:twistBD, def:charTwistCM}
+  \uses{def:AC_base, def:charTwistCM, def:thetaLift, def:twistBD}
   Given a source $\mathrm{ACResult}$ and target $\gamma$, together with parameters
   $(p, q, \eps_\tau, \eps_\wp) \in \mathbb{Z}^2 \times \{0, 1\}^2$, define:
   \begin{itemize}
@@ -47,7 +47,7 @@ Reference: [BMSZ] Equation~(11.2); internal blueprint
   \label{def:AC_fold}
   \lean{AC.fold}
   \leanok
-  \uses{def:AC_base, def:AC_step}
+  \uses{def:AC_base, def:AC_step, def:ILS}
   Given a descent chain \texttt{chain : List ACStepData}, inductively apply
   \texttt{AC.step} from \texttt{AC.base} to get the final \texttt{ACResult},
   yielding $\mathcal{L}_\tau$ when the chain is $\tau$'s descent sequence.
@@ -59,7 +59,7 @@ Reference: [BMSZ] Equation~(11.2); internal blueprint
   \label{thm:AC_step_sign_D}
   \lean{AC.step_sign_D}
   \leanok
-  \uses{def:AC_step, thm:thetaLift_sign, lem:twist_sign}
+  \uses{def:AC_step, def:sign, def:thetaLift, def:twistBD, lem:twist_sign, thm:thetaLift_sign}
   Every branch of the output has $\Sign = (p, q)$:
   \[ \forall r \in \mathrm{AC.step}_{D}(\mathrm{source}, p, q, \eps_\tau, \eps_\wp),\quad \Sign(r.2) = (p, q). \]
 \end{theorem}
@@ -73,7 +73,7 @@ Reference: [BMSZ] Equation~(11.2); internal blueprint
   \label{thm:AC_step_sign_all}
   \lean{AC.step_sign_Bplus, AC.step_sign_Bminus, AC.step_sign_C, AC.step_sign_M}
   \leanok
-  \uses{thm:AC_step_sign_D}
+  \uses{def:AC_step, def:sign, def:thetaLift, def:twistBD, lem:twist_sign, thm:AC_step_sign_D, thm:thetaLift_sign}
   Parallel statements for $\gamma \in \{B^+, B^-, C, M\}$.
 \end{theorem}
 \begin{proof}
@@ -86,7 +86,7 @@ Reference: [BMSZ] Equation~(11.2); internal blueprint
   \label{thm:AC_base_sign}
   \lean{AC.base_sign}
   \leanok
-  \uses{def:AC_base, def:sign}
+  \uses{def:AC_base, def:sign, def:signRow}
   $\Sign(\mathrm{AC.base}\,\gamma) = (0, 0)$ for $\gamma \in \{C, D, M\}$; $\Sign(\mathrm{AC.base}\,B^+) = (1, 0)$; $\Sign(\mathrm{AC.base}\,B^-) = (0, 1)$.
 \end{theorem}
 \begin{proof}
@@ -104,7 +104,7 @@ This section extracts the main content of
   \label{thm:fcSign_diff}
   \lean{AC.chain_firstColSign_eq_diff_sign}
   \leanok
-  \uses{def:firstColSign, def:AC_fold, thm:AC_step_sign_D}
+  \uses{def:AC_fold, def:firstColSign, thm:AC_step_fcSign, thm:AC_step_sign_D}
   Let $\mathcal{L}_\tau = \mathrm{AC.fold}\,\gamma\,(\mathrm{descent\ chain})$, with
   the descent chain producing signatures $\Sign(\mathcal{L}_\tau)$ and
   $\Sign(\mathcal{L}_{\tau''})$ at successive levels. Then
@@ -125,7 +125,7 @@ This section extracts the main content of
   \label{thm:AC_step_fcSign}
   \lean{AC.step_firstColSign_D, AC.step_firstColSign_Bplus, AC.step_firstColSign_Bminus, AC.step_firstColSign_C, AC.step_firstColSign_M, AC.step_firstColSign_BD}
   \leanok
-  \uses{thm:fcSign_diff}
+  \uses{def:AC_step, def:firstColSign, def:sign, def:thetaLift, def:twistBD, lem:twist_fcSign, lem:twist_sign, thm:thetaLift_fcSign}
   For each $\gamma \in \{D, B^+, B^-, C, M\}$, every branch of $\mathrm{AC.step}$'s output has
   $\mathrm{fcSign}(r.2) = (p - \mathrm{prev\_sig}.1,\ q - \mathrm{prev\_sig}.2)$ where $\mathrm{prev\_sig} = \Sign(\text{source})$.
 \end{theorem}
@@ -139,7 +139,7 @@ This section extracts the main content of
   \label{thm:postTwist_first_entry}
   \lean{ACResult.postTwist_BD_first_entry}
   \leanok
-  \uses{def:twistBD, def:AC_step}
+  \uses{def:AC_step, def:twistBD, thm:thetaLift_first_entry}
   After the B/D post-twist $\otimes(1, -1)$ (when $\eps_\tau = 1$), the first entry of every branch transforms by $(a, b) \mapsto (a, -b)$.
 \end{theorem}
 \begin{proof}
@@ -162,7 +162,7 @@ This section extracts the main content of
   \label{prop:11_7}
   \lean{prop_11_7_multiplicityFree}
   \leanok
-  \uses{def:AC_step, def:mfree, lem:T_squared}
+  \uses{def:AC_step, def:augment, def:charTwistCM, def:mfree, def:thetaLift, def:twistBD, lem:T_squared}
   The AC output $\mathcal{L}_\tau \in \mathbb{Z}[\MYD_\star]$ is multiplicity free.
 \end{proposition}
 \begin{proof}

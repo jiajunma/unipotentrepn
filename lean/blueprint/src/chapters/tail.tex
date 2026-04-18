@@ -36,7 +36,7 @@ internal blueprint \texttt{tail\_definition.md}, \texttt{lemma\_11\_5\_PBP\_iden
   \label{def:tailSignature}
   \lean{PBP.tailSignature_D, PBP.tailSignature_B}
   \leanok
-  \uses{def:tailLen, def:tailContrib}
+  \uses{def:tailContrib, def:tailLen}
   \[ \mathrm{tailSig}(\tau) := \sum_{i = \tau.\mathcal{Q}.\mathrm{colLen}(0)}^{\tau.\mathcal{P}.\mathrm{colLen}(0) - 1} \mathrm{tailContrib}(\mathcal{P}_\tau(i, 0)). \]
   Each cell contributes $\mathrm{tailContrib}$ (Def.~\ref{def:tailContrib}); components sum to~$2$ per cell.
 \end{definition}
@@ -45,7 +45,7 @@ internal blueprint \texttt{tail\_definition.md}, \texttt{lemma\_11\_5\_PBP\_iden
   \label{lem:tailSig_sum}
   \lean{PBP.tailSignature_D_sum_eq}
   \leanok
-  \uses{def:tailSignature}
+  \uses{def:tailContrib, def:tailSignature}
   $p_{\tau_t} + q_{\tau_t} = 2k$ where $k$ is the tail length.
 \end{lemma}
 \begin{proof}
@@ -58,7 +58,7 @@ internal blueprint \texttt{tail\_definition.md}, \texttt{lemma\_11\_5\_PBP\_iden
   \label{lem:tailSig_nonneg}
   \lean{tailSig_nonneg_D}
   \leanok
-  \uses{def:tailSignature}
+  \uses{def:tailContrib, def:tailSignature}
   $p_{\tau_t} \geq 0$ and $q_{\tau_t} \geq 0$.
 \end{lemma}
 \begin{proof}
@@ -73,7 +73,7 @@ internal blueprint \texttt{tail\_definition.md}, \texttt{lemma\_11\_5\_PBP\_iden
   \label{lem:11_3}
   \lean{epsilon_zero_iff_tailSymbol_d, tailSig_fst_zero_iff_tailSymbol_s, tailSig_snd_zero_iff_tail_all_r}
   \leanok
-  \uses{def:tailSymbol, def:tailSignature, def:epsilon_pbp, def:tailContrib}
+  \uses{def:drc_symbols, def:epsilon_pbp, def:layerOrd, def:sym_allowed, def:tailContrib, def:tailSignature, def:tailSymbol}
   Assume $\mathcal{P}.\mathrm{colLen}(0) > \mathcal{Q}.\mathrm{colLen}(0)$. Then:
   \begin{enumerate}
     \item $\eps_\tau = 0 \iff x_\tau = d$.
@@ -127,7 +127,7 @@ internal blueprint \texttt{tail\_definition.md}, \texttt{lemma\_11\_5\_PBP\_iden
   \label{lem:sig_sum_D}
   \lean{PBP.signature_sum_D}
   \leanok
-  \uses{def:signature_pbp, def:cardCells}
+  \uses{def:cardCells, def:signature_pbp, def:sym_allowed, lem:fact1_sig_sum}
   For $\tau \in \PBP_D$:
   \[ p_\tau + q_\tau = 2\cdot|\tau|. \]
   (Each cell contributes exactly $2$ to the total $p + q$.)
@@ -141,7 +141,7 @@ internal blueprint \texttt{tail\_definition.md}, \texttt{lemma\_11\_5\_PBP\_iden
   \label{lem:residual_D}
   \lean{PBP.residual_identity_D}
   \leanok
-  \uses{def:tailSignature, lem:tailSig_sum}
+  \uses{def:sym_allowed, def:tailSignature, lem:tailSig_sum}
   For $\tau \in \PBP_D$:
   \[ p_{\tau_t} + q_{\tau_t} = 2 \cdot \mathbf{c}_1(\mathcal{O}) - 2 \cdot \mathbf{c}_2(\mathcal{O}). \]
 \end{lemma}
@@ -156,7 +156,7 @@ internal blueprint \texttt{tail\_definition.md}, \texttt{lemma\_11\_5\_PBP\_iden
   \label{prop:11_4}
   \lean{PBP.signature_fst_decomp_D, PBP.signature_snd_decomp_D, prop_11_4_signature_decomp_D}
   \leanok
-  \uses{def:signature_pbp, def:tailSignature, def:doubleDescent_D}
+  \uses{def:doubleDescent_D, def:signature_pbp, def:sym_allowed, def:tailSignature}
   (Primitive case $\mathbf{r}_2(\check{\mathcal{O}}) > \mathbf{r}_3(\check{\mathcal{O}})$.) The signature splits as
   \[ \Sign(\tau) = (\mathbf{c}_2(\mathcal{O}), \mathbf{c}_2(\mathcal{O})) + \Sign(\nabla^2\tau) + \mathrm{tailSig}(\tau). \]
   More explicitly (Lean form):

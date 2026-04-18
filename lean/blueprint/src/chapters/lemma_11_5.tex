@@ -27,7 +27,7 @@ $n_0 = (\mathbf{c}_2(\mathcal{O}) - \mathbf{c}_3(\mathcal{O}))/2$.
   \label{lem:11_5_D_ILS}
   \lean{ILS.lemma_11_5_D_unconditional, prop_11_5_D_unconditional, ILS.lemma_11_5_D, prop_11_5_D, ILS.lemma_11_5_addp, ILS.lemma_11_5_addn, ILS.lemma_11_5_D_shape_identity_bridge, ILS.lemma_11_5_D_via_shape_identity, ILS.lemma_11_5_D_shape_from_cellcount, ILS.lemma_11_5_D_via_cellcount, prop_11_5_D_shape, prop_11_5_D_cellcount, prop_11_5_D_pbp_reduced, ILS.prop_11_4_sum_from_fst_snd}
   \leanok
-  \uses{prop:11_4, def:AC_step, def:charTwistCM, def:augment, def:twistBD, thm:AC_step_fcSign, thm:fcSign_diff}
+  \uses{def:AC_step, def:augment, def:charTwistCM, def:firstColSign, def:firstColSignRow, def:sign, def:twistBD, lem:augment_sign, lem:twist_fcSign, lem:twist_sign, prop:11_4, thm:AC_step_fcSign, thm:fcSign_diff}
   Given an ILS $E$ (intended as $\mathcal{L}_{\tau''}$) with the firstColSign
   invariant
   \[ \mathrm{fcSign}(E) = (\Sign(E).1 - n_{\mathrm{prev}},\ \Sign(E).2 - n_{\mathrm{prev}}) \]
@@ -77,7 +77,7 @@ are \emph{structurally} true:
   \label{lem:fact1_sig_sum}
   \lean{PBP.signature_sum_D, PaintedYoungDiagram.card_eq_sum_countSym}
   \leanok
-  \uses{def:signature_pbp, def:cardCells}
+  \uses{def:cardCells, def:drc_symbols, def:signature_pbp, def:sym_allowed}
   $p_\tau + q_\tau = 2|\tau|$.
 \end{lemma}
 \begin{proof}
@@ -103,7 +103,7 @@ are \emph{structurally} true:
   \label{lem:fact3_residual}
   \lean{PBP.residual_identity_D}
   \leanok
-  \uses{def:tailSignature}
+  \uses{def:sym_allowed, def:tailSignature, lem:tailSig_sum}
   $p_{\tau_t} + q_{\tau_t} = 2 \mathbf{c}_1 - 2 \mathbf{c}_2$.
 \end{lemma}
 \begin{proof}
@@ -116,7 +116,7 @@ are \emph{structurally} true:
   \label{thm:11_5_atomic_pbp}
   \lean{prop_11_5_D_atomic, prop_11_5_D_atomic_pbp_discharged}
   \leanok
-  \uses{lem:11_5_D_ILS, lem:fact1_sig_sum, lem:fact2_descent, lem:fact3_residual}
+  \uses{def:augment, def:cardCells, def:charTwistCM, def:firstColSign, def:sign, def:signature_pbp, def:tailSignature, lem:11_5_D_ILS, lem:fact1_sig_sum, lem:fact2_descent, lem:fact3_residual, lem:residual_D, lem:sig_sum_D}
   Given the canonical choices of $|\tau|, \mathbf{c}_1, \mathbf{c}_2,$ tail signatures,
   the three atomic cell-count hypotheses of \texttt{prop\_11\_5\_D\_atomic} are
   discharged automatically; the remaining inputs are:
@@ -139,7 +139,7 @@ are \emph{structurally} true:
   \label{lem:11_6_D}
   \lean{AC.lemma_11_6_D_unconditional}
   \leanok
-  \uses{lem:11_5_D_ILS, thm:AC_step_sign_D, thm:AC_step_fcSign, thm:postTwist_first_entry}
+  \uses{def:AC_step, def:firstColSign, def:sign, def:thetaLift, def:twistBD, lem:11_5_D_ILS, thm:AC_step_fcSign, thm:AC_step_sign_D, thm:postTwist_first_entry, thm:thetaLift_first_entry}
   Let $\gamma = D$ (no C/M pre-twist). For \texttt{source : ACResult} with uniform
   $\Sign = \mathrm{src\_sig}$ and uniform $\mathrm{fcSign} = \mathrm{src\_fcSig}$ satisfying the
   standard-case condition ($p - \mathrm{src\_sig}.1 - \mathrm{src\_fcSig}.2 \geq 0$, etc.):
@@ -158,7 +158,7 @@ are \emph{structurally} true:
   \label{lem:11_6_B}
   \lean{AC.lemma_11_6_Bplus_unconditional, AC.lemma_11_6_Bminus_unconditional}
   \leanok
-  \uses{lem:11_5_D_ILS}
+  \uses{def:AC_step, def:firstColSign, def:sign, def:thetaLift, def:twistBD, lem:11_5_D_ILS, thm:postTwist_first_entry, thm:thetaLift_first_entry}
   Parallel statements for $\gamma \in \{B^+, B^-\}$, using $\hat\vartheta_{MB}$.
 \end{lemma}
 \begin{proof}
@@ -171,7 +171,7 @@ are \emph{structurally} true:
   \label{cor:11_6_pbp}
   \lean{AC.lemma_11_6_D_unconditional}
   \leanok
-  \uses{lem:11_6_D, prop:11_4}
+  \uses{def:AC_step, def:firstColSign, def:sign, def:thetaLift, def:twistBD, lem:11_6_D, prop:11_4, thm:postTwist_first_entry, thm:thetaLift_first_entry}
   At the PBP level, when $\mathrm{src\_sig} = \Sign(\tau'') = (p_{\tau''}, q_{\tau''})$
   and $\mathrm{src\_fcSig} = \Sign(\tau'') - \Sign(\tau^{(4)})$, the first entry of
   $\mathcal{L}_\tau$ equals

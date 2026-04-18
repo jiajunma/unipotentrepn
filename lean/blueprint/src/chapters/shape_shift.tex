@@ -23,7 +23,7 @@ $\mathcal{Q}$, applying an involutive paint translation.
   \label{def:shapeShiftM}
   \lean{shapeShiftM}
   \leanok
-  \uses{def:PBP, def:translateM}
+  \uses{def:PBP, def:drc_symbols, def:layerOrd, def:sym_allowed, def:translateM}
   Let $\tau = (\mathcal{P}, \mathcal{Q}, M) \in \PBP_M(\mu_P, \mu_Q)$. Given
   shapes $(\mu_P', \mu_Q')$ whose column~0 is swapped with $(\mu_P, \mu_Q)$
   (i.e., $(i, 0) \in \mu_P' \iff (i, 0) \in \mu_Q$; columns $\geq 1$ unchanged),
@@ -40,7 +40,7 @@ $\mathcal{Q}$, applying an involutive paint translation.
   \label{lem:shapeShiftM_involution}
   \lean{shapeShiftM_involution}
   \leanok
-  \uses{def:shapeShiftM, def:translateM}
+  \uses{def:drc_symbols, def:shapeShiftM, def:translateM}
   $\mathrm{shapeShiftM} \circ \mathrm{shapeShiftM} = \mathrm{id}$.
 \end{lemma}
 \begin{proof}
@@ -54,7 +54,7 @@ $\mathcal{Q}$, applying an involutive paint translation.
   \label{lem:10_3_M}
   \lean{card_PBPSet_M_shapeShift, lemma_10_3_M}
   \leanok
-  \uses{lem:shapeShiftM_involution}
+  \uses{def:drc_symbols, def:shapeShiftM, lem:shapeShiftM_involution}
   $|\PBP_M(\mu_P, \mu_Q)| = |\PBP_M(\mu_P', \mu_Q')|$ for any column-0
   swapped shape pair.
 \end{lemma}
@@ -104,7 +104,7 @@ definition corresponding to its own Lean helper.
   \label{def:shapeShiftC_paint}
   \lean{shiftPaintP_C_concrete, shapeShiftC}
   \leanok
-  \uses{def:PBP}
+  \uses{def:PBP, def:layerOrd}
   The paint function $\mathcal{P}_{\tau_\uparrow}$ dispatches to one of the
   four sub-case formulas
   (Def.~\ref{def:shapeShiftC_case_a1},
@@ -120,7 +120,7 @@ definition corresponding to its own Lean helper.
   \label{def:shapeShiftC_case_a1}
   \lean{shiftPaintP_C_concrete_case_a1}
   \leanok
-  \uses{def:PBP}
+  \uses{def:PBP, def:shapeShiftC_paint}
   Applies when $\alpha_0 \neq \bullet$, $k \geq 2$, and $\mathcal{P}_\tau(k - 1, 1) = c$.
   The new paint is
   \[
@@ -140,7 +140,7 @@ definition corresponding to its own Lean helper.
   \label{def:shapeShiftC_case_a2}
   \lean{shiftPaintP_C_concrete_case_a2}
   \leanok
-  \uses{def:PBP}
+  \uses{def:PBP, def:shapeShiftC_paint}
   Applies when $\alpha_0 \neq \bullet$ and the (a.1) condition on $\mathcal{P}_\tau(k - 1, 1)$ fails.
   The new paint is
   \[
@@ -159,7 +159,7 @@ definition corresponding to its own Lean helper.
   \label{def:shapeShiftC_case_b1}
   \lean{shiftPaintP_C_concrete_case_b1_fallback}
   \leanok
-  \uses{def:PBP}
+  \uses{def:PBP, def:shapeShiftC_paint}
   Applies when $\alpha_0 = \bullet$, $\mathbf{c}_2(\iota_\wp) = k$, and $\mathcal{P}_\tau(k, 2) = r$.
   The new paint formula modifies column~1 of $\jmath$-reachable cells:
   \[
@@ -182,7 +182,7 @@ definition corresponding to its own Lean helper.
   \label{def:shapeShiftC_case_b2}
   \lean{shiftPaintP_C_concrete_case_b2}
   \leanok
-  \uses{def:PBP}
+  \uses{def:PBP, def:shapeShiftC_paint}
   Applies when $\alpha_0 = \bullet$ and the (b.1) condition fails.
   The new paint is
   \[
@@ -202,7 +202,7 @@ definition corresponding to its own Lean helper.
   \label{cor:shapeShiftC_valid}
   \lean{shapeShiftC}
   \leanok
-  \uses{def:shapeShiftC_paint}
+  \uses{def:layerOrd, def:shapeShiftC_paint}
   The painted diagram produced by any of the four sub-cases of
   Def.~\ref{def:shapeShiftC_paint} satisfies all PBP axioms: the allowed
   symbol sets (\texttt{sym\_P}, \texttt{sym\_Q}), layer monotonicity, the
@@ -255,7 +255,7 @@ definition corresponding to its own Lean helper.
   \label{lem:shapeShiftC_id}
   \lean{shapeShiftC_id, shapeShiftC_id_eq}
   \leanok
-  \uses{def:shapeShiftC_paint}
+  \uses{cor:shapeShiftC_valid, def:drc_symbols, def:shapeShiftC_paint}
   The identity instance (parameterised by the trivial col-0 paint)
   returns the original PBP. Used as a degenerate witness.
 \end{lemma}
@@ -269,7 +269,7 @@ definition corresponding to its own Lean helper.
   \label{lem:10_3_C}
   \lean{lemma_10_3_C, card_PBPSet_C_shapeShift}
   \leanok
-  \uses{lem:shapeShiftC_id, cor:shapeShiftC_valid}
+  \uses{cor:shapeShiftC_valid, lem:shapeShiftC_id}
   For shapes $(\mu_P', \mu_Q')$ reachable via C-type shape shift from $(\mu_P, \mu_Q)$:
   \[ |\PBP_C(\mu_P, \mu_Q)| = |\PBP_C(\mu_P', \mu_Q')|. \]
 \end{lemma}

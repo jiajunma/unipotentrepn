@@ -12,7 +12,7 @@ auxiliary proof objects appear.
   \label{def:tailClass_D}
   \lean{tailClass_D, TailClass}
   \leanok
-  \uses{def:PBP}
+  \uses{def:PBP, def:tailLen, def:tailSymbol}
   The \emph{tail class} of $\tau \in \PBP_D$ is one of $\{\mathrm{DD}, \mathrm{RC}, \mathrm{SS}\}$
   determined by the tail symbol (Def.~\ref{def:tail}): $x_\tau = d$ gives $\mathrm{DD}$,
   $x_\tau \in \{r, c\}$ gives $\mathrm{RC}$, $x_\tau = s$ gives $\mathrm{SS}$.
@@ -49,7 +49,7 @@ auxiliary proof objects appear.
   \label{def:countPBP_C}
   \lean{countPBP_C}
   \leanok
-  \uses{def:countPBP_D, prop:10_8_C_prim, prop:10_8_C_bal}
+  \uses{def:countPBP_D, prop:10_8_C_bal, prop:10_8_C_prim}
   $\mathrm{countPBP\_C}(dp) \in \mathbb{N}$ via descent to D:
   \[
     \mathrm{countPBP\_C}(dp) =
@@ -64,7 +64,7 @@ auxiliary proof objects appear.
   \label{def:countPBP_M}
   \lean{countPBP_M}
   \leanok
-  \uses{def:countPBP_B, prop:10_8_M_prim, prop:10_8_M_bal}
+  \uses{def:countPBP_B, prop:10_8_M_bal, prop:10_8_M_prim}
   $\mathrm{countPBP\_M}(dp) \in \mathbb{N}$ via descent to B.
 \end{definition}
 
@@ -74,7 +74,7 @@ auxiliary proof objects appear.
   \label{prop:10_11_B}
   \lean{card_PBPSet_B_eq_tripleSum_countPBP_B, prop_10_11_B, card_B_combined}
   \leanok
-  \uses{cor:10_10, def:countPBP_B, prop:10_8_M_prim, prop:10_8_M_bal}
+  \uses{cor:10_10, def:PBP, def:PBPSet, def:countPBP_B, def:countPBP_D, def:dotScolLen, def:dpartColLens, def:drc_symbols, def:layerOrd, def:sym_allowed, prop:10_8_M_bal, prop:10_8_M_prim}
   For any valid B-type dual partition $dp$ with shape $(\mu_P, \mu_Q)$ derived from $dp$:
   \[ |\PBP_{B^+}(\mu_P, \mu_Q)| + |\PBP_{B^-}(\mu_P, \mu_Q)| = \mathrm{tripleSum}\big(\mathrm{countPBP\_B}(dp)\big). \]
 \end{proposition}
@@ -92,7 +92,7 @@ auxiliary proof objects appear.
   \label{prop:10_11_D}
   \lean{card_PBPSet_D_eq_tripleSum_countPBP_D, prop_10_11_D}
   \leanok
-  \uses{cor:10_10, def:countPBP_D}
+  \uses{cor:10_10, def:PBP, def:PBPSet, def:countPBP_D, def:dotScolLen, def:dpartColLens, def:drc_symbols, def:layerOrd, def:pyd, def:sym_allowed, def:tailClass_D, def:tailLen, def:tailSymbol}
   For any valid D-type dual partition $dp$:
   \[ |\PBP_D(\mu_P, \mu_Q)| = \mathrm{tripleSum}\big(\mathrm{countPBP\_D}(dp)\big). \]
 \end{proposition}
@@ -106,7 +106,7 @@ auxiliary proof objects appear.
   \label{prop:10_12_C}
   \lean{card_PBPSet_C_eq_countPBP_C, prop_10_12_C}
   \leanok
-  \uses{prop:10_8_C_prim, prop:10_8_C_bal, prop:10_11_D, def:countPBP_C, prop:10_2_C}
+  \uses{def:PBP, def:PBPSet, def:countPBP_C, def:countPBP_D, def:dotScolLen, def:dpartColLens, def:drc_symbols, def:layerOrd, def:pyd, def:sym_allowed, def:tailClass_D, def:tailLen, def:tailSymbol, prop:10_11_D, prop:10_2_C, prop:10_8_C_bal, prop:10_8_C_prim}
   For any valid C-type dual partition $dp$ (with $dp \neq []$):
   \[ |\PBP_C(\mu_P, \mu_Q)| = \mathrm{countPBP\_C}(dp). \]
 \end{proposition}
@@ -120,7 +120,7 @@ auxiliary proof objects appear.
   \label{prop:10_12_M}
   \lean{card_PBPSet_M_eq_countPBP_M, prop_10_12_M}
   \leanok
-  \uses{prop:10_8_M_prim, prop:10_8_M_bal, prop:10_11_B, def:countPBP_M, prop:10_2_M}
+  \uses{def:DualPart, def:PBPSet, def:countPBP_B, def:countPBP_D, def:countPBP_M, def:dpartColLens, def:drc_symbols, def:layerOrd, def:sym_allowed, prop:10_11_B, prop:10_2_M, prop:10_8_M_bal, prop:10_8_M_prim}
   For any valid M-type dual partition $dp$:
   \[ |\PBP_M(\mu_P, \mu_Q)| = \mathrm{countPBP\_M}(dp). \]
 \end{proposition}

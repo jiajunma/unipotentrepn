@@ -69,7 +69,7 @@ There are four single descent directions:
   \label{def:doubleDescent_D}
   \lean{doubleDescent_D_paintL}
   \leanok
-  \uses{def:descentPaint_DC, def:descentPaint_CD, def:dotScolLen}
+  \uses{def:descentPaint_CD, def:descentPaint_DC, def:dotScolLen}
   Composite D $\xrightarrow{\nabla_{DC}}$ C $\xrightarrow{\nabla_{CD}}$ D.
   After simplification:
   \[
@@ -100,7 +100,7 @@ There are four single descent directions:
   \label{lem:10_4_C}
   \lean{descentCD_injective, lemma_10_4_C}
   \leanok
-  \uses{def:descentPaint_CD}
+  \uses{def:PBP, def:PBPSet, def:descentPaint_CD, def:dotScolLen, def:drc_symbols, def:layerOrd, def:sym_allowed}
   Let $\mu_P, \mu_Q$ be shapes with $\mathrm{shiftLeft}(\mu_Q) \leq \mu_P$.
   The map $\nabla_{CD} : \PBP_C(\mu_P, \mu_Q) \to \PBP_D(\mu_P, \mathrm{shiftLeft}(\mu_Q))$ is injective.
 \end{lemma}
@@ -114,7 +114,7 @@ There are four single descent directions:
   \label{lem:10_4_B}
   \lean{lemma_10_4_B, PBP.descent_inj_B}
   \leanok
-  \uses{def:descentPaint_BM, def:signature_pbp, def:epsilon_pbp, def:dotScolLen}
+  \uses{def:PBP, def:descentPaint_BM, def:dotScolLen, def:drc_symbols, def:epsilon_pbp, def:layerOrd, def:signature_pbp, def:sym_allowed}
   For $\gamma \in \{B^+, B^-\}$ and $\tau_1, \tau_2 \in \PBP_\gamma(\mu_P, \mu_Q)$
   with the interlacing shape hypothesis $\mathrm{dotScolLen}(\tau_i.\mathcal{P}, j) \geq \mathrm{dotScolLen}(\tau_i.\mathcal{Q}, j + 1)$:
   if $\nabla_{BM}\tau_1 = \nabla_{BM}\tau_2$, $\Sign(\tau_1) = \Sign(\tau_2)$, $\eps_{\tau_1} = \eps_{\tau_2}$,
@@ -130,7 +130,7 @@ There are four single descent directions:
   \label{lem:10_5_M}
   \lean{descentMB_PBP, descentMB_injective, lemma_10_5_M}
   \leanok
-  \uses{def:descentPaint_MB}
+  \uses{def:PBP, def:PBPSet, def:descentPaint_MB, def:dotScolLen, def:drc_symbols, def:layerOrd, def:sym_allowed}
   Equal M$\to$B descent paints $\Rightarrow$ equal M-type PBPs (same shapes).
 \end{lemma}
 \begin{proof}
@@ -143,7 +143,7 @@ There are four single descent directions:
   \label{lem:10_5_D}
   \lean{doubleDescent_D_injective_on_PBPSet, lemma_10_5_D}
   \leanok
-  \uses{def:doubleDescent_D, def:signature_pbp, def:epsilon_pbp}
+  \uses{def:doubleDescent_D, def:epsilon_pbp, def:signature_pbp}
   On $\PBP_D(\mu_P, \mu_Q)$, the map $\tau \mapsto (\nabla^2\tau, \Sign(\tau), \eps_\tau)$ is injective.
 \end{lemma}
 \begin{proof}
@@ -160,7 +160,7 @@ We now turn these injectivity statements into cardinality equalities.
   \label{prop:10_8_C_prim}
   \lean{card_C_eq_card_D_primitive, prop_10_8_C_primitive}
   \leanok
-  \uses{lem:10_4_C}
+  \uses{def:PBPSet, def:dotScolLen, def:drc_symbols, def:layerOrd, def:sym_allowed, lem:10_4_C}
   If $\mu_Q.\mathrm{colLen}(0) \geq \mu_P.\mathrm{colLen}(0)$ (\emph{primitive case}), then
   \[ |\PBP_C(\mu_P, \mu_Q)| = |\PBP_D(\mu_P, \mathrm{shiftLeft}(\mu_Q))|. \]
 \end{proposition}
@@ -174,7 +174,7 @@ We now turn these injectivity statements into cardinality equalities.
   \label{prop:10_8_C_bal}
   \lean{card_C_eq_DD_plus_RC_balanced, prop_10_8_C_balanced}
   \leanok
-  \uses{lem:10_4_C}
+  \uses{def:PBPSet, def:dotScolLen, def:drc_symbols, def:layerOrd, def:sym_allowed, def:tailClass_D, def:tailLen, def:tailSymbol, lem:10_4_C}
   If $\mu_P.\mathrm{colLen}(0) = \mu_Q.\mathrm{colLen}(0) + 1$ (\emph{balanced case}), the C$\to$D descent image is $\{\sigma \in \PBP_D \mid \mathrm{tailClass}(\sigma) \in \{\mathrm{DD}, \mathrm{RC}\}\}$:
   \[ |\PBP_C(\mu_P, \mu_Q)| = \#\{\mathrm{DD}\} + \#\{\mathrm{RC}\}. \]
 \end{proposition}
@@ -188,7 +188,7 @@ We now turn these injectivity statements into cardinality equalities.
   \label{prop:10_8_M_prim}
   \lean{descent_bijective_primitive, prop_10_8_M_primitive}
   \leanok
-  \uses{lem:10_5_M}
+  \uses{def:dotScolLen, def:drc_symbols, def:layerOrd, def:sym_allowed, lem:10_5_M}
   If $\mu_P.\mathrm{colLen}(0) > \mu_Q.\mathrm{colLen}(0)$ (\emph{primitive}):
   \[ |\PBP_M(\mu_P, \mu_Q)| = |\PBP_{B^+}(\mathrm{shiftLeft}(\mu_P), \mu_Q)| + |\PBP_{B^-}(\mathrm{shiftLeft}(\mu_P), \mu_Q)|. \]
 \end{proposition}
@@ -202,7 +202,7 @@ We now turn these injectivity statements into cardinality equalities.
   \label{prop:10_8_M_bal}
   \lean{descent_image_balanced, prop_10_8_M_balanced}
   \leanok
-  \uses{lem:10_5_M}
+  \uses{def:dotScolLen, def:drc_symbols, def:layerOrd, def:sym_allowed, lem:10_5_M}
   If $\mu_P.\mathrm{colLen}(0) = \mu_Q.\mathrm{colLen}(0) > 0$:
   \[ |\PBP_M(\mu_P, \mu_Q)| = |\PBP_{B^+}(\cdots)| + |\{\sigma \in \PBP_{B^-}(\cdots) : \mathrm{layerOrd}(\sigma.\mathcal{Q}(c_2 - 1, 0)) > 1\}|. \]
 \end{proposition}
@@ -219,7 +219,7 @@ We now turn these injectivity statements into cardinality equalities.
   \label{prop:10_9_D}
   \lean{PBP.ddescent_inj_D, prop_10_9_D}
   \leanok
-  \uses{lem:10_5_D, def:signature_pbp, def:epsilon_pbp}
+  \uses{def:PBP, def:dotScolLen, def:drc_symbols, def:epsilon_pbp, def:layerOrd, def:signature_pbp, def:sym_allowed, lem:10_5_D}
   For D-type PBPs $\tau_1, \tau_2$ with identical shapes, identical $\nabla^2\tau$, identical $\Sign$, and identical $\eps$: $\tau_1 = \tau_2$.
 \end{proposition}
 \begin{proof}
@@ -232,7 +232,7 @@ We now turn these injectivity statements into cardinality equalities.
   \label{prop:10_9_B}
   \lean{PBP.ddescent_inj_B, prop_10_9_B}
   \leanok
-  \uses{lem:10_4_B, def:signature_pbp, def:epsilon_pbp}
+  \uses{def:PBP, def:dotScolLen, def:drc_symbols, def:epsilon_pbp, def:layerOrd, def:signature_pbp, def:sym_allowed, lem:10_4_B}
   Analogue for $\gamma \in \{B^+, B^-\}$, under the interlacing constraint.
 \end{proposition}
 \begin{proof}
@@ -245,7 +245,7 @@ We now turn these injectivity statements into cardinality equalities.
   \label{cor:10_10}
   \lean{cor_10_10_D, cor_10_10_B}
   \leanok
-  \uses{prop:10_9_D, prop:10_9_B}
+  \uses{lem:10_5_D, prop:10_9_B, prop:10_9_D}
   The map $\tau \mapsto (\nabla^2\tau, \Sign(\tau), \eps_\tau)$ is injective on $\PBP_\gamma(\mu_P, \mu_Q)$ for $\gamma \in \{D, B^+, B^-\}$.
 \end{corollary}
 \begin{proof}

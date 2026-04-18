@@ -57,7 +57,7 @@ local system type). We adopt the definitions of [BMSZb] Section~2.
   \label{def:pyd}
   \lean{PaintedYoungDiagram.layerMonotone}
   \leanok
-  \uses{def:yd, def:layerOrd}
+  \uses{def:drc_symbols, def:layerOrd, def:yd}
   A \emph{painted Young diagram} is a triple $D = (\mu, \mathcal{P}, \mathrm{layerMono})$ where:
   \begin{enumerate}
     \item $\mu$ is a Young diagram (the \emph{shape}).
@@ -72,7 +72,7 @@ local system type). We adopt the definitions of [BMSZb] Section~2.
   \label{def:dotScolLen}
   \lean{PBP.dotScolLen}
   \leanok
-  \uses{def:pyd}
+  \uses{def:layerOrd, def:pyd}
   For a painted Young diagram $D$, $\mathrm{dotScolLen}(D, j)$ is the number of cells in column $j$ whose paint is $\bullet$ or $s$ (equivalently, the largest $k$ such that every cell $(i, j)$ with $i < k$ has $\mathrm{layerOrd}(\mathcal{P}(i, j)) \leq 1$).
 \end{definition}
 
@@ -109,7 +109,7 @@ local system type). We adopt the definitions of [BMSZb] Section~2.
   \label{def:PBP}
   \lean{PBP}
   \leanok
-  \uses{def:pyd, def:sym_allowed}
+  \uses{def:RootType, def:drc_symbols, def:pyd, def:sym_allowed}
   A \emph{painted bipartition} (PBP) is $\tau = (\mathcal{P}, \mathcal{Q}, \gamma)$ where
   $\mathcal{P}$ and $\mathcal{Q}$ are painted Young diagrams with root type $\gamma$
   satisfying:
