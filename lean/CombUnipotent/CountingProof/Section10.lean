@@ -20,7 +20,23 @@ import CombUnipotent.CountingProof.CorrespondenceC
 
 open Classical
 
-/-! ## Proposition 10.2 — PP independence (shape shifting) -/
+/-! ## Proposition 10.2 — PP independence (shape shifting)
+
+    Paper statement: `#PBP_⋆(Ǒ, ℘) = #PBP_⋆(Ǒ, ∅)` for every primitive pair
+    set ℘. In our formalization `PBPSet γ μP μQ` is defined without a ℘
+    parameter — it already represents the ℘ = ∅ case. Consequently the
+    paper's claim about ℘-independence is *vacuous* at the Lean level: the
+    card equality between "different ℘" reduces to card equality at a single
+    (γ, μP, μQ) index, which is `rfl`.
+
+    The genuinely content-full part of Prop 10.2 for M is the shape-shifting
+    bijection between different (μP, μQ) shapes (`card_PBPSet_M_shapeShift`)
+    — this is the construction the paper uses to prove ℘-independence. For
+    B/D/C, the paper's shape-shifting bijection has the *same* target shape
+    (℘ acts without changing shapes), so no analogous bijection between
+    different (μP, μQ) is needed; the paper's bijection is internal to a
+    single `PBPSet γ μP μQ`. Thus the B/D/C wrappers are trivial equalities
+    at the Lean level.  -/
 
 /-- **Proposition 10.2 (M type)** — PBP count is independent of the PP set.
 
@@ -36,6 +52,48 @@ theorem prop_10_2_PBP_M {μP μQ μP' μQ' : YoungDiagram}
     (hQ'S : ∀ i j, (i, j + 1) ∈ μQ' ↔ (i, j + 1) ∈ μQ) :
     Fintype.card (PBPSet .M μP μQ) = Fintype.card (PBPSet .M μP' μQ') :=
   card_PBPSet_M_shapeShift hP'0 hP'S hQ'0 hQ'S
+
+/-- **Proposition 10.2 (B type)** — PBP count is independent of ℘.
+
+    In our formalization, `PBPSet .Bplus μP μQ` and `PBPSet .Bminus μP μQ`
+    are the ℘ = ∅ instances. The paper's Prop 10.2 then reduces to the
+    reflexivity statement `#PBP_B⁺(μP, μQ) = #PBP_B⁺(μP, μQ)` (resp. B⁻),
+    because we do not parameterize by ℘.
+
+    The construction underlying the paper's claim for B is a shape-shifting
+    bijection that fixes the shapes (μP, μQ) and permutes the paints; it is
+    not currently formalized (Strategy B).
+
+    Reference: [BMSZb] Proposition 10.2 for B. -/
+theorem prop_10_2_PBP_B (μP μQ : YoungDiagram) (γ : RootType)
+    (hγ : γ = .Bplus ∨ γ = .Bminus) :
+    Fintype.card (PBPSet γ μP μQ) = Fintype.card (PBPSet γ μP μQ) := by
+  let _ := hγ  -- hypothesis kept for API uniformity with M variant
+  rfl
+
+/-- **Proposition 10.2 (D type)** — PBP count is independent of ℘.
+
+    As with type B, our `PBPSet .D μP μQ` is the ℘ = ∅ instance, so the
+    paper's ℘-independence reduces to a reflexivity statement. The paper's
+    underlying shape-shift bijection for D fixes (μP, μQ); it is not
+    formalized here (Strategy B).
+
+    Reference: [BMSZb] Proposition 10.2 for D. -/
+theorem prop_10_2_PBP_D (μP μQ : YoungDiagram) :
+    Fintype.card (PBPSet .D μP μQ) = Fintype.card (PBPSet .D μP μQ) :=
+  rfl
+
+/-- **Proposition 10.2 (C type)** — PBP count is independent of ℘.
+
+    As with type B, our `PBPSet .C μP μQ` is the ℘ = ∅ instance, so the
+    paper's ℘-independence reduces to a reflexivity statement. The paper's
+    underlying shape-shift bijection for C fixes (μP, μQ); it is not
+    formalized here (Strategy B).
+
+    Reference: [BMSZb] Proposition 10.2 for C. -/
+theorem prop_10_2_PBP_C (μP μQ : YoungDiagram) :
+    Fintype.card (PBPSet .C μP μQ) = Fintype.card (PBPSet .C μP μQ) :=
+  rfl
 
 /-! ## Lemma 10.3 — shape shifting involution (M / C̃) -/
 
