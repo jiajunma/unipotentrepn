@@ -308,6 +308,8 @@ private theorem YoungDiagram_bot_colLens : (⊥ : YoungDiagram).colLens = [] := 
 theorem descentChain_D_in_MYD {τ : PBP} {chain : List ACStepData}
     {E : ILS} (dp : DualPart)
     (h_coh : PBPIsCoherent_D τ dp)
+    (_hsort : dp.SortedGE)
+    (_hodd : ∀ r ∈ dp, Odd r)
     (h_chain : IsDescentChain_D τ chain)
     (h_sing : ChainSingleton (baseILS .D) chain E) :
     (∀ (j : ℕ) (h : j < E.length), MYDRowValid .D (j + 1) E[j])
@@ -479,6 +481,8 @@ theorem twistBD_general_preserves_MYDRowValid_BD (E : ILS) (γ : RootType)
     4. The ε-twist preserves MYD via `twistBD_preserves_*`. -/
 noncomputable def Phi_D {μP μQ : YoungDiagram} (dp : DualPart)
     (h_coh : PBPIsCoherent_D_ext μP μQ dp)
+    (hsort : dp.SortedGE)
+    (hodd : ∀ r ∈ dp, Odd r)
     (σ : PBPSet .D μP μQ) (ε : Fin 2) :
     MYD .D (dpToSYD .D dp) :=
   let chain : List ACStepData := Classical.choose (exists_descentChain_D σ)
@@ -492,7 +496,7 @@ noncomputable def Phi_D {μP μQ : YoungDiagram} (dp : DualPart)
     constructor
     · rw [σ.prop.2.1]; exact h_coh.1
     · rw [σ.prop.2.2]; exact h_coh.2
-  let hMYD := descentChain_D_in_MYD dp h_coh_τ h_chain h_sing
+  let hMYD := descentChain_D_in_MYD dp h_coh_τ hsort hodd h_chain h_sing
   let h_par := hMYD.1
   let h_shape := hMYD.2
   let E' := if ε = 1 then ILS.twistBD E (-1) (-1) else E

@@ -20,9 +20,10 @@ namespace BMSZ
 
 /-- `MYD .D (dpToSYD .D dp)` is finite via the `Phi_D_equiv` bijection. -/
 noncomputable def fintype_MYD_D {μP μQ : YoungDiagram} (dp : DualPart)
-    (h_coh : DPCoherent_D μP μQ dp) :
+    (h_coh : DPCoherent_D μP μQ dp)
+    (hsort : dp.SortedGE) (hodd : ∀ r ∈ dp, Odd r) :
     Fintype (MYD .D (dpToSYD .D dp)) :=
-  Fintype.ofEquiv _ (Phi_D_equiv dp h_coh)
+  Fintype.ofEquiv _ (Phi_D_equiv dp h_coh hsort hodd)
 
 /-- Similarly for `.Bplus`. -/
 noncomputable def fintype_MYD_Bplus {μP μQ : YoungDiagram} (dp : DualPart)
@@ -55,10 +56,11 @@ Paper Prop 11.15 card-content for B/D, Prop 11.17 for C/M.
 
 /-- **Paper Prop 11.15 card content (D)**: `|PBPSet .D × Fin 2| = |MYD .D|`. -/
 theorem card_PBPSet_D_Fin2_eq_MYD {μP μQ : YoungDiagram} (dp : DualPart)
-    (h_coh : DPCoherent_D μP μQ dp) :
+    (h_coh : DPCoherent_D μP μQ dp)
+    (hsort : dp.SortedGE) (hodd : ∀ r ∈ dp, Odd r) :
     Nat.card (PBPSet .D μP μQ × Fin 2) =
     Nat.card (MYD .D (dpToSYD .D dp)) :=
-  Nat.card_congr (Phi_D_equiv dp h_coh)
+  Nat.card_congr (Phi_D_equiv dp h_coh hsort hodd)
 
 /-- **Paper Prop 11.15 card content (B⁺)**. -/
 theorem card_PBPSet_Bplus_Fin2_eq_MYD {μP μQ : YoungDiagram} (dp : DualPart)

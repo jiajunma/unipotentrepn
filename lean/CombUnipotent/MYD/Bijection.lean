@@ -44,8 +44,9 @@ noncomputable def Psi_D {μP μQ : YoungDiagram} (dp : DualPart)
     exactly reversed by the inverse-theta-lift step of `Psi_D`. -/
 theorem Psi_D_Phi_D {μP μQ : YoungDiagram} (dp : DualPart)
     (h_coh : DPCoherent_D μP μQ dp)
+    (hsort : dp.SortedGE) (hodd : ∀ r ∈ dp, Odd r)
     (σ : PBPSet .D μP μQ) (ε : Fin 2) :
-    Psi_D dp h_coh (Phi_D dp h_coh σ ε) = (σ, ε) := by
+    Psi_D dp h_coh (Phi_D dp h_coh hsort hodd σ ε) = (σ, ε) := by
   sorry
 
 /-- `Phi_D ∘ Psi_D = id` on the target side.
@@ -54,9 +55,10 @@ theorem Psi_D_Phi_D {μP μQ : YoungDiagram} (dp : DualPart)
     (§11.14). -/
 theorem Phi_D_Psi_D {μP μQ : YoungDiagram} (dp : DualPart)
     (h_coh : DPCoherent_D μP μQ dp)
+    (hsort : dp.SortedGE) (hodd : ∀ r ∈ dp, Odd r)
     (E : MYD .D (dpToSYD .D dp)) :
     let ⟨σ, ε⟩ := Psi_D dp h_coh E
-    Phi_D dp h_coh σ ε = E := by
+    Phi_D dp h_coh hsort hodd σ ε = E := by
   sorry
 
 /-- **Main theorem (M1.5)**: constructive bijection
@@ -66,12 +68,13 @@ theorem Phi_D_Psi_D {μP μQ : YoungDiagram} (dp : DualPart)
     non-computable because `Phi_D` internally uses `Classical.choose`
     on the M1.4 existence axioms. -/
 noncomputable def Phi_D_equiv {μP μQ : YoungDiagram} (dp : DualPart)
-    (h_coh : DPCoherent_D μP μQ dp) :
+    (h_coh : DPCoherent_D μP μQ dp)
+    (hsort : dp.SortedGE) (hodd : ∀ r ∈ dp, Odd r) :
     PBPSet .D μP μQ × Fin 2 ≃ MYD .D (dpToSYD .D dp) where
-  toFun := fun ⟨σ, ε⟩ => Phi_D dp h_coh σ ε
+  toFun := fun ⟨σ, ε⟩ => Phi_D dp h_coh hsort hodd σ ε
   invFun := Psi_D dp h_coh
-  left_inv := fun ⟨σ, ε⟩ => Psi_D_Phi_D dp h_coh σ ε
-  right_inv := fun E => Phi_D_Psi_D dp h_coh E
+  left_inv := fun ⟨σ, ε⟩ => Psi_D_Phi_D dp h_coh hsort hodd σ ε
+  right_inv := fun E => Phi_D_Psi_D dp h_coh hsort hodd E
 
 -- **Corollary** (commented out — pending Fintype (MYD γ O)):
 -- `|PBPSet × Fin 2| = |MYD|` follows via `Fintype.card_congr` once
