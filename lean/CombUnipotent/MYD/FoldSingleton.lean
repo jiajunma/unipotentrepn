@@ -129,6 +129,35 @@ inductive ChainSingleton : ILS → List ACStepData → ILS → Prop
       (h_rest : ChainSingleton (stepPostTwist E' d) rest E_final) :
       ChainSingleton E (d :: rest) E_final
 
+/-- **Chain snoc destructor**: given a ChainSingleton on `chain ++ [d]`,
+    recover the inner chain's witness `E_mid` + the end step's `E'`.
+
+    Inverse of `ChainSingleton.snoc`. Proved by induction on `chain`. -/
+theorem ChainSingleton.snoc_inv {E E_final : ILS}
+    {chain : List ACStepData} {d : ACStepData}
+    (h : ChainSingleton E (chain ++ [d]) E_final) :
+    ∃ (E_mid E' : ILS),
+      ChainSingleton E chain E_mid ∧
+      ILS.thetaLift (stepPreTwist E_mid d) d.γ d.p d.q = [E'] ∧
+      E_final = stepPostTwist E' d := by
+  induction chain generalizing E E_final with
+  | nil =>
+    -- chain = []: chain ++ [d] = [d]. h : ChainSingleton E [d] E_final.
+    -- Destruct: ChainSingleton.cons gives E', thetaLift ..., ChainSingleton ... rest.
+    cases h with
+    | cons E' h_theta h_rest =>
+      cases h_rest with
+      | nil E_mid =>
+        refine ⟨E, E', ChainSingleton.nil E, h_theta, rfl⟩
+  | cons d₀ rest ih =>
+    -- chain = d₀ :: rest: chain ++ [d] = d₀ :: (rest ++ [d]).
+    cases h with
+    | cons E₁ h_theta₀ h_rest =>
+      -- h_rest : ChainSingleton (stepPostTwist E₁ d₀) (rest ++ [d]) E_final
+      obtain ⟨E_mid, E', h_inner, h_theta_end, h_final⟩ := ih h_rest
+      refine ⟨E_mid, E', ?_, h_theta_end, h_final⟩
+      exact ChainSingleton.cons E₁ h_theta₀ h_inner
+
 /-- **Chain snoc** (chain concatenation with a single step at the end).
 
     Given a `ChainSingleton E chain E_mid` and one more step `d` whose

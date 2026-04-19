@@ -209,7 +209,27 @@ theorem descentChain_D_in_MYD {τ : PBP} {chain : List ACStepData}
       unfold absValues baseILS
       simp [dpToSYD_empty, SYD.empty_rows]
   | step hγ h_rest ih =>
-    -- Step case: paper §9.4 structural preservation. Deferred.
+    rename_i τ_outer chain_inner
+    -- Decompose h_sing via snoc_inv into inner chain + end step + final.
+    obtain ⟨E_mid, E', h_inner_sing, h_theta, h_E_final⟩ :=
+      ChainSingleton.snoc_inv h_sing
+    -- Outline (paper §9.4 structural preservation):
+    -- 1. Apply IH on E_mid with a "descended" dp_inner matching
+    --    (doubleDescent_D_PBP τ_outer hγ)'s shapes:
+    --      have h_coh_inner : PBPIsCoherent_D (doubleDescent_D_PBP ...) dp_inner
+    --      := by derive from h_coh (double-descent shifts dp by dp.drop 2)
+    --      have ih_result := ih h_coh_inner h_inner_sing
+    -- 2. Use h_theta (thetaLift is singleton at outer step) + the form of
+    --    ILS.thetaLift_CD = [augment (charTwistCM E_mid' ...) ...] to derive:
+    --    (a) parity: outer-step appends one new row with correct parity
+    --        (new row's sign matches orbit's SYD row via `thetaLift_CD_sign`
+    --         at MYD.lean:564; parity-forced positions have p = q ≥ 0)
+    --    (b) shape: absValues E = (dpToSYD .D dp).rows follows from
+    --        absValues E_mid = (dpToSYD .D dp_inner).rows (IH)
+    --        + the new outer row matching (dpToSYD .D dp).rows[0]
+    -- 3. stepPostTwist applies twistBD 1 (-1) for D if ε_τ = 1, else id;
+    --    this preserves MYD properties via `twistBD_preserves_absValues`
+    --    and `twistBD_preserves_MYDRowValid`.
     sorry
 
 /-! ## twistBD preserves MYD properties
