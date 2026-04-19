@@ -16,3 +16,4 @@ import CombUnipotent.MYD.PhiDTyped
 import CombUnipotent.MYD.Bijection
 import CombUnipotent.MYD.BijectionBCM
 import CombUnipotent.MYD.FintypeMYD
+import CombUnipotent.MYD.ShiftLeftCard
