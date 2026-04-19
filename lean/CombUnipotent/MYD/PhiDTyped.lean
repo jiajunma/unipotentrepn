@@ -364,23 +364,28 @@ theorem descentChain_D_in_MYD {τ : PBP} {chain : List ACStepData}
     -- Decompose h_sing via snoc_inv into inner chain + end step + final.
     obtain ⟨E_mid, E', h_inner_sing, h_theta, h_E_final⟩ :=
       ChainSingleton.snoc_inv h_sing
-    -- Outline (paper §9.4 structural preservation):
-    -- 1. Apply IH on E_mid with a "descended" dp_inner matching
-    --    (doubleDescent_D_PBP τ_outer hγ)'s shapes:
-    --      have h_coh_inner : PBPIsCoherent_D (doubleDescent_D_PBP ...) dp_inner
-    --      := by derive from h_coh (double-descent shifts dp by dp.drop 2)
-    --      have ih_result := ih h_coh_inner h_inner_sing
-    -- 2. Use h_theta (thetaLift is singleton at outer step) + the form of
-    --    ILS.thetaLift_CD = [augment (charTwistCM E_mid' ...) ...] to derive:
-    --    (a) parity: outer-step appends one new row with correct parity
-    --        (new row's sign matches orbit's SYD row via `thetaLift_CD_sign`
-    --         at MYD.lean:564; parity-forced positions have p = q ≥ 0)
-    --    (b) shape: absValues E = (dpToSYD .D dp).rows follows from
-    --        absValues E_mid = (dpToSYD .D dp_inner).rows (IH)
-    --        + the new outer row matching (dpToSYD .D dp).rows[0]
-    -- 3. stepPostTwist applies twistBD 1 (-1) for D if ε_τ = 1, else id;
-    --    this preserves MYD properties via `twistBD_preserves_absValues`
-    --    and `twistBD_preserves_MYDRowValid`.
+    -- Derive inner coherence + sort/odd on dp.drop 2
+    have h_coh_inner : PBPIsCoherent_D (doubleDescent_D_PBP τ_outer hγ) (dp.drop 2) :=
+      ⟨coherence_descend_D_P hγ h_coh.1,
+       coherence_descend_D_Q hγ h_coh.2 _hsort _hodd⟩
+    have h_sort_inner : (dp.drop 2).SortedGE := List.SortedGE.drop _hsort 2
+    have h_odd_inner : ∀ r ∈ dp.drop 2, Odd r := drop_all_odd _hodd 2
+    -- Apply IH on inner chain
+    have _ih_res := ih (dp.drop 2) h_coh_inner h_sort_inner h_odd_inner h_inner_sing
+    -- ih_res.1 : MYDRowValid for E_mid
+    -- ih_res.2 : absValues E_mid = (dpToSYD .D (dp.drop 2)).rows
+    --
+    -- From h_theta + thetaLift_CD_output_form: E' has explicit augment form.
+    -- From h_E_final + twistBD preservation: E inherits MYD properties from E'.
+    --
+    -- Remaining work (paper §9.4):
+    -- (1) charTwistCM_preserves_absValues (need to check MYD.lean)
+    -- (2) dpToSYD .D dp relationship with dp.drop 2's row + augmented row:
+    --     (dpToSYD .D dp).rows = new_outer_row :: (dpToSYD .D (dp.drop 2)).rows
+    -- (3) parity of the new augmented row: (addp, addn) with addp, addn ≥ 0.
+    --     Paper says row 1 (the new augmented one) is ℓ = 1 odd → for D
+    --     parity-forced is ℓ even, so the new row's parity is vacuous.
+    --     Remaining rows inherit from ih_res.1.
     sorry
 
 /-! ## twistBD preserves MYD properties
