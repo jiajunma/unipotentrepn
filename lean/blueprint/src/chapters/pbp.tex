@@ -297,3 +297,44 @@ Reference: \texttt{lean/docs/blueprints/M1\_3\_Phi\_D.md}.
   \uses{def:Phi_chain}
   If the chain is singleton-valid with witness $E_\text{final}$, then $\Phi_\gamma^{\mathrm{chain}}(c, \varepsilon) = \mathrm{some}\ (\ldots E_\text{final})$ where $\ldots$ applies the $\varepsilon$-twist.
 \end{lemma>
+
+
+\section{PBP-level descent chain and typed $\Phi_D$ (M1.4 phase A)}
+
+Reference: \texttt{lean/docs/blueprints/M1\_4\_PhiD\_typed.md}.
+
+\begin{definition}[$\mathrm{IsDescentChain\_D}$]
+  \label{def:IsDescentChain_D}
+  \lean{BMSZ.IsDescentChain_D}
+  \leanok
+  \uses{def:PBP}
+  An inductive predicate asserting that $c : \mathrm{List\ ACStepData}$ is the inner-first descent-chain encoding of $\tau \in \PBP_D$: base case $\tau$ has empty shapes, inductive step peels one D$\to$D double-descent.
+\end{definition}
+
+\begin{theorem}[Existence of descent chain --- Phase B]
+  \label{thm:exists_descentChain_D}
+  \lean{BMSZ.exists_descentChain_D}
+  \uses{def:IsDescentChain_D}
+  Every $\sigma \in \PBP_D(\mu_P, \mu_Q)$ admits a descent chain. (Stated as \texttt{axiom} in phase A; formal proof in M1.4.2.)
+\end{theorem}
+
+\begin{theorem}[Descent chain is singleton-valid --- Phase B]
+  \label{thm:descentChain_D_singleton}
+  \lean{BMSZ.descentChain_D_singleton}
+  \uses{def:IsDescentChain_D, def:Phi_chain}
+  Any valid descent chain produces a singleton $\mathrm{AC.fold}$ result. Uses paper Lemma 11.5/11.6 sign bounds. (Phase A axiom; proof in M1.4.2.)
+\end{theorem}
+
+\begin{theorem}[Extracted $L_\tau \in \MYD_D(O)$ --- Phase B]
+  \label{thm:descentChain_D_in_MYD}
+  \lean{BMSZ.descentChain_D_in_MYD}
+  \uses{thm:descentChain_D_singleton, def:Phi_chain}
+  The extracted $E$ satisfies $\mathrm{MYDRowValid\ .D}$ and $\mathrm{absValues}(E) = (\mathrm{dpToSYD\ .D\ dp}).\mathrm{rows}$. (Phase A axiom; proof in M1.4.3, using paper \S9.4 theta-lift structural preservation.)
+\end{theorem}
+
+\begin{definition}[Typed $\Phi_D$]
+  \label{def:Phi_D_typed}
+  \lean{BMSZ.Phi_D}
+  \uses{thm:exists_descentChain_D, thm:descentChain_D_singleton, thm:descentChain_D_in_MYD, def:Phi_chain}
+  Given the interface theorems above, the typed map $\Phi_D : \PBP_D(\mu_P, \mu_Q) \times \mathrm{Fin}\ 2 \to \MYD_D(\mathrm{dpToSYD}\ .\mathrm{D}\ dp)$ composes \texttt{Phi\_chain} with the extracted chain. The $\varepsilon$-twist preserves MYD properties (twistBD acts by $\pm 1$ on parity-forced rows).
+\end{definition}
