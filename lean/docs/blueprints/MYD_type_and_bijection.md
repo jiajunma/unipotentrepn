@@ -1,6 +1,16 @@
 # MYD_γ(O) type + constructive bijection PBP_γ × Fin 2 ≃ MYD_γ(O)
 
-**Status**: planning (2026-04-19)
+**Status**: planning (2026-04-19), decisions locked
+
+**Decisions**:
+- **Q1 (computability)**: New SYD/MYD code aims for `def` where feasible;
+  allowed to stay `noncomputable def` when the construction requires it.
+  Existing `Descent.lean` / `CountingProof/*` noncomputable defs are NOT
+  touched in this milestone.
+- **Q2 (parameterisation)**: **A** — `MYD_γ(O)` parameterised by orbit O,
+  so SYD (Signed Young Diagram) is a prerequisite.
+- **Q3 (γ order)**: D first (paper main case, most symmetric), then B⁺ / B⁻,
+  then C / C̃ (= M).
 
 **Goal**: Replace the current abstract wrappers
 `prop_11_14/15/16/17_PBP_*` (which take an externally-supplied
@@ -114,22 +124,79 @@ wrapper).
       MYDs via the paper's SYD decomposition).
 - [ ] **M1.6**: Concrete bijection `PBP_D(Ǒ) × Fin 2 ≃ MYD_D(O)`.
 
-## Open questions for user
+## SYD prerequisite (paper §9.1–§9.8)
 
-Before coding, need to confirm:
+Per decision Q2=A, we parameterise MYD_γ(O) by an explicit orbit O. We
+formalise O as a **Signed Young Diagram** (SYD), paper Def. 9.1–9.2.
 
-1. **Computability of `descentChain`**: current `descent` code uses
-   `Classical` / `noncomputable def` in places. If we want
-   `Phi_γ` computable we need to audit and replace where possible.
-   If not feasible, accept `noncomputable def` for Phi and just aim for
-   the bijection to exist (not evaluable).
+### SYD_γ definition (paper Def. 9.1)
 
-2. **Scope of `MYD_γ(O)`**: do we want the **general** orbit version
-   (parameterised by O) or a **PBP-indexed** version
-   (`MYD_γ_of_PBP τ := { E : ILS | E is a valid MYD matching τ's orbit }`)?
-   The latter avoids defining orbits separately and is more tractable as a
-   starting point.
+```
+SYD := ℕ⁺ → ℕ × ℕ     -- row index i ↦ (p_{O,i}, q_{O,i}), finite support
+```
 
-3. **Priority ordering**: D first, then B±, then C/M? Or prove a generic
-   γ-parametric version? The parametric version is cleaner but more
-   upfront abstraction work.
+with γ-specific parity:
+
+| γ | Constraint on O(i) = (p_i, q_i) |
+|---|---|
+| B, D | p_i = q_i when i is even (forced equal) |
+| C, C̃ | p_i = q_i when i is odd (forced equal) |
+
+Plus the global total `p_i + q_i = (number of rows of length i in the
+underlying partition)`.
+
+### Lean shape
+
+```lean
+structure SYD (γ : RootType) where
+  rows : List (ℕ × ℕ)        -- rows[i-1] = (p_i, q_i); finite by construction
+  parityD : γ = .D → ∀ i, (i + 1) % 2 = 0 → (rows[i]?.map Prod.fst = rows[i]?.map Prod.snd)
+  parityB : ...               -- analogous for B±
+  parityC : γ = .C → ...      -- i odd: p_i = q_i
+  parityM : γ = .M → ...
+```
+
+For a `Fintype` instance, we bound `rows.length` by the row count of the
+underlying partition (encoded either as a parameter or recoverable from
+`rows`). This makes enumeration of `SYD γ` over a bounded partition
+decidable and computable.
+
+### From SYD to orbit signature
+
+Paper (9.10):
+```
+Sign(O) = (p, q) where
+  p = Σ_{i odd, k = (i+1)/2} k·p_i + Σ_{i even} (i/2)·p_i
+  q = Σ_{i odd, k = (i-1)/2} k·q_i + Σ_{i even} (i/2)·q_i
+```
+(schematic; exact formula in paper.)
+
+## Updated D-type milestone
+
+Reorder to account for SYD prerequisite:
+
+- [ ] **M1.0**: `SYD γ` structure, parity predicates, `Fintype`, `Sign_SYD`
+      function.
+- [ ] **M1.1**: `MYD_γ(O) := { E : ILS // orbit-constraints γ O E }`, where
+      constraints are (1) parity, (2) shape matches partition, (3)
+      `Sign_MYD(E) = Sign_SYD(O)`.
+- [ ] **M1.2**: Prove `AC_fold_singleton`: `AC.fold γ (descentChain τ)` is
+      single-term with multiplicity 1.
+- [ ] **M1.3**: `extractMYD : ACResult → Option ILS` + `Phi_D : PBP_D(Ǒ) × Fin 2 → ILS`.
+- [ ] **M1.4**: Prove `Phi_D (τ, ε) ∈ MYD_D(O)` → typed `Phi_D : PBP_D(Ǒ) × Fin 2 → MYD_D(O)`.
+- [ ] **M1.5**: `|MYD_D(O)| = 2 × countPBP_D(Ǒ)`. Orbit-side enumeration.
+- [ ] **M1.6**: Concrete `PBP_D(Ǒ) × Fin 2 ≃ MYD_D(O)` via
+      `Fintype.equivOfInjectiveCardEq`.
+
+After M1.6 closes for D, replicate for B⁺, B⁻, C, M.
+
+## Notes on computability
+
+- `SYD γ`, `MYD_γ(O)`: should be `structure` with decidable fields →
+  computable `Fintype`.
+- `Phi_γ`: depends on `AC.fold` (computable already — see MYD.lean:337)
+  and `descentChain`. `descentChain` currently goes through
+  `noncomputable def`s in `Descent.lean`. Per Q1, we accept
+  `noncomputable def Phi_γ` for now.
+- The resulting `Equiv` will be `noncomputable` but the type-level claim
+  of a concrete bijection is what matters for blueprint alignment.
