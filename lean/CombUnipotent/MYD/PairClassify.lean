@@ -38,6 +38,53 @@ We now define the universe `PP_★(Ǒ)` = `primitivePPOf γ dp`.
 def primitivePPOf (γ : RootType) (dp : DualPart) : PPSet :=
   (Finset.range dp.length).filter (IsPrimitivePair γ dp ·)
 
+/-! ## Alignment with the existing counting code
+
+The recursive `countPBP_*` in `Counting.lean` uses an inline check
+`r₂ > r₃` where `r₃ = rest.head?.getD 0`. This check does not
+distinguish "primitive" from "tailed" (paper Def 3.5): it only tests
+`pairEntry k > pairEntry (k+1)`. The paper's Prop 10.11 uses the same
+formula for primitive and tailed, so the counting is correct but the
+inline check does not materialize `PP_★(Ǒ)` directly.
+
+The following lemma makes this explicit: `r_i > r_{i+1}` (inline check)
+is equivalent to "pair (k, k+1) is primitive or tailed".
+-/
+
+theorem r_gt_iff_prim_or_tailed (γ : RootType) (dp : DualPart) (k : ℕ)
+    (hstart : IsPairStart γ k) :
+    pairEntry dp (k + 1) < pairEntry dp k ↔
+    (IsPrimitivePair γ dp k ∨ IsTailedPair γ dp k) := by
+  constructor
+  · intro hlt
+    by_cases h_odd : (pairEntry dp k - pairEntry dp (k + 1)) % 2 = 1
+    · right; exact ⟨hstart, hlt, h_odd⟩
+    · left
+      refine ⟨hstart, hlt, ?_⟩
+      omega
+  · rintro (⟨_, hlt, _⟩ | ⟨_, hlt, _⟩) <;> exact hlt
+
+/-- For the counting recursion shape `dp = r₁ :: r₂ :: rest`, the inline
+    check `r₂ > rest.head?.getD 0` is precisely "the pair at 0-indexed
+    position 1 is primitive or tailed in `dp`".
+
+    This connects `Counting.lean:60, 88` (the `if r₂ > r₃ then ... else`
+    branch) to paper Def 3.5 classification. Applicable to B/D, where
+    `pairOffset γ = 1` makes 0-indexed position 1 a valid pair-start. -/
+theorem counting_check_matches_prim_or_tailed
+    (γ : RootType) (hstart : IsPairStart γ 1)
+    (r₁ r₂ : ℕ) (rest : List ℕ) :
+    rest.head?.getD 0 < r₂ ↔
+    (IsPrimitivePair γ (r₁ :: r₂ :: rest) 1 ∨
+     IsTailedPair γ (r₁ :: r₂ :: rest) 1) := by
+  have h_peq_k : pairEntry (r₁ :: r₂ :: rest) 1 = r₂ := by
+    unfold pairEntry; simp
+  have h_peq_k1 : pairEntry (r₁ :: r₂ :: rest) 2 = rest.head?.getD 0 := by
+    unfold pairEntry
+    cases rest <;> simp
+  rw [← r_gt_iff_prim_or_tailed γ _ 1 hstart]
+  rw [h_peq_k, h_peq_k1]
+
 theorem mem_primitivePPOf_iff (γ : RootType) (dp : DualPart) (k : ℕ) :
     k ∈ primitivePPOf γ dp ↔ IsPrimitivePair γ dp k := by
   unfold primitivePPOf

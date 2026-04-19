@@ -190,3 +190,80 @@ local system type). We adopt the definitions of [BMSZb] Section~2.
   \uses{def:DualPart}
   For each root type, functions compute the column-length lists of $\mu_P$ and $\mu_Q$ from $dp$. For example (D type): $\mu_P(dp)$ has column lengths $(dp_1 + 1)/2, (dp_2 + 1)/2, \ldots$, etc.
 \end{definition}
+
+\section{\texorpdfstring{$\star$-pair classification}{star-pair classification} and \texorpdfstring{$\PP_\star$}{PP}}
+
+Reference: [BMSZ] Definition~3.5 and Definition~4.8 (arXiv:1712.05552).
+
+\begin{definition}[$\star$-pair]
+  \label{def:star_pair}
+  \lean{BMSZ.IsPairStart}
+  \leanok
+  \uses{def:RootType, def:DualPart}
+  A \emph{$\star$-pair} is a pair $(i, i+1)$ of consecutive positive integers where
+  \[
+    i \text{ is}
+      \begin{cases}
+        \text{odd}, & \text{if } \star \in \{C, \tilde{C}\}; \\
+        \text{even}, & \text{if } \star \in \{B, D\}.
+      \end{cases}
+  \]
+  In 0-indexed Lean notation, $k$ is a pair-start iff $k \geq \mathrm{pairOffset}(\gamma)$ and $(k - \mathrm{pairOffset}(\gamma)) \bmod 2 = 0$, where $\mathrm{pairOffset} = 1$ for $B/D$ and $0$ for $C/M$.
+\end{definition}
+
+\begin{definition}[Pair status: vacant / balanced / tailed / primitive]
+  \label{def:pair_status}
+  \lean{BMSZ.IsVacantPair, BMSZ.IsBalancedPair, BMSZ.IsTailedPair, BMSZ.IsPrimitivePair}
+  \leanok
+  \uses{def:star_pair, def:DualPart}
+  A $\star$-pair $(i, i+1)$ in $\check{\mathcal{O}}$ is called
+  \begin{itemize}
+    \item \textbf{vacant} if $r_i(\check{\mathcal{O}}) = r_{i+1}(\check{\mathcal{O}}) = 0$;
+    \item \textbf{balanced} if $r_i = r_{i+1} > 0$;
+    \item \textbf{tailed} if $r_i - r_{i+1}$ is positive and odd;
+    \item \textbf{primitive} if $r_i - r_{i+1}$ is positive and even.
+  \end{itemize}
+  Under the good parity assumption ($r$ all even for $B/M$, all odd for $C/D$), a tailed pair is equivalent to the boundary case $r_{i+1} = 0$.
+\end{definition}
+
+\begin{lemma}[Pair status exhaustivity and exclusivity]
+  \label{lem:pair_status_dichotomy}
+  \lean{BMSZ.pair_category_exhaustive, BMSZ.IsVacantPair_and_IsBalancedPair_iff_False, BMSZ.IsVacantPair_and_IsTailedPair_iff_False, BMSZ.IsVacantPair_and_IsPrimitivePair_iff_False, BMSZ.IsBalancedPair_and_IsTailedPair_iff_False, BMSZ.IsBalancedPair_and_IsPrimitivePair_iff_False, BMSZ.IsTailedPair_and_IsPrimitivePair_iff_False}
+  \leanok
+  \uses{def:pair_status}
+  The four categories are pairwise disjoint. Under partition monotonicity $r_i \geq r_{i+1}$ at the pair, every $\star$-pair belongs to exactly one category.
+\end{lemma}
+\begin{proof}
+  \leanok
+  Pairwise disjointness is immediate from the numerical conditions. Exhaustivity splits on $r_i = 0$ (vacant under monotonicity), $r_i > 0 \land r_{i+1} = r_i$ (balanced), or the strict decrease case, which subdivides by the parity of $r_i - r_{i+1}$.
+\end{proof}
+
+\begin{definition}[$\PP_\star(\check{\mathcal{O}})$ — primitive $\star$-pair universe]
+  \label{def:PP_star}
+  \lean{BMSZ.primitivePPOf}
+  \leanok
+  \uses{def:pair_status}
+  Paper Def.~3.5 (last line). Given root type $\gamma$ and dual partition $\check{\mathcal{O}}$ (represented as $dp$),
+  \[
+    \PP_\star(\check{\mathcal{O}}) := \{ k \mid (k, k+1) \text{ is primitive in } dp \text{ and } k \text{ is a } \gamma\text{-pair-start} \}
+  \]
+  as a \texttt{Finset\ $\mathbb{N}$} (the \texttt{PPSet} type).
+
+  The paper's primitive pair \emph{set} $\wp \subseteq \PP_\star(\check{\mathcal{O}})$ is a subset of this universe; in the Lean formalization $\wp$ appears as an external \texttt{PPSet} attached to a PBP. The existing counting code (\texttt{Counting.lean}) walks $dp$ recursively with an inline \texttt{r₂ > r₃} check that, under good parity, witnesses membership in $\PP_\star(\check{\mathcal{O}}) \cup \{\text{tailed}\}$ (the same formula applies to both).
+\end{definition}
+
+\begin{definition}[Quasi-distinguished orbit, Def.~4.8]
+  \label{def:quasi_distinguished}
+  \lean{BMSZ.IsQuasiDistinguished}
+  \leanok
+  \uses{def:pair_status}
+  The orbit $\check{\mathcal{O}}$ is \emph{quasi-distinguished} iff it has no balanced $\star$-pair. Equivalently (under partition monotonicity), every $\star$-pair is vacant, tailed, or primitive.
+\end{definition}
+
+\begin{lemma}[Characterisation of quasi-distinguished]
+  \label{lem:qd_characterisation}
+  \lean{BMSZ.isQuasiDistinguished_iff_all_non_balanced}
+  \leanok
+  \uses{def:quasi_distinguished, lem:pair_status_dichotomy}
+  $\check{\mathcal{O}}$ is quasi-distinguished if and only if every $\star$-pair is not balanced — equivalently, it is vacant, tailed, or primitive whenever partition monotonicity holds.
+\end{lemma}
