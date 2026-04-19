@@ -7,3 +7,4 @@ import CombUnipotent.Counting
 import CombUnipotent.Finiteness
 import CombUnipotent.CountingProof
 import CombUnipotent.MYD.SYD
+import CombUnipotent.MYD.TypeMYD
