@@ -76,4 +76,36 @@ theorem shiftLeft_card_lt (μ : YoungDiagram) (h : 0 < μ.colLen 0) :
   have h_ge := colLen_zero_le_card μ
   omega
 
+/-- `shiftLeft.card ≤ card` unconditionally. -/
+theorem shiftLeft_card_le (μ : YoungDiagram) :
+    μ.shiftLeft.cells.card ≤ μ.cells.card := by
+  rw [shiftLeft_cells_card]; omega
+
+/-- `μ.colLen 0 = 0 ↔ μ = ⊥`.
+
+    Forward: if column 0 is empty but cells exist, any cell `(i, j) ∈ μ`
+    forces `(0, 0) ∈ μ` (down-set property), contradicting colLen 0 = 0.
+    Reverse: ⊥ has no cells. -/
+theorem colLen_zero_eq_zero_iff_empty (μ : YoungDiagram) :
+    μ.colLen 0 = 0 ↔ μ = ⊥ := by
+  constructor
+  · intro h
+    apply YoungDiagram.ext
+    ext ⟨i, j⟩
+    simp only [YoungDiagram.mem_cells]
+    constructor
+    · intro hmem
+      -- (i, j) ∈ μ ⟹ (0, 0) ∈ μ ⟹ 0 < colLen 0, contradicting h
+      have h₀ : (0, 0) ∈ μ := μ.isLowerSet (by simp : (0, 0) ≤ (i, j)) hmem
+      rw [YoungDiagram.mem_iff_lt_colLen] at h₀
+      omega
+    · intro hbot
+      simp at hbot
+  · intro h
+    subst h
+    -- colLen of ⊥ at 0: Nat.find where (0, 0) ∉ ⊥ (vacuously)
+    unfold YoungDiagram.colLen
+    apply Nat.find_eq_zero _ |>.mpr
+    simp
+
 end YoungDiagram

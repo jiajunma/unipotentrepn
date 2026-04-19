@@ -23,6 +23,7 @@ proof-plan in the accompanying NL proof doc.
 import CombUnipotent.MYD.PhiD
 import CombUnipotent.MYD.TypeMYD
 import CombUnipotent.MYD.DPToSYD
+import CombUnipotent.MYD.ShiftLeftCard
 import CombUnipotent.MYD
 import CombUnipotent.CountingProof.Descent
 
@@ -45,13 +46,53 @@ inductive IsDescentChain_D : PBP → List ACStepData → Prop
       (h_rest : IsDescentChain_D (doubleDescent_D_PBP τ hγ) chain) :
       IsDescentChain_D τ (chain ++ [toACStepData_D τ hγ])
 
-/-- **Axiom (M1.4.2)**: every σ ∈ PBPSet .D μP μQ admits a descent chain.
+/-- Helper: for a D-type PBP, a descent chain exists by strong induction
+    on the combined shape size. Each `doubleDescent_D_PBP` strictly
+    decreases the size (via `YoungDiagram.shiftLeft_card_lt`). -/
+theorem exists_descentChain_D_aux (n : ℕ) :
+    ∀ (τ : PBP) (hγ : τ.γ = .D),
+      τ.P.shape.cells.card + τ.Q.shape.cells.card = n →
+      ∃ c : List ACStepData, IsDescentChain_D τ c := by
+  induction n using Nat.strong_induction_on with
+  | _ n ih =>
+    intro τ hγ hsize
+    by_cases h_empty : τ.P.shape = ⊥ ∧ τ.Q.shape = ⊥
+    · exact ⟨[], IsDescentChain_D.base τ hγ h_empty⟩
+    · -- At least one shape is non-empty → at least one has colLen 0 > 0
+      have h_decrease :
+          (doubleDescent_D_PBP τ hγ).P.shape.cells.card +
+          (doubleDescent_D_PBP τ hγ).Q.shape.cells.card < n := by
+        -- doubleDescent_D_PBP uses shape.shiftLeft for both P and Q
+        unfold doubleDescent_D_PBP
+        dsimp only
+        have hP_le := YoungDiagram.shiftLeft_card_le τ.P.shape
+        have hQ_le := YoungDiagram.shiftLeft_card_le τ.Q.shape
+        -- Not both empty: at least one has colLen 0 > 0 → its card strictly decreases
+        push_neg at h_empty
+        by_cases hP_empty : τ.P.shape = ⊥
+        · -- P empty, so Q non-empty → Q's colLen 0 > 0 → Q's card decreases
+          have hQ_ne : τ.Q.shape ≠ ⊥ := h_empty hP_empty
+          have hQ_col0 : 0 < τ.Q.shape.colLen 0 := by
+            rw [Nat.pos_iff_ne_zero]
+            intro h0
+            exact hQ_ne ((YoungDiagram.colLen_zero_eq_zero_iff_empty _).mp h0)
+          have hQ_lt := YoungDiagram.shiftLeft_card_lt τ.Q.shape hQ_col0
+          omega
+        · -- P non-empty → P's card decreases
+          have hP_col0 : 0 < τ.P.shape.colLen 0 := by
+            rw [Nat.pos_iff_ne_zero]
+            intro h0
+            exact hP_empty ((YoungDiagram.colLen_zero_eq_zero_iff_empty _).mp h0)
+          have hP_lt := YoungDiagram.shiftLeft_card_lt τ.P.shape hP_col0
+          omega
+      obtain ⟨c_inner, h_inner⟩ := ih _ h_decrease (doubleDescent_D_PBP τ hγ) rfl rfl
+      exact ⟨c_inner ++ [toACStepData_D τ hγ], IsDescentChain_D.step hγ h_inner⟩
 
-    Proof plan: strong induction on `σ.val.cardCells`; each
-    `doubleDescent_D_PBP` strictly decreases the size. Base case is
-    `IsDescentChain_D.base` for empty shapes. -/
-axiom exists_descentChain_D {μP μQ : YoungDiagram} (σ : PBPSet .D μP μQ) :
-    ∃ c : List ACStepData, IsDescentChain_D σ.val c
+/-- **Theorem (M1.4.2)**: every σ ∈ PBPSet .D μP μQ admits a descent chain. -/
+theorem exists_descentChain_D {μP μQ : YoungDiagram} (σ : PBPSet .D μP μQ) :
+    ∃ c : List ACStepData, IsDescentChain_D σ.val c := by
+  have hγ : σ.val.γ = .D := σ.prop.1
+  exact exists_descentChain_D_aux _ σ.val hγ rfl
 
 /-- **Per-step thetaLift singleton for descent chain** (paper Lem 11.5/11.6):
     each step in a descent chain has a singleton ILS-thetaLift.
