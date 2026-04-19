@@ -39,13 +39,37 @@ for D (forced at even ℓ). Older rows shift index by 1 — needs a
 careful re-indexing argument tying paint-symbol counts to chain step.
 -/
 
-/-- Parity preservation along D-type descent chain. -/
+/-- Parity preservation along D-type descent chain.
+    Deferred — paper §9.4: theta-lift preserves MYD parity.
+    Sketch: at each step, the augmented row goes to position 0 (ℓ=1,
+    vacuous for D). Older rows shift up by 1, changing their effective
+    parity-forcing index. The required invariant is NOT the simple
+    `MYDRowValid .D (j+1) E[j]` but a "row-paired" version where
+    parity is checked at the EVEN orbit position of the pair. Full
+    proof needs paper §9.4 + a rephrasing of MYD_sig parity. -/
 theorem descentChain_D_parity {τ : PBP} {chain : List ACStepData}
     {E : ILS}
-    (_h_chain : IsDescentChain_D τ chain)
-    (_h_sing : ChainSingleton (baseILS .D) chain E) :
+    (h_chain : IsDescentChain_D τ chain)
+    (h_sing : ChainSingleton (baseILS .D) chain E) :
     ∀ (j : ℕ) (h : j < E.length), MYDRowValid .D (j + 1) E[j] := by
-  sorry
+  induction h_chain generalizing E with
+  | base τ hγ h_empty =>
+    -- chain = []; ChainSingleton forces E = baseILS .D = []
+    cases h_sing
+    intro j h
+    -- baseILS .D = [], so E.length = 0, vacuous
+    exfalso
+    unfold baseILS at h
+    simp at h
+  | step hγ h_rest ih =>
+    -- chain = chain_inner ++ [outer step]
+    -- Decompose h_sing into E_mid + E' + final E
+    obtain ⟨E_mid, E', _h_inner_sing, _h_theta, _h_E_final⟩ :=
+      ChainSingleton.snoc_inv h_sing
+    -- Apply IH on inner chain ⇒ parity for E_mid
+    -- Then need to preserve parity through theta-lift + post-twist
+    -- This is paper §9.4 content; see docstring above.
+    sorry
 
 /-! ## Φ_D_sig -/
 
