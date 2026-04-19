@@ -97,8 +97,17 @@ theorem exists_descentChain_D {μP μQ : YoungDiagram} (σ : PBPSet .D μP μQ) 
 /-- **Per-step thetaLift singleton for descent chain** (paper Lem 11.5/11.6):
     each step in a descent chain has a singleton ILS-thetaLift.
 
-    This is the essential sign-bound content of paper §11.5-11.6.
-    TODO: prove via existing `ILS.thetaLift_CD_nonempty` + sign bound. -/
+    TODO: use `ILS.thetaLift_CD_nonempty` (MYD.lean:4679) — gives
+    non-emptiness given `h_std` sign bound. Combined with the fact
+    that `thetaLift_CD` definitionally produces at most 1 element
+    (MYD.lean:180: `if h then [augment ...] else []`), we get exactly 1.
+    The remaining work is proving `h_std` for descent-chain-supplied
+    E_inner and (p, q) = (PBP.signature τ).
+
+    This requires relating `sign (pre-twisted E_inner)` to τ's signature
+    through the chain — paper §11.5/11.6 content. Likely connects to
+    existing `ACResult.thetaLift_sign` (MYD.lean:821) and
+    `AC.step_sign_D` (MYD.lean:865). -/
 theorem descent_step_thetaLift_singleton {τ : PBP} (hγ : τ.γ = .D)
     (E_inner : ILS) :
     ∃ E' : ILS, ILS.thetaLift
@@ -137,6 +146,12 @@ theorem descentChain_D_singleton {τ : PBP} {chain : List ACStepData}
     (a) parity preservation at each theta-lift step (paper §9.4),
     (b) shape growth matching the orbit's partition transpose
     (`partTranspose dp`).
+
+    **KNOWN DESIGN ISSUE**: the current signature takes `dp` as a
+    free parameter without a coherence hypothesis linking it to
+    `τ`'s shape. The shape-equality claim only holds when `dp` is
+    derived from `τ.P.shape, τ.Q.shape`. A follow-up should add a
+    `DPCoherent_D` hypothesis and thread it through.
 
     TODO: apply `thetaLift_{CD,MB}_sign` (MYD.lean:564, 655) + sign
     preservation + parity inductive argument. -/
