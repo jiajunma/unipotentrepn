@@ -162,6 +162,26 @@ private theorem dpartColLensP_D_eq_nil_iff (dp : DualPart) :
     | _ :: _ :: _ => simp [dpartColLensP_D] at h
   · intro h; subst h; rfl
 
+/-- **Sub-lemma 2**: `thetaLift_CD` output form when it's singleton.
+
+    Definitional unfold of `ILS.thetaLift_CD` (MYD.lean:180):
+    when the sign bound holds, output is `[augment (addp, addn) (charTwistCM E ((p-q)/2))]`.
+
+    Paper ref: Eq 9.29 + Def 9.18 (augment).
+
+    Used in `descentChain_D_in_MYD` step case to access E''s structure. -/
+theorem thetaLift_CD_output_form (E : ILS) (p q : ℤ) (E' : ILS)
+    (h : ILS.thetaLift_CD E p q = [E']) :
+    let addp := p - (ILS.sign E).1 - (ILS.firstColSign E).2
+    let addn := q - (ILS.sign E).2 - (ILS.firstColSign E).1
+    addp ≥ 0 ∧ addn ≥ 0 ∧
+    E' = ILS.augment (addp, addn) (ILS.charTwistCM E ((p - q) / 2)) := by
+  simp only [ILS.thetaLift_CD] at h
+  split_ifs at h with h_std
+  · simp at h
+    refine ⟨h_std.1, h_std.2, ?_⟩
+    rw [← h]
+
 /-- `⊥.colLens = []`. -/
 private theorem YoungDiagram_bot_colLens : (⊥ : YoungDiagram).colLens = [] := by
   apply List.length_eq_zero_iff.mp

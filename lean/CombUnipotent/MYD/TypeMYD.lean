@@ -45,6 +45,18 @@ def absValues (E : ILS) : List (ℕ × ℕ) :=
 theorem absValues_length (E : ILS) : (absValues E).length = E.length := by
   unfold absValues; simp
 
+/-- `absValues` on a cons: `absValues (pq :: E) = (|pq.1|, |pq.2|) :: absValues E`.
+    Trivial unfold. Needed in induction on ILS (e.g., augment results). -/
+theorem absValues_cons (pq : ℤ × ℤ) (E : ILS) :
+    absValues (pq :: E) = (pq.1.natAbs, pq.2.natAbs) :: absValues E := by
+  unfold absValues; simp
+
+/-- `absValues` after `augment (paper Def 9.18 = cons)`. -/
+theorem absValues_augment (pq : ℤ × ℤ) (E : ILS) :
+    absValues (ILS.augment pq E) = (pq.1.natAbs, pq.2.natAbs) :: absValues E := by
+  unfold ILS.augment
+  exact absValues_cons pq E
+
 /-- **Marked Young Diagram of orbit O** (paper Def 9.3 + §9.8).
 
     An ILS `E` such that:
