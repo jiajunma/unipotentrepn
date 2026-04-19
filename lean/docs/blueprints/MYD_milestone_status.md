@@ -129,18 +129,28 @@ tackled one at a time, each as its own session.
 Used `List.ext_getElem` + per-index case analysis + the helpers
 `pow_signed` and `natAbs_signed_mul`.
 
-✓ `twistBD_preserves_MYDRowValid` (B/D narrowed) — proved.
+✓ `twistBD_preserves_MYDRowValid` (B/D narrowed) — proved (commit `e5ff481`).
 Key insight: at B/D parity-forced positions (ℓ even), `twistBDRow`
 returns the row unchanged — so MYDRowValid is trivially preserved.
 
-Remaining axioms (11 total):
-- D (PhiDTyped): exists_descentChain_D, descentChain_D_singleton,
+✓ `ChainSingleton.snoc` — proved (commit `48f54c4`).
+Chain concatenation with end-step singleton, via induction on
+the ChainSingleton structure. Reconciles append-ordering
+(`IsDescentChain_D.step`) with cons-ordering (`ChainSingleton.cons`).
+
+✓ `descentChain_D_singleton` — **promoted from axiom to theorem**
+(commit `48f54c4`). Induction on `IsDescentChain_D` + `ChainSingleton.snoc`.
+Reduced to the narrower single-step axiom
+`descent_step_thetaLift_singleton` (paper §11.5/11.6 content).
+
+Current axiom count (10 total):
+- D (PhiDTyped): exists_descentChain_D, descent_step_thetaLift_singleton,
   descentChain_D_in_MYD (paper §11)
 - D (Bijection): Psi_D, Psi_D_Phi_D, Phi_D_Psi_D (paper §11.14)
 - B⁺, B⁻, C, M (BijectionBCM): Phi_γ_equiv (one each)
 
-Next technical sub-step for `descentChain_D_singleton`:
-prove `ChainSingleton.snoc` (chain-append version), because
-`IsDescentChain_D.step` uses `chain ++ [d]` while `ChainSingleton.cons`
-prepends `d :: rest`. This orientation mismatch blocks the direct
-induction; a `snoc` lemma reconciles it.
+Next tractable sub-steps:
+- `exists_descentChain_D` via well-founded recursion on
+  `shape.card` (needs `shiftLeft` card-decrease lemma — small).
+- `descentChain_D_in_MYD` split: absValues preservation via
+  shape induction + parity preservation per step.
