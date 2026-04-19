@@ -267,3 +267,33 @@ Reference: [BMSZ] Definition~3.5 and Definition~4.8 (arXiv:1712.05552).
   \uses{def:quasi_distinguished, lem:pair_status_dichotomy}
   $\check{\mathcal{O}}$ is quasi-distinguished if and only if every $\star$-pair is not balanced — equivalently, it is vacant, tailed, or primitive whenever partition monotonicity holds.
 \end{lemma}
+
+\section{Chain-level MYD extraction (M1.3)}
+
+Reference: \texttt{lean/docs/blueprints/M1\_3\_Phi\_D.md}.
+
+\begin{definition}[$\mathrm{extractILS}$]
+  \label{def:extractILS}
+  \lean{BMSZ.extractILS}
+  \leanok
+  Total partial projection $\mathrm{ACResult} \to \mathrm{Option\ ILS}$ returning $\mathrm{some}\ E$ iff the input equals $[(1, E)]$.
+\end{definition}
+
+\begin{definition}[$\Phi_\gamma^{\mathrm{chain}}$]
+  \label{def:Phi_chain}
+  \lean{BMSZ.Phi_chain}
+  \leanok
+  \uses{def:extractILS}
+  Given a base root type $\gamma$ and a chain of AC step data $c : \mathrm{List\ ACStepData}$, define
+  \[
+    \Phi_\gamma^{\mathrm{chain}}(c, \varepsilon) := \mathrm{extractILS}(\mathrm{AC.fold}\ \gamma\ c) \ \mathrm{map}_\mathrm{Option}\ (\text{twist by}\ (\varepsilon, \varepsilon)).
+  \]
+\end{definition}
+
+\begin{lemma}[$\Phi_\gamma^{\mathrm{chain}}$ is $\mathrm{some}$ under $\mathrm{ChainSingleton}$]
+  \label{lem:Phi_chain_some_of_chain_singleton}
+  \lean{BMSZ.Phi_chain_some_of_chain_singleton}
+  \leanok
+  \uses{def:Phi_chain}
+  If the chain is singleton-valid with witness $E_\text{final}$, then $\Phi_\gamma^{\mathrm{chain}}(c, \varepsilon) = \mathrm{some}\ (\ldots E_\text{final})$ where $\ldots$ applies the $\varepsilon$-twist.
+\end{lemma>
