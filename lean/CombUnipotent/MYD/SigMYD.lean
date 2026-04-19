@@ -22,6 +22,8 @@ import CombUnipotent.MYD.TypeMYD
 import CombUnipotent.MYD.PhiDTyped
 import CombUnipotent.MYD
 
+open PBPInstantiation (toACStepData_D)
+
 namespace BMSZ
 
 /-- **Paper-faithful MYD_γ**: ILS with γ-parity and signature match.
@@ -50,13 +52,15 @@ Using paper's Eq. 9.10 + existing `ACResult.thetaLift_sign` (MYD.lean:821),
 we track `ILS.sign E` through the descent chain.
 -/
 
-/-- **Natural signature target** for a D-type PBP τ at the end of
-    the descent chain. By paper Prop 11.4 + the AC construction,
-    this equals `(p_τ, ±q_τ)` depending on `ε_τ` (the outermost step's
-    post-twist). For simplicity we state it abstractly for now. -/
+/-- **Signature target** for a D-type PBP τ.
+
+    Note: `twistBD_sign` (MYD.lean:436) shows that `ILS.sign` is
+    INVARIANT under `twistBD tp tn` for tp, tn ∈ {1, -1} (sign uses
+    natAbs). So the ε_τ post-twist does NOT affect the signature.
+    The target is just the PBP's signature cast to ℤ × ℤ. -/
 noncomputable def signTarget_D (τ : PBP) : ℤ × ℤ :=
   let s := PBP.signature τ
-  ((s.1 : ℤ), (s.2 : ℤ))  -- naive; real formula involves ε_τ twist
+  ((s.1 : ℤ), (s.2 : ℤ))
 
 /-- **Theorem**: along a valid descent chain, the extracted ILS has
     sign matching the τ-derived target (up to ε_τ twist details).
@@ -102,7 +106,40 @@ theorem descentChain_sign_match_D {τ : PBP} {chain : List ACStepData}
     rw [h_sig]
     simp
   | step hγ h_rest ih =>
-    -- Step: use ACResult.thetaLift_sign + sign-preserving operations
-    sorry
+    rename_i τ_outer chain_inner
+    obtain ⟨E_mid, E', h_inner_sing, h_theta, h_E_final⟩ :=
+      ChainSingleton.snoc_inv h_sing
+    -- Key insight: sign E = sign E' (post-twist preserves sign) = (d.p, d.q)
+    -- (by thetaLift_CD_sign). Don't even need IH for the sign!
+    -- stepPreTwist for D is identity (no pre-twist, d.γ = .D not .C or .M).
+    have h_preTwist : stepPreTwist E_mid (toACStepData_D τ_outer hγ) = E_mid := by
+      unfold stepPreTwist
+      simp [toACStepData_D]
+    -- ILS.thetaLift with .D is thetaLift_CD
+    have h_tl : ILS.thetaLift E_mid .D (toACStepData_D τ_outer hγ).p
+                  (toACStepData_D τ_outer hγ).q = [E'] := by
+      rw [← h_preTwist]
+      show ILS.thetaLift (stepPreTwist E_mid (toACStepData_D τ_outer hγ))
+        (toACStepData_D τ_outer hγ).γ (toACStepData_D τ_outer hγ).p
+        (toACStepData_D τ_outer hγ).q = [E']
+      exact h_theta
+    have h_tl_cd : ILS.thetaLift_CD E_mid (toACStepData_D τ_outer hγ).p
+                    (toACStepData_D τ_outer hγ).q = [E'] := by
+      simpa [ILS.thetaLift] using h_tl
+    have h_sign_E' : ILS.sign E' = ((toACStepData_D τ_outer hγ).p,
+                                    (toACStepData_D τ_outer hγ).q) :=
+      ILS.thetaLift_CD_sign E_mid _ _ E' (by rw [h_tl_cd]; simp)
+    -- Post-twist preserves sign
+    have h_sign_E : ILS.sign E = ILS.sign E' := by
+      rw [h_E_final]
+      unfold stepPostTwist
+      split_ifs with hpost
+      · -- twistBD 1 (-1) preserves sign
+        exact ILS.twistBD_sign E' 1 (-1) (Or.inl rfl) (Or.inr rfl)
+      · rfl
+    rw [h_sign_E, h_sign_E']
+    -- Target: signTarget_D τ_outer = (PBP.signature τ_outer : ℤ × ℤ)
+    unfold signTarget_D toACStepData_D
+    simp
 
 end BMSZ
