@@ -90,6 +90,21 @@ These are small, self-contained lemmas (not paper content) needed for
 the ε-twist to preserve MYD typing.
 -/
 
+/-- Helper: `|a * b| = |b|` when `a ∈ {1, -1}`. -/
+private lemma natAbs_signed_mul (a b : ℤ) (ha : a = 1 ∨ a = -1) :
+    (a * b).natAbs = b.natAbs := by
+  rcases ha with ha | ha <;> simp [ha, Int.natAbs_mul, Int.natAbs_neg]
+
+/-- Helper: integer power of $\pm 1$ is $\pm 1$. -/
+private lemma pow_signed (a : ℤ) (ha : a = 1 ∨ a = -1) (n : ℕ) :
+    a ^ n = 1 ∨ a ^ n = -1 := by
+  rcases ha with ha | ha
+  · left; simp [ha]
+  · subst ha
+    rcases Nat.even_or_odd n with hp | hp
+    · left; exact hp.neg_one_pow
+    · right; exact hp.neg_one_pow
+
 /-- `twistBD` with tp, tn ∈ {1, -1} preserves row-wise absolute values. -/
 axiom twistBD_preserves_absValues (E : ILS) (tp tn : ℤ)
     (_htp : tp = 1 ∨ tp = -1) (_htn : tn = 1 ∨ tn = -1) :
