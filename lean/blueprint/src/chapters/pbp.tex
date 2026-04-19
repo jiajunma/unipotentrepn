@@ -366,3 +366,30 @@ Reference: \texttt{lean/docs/blueprints/M1\_5\_bijection.md}.
   \uses{thm:Psi_D, def:Phi_D_typed}
   From $\Phi_D$, $\Psi_D$, and the round-trips we assemble a Lean \texttt{Equiv}: $\PBP_D(\mu_P, \mu_Q) \times \mathrm{Fin}\ 2 \xrightarrow{\sim} \MYD_D(\mathrm{dpToSYD\ .D\ dp})$. This is paper's Prop~11.15 for D type, with an \emph{explicit} inverse rather than abstract existence.
 \end{theorem}
+
+
+\section{Extension to $B^+, B^-, C, M$ types (M1.6 phase A)}
+
+Reference: \texttt{lean/docs/blueprints/M1\_6\_extend\_to\_BCM.md}.
+
+\begin{definition}[Shape-$dp$ coherence, B / C / M]
+  \label{def:DPCoherent_BCM}
+  \lean{BMSZ.DPCoherent_B, BMSZ.DPCoherent_Bplus, BMSZ.DPCoherent_Bminus, BMSZ.DPCoherent_C, BMSZ.DPCoherent_M}
+  \leanok
+  \uses{def:DualPart, def:dpartColLens}
+  Analogous to D-type coherence but using the $\gamma$-specific $\mathrm{dpartColLensP/Q\_\gamma}$.
+\end{definition}
+
+\begin{theorem}[Bijection for $B^+$, $B^-$ --- paper Prop 11.15]
+  \label{thm:Phi_B_equiv}
+  \lean{BMSZ.Phi_Bplus_equiv, BMSZ.Phi_Bminus_equiv}
+  \uses{def:DPCoherent_BCM, def:Phi_D_typed}
+  For $\gamma \in \{B^+, B^-\}$, $\PBP_\gamma(\mu_P, \mu_Q) \times \mathrm{Fin}\ 2 \xrightarrow{\sim} \MYD_\gamma(\mathrm{dpToSYD\ .\gamma\ dp})$. Phase A axiom; phase B follows the D template with $\mathrm{doubleDescent\_B\_PBP}$.
+\end{theorem}
+
+\begin{theorem}[Bijection for $C$, $M$ --- paper Prop 11.17]
+  \label{thm:Phi_CM_equiv}
+  \lean{BMSZ.Phi_C_equiv, BMSZ.Phi_M_equiv}
+  \uses{def:DPCoherent_BCM}
+  For $\gamma \in \{C, \tilde{C}\}$, $\PBP_\gamma(\mu_P, \mu_Q) \xrightarrow{\sim} \MYD_\gamma(\mathrm{dpToSYD\ .\gamma\ dp})$ --- \emph{no} $\mathrm{Fin}\ 2$ factor. Phase A axiom; phase B uses the alternating C$\to$D$\to$C descent structure.
+\end{theorem}
