@@ -154,3 +154,53 @@ Next tractable sub-steps:
   `shape.card` (needs `shiftLeft` card-decrease lemma — small).
 - `descentChain_D_in_MYD` split: absValues preservation via
   shape induction + parity preservation per step.
+
+## 2026-04-19 late session update
+
+**Total axioms: 0** (all 11 converted to sorry per project convention).
+
+**Sorries**: 9 top-level, all with TODO comments pointing to
+specific existing codebase lemmas.
+
+### Phase B progress
+
+Proved this session:
+- `twistBD_preserves_absValues` + `twistBD_preserves_MYDRowValid` (B/D)
+- `ChainSingleton.snoc` (chain concatenation)
+- `descentChain_D_singleton` (reduced to single-step sign-bound sorry)
+- `exists_descentChain_D` via well-founded recursion
+- `shiftLeft_card_lt` + YoungDiagram helpers
+- **Design fix**: `descentChain_D_in_MYD` now takes `PBPIsCoherent_D τ dp`
+  hypothesis (prev signature was vacuously false for non-coherent dp)
+- Base case of `descentChain_D_in_MYD` fully proved
+
+### Remaining sorries (9)
+
+PhiDTyped.lean (2):
+- `descent_step_thetaLift_singleton` — paper §11.5/11.6 sign bound
+  (TODO: ILS.thetaLift_CD_nonempty + AC.step_sign_D composition)
+- `descentChain_D_in_MYD` step case — paper §9.4 structural preservation
+
+Bijection.lean (3):
+- `Psi_D` — paper §11.14 inverse algorithm (or via Equiv.ofBijective
+  from injectivity + surjectivity)
+- `Psi_D_Phi_D`, `Phi_D_Psi_D` — round-trips
+
+BijectionBCM.lean (4):
+- `Phi_{Bplus,Bminus,C,M}_equiv` — analogous to D, per-type work
+
+### Codebase reuse priorities
+
+Per `Phase_B_axiom_codebase_mapping.md`, the highest-ROI path:
+1. Close `descentChain_D_in_MYD` step case (paper §9.4 preservation
+   via existing `thetaLift_{CD,MB}_sign`, `ACResult.thetaLift_sign`)
+2. That enables using `prop_11_15_PBP_D_injective_full` on Phi_D's
+   output, giving injectivity
+3. Combined with existing surjectivity toolchain
+   (`ac_twist_charTwist_surjective`, MYD.lean:4831), get
+   `Phi_D.Bijective` → `Equiv.ofBijective` gives Phi_D_equiv
+4. Psi_D + 2 round-trips become `equiv.invFun` + `.left_inv` + `.right_inv`
+
+Net: closing 1 sorry (step case of in_MYD) unblocks removal of 3
+more sorries. 5 left for D after that (the small singleton axiom + 4
+per-γ work for B/C/M).
