@@ -57,6 +57,21 @@ theorem absValues_augment (pq : ℤ × ℤ) (E : ILS) :
   unfold ILS.augment
   exact absValues_cons pq E
 
+/-- `absValues` is preserved under `charTwistCM`: each row is either
+    unchanged or negated, both preserve `.natAbs`. -/
+theorem absValues_charTwistCM (E : ILS) (j : ℤ) :
+    absValues (ILS.charTwistCM E j) = absValues E := by
+  unfold absValues ILS.charTwistCM
+  apply List.ext_getElem
+  · simp
+  intro i h₁ h₂
+  simp only [List.getElem_map, List.getElem_mapIdx]
+  unfold ILS.charTwistCMRow
+  split_ifs
+  · -- Negated case
+    simp [Int.natAbs_neg]
+  · rfl
+
 /-- **Marked Young Diagram of orbit O** (paper Def 9.3 + §9.8).
 
     An ILS `E` such that:
