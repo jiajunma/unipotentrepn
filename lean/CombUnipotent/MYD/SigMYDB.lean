@@ -259,25 +259,20 @@ theorem descent_step_thetaLift_singleton_Bminus {τ : PBP} (hγ : τ.γ = .Bminu
       (toACStepData_Bminus τ hγ).q = [E'] := by
   sorry
 
+/-- Bminus chain singleton: extracted ILS starts from `baseILS .Bminus`.
+    Base case OK; step case has a base-type mismatch (inner uses
+    `baseILS .Bplus` but Bminus expects `baseILS .Bminus`).
+    Reconciliation deferred — needs base-translation lemma between
+    `baseILS .Bplus` and `baseILS .Bminus` via the outer Bminus step. -/
 theorem descentChain_Bminus_singleton {τ : PBP} {chain : List ACStepData}
     (h_chain : IsDescentChain_Bminus τ chain) :
     ∃ E : ILS, ChainSingleton (baseILS .Bminus) chain E := by
   cases h_chain with
-  | base hγ h_empty => exact ⟨baseILS .Bminus, ChainSingleton.nil _⟩
+  | base hγ _h_empty =>
+    exact ⟨baseILS .Bminus, ChainSingleton.nil _⟩
   | step hγ h_rest =>
-    -- step has implicit τ, chain accessible via rename_i
-    rename_i τ_outer
-    -- chain_inner is the second implicit; access via additional rename_i if needed
-    -- Need ChainSingleton starting from baseILS .Bminus, but inner chain
-    -- is on Bplus. The inner chain singleton starts from baseILS .Bplus
-    -- (different base), so we can't directly use it.
-    --
-    -- Bminus's chain extracts ILS starting from baseILS .Bminus = [(0, -1)],
-    -- but inner uses doubleDescent (which preserves shape via shiftLeft).
-    -- The chain runs from inner's base (empty Bplus → baseILS .Bplus = [(1, 0)])
-    -- up to outer Bminus τ.
-    --
-    -- This base mismatch needs reconciliation. Deferred.
+    -- Inner Bplus chain singleton starts from baseILS .Bplus.
+    -- Translating to baseILS .Bminus needs a base reconciliation lemma.
     sorry
 
 /-- Sign target for B⁻ PBP. -/
