@@ -100,4 +100,64 @@ theorem AC_step_singleton (c : ℤ) (E : ILS) (γ : RootType)
   · simp [ACResult.twistBD]
   · rfl
 
+/-! ## Full chain singleton preservation
+
+A chain of step data yields a single-term AC output iff every step's
+internal `ILS.thetaLift` is a singleton. We capture this via an inductive
+predicate `ChainSingleton` that threads the current ILS through the chain.
+-/
+
+/-- Pre-twist of E before theta-lift at step `d`. -/
+def stepPreTwist (E : ILS) (d : ACStepData) : ILS :=
+  if d.γ = .C ∨ d.γ = .M then
+    (if d.ε_wp = 1 then ILS.twistBD E (-1) (-1) else E)
+  else E
+
+/-- Post-twist of E' after theta-lift at step `d`. -/
+def stepPostTwist (E' : ILS) (d : ACStepData) : ILS :=
+  if (d.γ = .Bplus ∨ d.γ = .Bminus ∨ d.γ = .D) ∧ d.ε_τ = 1 then
+    ILS.twistBD E' 1 (-1)
+  else E'
+
+/-- Predicate: folding `chain` starting from ILS `E` yields a final ILS
+    `E_final`, with every step's thetaLift being a singleton. -/
+inductive ChainSingleton : ILS → List ACStepData → ILS → Prop
+  | nil (E : ILS) : ChainSingleton E [] E
+  | cons {E : ILS} {d : ACStepData} {rest : List ACStepData} {E_final : ILS}
+      (E' : ILS)
+      (h_theta : ILS.thetaLift (stepPreTwist E d) d.γ d.p d.q = [E'])
+      (h_rest : ChainSingleton (stepPostTwist E' d) rest E_final) :
+      ChainSingleton E (d :: rest) E_final
+
+/-- **Main lemma (M1.2)**: When a chain is singleton-valid with witness
+    `E_final`, the AC.fold output is `[(1, E_final)]`.
+
+    Proof: induction on `chain`.
+    - Base `[]`: `foldl _ init [] = init = AC.base γ = [(1, baseILS γ)]`.
+      The predicate `ChainSingleton` forces `E_final = baseILS γ`.
+    - Step `d :: rest`: `foldl f init (d :: rest) = foldl f (f init d) rest`.
+      By `AC_step_singleton`, `f init d = [(1, stepPostTwist E' d)]`.
+      Then apply IH on rest with new starting ILS. -/
+theorem AC_fold_singleton (γ : RootType) (chain : List ACStepData)
+    (E_final : ILS) (h : ChainSingleton (baseILS γ) chain E_final) :
+    AC.fold γ chain = [(1, E_final)] := by
+  -- Strengthen for induction: prove it for arbitrary starting ILS.
+  suffices h_gen : ∀ (c : ℤ) (E : ILS) (chain : List ACStepData) (E_final : ILS),
+      ChainSingleton E chain E_final →
+      chain.foldl (fun ac d => AC.step ac d.γ d.p d.q d.ε_τ d.ε_wp) [(c, E)]
+        = [(c, E_final)] by
+    have := h_gen 1 (baseILS γ) chain E_final h
+    unfold AC.fold
+    rw [AC_base_singleton γ]
+    exact this
+  intro c E chain E_final h
+  induction h with
+  | nil E => rfl
+  | cons E' h_theta h_rest ih =>
+      rename_i E d rest E_final
+      simp only [List.foldl_cons]
+      rw [AC_step_singleton c E d.γ d.p d.q d.ε_τ d.ε_wp (stepPreTwist E d) rfl E' h_theta]
+      -- After the rewrite, the head is [(c, stepPostTwist E' d)].
+      exact ih
+
 end BMSZ
