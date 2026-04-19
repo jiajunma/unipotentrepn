@@ -184,13 +184,97 @@ Mapping pattern:
 - C, M:   paper Prop 11.17, source only (no Fin 2)
 -/
 
+/-! ### Phi_Bplus_sig — uses descentChain_sign_match_Bplus (PROVED) -/
+
+theorem descentChain_Bplus_parity {τ : PBP} {chain : List ACStepData}
+    {E : ILS}
+    (_h_chain : IsDescentChain_Bplus τ chain)
+    (_h_sing : ChainSingleton (baseILS .Bplus) chain E) :
+    ∀ (j : ℕ) (h : j < E.length), MYDRowValid .Bplus (j + 1) E[j] := sorry
+
+noncomputable def Phi_Bplus_sig {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    (σh : PBPSet_Bplus_sig μP μQ s) (ε : Fin 2) : MYD_sig .Bplus s :=
+  let σ := σh.val
+  let h_sig := σh.prop
+  let chain := Classical.choose (exists_descentChain_Bplus σ)
+  let h_chain := Classical.choose_spec (exists_descentChain_Bplus σ)
+  let E := Classical.choose (descentChain_Bplus_singleton h_chain)
+  let h_sing := Classical.choose_spec (descentChain_Bplus_singleton h_chain)
+  let h_sign_raw := descentChain_sign_match_Bplus h_chain h_sing
+  let h_par := descentChain_Bplus_parity h_chain h_sing
+  let ε_int : ℤ := if ε = 1 then -1 else 1
+  let E_twisted := ILS.twistBD E ε_int ε_int
+  have hε_signed : ε_int = 1 ∨ ε_int = -1 := by
+    by_cases hε : ε = 1 <;> simp [ε_int, hε]
+  have h_par_twist : ∀ (j : ℕ) (hj : j < E_twisted.length),
+      MYDRowValid .Bplus (j + 1) E_twisted[j] :=
+    twistBD_general_preserves_MYDRowValid_BD E .Bplus ε_int ε_int
+      (Or.inl rfl) h_par
+  have h_sign_twist : ILS.sign E_twisted = s := by
+    show ILS.sign (ILS.twistBD E ε_int ε_int) = s
+    rw [ILS.twistBD_sign E ε_int ε_int hε_signed hε_signed, h_sign_raw, h_sig]
+  ⟨E_twisted, h_par_twist, h_sign_twist⟩
+
+noncomputable def Psi_Bplus_sig {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    (_M : MYD_sig .Bplus s) :
+    PBPSet_Bplus_sig μP μQ s × Fin 2 := sorry
+
 /-- **Paper Prop 11.15 (B⁺), signature variant**. -/
 noncomputable def Phi_Bplus_sig_equiv (μP μQ : YoungDiagram) (s : ℤ × ℤ) :
-    PBPSet_Bplus_sig μP μQ s × Fin 2 ≃ MYD_sig .Bplus s := sorry
+    PBPSet_Bplus_sig μP μQ s × Fin 2 ≃ MYD_sig .Bplus s where
+  toFun := fun ⟨σh, ε⟩ => Phi_Bplus_sig σh ε
+  invFun := Psi_Bplus_sig (μP := μP) (μQ := μQ)
+  left_inv := fun _ => sorry
+  right_inv := fun _ => sorry
+
+/-! ### Phi_Bminus_sig — uses descentChain_sign_match_Bminus (PROVED) -/
+
+theorem descentChain_Bminus_parity {τ : PBP} {chain : List ACStepData}
+    {E : ILS}
+    (_h_chain : IsDescentChain_Bminus τ chain)
+    (_h_sing : ChainSingleton (baseILS .Bminus) chain E) :
+    ∀ (j : ℕ) (h : j < E.length), MYDRowValid .Bminus (j + 1) E[j] := sorry
+
+noncomputable def Phi_Bminus_sig {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    (σh : PBPSet_Bminus_sig μP μQ s) (ε : Fin 2) : MYD_sig .Bminus s :=
+  let σ := σh.val
+  let h_sig := σh.prop
+  let chain := Classical.choose (exists_descentChain_Bminus σ)
+  let h_chain := Classical.choose_spec (exists_descentChain_Bminus σ)
+  let E := Classical.choose (descentChain_Bminus_singleton h_chain)
+  let h_sing := Classical.choose_spec (descentChain_Bminus_singleton h_chain)
+  let h_sign_raw := descentChain_sign_match_Bminus h_chain h_sing
+  let h_par := descentChain_Bminus_parity h_chain h_sing
+  let ε_int : ℤ := if ε = 1 then -1 else 1
+  let E_twisted := ILS.twistBD E ε_int ε_int
+  have hε_signed : ε_int = 1 ∨ ε_int = -1 := by
+    by_cases hε : ε = 1 <;> simp [ε_int, hε]
+  have h_par_twist : ∀ (j : ℕ) (hj : j < E_twisted.length),
+      MYDRowValid .Bminus (j + 1) E_twisted[j] :=
+    twistBD_general_preserves_MYDRowValid_BD E .Bminus ε_int ε_int
+      (Or.inr (Or.inl rfl)) h_par
+  have h_sign_twist : ILS.sign E_twisted = s := by
+    show ILS.sign (ILS.twistBD E ε_int ε_int) = s
+    rw [ILS.twistBD_sign E ε_int ε_int hε_signed hε_signed, h_sign_raw]
+    -- h_sign_raw : ILS.sign E = signTarget_Bminus' σ.val
+    -- Need: signTarget_Bminus' σ.val = s
+    -- σh.prop : signTarget_Bminus σh.val = s, and signTarget_Bminus = signTarget_Bminus' defeq
+    show signTarget_Bminus' σ.val = s
+    have heq : signTarget_Bminus' σ.val = signTarget_Bminus σ.val := rfl
+    rw [heq]; exact h_sig
+  ⟨E_twisted, h_par_twist, h_sign_twist⟩
+
+noncomputable def Psi_Bminus_sig {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    (_M : MYD_sig .Bminus s) :
+    PBPSet_Bminus_sig μP μQ s × Fin 2 := sorry
 
 /-- **Paper Prop 11.15 (B⁻), signature variant**. -/
 noncomputable def Phi_Bminus_sig_equiv (μP μQ : YoungDiagram) (s : ℤ × ℤ) :
-    PBPSet_Bminus_sig μP μQ s × Fin 2 ≃ MYD_sig .Bminus s := sorry
+    PBPSet_Bminus_sig μP μQ s × Fin 2 ≃ MYD_sig .Bminus s where
+  toFun := fun ⟨σh, ε⟩ => Phi_Bminus_sig σh ε
+  invFun := Psi_Bminus_sig (μP := μP) (μQ := μQ)
+  left_inv := fun _ => sorry
+  right_inv := fun _ => sorry
 
 /-- **Paper Prop 11.17 (C), signature variant**. -/
 noncomputable def Phi_C_sig_equiv (μP μQ : YoungDiagram) (s : ℤ × ℤ) :
