@@ -93,38 +93,87 @@ theorem dpToSYD_empty (γ : RootType) : dpToSYD γ [] = SYD.empty γ := by
 
 /-! ## Quasi-distinguished dual partitions
 
-A dual partition `Ǒ` is **quasi-distinguished** when `r_i > r_{i+1}` for
-every `i ≥ 2` (1-indexed), equivalently, all row lengths from position 2
-onwards are strictly decreasing. The top two rows may coincide.
+A dual partition `Ǒ` is **quasi-distinguished** (for root type γ) when
+every γ-pair is either **primitive** (strictly decreasing) or **tailed**
+(second element is 0) — equivalently, no γ-pair is **balanced**
+(both positive and equal).
 
-Paper [BMSZ] §11 uses this hypothesis to guarantee that `L_τ` is a
-single MYD (not a formal sum) and that the descent-induction closes.
+The γ-pair indexing convention (paper [BMSZb] §10):
+- γ ∈ {B⁺, B⁻, D}: pairs `(2i, 2i+1)` for `i ≥ 1` (1-indexed), i.e.
+  `(r_2, r_3), (r_4, r_5), (r_6, r_7), ...`
+- γ ∈ {C, M}: pairs `(2i-1, 2i)` for `i ≥ 1`, i.e.
+  `(r_1, r_2), (r_3, r_4), (r_5, r_6), ...`
 
-Reference: `docs/myd_computation.md` — "quasi-distinguished at top:
-r₂(Ǒ) > r₃(Ǒ)". The recursive version (used by Props 11.13–11.17)
-propagates to every descent level, giving strict decrease from index 2.
+A γ-pair `(r_{2i}, r_{2i+1})` (B/D) or `(r_{2i-1}, r_{2i})` (C/M) is:
+- **primitive** if first > second (strict inequality, positive first)
+- **tailed** if second = 0
+- **balanced** if first = second > 0 (both positive, equal)
+
+Since `dp` is a partition (decreasing), `primitive ∨ balanced ∨ tailed`
+holds for every pair. Quasi-distinguished excludes the balanced case.
+
+Reference: `docs/recursive_counting.md` §"balanced pair"; [BMSZb] Prop
+10.11 (b): "If (2,3) ∉ PP_★(Ǒ) [balanced pair]".
+
+Paper [BMSZ] §11 uses QD to guarantee `L_τ` is a single MYD.
 -/
 
-/-- Strict decrease of `dp` from index 1 onwards (0-indexed), i.e.
-    `dp[1] > dp[2] > dp[3] > ...`. Top two rows `dp[0], dp[1]` may coincide. -/
-def IsQuasiDistinguished (dp : DualPart) : Prop :=
-  List.IsChain (· > ·) (dp.drop 1)
+/-- 0-indexed offset of the γ-pairing: pairs start at this offset and
+    step by 2. For B/D this is 1 (pairs `(1,2), (3,4), ...`); for C/M
+    this is 0 (pairs `(0,1), (2,3), ...`). -/
+def pairOffset (γ : RootType) : ℕ :=
+  match γ with
+  | .Bplus | .Bminus | .D => 1
+  | .C | .M => 0
 
-instance (dp : DualPart) : Decidable (IsQuasiDistinguished dp) := by
-  unfold IsQuasiDistinguished; exact inferInstance
+/-- Is the 0-indexed position `k` the start of a γ-pair? I.e., does a
+    pair `(k, k+1)` exist in the γ-pairing convention? -/
+def IsPairStart (γ : RootType) (k : ℕ) : Prop :=
+  k ≥ pairOffset γ ∧ (k - pairOffset γ) % 2 = 0
 
-/-- Empty dp is quasi-distinguished. -/
-theorem IsQuasiDistinguished_nil : IsQuasiDistinguished [] := by
-  unfold IsQuasiDistinguished; simp
+instance (γ : RootType) (k : ℕ) : Decidable (IsPairStart γ k) := by
+  unfold IsPairStart; exact inferInstance
 
-/-- Single-row dp is quasi-distinguished. -/
-theorem IsQuasiDistinguished_singleton (r : ℕ) :
-    IsQuasiDistinguished [r] := by
-  unfold IsQuasiDistinguished; simp [List.IsChain]
+/-- A γ-pair starting at 0-indexed position `k` in `dp` is **balanced**:
+    both `dp[k]` and `dp[k+1]` exist, are positive, and equal. -/
+def IsBalancedPair (γ : RootType) (dp : DualPart) (k : ℕ) : Prop :=
+  IsPairStart γ k ∧ ∃ (h₁ : k < dp.length) (h₂ : k + 1 < dp.length),
+    dp[k] = dp[k + 1] ∧ 0 < dp[k]
 
-/-- Two-row dp is always quasi-distinguished (only `r_1, r_2` — no `r_3`). -/
-theorem IsQuasiDistinguished_pair (r₁ r₂ : ℕ) :
-    IsQuasiDistinguished [r₁, r₂] := by
-  unfold IsQuasiDistinguished; simp [List.IsChain]
+instance (γ : RootType) (dp : DualPart) (k : ℕ) :
+    Decidable (IsBalancedPair γ dp k) := by
+  unfold IsBalancedPair; exact inferInstance
+
+/-- **Quasi-distinguished** (paper [BMSZ] §11): the dual partition has
+    no balanced γ-pair. Every pair is either primitive (first > second)
+    or tailed (second = 0). -/
+def IsQuasiDistinguished (γ : RootType) (dp : DualPart) : Prop :=
+  ∀ k, ¬ IsBalancedPair γ dp k
+
+instance (γ : RootType) (dp : DualPart) :
+    Decidable (IsQuasiDistinguished γ dp) := by
+  unfold IsQuasiDistinguished
+  -- Only need to check k < dp.length
+  refine decidable_of_iff (∀ k ∈ List.range dp.length, ¬ IsBalancedPair γ dp k) ?_
+  constructor
+  · intro h k
+    by_cases hk : k < dp.length
+    · exact h k (List.mem_range.mpr hk)
+    · intro hbad
+      obtain ⟨_, h₁, _⟩ := hbad
+      exact hk h₁
+  · intro h k _; exact h k
+
+/-- Empty dp is quasi-distinguished (no pairs at all). -/
+theorem IsQuasiDistinguished_nil (γ : RootType) :
+    IsQuasiDistinguished γ [] := by
+  intro k ⟨_, h₁, _⟩
+  exact absurd h₁ (by simp)
+
+/-- Single-row dp is quasi-distinguished (no complete pair). -/
+theorem IsQuasiDistinguished_singleton (γ : RootType) (r : ℕ) :
+    IsQuasiDistinguished γ [r] := by
+  intro k ⟨_, _, h₂, _⟩
+  simp at h₂
 
 end BMSZ
