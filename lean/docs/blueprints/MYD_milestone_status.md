@@ -4,7 +4,7 @@
 **Base**: main @ v3.0 (`90aa1d6`)
 **Branch head**: `736db20` (M1.5 Phase A complete)
 **Commits**: 18 on branch
-**Build**: Lean 931/931 green, blueprint rebuilds clean.
+**Build**: Lean 1010/1010 green (post-M1.7), blueprint rebuilds clean.
 
 ## Roadmap
 
@@ -16,7 +16,9 @@
 | M1.3 | `Phi_chain` + `extractILS` (plumbing) | ✓ complete |
 | M1.4 Phase A | Typed `Phi_D : PBPSet × Fin 2 → MYD` + 5 axioms | ✓ complete |
 | M1.5 Phase A | `Phi_D_equiv : PBPSet × Fin 2 ≃ MYD` + 3 axioms | ✓ complete |
-| pair/PP alignment | Paper Def 3.5 + 4.8 (primitive/balanced/tailed/vacant + QD) + PP_★(Ǒ) universe + counting inline check match | ✓ complete |
+| pair/PP alignment | Paper Def 3.5 + 4.8 + PP_★(Ǒ) + counting match | ✓ complete |
+| M1.6 Phase A | Extend Phase A to B⁺, B⁻, C, M: `Phi_γ_equiv` axioms | ✓ complete |
+| M1.7 | `Fintype (MYD γ O)` via bijection + card equalities (Nat.card) | ✓ complete |
 
 ### Deferred (Phase B)
 
@@ -95,11 +97,28 @@ Total: 8 axioms pending proof.
 
 ## Next decision point
 
-Three natural continuations; user to pick:
+User directed sequence: 1 → 3 → 2.
 
-1. **Breadth**: extend Phase A to γ ∈ {B⁺, B⁻, C, M} (~4 more
-   axiom/theorem blocks, mostly mechanical).
-2. **Depth**: start Phase B proofs for D type (prove the 8 axioms).
-   This is paper §11 formalization — substantial.
-3. **Infrastructure**: Fintype instance for MYD γ O + card
-   equality theorem. Unlocks downstream counting-based reasoning.
+- ✓ **(1) Breadth**: M1.6 Phase A done (B/C/M).
+- ✓ **(3) Infrastructure**: M1.7 Fintype + card equality done.
+- **(2) Depth (Phase B proofs for D type)**: currently the NL plan for
+  the two small `twistBD_preserves_*` lemmas is at
+  `lean/docs/blueprints/M1_4_twistBD_preservation.md`. The big 6
+  axioms (exists_descentChain_D, singleton, in_MYD, Psi_D + 2
+  round-trips) remain as paper §11 content — each is a substantial
+  milestone on its own.
+
+Total axioms across types (Phase B obligations):
+- D: 8 (M1.4 + M1.5 Phase A)
+- B⁺, B⁻: 1 each (just the Equiv axiom) — expands to 8 each if
+  decomposed to the D pattern.
+- C, M: 1 each — expands to different structure (single descent)
+  when decomposed.
+
+**Recommended next step if continuing (2)**: prove
+`twistBD_preserves_absValues` first (small, no paper content).
+Then `twistBD_preserves_MYDRowValid_BD` (narrow to B/D parity case,
+direct calculation). These get 2 of the 8 D-axioms out of the way.
+
+The remaining 6 D-axioms are genuine paper §11 content and are best
+tackled one at a time, each as its own session.
