@@ -71,9 +71,38 @@ noncomputable def signTarget_D (τ : PBP) : ℤ × ℤ :=
     with `AC.step_sign_D` (MYD.lean:865). Stated as sorry for now. -/
 theorem descentChain_sign_match_D {τ : PBP} {chain : List ACStepData}
     {E : ILS}
-    (_h_chain : IsDescentChain_D τ chain)
-    (_h_sing : ChainSingleton (baseILS .D) chain E) :
+    (h_chain : IsDescentChain_D τ chain)
+    (h_sing : ChainSingleton (baseILS .D) chain E) :
     ILS.sign E = signTarget_D τ := by
-  sorry
+  induction h_chain generalizing E with
+  | base τ hγ h_empty =>
+    cases h_sing
+    -- E = baseILS .D = []; ILS.sign [] = (0, 0)
+    show ILS.sign (baseILS .D) = signTarget_D τ
+    -- ILS.sign [] = (0, 0) definitionally
+    have h_E : ILS.sign (baseILS .D) = (0, 0) := by
+      unfold baseILS ILS.sign
+      simp
+    rw [h_E]
+    -- PBP.signature τ = (0, 0) when both shapes are empty (D case)
+    unfold signTarget_D
+    have h_sig : PBP.signature τ = (0, 0) := by
+      unfold PBP.signature
+      have hP_empty : ∀ s, τ.P.countSym s = 0 := by
+        intro s
+        unfold PaintedYoungDiagram.countSym
+        rw [h_empty.1]
+        simp
+      have hQ_empty : ∀ s, τ.Q.countSym s = 0 := by
+        intro s
+        unfold PaintedYoungDiagram.countSym
+        rw [h_empty.2]
+        simp
+      simp [hγ, hP_empty, hQ_empty]
+    rw [h_sig]
+    simp
+  | step hγ h_rest ih =>
+    -- Step: use ACResult.thetaLift_sign + sign-preserving operations
+    sorry
 
 end BMSZ
