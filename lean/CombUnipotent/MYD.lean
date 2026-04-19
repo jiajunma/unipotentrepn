@@ -4123,6 +4123,22 @@ noncomputable def toACStepData_Bplus (τ : PBP) (hγ : τ.γ = .Bplus) : ACStepD
   ε_τ := PBP.epsilon τ
   ε_wp := 0
 
+/-- Extract ACStepData from a B⁻-type PBP. -/
+noncomputable def toACStepData_Bminus (τ : PBP) (hγ : τ.γ = .Bminus) : ACStepData where
+  γ := .Bminus
+  p := (PBP.signature τ).1
+  q := (PBP.signature τ).2
+  ε_τ := PBP.epsilon τ
+  ε_wp := 0
+
+/-- Extract ACStepData from an M-type PBP. -/
+noncomputable def toACStepData_M (τ : PBP) (hγ : τ.γ = .M) (wp : PPSet) : ACStepData where
+  γ := .M
+  p := (PBP.signature τ).1
+  q := (PBP.signature τ).2
+  ε_τ := PBP.epsilon τ
+  ε_wp := wp.epsilon
+
 /-- Extract ACStepData from a C-type PBP with primitive pair set. -/
 noncomputable def toACStepData_C (τ : PBP) (hγ : τ.γ = .C) (wp : PPSet) : ACStepData where
   γ := .C

@@ -15,6 +15,7 @@ cardinality identity falls out of `Equiv.ofBijective` via
 existing `prop_11_15_PBP_D_injective_full`.
 -/
 import CombUnipotent.MYD.SigMYD
+import CombUnipotent.MYD.SigMYDB
 import CombUnipotent.MYD.PhiDTyped
 import CombUnipotent.CountingProof.Basic
 import Mathlib.SetTheory.Cardinal.Finite
@@ -144,11 +145,7 @@ noncomputable def Phi_D_sig_equiv (μP μQ : YoungDiagram) (s : ℤ × ℤ) :
   left_inv := fun ⟨σh, ε⟩ => Psi_D_Phi_D_sig σh ε
   right_inv := fun M => Phi_D_Psi_D_sig M
 
-/-! ## Signature targets for B⁺ / B⁻ / C / M -/
-
-/-- Signature target for B⁺ PBP (parallel to `signTarget_D`). -/
-noncomputable def signTarget_Bplus (τ : PBP) : ℤ × ℤ :=
-  let s := PBP.signature τ; ((s.1 : ℤ), (s.2 : ℤ))
+/-! ## Signature targets for B⁻ / C / M (B⁺ is in SigMYDB.lean) -/
 
 /-- Signature target for B⁻ PBP. -/
 noncomputable def signTarget_Bminus (τ : PBP) : ℤ × ℤ :=
