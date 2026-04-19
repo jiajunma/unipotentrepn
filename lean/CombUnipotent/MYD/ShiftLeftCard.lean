@@ -76,6 +76,52 @@ theorem shiftLeft_card_lt (μ : YoungDiagram) (h : 0 < μ.colLen 0) :
   have h_ge := colLen_zero_le_card μ
   omega
 
+/-- `shiftLeft.rowLen 0 < x ↔ 0 < x ∧ rowLen 0 ≤ x`: equivalently,
+    `n < shiftLeft.rowLen 0 ↔ n + 1 < μ.rowLen 0` (for n : ℕ). -/
+theorem shiftLeft_rowLen_zero_iff (μ : YoungDiagram) (n : ℕ) :
+    n < μ.shiftLeft.rowLen 0 ↔ n + 1 < μ.rowLen 0 := by
+  rw [← YoungDiagram.mem_iff_lt_rowLen (μ := μ.shiftLeft) (i := 0) (j := n),
+      ← YoungDiagram.mem_iff_lt_rowLen (μ := μ) (i := 0) (j := n + 1),
+      YoungDiagram.mem_shiftLeft]
+
+/-- **Sub-lemma 1 (P-side)**: `(shiftLeft μ).colLens = μ.colLens.tail`.
+
+    Proved via `List.ext_getElem?`:
+    - Index validity matches: `n < (shiftLeft μ).colLens.length`
+      ↔ `n + 1 < μ.colLens.length` (via `shiftLeft_rowLen_zero_iff`
+      + `length_colLens`).
+    - Content matches: `(shiftLeft μ).colLen n = μ.colLen (n + 1)`
+      (via `colLen_shiftLeft`).
+
+    Used to prove `coherence_descend_D` (dp descent relation). -/
+theorem shiftLeft_colLens_eq_tail (μ : YoungDiagram) :
+    μ.shiftLeft.colLens = μ.colLens.tail := by
+  apply List.ext_getElem?
+  intro n
+  by_cases hn : n + 1 < μ.colLens.length
+  · -- Both in-bounds
+    rw [YoungDiagram.length_colLens] at hn
+    have h_shift : n < μ.shiftLeft.colLens.length := by
+      rw [YoungDiagram.length_colLens]
+      exact (shiftLeft_rowLen_zero_iff μ n).mpr hn
+    rw [List.getElem?_eq_getElem h_shift]
+    rw [List.getElem?_tail, List.getElem?_eq_getElem (by
+      rw [YoungDiagram.length_colLens]; exact hn)]
+    congr 1
+    rw [YoungDiagram.getElem_colLens, YoungDiagram.getElem_colLens,
+        YoungDiagram.colLen_shiftLeft]
+  · -- Both out-of-bounds
+    push_neg at hn
+    rw [YoungDiagram.length_colLens] at hn
+    have h_shift_ge : μ.shiftLeft.colLens.length ≤ n := by
+      rw [YoungDiagram.length_colLens]
+      by_contra h_lt
+      push_neg at h_lt
+      exact absurd ((shiftLeft_rowLen_zero_iff μ n).mp h_lt) (by omega)
+    rw [List.getElem?_eq_none h_shift_ge]
+    rw [List.getElem?_tail, List.getElem?_eq_none]
+    rw [YoungDiagram.length_colLens]; exact hn
+
 /-- `shiftLeft.card ≤ card` unconditionally. -/
 theorem shiftLeft_card_le (μ : YoungDiagram) :
     μ.shiftLeft.cells.card ≤ μ.cells.card := by

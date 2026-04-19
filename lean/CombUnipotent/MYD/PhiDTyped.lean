@@ -170,6 +170,17 @@ private theorem dpartColLensP_D_tail (dp : DualPart) :
   | [_] => rfl
   | _ :: _ :: _ => rfl
 
+/-- **Sub-lemma 1 (P-side coherence preservation)**: P's coherence
+    lifts to the doubleDescent PBP with `dp.drop 2`. -/
+theorem coherence_descend_D_P {τ : PBP} (hγ : τ.γ = .D) {dp : DualPart}
+    (h_coh : τ.P.shape.colLens = dpartColLensP_D dp) :
+    (doubleDescent_D_PBP τ hγ).P.shape.colLens =
+    dpartColLensP_D (dp.drop 2) := by
+  unfold doubleDescent_D_PBP
+  dsimp only
+  -- The new P shape is τ.P.shape.shiftLeft
+  rw [YoungDiagram.shiftLeft_colLens_eq_tail, h_coh, dpartColLensP_D_tail]
+
 /-- `dpartColLensQ_D` relation under `dp.drop 2`. Has a conditional case. -/
 private theorem dpartColLensQ_D_drop2 (dp : DualPart) :
     ∀ r₁ r₂ rest, dp = r₁ :: r₂ :: rest →
