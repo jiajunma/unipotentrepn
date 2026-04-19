@@ -17,6 +17,7 @@ existing `prop_11_15_PBP_D_injective_full`.
 import CombUnipotent.MYD.SigMYD
 import CombUnipotent.MYD.PhiDTyped
 import CombUnipotent.CountingProof.Basic
+import Mathlib.SetTheory.Cardinal.Finite
 
 namespace BMSZ
 
@@ -177,5 +178,74 @@ noncomputable def Phi_C_sig_equiv (μP μQ : YoungDiagram) (s : ℤ × ℤ) :
 /-- **Paper Prop 11.17 (M), signature variant**. -/
 noncomputable def Phi_M_sig_equiv (μP μQ : YoungDiagram) (s : ℤ × ℤ) :
     PBPSet_M_sig μP μQ s ≃ MYD_sig .M s := sorry
+
+/-! ## Fintype + cardinality corollaries -/
+
+/-- Fintype on the signature-refined PBPSet subtype. -/
+noncomputable instance fintype_PBPSet_D_sig
+    (μP μQ : YoungDiagram) (s : ℤ × ℤ) : Fintype (PBPSet_D_sig μP μQ s) :=
+  Subtype.fintype _
+
+noncomputable instance fintype_PBPSet_Bplus_sig
+    (μP μQ : YoungDiagram) (s : ℤ × ℤ) : Fintype (PBPSet_Bplus_sig μP μQ s) :=
+  Subtype.fintype _
+
+noncomputable instance fintype_PBPSet_Bminus_sig
+    (μP μQ : YoungDiagram) (s : ℤ × ℤ) : Fintype (PBPSet_Bminus_sig μP μQ s) :=
+  Subtype.fintype _
+
+noncomputable instance fintype_PBPSet_C_sig
+    (μP μQ : YoungDiagram) (s : ℤ × ℤ) : Fintype (PBPSet_C_sig μP μQ s) :=
+  Subtype.fintype _
+
+noncomputable instance fintype_PBPSet_M_sig
+    (μP μQ : YoungDiagram) (s : ℤ × ℤ) : Fintype (PBPSet_M_sig μP μQ s) :=
+  Subtype.fintype _
+
+/-- Fintype on `MYD_sig γ s` via the equiv. -/
+noncomputable def fintype_MYD_sig_D (μP μQ : YoungDiagram) (s : ℤ × ℤ) :
+    Fintype (MYD_sig .D s) :=
+  Fintype.ofEquiv _ (Phi_D_sig_equiv μP μQ s)
+
+noncomputable def fintype_MYD_sig_Bplus (μP μQ : YoungDiagram) (s : ℤ × ℤ) :
+    Fintype (MYD_sig .Bplus s) :=
+  Fintype.ofEquiv _ (Phi_Bplus_sig_equiv μP μQ s)
+
+noncomputable def fintype_MYD_sig_Bminus (μP μQ : YoungDiagram) (s : ℤ × ℤ) :
+    Fintype (MYD_sig .Bminus s) :=
+  Fintype.ofEquiv _ (Phi_Bminus_sig_equiv μP μQ s)
+
+noncomputable def fintype_MYD_sig_C (μP μQ : YoungDiagram) (s : ℤ × ℤ) :
+    Fintype (MYD_sig .C s) :=
+  Fintype.ofEquiv _ (Phi_C_sig_equiv μP μQ s)
+
+noncomputable def fintype_MYD_sig_M (μP μQ : YoungDiagram) (s : ℤ × ℤ) :
+    Fintype (MYD_sig .M s) :=
+  Fintype.ofEquiv _ (Phi_M_sig_equiv μP μQ s)
+
+/-- **Paper Prop 11.15 card (D, sig)**: |PBPSet_D_sig × Fin 2| = |MYD_sig .D s|. -/
+theorem card_PBPSet_D_sig_Fin2_eq (μP μQ : YoungDiagram) (s : ℤ × ℤ) :
+    Nat.card (PBPSet_D_sig μP μQ s × Fin 2) = Nat.card (MYD_sig .D s) :=
+  Nat.card_congr (Phi_D_sig_equiv μP μQ s)
+
+/-- **Paper Prop 11.15 card (B⁺, sig)**. -/
+theorem card_PBPSet_Bplus_sig_Fin2_eq (μP μQ : YoungDiagram) (s : ℤ × ℤ) :
+    Nat.card (PBPSet_Bplus_sig μP μQ s × Fin 2) = Nat.card (MYD_sig .Bplus s) :=
+  Nat.card_congr (Phi_Bplus_sig_equiv μP μQ s)
+
+/-- **Paper Prop 11.15 card (B⁻, sig)**. -/
+theorem card_PBPSet_Bminus_sig_Fin2_eq (μP μQ : YoungDiagram) (s : ℤ × ℤ) :
+    Nat.card (PBPSet_Bminus_sig μP μQ s × Fin 2) = Nat.card (MYD_sig .Bminus s) :=
+  Nat.card_congr (Phi_Bminus_sig_equiv μP μQ s)
+
+/-- **Paper Prop 11.17 card (C, sig)**. -/
+theorem card_PBPSet_C_sig_eq (μP μQ : YoungDiagram) (s : ℤ × ℤ) :
+    Nat.card (PBPSet_C_sig μP μQ s) = Nat.card (MYD_sig .C s) :=
+  Nat.card_congr (Phi_C_sig_equiv μP μQ s)
+
+/-- **Paper Prop 11.17 card (M, sig)**. -/
+theorem card_PBPSet_M_sig_eq (μP μQ : YoungDiagram) (s : ℤ × ℤ) :
+    Nat.card (PBPSet_M_sig μP μQ s) = Nat.card (MYD_sig .M s) :=
+  Nat.card_congr (Phi_M_sig_equiv μP μQ s)
 
 end BMSZ
