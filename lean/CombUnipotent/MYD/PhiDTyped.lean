@@ -53,19 +53,40 @@ inductive IsDescentChain_D : PBP → List ACStepData → Prop
 axiom exists_descentChain_D {μP μQ : YoungDiagram} (σ : PBPSet .D μP μQ) :
     ∃ c : List ACStepData, IsDescentChain_D σ.val c
 
-/-- **Axiom (M1.4.2)**: any valid descent chain for τ is
-    ChainSingleton-valid, yielding a unique ILS `E`.
+/-- **Per-step thetaLift singleton for descent chain** (paper Lem 11.5/11.6):
+    each step in a descent chain has a singleton ILS-thetaLift.
 
-    Proof plan: induction on `IsDescentChain_D`. Base case uses
-    `ChainSingleton.nil`. Inductive step uses `AC_step_singleton`
-    plus the sign-bound hypothesis from paper Lemma 11.5/11.6
-    (`ILS.thetaLift_CD_nonempty` / `ILS.thetaLift_MB_nonempty` at
-    MYD.lean:4679+ already has the non-emptiness direction; combined
-    with the fact that `ILS.thetaLift_*` always has length ≤ 1, we
-    get exactly length 1). -/
-axiom descentChain_D_singleton {τ : PBP} {chain : List ACStepData}
+    This is the essential sign-bound content of paper §11.5-11.6.
+    Kept as axiom pending the full sign-preservation proof. -/
+axiom descent_step_thetaLift_singleton {τ : PBP} (hγ : τ.γ = .D)
+    (E_inner : ILS) :
+    ∃ E' : ILS, ILS.thetaLift
+      (stepPreTwist E_inner (toACStepData_D τ hγ))
+      (toACStepData_D τ hγ).γ
+      (toACStepData_D τ hγ).p
+      (toACStepData_D τ hγ).q = [E']
+
+/-- **Theorem (M1.4.2 partial)**: any valid descent chain for τ is
+    ChainSingleton-valid.
+
+    Proof: induction on `IsDescentChain_D`. Base case (empty chain)
+    uses `ChainSingleton.nil`. Inductive step uses `ChainSingleton.snoc`
+    with the per-step singleton hypothesis from
+    `descent_step_thetaLift_singleton`.
+
+    This reduces the full axiom `descentChain_D_singleton` to the
+    single-step sign-bound fact (paper §11.5/11.6 content). -/
+theorem descentChain_D_singleton {τ : PBP} {chain : List ACStepData}
     (h_chain : IsDescentChain_D τ chain) :
-    ∃ E : ILS, ChainSingleton (baseILS .D) chain E
+    ∃ E : ILS, ChainSingleton (baseILS .D) chain E := by
+  induction h_chain with
+  | base τ hγ h_empty => exact ⟨baseILS .D, ChainSingleton.nil _⟩
+  | step hγ h_rest ih =>
+    rename_i τ_outer chain_inner
+    obtain ⟨E_inner, h_inner⟩ := ih
+    obtain ⟨E', h_theta⟩ := descent_step_thetaLift_singleton hγ E_inner
+    exact ⟨stepPostTwist E' (toACStepData_D τ_outer hγ),
+           ChainSingleton.snoc h_inner h_theta⟩
 
 /-- **Axiom (M1.4.3)**: the ILS `E` extracted from a valid descent
     chain satisfies the MYD properties.

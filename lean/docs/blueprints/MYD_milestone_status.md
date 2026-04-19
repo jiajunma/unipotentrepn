@@ -122,3 +122,25 @@ direct calculation). These get 2 of the 8 D-axioms out of the way.
 
 The remaining 6 D-axioms are genuine paper §11 content and are best
 tackled one at a time, each as its own session.
+
+### Phase B progress (2026-04-19 later)
+
+✓ `twistBD_preserves_absValues` — proved (commit `e5ff481`).
+Used `List.ext_getElem` + per-index case analysis + the helpers
+`pow_signed` and `natAbs_signed_mul`.
+
+✓ `twistBD_preserves_MYDRowValid` (B/D narrowed) — proved.
+Key insight: at B/D parity-forced positions (ℓ even), `twistBDRow`
+returns the row unchanged — so MYDRowValid is trivially preserved.
+
+Remaining axioms (11 total):
+- D (PhiDTyped): exists_descentChain_D, descentChain_D_singleton,
+  descentChain_D_in_MYD (paper §11)
+- D (Bijection): Psi_D, Psi_D_Phi_D, Phi_D_Psi_D (paper §11.14)
+- B⁺, B⁻, C, M (BijectionBCM): Phi_γ_equiv (one each)
+
+Next technical sub-step for `descentChain_D_singleton`:
+prove `ChainSingleton.snoc` (chain-append version), because
+`IsDescentChain_D.step` uses `chain ++ [d]` while `ChainSingleton.cons`
+prepends `d :: rest`. This orientation mismatch blocks the direct
+induction; a `snoc` lemma reconciles it.

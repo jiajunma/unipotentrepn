@@ -129,6 +129,30 @@ inductive ChainSingleton : ILS → List ACStepData → ILS → Prop
       (h_rest : ChainSingleton (stepPostTwist E' d) rest E_final) :
       ChainSingleton E (d :: rest) E_final
 
+/-- **Chain snoc** (chain concatenation with a single step at the end).
+
+    Given a `ChainSingleton E chain E_mid` and one more step `d` whose
+    ILS-thetaLift is singleton `[E']`, we get
+    `ChainSingleton E (chain ++ [d]) (stepPostTwist E' d)`.
+
+    This is needed because `IsDescentChain_D.step` builds the chain by
+    appending outer step, while `ChainSingleton.cons` prepends. Snoc
+    reconciles the orientations. -/
+theorem ChainSingleton.snoc {E E_mid E' : ILS}
+    {chain : List ACStepData} {d : ACStepData}
+    (h_rest : ChainSingleton E chain E_mid)
+    (h_theta : ILS.thetaLift (stepPreTwist E_mid d) d.γ d.p d.q = [E']) :
+    ChainSingleton E (chain ++ [d]) (stepPostTwist E' d) := by
+  induction h_rest with
+  | nil E =>
+    -- base: chain = [], E_mid = E. [] ++ [d] = [d].
+    rw [List.nil_append]
+    exact ChainSingleton.cons E' h_theta (ChainSingleton.nil _)
+  | cons E'' h_theta' _ ih =>
+    -- inductive: chain = d_head :: rest. Use IH on rest.
+    rw [List.cons_append]
+    exact ChainSingleton.cons E'' h_theta' (ih h_theta)
+
 /-- **Main lemma (M1.2)**: When a chain is singleton-valid with witness
     `E_final`, the AC.fold output is `[(1, E_final)]`.
 
