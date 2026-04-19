@@ -162,6 +162,28 @@ private theorem dpartColLensP_D_eq_nil_iff (dp : DualPart) :
     | _ :: _ :: _ => simp [dpartColLensP_D] at h
   · intro h; subst h; rfl
 
+/-- `(dpartColLensP_D dp).tail = dpartColLensP_D (dp.drop 2)`. -/
+private theorem dpartColLensP_D_tail (dp : DualPart) :
+    (dpartColLensP_D dp).tail = dpartColLensP_D (dp.drop 2) := by
+  match dp with
+  | [] => rfl
+  | [_] => rfl
+  | _ :: _ :: _ => rfl
+
+/-- `dpartColLensQ_D` relation under `dp.drop 2`. Has a conditional case. -/
+private theorem dpartColLensQ_D_drop2 (dp : DualPart) :
+    ∀ r₁ r₂ rest, dp = r₁ :: r₂ :: rest →
+      (r₂ > 1 → (dpartColLensQ_D dp).tail = dpartColLensQ_D (dp.drop 2)) ∧
+      (r₂ ≤ 1 → dpartColLensQ_D dp = dpartColLensQ_D (dp.drop 2)) := by
+  intro r₁ r₂ rest h
+  subst h
+  constructor
+  · intro hr₂
+    simp [dpartColLensQ_D, hr₂]
+  · intro hr₂
+    have : ¬ (r₂ > 1) := by omega
+    simp [dpartColLensQ_D, this]
+
 /-- **Sub-lemma 2**: `thetaLift_CD` output form when it's singleton.
 
     Definitional unfold of `ILS.thetaLift_CD` (MYD.lean:180):
@@ -331,6 +353,33 @@ theorem twistBD_preserves_MYDRowValid (E : ILS) (γ : RootType) (t : ℤ)
     rcases hγ with h | h | h <;> rw [h] at hforced <;> exact hforced
   -- In twistBDRow, ℓ even means the row is unchanged.
   have heq : (ILS.twistBD E t t)[j] = E[j] := by
+    unfold ILS.twistBD
+    rw [List.getElem_mapIdx]
+    unfold ILS.twistBDRow
+    simp [hℓ_even]
+  rw [heq]
+  exact h j hj' hforced
+
+/-- **Sub-lemma 4**: `twistBD E 1 (-1)` preserves `MYDRowValid γ`
+    for γ ∈ {B⁺, B⁻, D}.
+
+    At B/D parity-forced positions (paper ℓ even, Lean `(j + 1) % 2 = 0`),
+    `twistBDRow` returns the row unchanged — so MYDRowValid is
+    trivially preserved, regardless of (tp, tn).
+
+    Generalises `twistBD_preserves_MYDRowValid` (which had tp = tn). -/
+theorem twistBD_general_preserves_MYDRowValid_BD (E : ILS) (γ : RootType)
+    (tp tn : ℤ) (hγ : γ = .Bplus ∨ γ = .Bminus ∨ γ = .D)
+    (h : ∀ (j : ℕ) (hj : j < E.length), MYDRowValid γ (j + 1) E[j]) :
+    ∀ (j : ℕ) (hj : j < (ILS.twistBD E tp tn).length),
+      MYDRowValid γ (j + 1) (ILS.twistBD E tp tn)[j] := by
+  intro j hj hforced
+  have hlen : (ILS.twistBD E tp tn).length = E.length := by
+    unfold ILS.twistBD; simp
+  have hj' : j < E.length := hlen ▸ hj
+  have hℓ_even : (j + 1) % 2 = 0 := by
+    rcases hγ with h | h | h <;> rw [h] at hforced <;> exact hforced
+  have heq : (ILS.twistBD E tp tn)[j] = E[j] := by
     unfold ILS.twistBD
     rw [List.getElem_mapIdx]
     unfold ILS.twistBDRow
