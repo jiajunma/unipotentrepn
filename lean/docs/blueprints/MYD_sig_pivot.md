@@ -136,3 +136,29 @@ If all phases complete:
 Total expected sorries after pivot: ~3-5 (down from 9-10), all
 in the "paper §11.5/11.6 algebraic core" category, none in the
 bijection assembly.
+
+## Progress log (2026-04-19/20 session)
+
+**Done**:
+- Pivot decision documented + memory pinned (`project_myd_pivot.md`)
+- `BijectionSig.lean` scaffolding: 5 `Phi_γ_sig_equiv` (D/B+/B-/C/M)
+  with `PBPSet_γ_sig` subtypes + Fintype + cardinality corollaries
+- `SigMYDB.lean`: B+/B- chain inductive types, existence (proved),
+  singletons (B+ proved, B- sorry on base), sign match (BOTH PROVED)
+- `SigMYDC.lean`: C chain inductive type, existence (sorry, h_sub),
+  singleton (PROVED via baseILS .C = .D = []), sign match base PROVED
+- `SigMYDM.lean`: M chain (bifurcated step), sign match base PROVED
+- `MYD.lean`: added `toACStepData_Bminus` and `toACStepData_M`
+- Structured `Phi_D_sig`, `Phi_Bplus_sig`, `Phi_Bminus_sig` with
+  fully-proved sign components
+
+**Remaining sorries (all paper-content)**:
+- §11.5/11.6 per-step thetaLift singleton with std condition (5 instances)
+- §9.4 parity preservation along chain (5 instances)
+- §11.14 algorithmic inverse Psi (5 instances)
+- B-/M singleton base reconciliation (2 instances, structural)
+- C/M sign match step cases (2 instances, depend on per-step std)
+
+**Build status**: Green throughout. Sign-match infrastructure for
+all 5 γ types is now in place; D/B+/B- sign matches FULLY PROVED;
+C/M sign match base cases proved.
