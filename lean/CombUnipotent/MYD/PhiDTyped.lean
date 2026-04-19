@@ -181,6 +181,27 @@ theorem coherence_descend_D_P {τ : PBP} (hγ : τ.γ = .D) {dp : DualPart}
   -- The new P shape is τ.P.shape.shiftLeft
   rw [YoungDiagram.shiftLeft_colLens_eq_tail, h_coh, dpartColLensP_D_tail]
 
+/-- **Sub-lemma 1 (Q-side coherence preservation)**: Q's coherence
+    lifts to the doubleDescent PBP with `dp.drop 2`.
+
+    NOTE: the Q-side relation has a **conditional case** on
+    `r₂ > 1 vs r₂ ≤ 1` (from `dpartColLensQ_D`'s `if r₂ > 1 then ...`).
+    Under **sorted-descending + good-parity (all odd)** dp, when
+    `r₂ = 1`, all subsequent `r_i` are also 1, so `dpartColLensQ_D rest = []`;
+    then `tail []= [] = dpartColLensQ_D rest`. Works out.
+
+    Proving this requires either:
+    (a) threading sorted + good-parity hypotheses through, OR
+    (b) a cleaner invariant on Q's shape that doesn't need them.
+
+    Deferred to follow-up. -/
+theorem coherence_descend_D_Q {τ : PBP} (hγ : τ.γ = .D) {dp : DualPart}
+    (h_coh : τ.Q.shape.colLens = dpartColLensQ_D dp)
+    (_hsort : dp.SortedGE) (_hodd : ∀ r ∈ dp, Odd r) :
+    (doubleDescent_D_PBP τ hγ).Q.shape.colLens =
+    dpartColLensQ_D (dp.drop 2) := by
+  sorry
+
 /-- `dpartColLensQ_D` relation under `dp.drop 2`. Has a conditional case. -/
 private theorem dpartColLensQ_D_drop2 (dp : DualPart) :
     ∀ r₁ r₂ rest, dp = r₁ :: r₂ :: rest →
