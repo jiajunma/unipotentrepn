@@ -105,18 +105,70 @@ private lemma pow_signed (a : ℤ) (ha : a = 1 ∨ a = -1) (n : ℕ) :
     · left; exact hp.neg_one_pow
     · right; exact hp.neg_one_pow
 
-/-- `twistBD` with tp, tn ∈ {1, -1} preserves row-wise absolute values. -/
-axiom twistBD_preserves_absValues (E : ILS) (tp tn : ℤ)
-    (_htp : tp = 1 ∨ tp = -1) (_htn : tn = 1 ∨ tn = -1) :
-    absValues (ILS.twistBD E tp tn) = absValues E
+/-- `twistBD` with tp, tn ∈ {1, -1} preserves row-wise absolute values.
 
-/-- `twistBD` preserves `MYDRowValid` at parity-forced positions
-    when tp = tn (matching the ⊗ (ε, ε) pattern). -/
-axiom twistBD_preserves_MYDRowValid (E : ILS) (γ : RootType) (t : ℤ)
+    Proof: unfold `ILS.twistBD` to `mapIdx`; apply `List.ext_getElem`
+    to reduce to per-index equality. At each index i:
+    - If ℓ = i+1 is even: `twistBDRow = id`, nothing to check.
+    - If ℓ is odd: row becomes `(tpp*p, tnn*q)` with tpp, tnn ∈ {1, -1}
+      (via `pow_signed`), so `natAbs` is preserved on each component. -/
+theorem twistBD_preserves_absValues (E : ILS) (tp tn : ℤ)
+    (htp : tp = 1 ∨ tp = -1) (htn : tn = 1 ∨ tn = -1) :
+    absValues (ILS.twistBD E tp tn) = absValues E := by
+  unfold absValues ILS.twistBD
+  apply List.ext_getElem
+  · simp
+  intro i h₁ h₂
+  simp only [List.getElem_map, List.getElem_mapIdx]
+  unfold ILS.twistBDRow
+  simp only
+  split_ifs with hℓ
+  · rfl
+  · -- odd ℓ case: row is (tpp * p.1, tnn * p.2) with tpp, tnn ∈ {1, -1}
+    set h := (i + 1) / 2 with hh
+    have htpp : tp ^ (h + 1) * tn ^ h = 1 ∨ tp ^ (h + 1) * tn ^ h = -1 := by
+      rcases pow_signed tp htp (h + 1) with h1 | h1 <;>
+        rcases pow_signed tn htn h with h2 | h2 <;>
+          simp [h1, h2]
+    have htnn : tn ^ (h + 1) * tp ^ h = 1 ∨ tn ^ (h + 1) * tp ^ h = -1 := by
+      rcases pow_signed tn htn (h + 1) with h1 | h1 <;>
+        rcases pow_signed tp htp h with h2 | h2 <;>
+          simp [h1, h2]
+    ext
+    · exact natAbs_signed_mul _ _ htpp
+    · exact natAbs_signed_mul _ _ htnn
+
+/-- `twistBD` preserves `MYDRowValid` at parity-forced positions for
+    B/D types when tp = tn (matching the ⊗ (ε, ε) pattern).
+
+    Key observation: for γ ∈ {B⁺, B⁻, D}, parity is forced at paper
+    row index ℓ = j+1 even. In `twistBDRow`, the ℓ-even case returns
+    the row unchanged. So MYDRowValid is trivially preserved.
+
+    For C/M (parity at ℓ odd), the twist does modify the row; the
+    argument would differ. Not needed for `Phi_D` (which is B/D-only),
+    so we narrow the hypothesis to B/D here. -/
+theorem twistBD_preserves_MYDRowValid (E : ILS) (γ : RootType) (t : ℤ)
+    (hγ : γ = .Bplus ∨ γ = .Bminus ∨ γ = .D)
     (_ht : t = 1 ∨ t = -1)
     (h : ∀ (j : ℕ) (hj : j < E.length), MYDRowValid γ (j + 1) E[j]) :
     ∀ (j : ℕ) (hj : j < (ILS.twistBD E t t).length),
-      MYDRowValid γ (j + 1) (ILS.twistBD E t t)[j]
+      MYDRowValid γ (j + 1) (ILS.twistBD E t t)[j] := by
+  intro j hj hforced
+  have hlen : (ILS.twistBD E t t).length = E.length := by
+    unfold ILS.twistBD; simp
+  have hj' : j < E.length := hlen ▸ hj
+  -- SYDParityForced γ (j + 1) for γ ∈ {Bplus, Bminus, D} is (j+1) % 2 = 0.
+  have hℓ_even : (j + 1) % 2 = 0 := by
+    rcases hγ with h | h | h <;> rw [h] at hforced <;> exact hforced
+  -- In twistBDRow, ℓ even means the row is unchanged.
+  have heq : (ILS.twistBD E t t)[j] = E[j] := by
+    unfold ILS.twistBD
+    rw [List.getElem_mapIdx]
+    unfold ILS.twistBDRow
+    simp [hℓ_even]
+  rw [heq]
+  exact h j hj' hforced
 
 /-! ## Assembly: typed Phi_D -/
 
@@ -146,7 +198,8 @@ noncomputable def Phi_D {μP μQ : YoungDiagram} (dp : DualPart)
       MYDRowValid .D (j + 1) E'[j] := by
     by_cases hε : ε = 1
     · simp [E', hε]
-      exact twistBD_preserves_MYDRowValid E .D (-1) (Or.inr rfl) h_par
+      exact twistBD_preserves_MYDRowValid E .D (-1)
+        (Or.inr (Or.inr rfl)) (Or.inr rfl) h_par
     · simp [E', hε]
       exact h_par
   have h_E'_shape : absValues E' = (dpToSYD .D dp).rows := by
