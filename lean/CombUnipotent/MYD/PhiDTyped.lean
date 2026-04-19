@@ -26,6 +26,7 @@ import CombUnipotent.MYD.DPToSYD
 import CombUnipotent.MYD.ShiftLeftCard
 import CombUnipotent.MYD
 import CombUnipotent.CountingProof.Descent
+import CombUnipotent.CountingProof.Basic  -- for dpartColLensP/Q_D
 
 open PBPInstantiation (toACStepData_D)
 
@@ -139,24 +140,31 @@ theorem descentChain_D_singleton {τ : PBP} {chain : List ACStepData}
     exact ⟨stepPostTwist E' (toACStepData_D τ_outer hγ),
            ChainSingleton.snoc h_inner h_theta⟩
 
+/-- Shape-dp coherence predicate at the PBP level. -/
+def PBPIsCoherent_D (τ : PBP) (dp : DualPart) : Prop :=
+  τ.P.shape.colLens = dpartColLensP_D dp ∧
+  τ.Q.shape.colLens = dpartColLensQ_D dp
+
+/-- External shape-dp coherence (on `μP, μQ` before a PBP is given).
+    Identical to `DPCoherent_D` in `Bijection.lean` (kept here to avoid
+    import cycle). -/
+def PBPIsCoherent_D_ext (μP μQ : YoungDiagram) (dp : DualPart) : Prop :=
+  μP.colLens = dpartColLensP_D dp ∧ μQ.colLens = dpartColLensQ_D dp
+
 /-- **Theorem (M1.4.3)**: the ILS `E` extracted from a valid descent
-    chain satisfies the MYD properties.
+    chain satisfies the MYD properties — parity + shape match the
+    orbit `dpToSYD .D dp` whenever `dp` is coherent with `τ`'s shapes.
 
     Proof plan: induction on the chain tracking two invariants:
     (a) parity preservation at each theta-lift step (paper §9.4),
     (b) shape growth matching the orbit's partition transpose
     (`partTranspose dp`).
 
-    **KNOWN DESIGN ISSUE**: the current signature takes `dp` as a
-    free parameter without a coherence hypothesis linking it to
-    `τ`'s shape. The shape-equality claim only holds when `dp` is
-    derived from `τ.P.shape, τ.Q.shape`. A follow-up should add a
-    `DPCoherent_D` hypothesis and thread it through.
-
     TODO: apply `thetaLift_{CD,MB}_sign` (MYD.lean:564, 655) + sign
     preservation + parity inductive argument. -/
 theorem descentChain_D_in_MYD {τ : PBP} {chain : List ACStepData}
     {E : ILS} (dp : DualPart)
+    (_h_coh : PBPIsCoherent_D τ dp)
     (_h_chain : IsDescentChain_D τ chain)
     (_h_sing : ChainSingleton (baseILS .D) chain E) :
     (∀ (j : ℕ) (h : j < E.length), MYDRowValid .D (j + 1) E[j])
@@ -261,6 +269,7 @@ theorem twistBD_preserves_MYDRowValid (E : ILS) (γ : RootType) (t : ℤ)
     3. `descentChain_D_in_MYD` certifies that `L_σ ∈ MYD .D (dpToSYD .D dp)`.
     4. The ε-twist preserves MYD via `twistBD_preserves_*`. -/
 noncomputable def Phi_D {μP μQ : YoungDiagram} (dp : DualPart)
+    (h_coh : PBPIsCoherent_D_ext μP μQ dp)
     (σ : PBPSet .D μP μQ) (ε : Fin 2) :
     MYD .D (dpToSYD .D dp) :=
   let chain : List ACStepData := Classical.choose (exists_descentChain_D σ)
@@ -269,7 +278,12 @@ noncomputable def Phi_D {μP μQ : YoungDiagram} (dp : DualPart)
   let E : ILS := Classical.choose (descentChain_D_singleton h_chain)
   let h_sing : ChainSingleton (baseILS .D) chain E :=
     Classical.choose_spec (descentChain_D_singleton h_chain)
-  let hMYD := descentChain_D_in_MYD dp h_chain h_sing
+  -- Derive per-τ coherence from the external coherence + σ's shape
+  have h_coh_τ : PBPIsCoherent_D σ.val dp := by
+    constructor
+    · rw [σ.prop.2.1]; exact h_coh.1
+    · rw [σ.prop.2.2]; exact h_coh.2
+  let hMYD := descentChain_D_in_MYD dp h_coh_τ h_chain h_sing
   let h_par := hMYD.1
   let h_shape := hMYD.2
   let E' := if ε = 1 then ILS.twistBD E (-1) (-1) else E
