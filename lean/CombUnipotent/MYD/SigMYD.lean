@@ -142,36 +142,4 @@ theorem descentChain_sign_match_D {τ : PBP} {chain : List ACStepData}
     unfold signTarget_D toACStepData_D
     simp
 
-/-! ## Descendable orbit shape (matches AC chain augment structure)
-
-The standard `dpToSYD` uses `partTranspose + rowMultiplicities`,
-which does NOT decompose cleanly under `dp.drop 2`. Here we define
-a variant that IS `dp.drop 2`-recursive.
-
-For a descent chain of D-type PBPs at levels
-`τ → doubleDescent τ → ... → base`, the AC chain builds
-`L_τ = (row_outer) :: L_{τ'}` via augment at each step. So the
-"orbit shape" at each level is
-`[row_outer, row_{outer-1}, ..., row_inner]` — built one row at a
-time by each descent step.
-
-This function computes that structural list:
--/
-
-/-- Descendable SYD row list: recursive on `dp.drop 2`. Each step
-    prepends one row derived from the "signature difference" at
-    that level. -/
-noncomputable def dpToSYDRows_desc_D (dp : DualPart) : List (ℕ × ℕ) := go dp dp.length
-where
-  /-- Fuel-based recursion to avoid well-founded proof obligation. -/
-  go : DualPart → ℕ → List (ℕ × ℕ)
-  | _, 0 => []
-  | [], _ => []
-  | [_], _ => []
-  | (r₁ :: r₂ :: rest), n + 1 =>
-    -- Outer row: derived from r₁, r₂ (paper's partition descent)
-    -- For D: row entry = ((r₁ + 1) / 2 - (r₂ - 1 \?? ... / 2), ...)
-    -- This needs paper formula. Placeholder: (0, 0).
-    (0, 0) :: go rest n
-
 end BMSZ
