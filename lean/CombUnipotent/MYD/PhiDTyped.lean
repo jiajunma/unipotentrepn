@@ -164,12 +164,33 @@ def PBPIsCoherent_D_ext (μP μQ : YoungDiagram) (dp : DualPart) : Prop :=
     preservation + parity inductive argument. -/
 theorem descentChain_D_in_MYD {τ : PBP} {chain : List ACStepData}
     {E : ILS} (dp : DualPart)
-    (_h_coh : PBPIsCoherent_D τ dp)
-    (_h_chain : IsDescentChain_D τ chain)
-    (_h_sing : ChainSingleton (baseILS .D) chain E) :
+    (h_coh : PBPIsCoherent_D τ dp)
+    (h_chain : IsDescentChain_D τ chain)
+    (h_sing : ChainSingleton (baseILS .D) chain E) :
     (∀ (j : ℕ) (h : j < E.length), MYDRowValid .D (j + 1) E[j])
     ∧ absValues E = (dpToSYD .D dp).rows := by
-  sorry
+  induction h_chain generalizing E dp with
+  | base τ hγ h_empty =>
+    -- chain = []; ChainSingleton constraints force E = baseILS .D = []
+    cases h_sing
+    -- E = baseILS .D = []. From empty shapes + coherence, dp = [].
+    -- Both sides become empty.
+    have hdp : dp = [] := by
+      have hP := h_coh.1
+      rw [h_empty.1] at hP
+      -- ⊥.colLens = []; dpartColLensP_D dp = [] forces dp = []
+      unfold YoungDiagram.colLens at hP
+      sorry  -- dpartColLensP_D dp = [] → dp = [] (partition lemma)
+    subst hdp
+    refine ⟨?_, ?_⟩
+    · -- baseILS .D = [], so E.length = 0, vacuous
+      intro j h; exfalso; unfold baseILS at h; simp at h
+    · -- absValues [] = [] = (SYD.empty .D).rows
+      unfold absValues baseILS
+      simp [dpToSYD_empty, SYD.empty_rows]
+  | step hγ h_rest ih =>
+    -- Step case: paper §9.4 structural preservation. Deferred.
+    sorry
 
 /-! ## twistBD preserves MYD properties
 
