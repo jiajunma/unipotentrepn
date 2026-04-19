@@ -52,12 +52,14 @@ noncomputable def descentDC_raw (τ : PBP) (hγ : τ.γ = .D)
 ### Proof obligations (11 per paint)
 
 For each PBP constraint, adapt `descentCD_raw`'s pattern:
-- **sym_P (C type allows {•, r, c, d})**: `descentPaintL_DC τ i j = .dot` or `τ.P.paint i (j+1)`.
-  In D type, `τ.P.paint i (j+1)` has full {•, s, r, c, d} allowance. For C-output, need {•, r, c, d} — must exclude .s. But τ.P.paint can produce .s.
+- **sym_P (C type allows {•, r, c, d})**:
+  `descentPaintL_DC τ i j = if i < dotScolLen τ.P (j+1) then .dot else τ.P.paint i (j+1)`.
+  - Branch 1: `.dot` is C-allowed. ✓
+  - Branch 2: `τ.P.paint i (j+1)` for `i ≥ dotScolLen τ.P (j+1)`. By `layerOrd_gt_one_of_ge_dotScolLen`, paint has layerOrd > 1, i.e., ∈ {r, c, d}. Which IS C-allowed. ✓
 
-  **Issue**: D-type P allows s, but C-type P doesn't. So descentPaintL_DC's "τ.P.paint i (j+1)" branch could be .s, violating sym_P for C.
-
-  **Paper resolution**: D→C descent SHOULD filter/transform .s entries. Looking at paintL_DC again: the "i ≥ dotScolLen" branch passes τ.P.paint directly. But maybe under D → C descent's conditions, at those cells τ.P.paint ≠ .s. This requires analysis from D-type PBP invariants.
+  **Key insight**: the `dotScolLen` threshold structure automatically
+  excludes `.s` from the "paint-through" branch, so `sym_P` for C holds
+  without explicit filtering. This is why paper's descent works cleanly.
 - **sym_Q (C type Q allows {•, s})**: descentPaintR_DC returns .dot or .s based on ranges. ✓
 
 - **dot_match**, **row_s**, **row_r**, **col_c_P**, **col_c_Q**, **col_d_P**, **col_d_Q**, **mono_P**, **mono_Q**: adapt `descentCD_raw` patterns.
