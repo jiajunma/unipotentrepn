@@ -87,6 +87,46 @@ theorem empty_rows : (empty γ).rows = [] := rfl
 theorem empty_size : (empty γ).size = 0 := by
   unfold size empty; simp
 
+/-- Equality of SYDs reduces to equality of row lists (the validity
+    proof is proof-irrelevant by propositional extensionality). -/
+instance : DecidableEq (SYD γ) := fun O₁ O₂ =>
+  decidable_of_iff (O₁.rows = O₂.rows)
+    ⟨fun h => ext h, fun h => by rw [h]⟩
+
+/-! ## Signature of an SYD (paper Eq. 9.10)
+
+For the group signature of the underlying orbit we use the formula from
+[BMSZ] Eq. 9.10. For row length i:
+
+- i even, say i = 2k (k ≥ 1): contributes `(k · p_i, k · q_i)`
+- i odd, say i = 2k - 1 (k ≥ 1): contributes `(k · p_i + (k-1) · q_i, (k-1) · p_i + k · q_i)`
+
+Summing over all rows gives `Sign(O) ∈ ℕ × ℕ`.
+
+Per paper Def 9.1, SYD entries satisfy the γ-parity; this is the
+orbit-level signature used to constrain MYDs of the orbit.
+-/
+
+/-- Signature contribution of a single row at 1-indexed row length `i`. -/
+def SignRow (i : ℕ) (pq : ℕ × ℕ) : ℕ × ℕ :=
+  if i % 2 = 0 then
+    -- i = 2k
+    let k := i / 2
+    (k * pq.1, k * pq.2)
+  else
+    -- i = 2k - 1
+    let k := (i + 1) / 2
+    (k * pq.1 + (k - 1) * pq.2, (k - 1) * pq.1 + k * pq.2)
+
+/-- Group signature of an SYD. Paper Eq. 9.10. -/
+def Sign (O : SYD γ) : ℕ × ℕ :=
+  O.rows.zipIdx.foldr (fun ⟨pq, j⟩ acc =>
+    let sr := SignRow (j + 1) pq
+    (acc.1 + sr.1, acc.2 + sr.2)) (0, 0)
+
+theorem Sign_empty : (empty γ).Sign = (0, 0) := by
+  unfold Sign empty; simp
+
 end SYD
 
 end BMSZ
