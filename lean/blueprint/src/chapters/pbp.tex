@@ -338,3 +338,31 @@ Reference: \texttt{lean/docs/blueprints/M1\_4\_PhiD\_typed.md}.
   \uses{thm:exists_descentChain_D, thm:descentChain_D_singleton, thm:descentChain_D_in_MYD, def:Phi_chain}
   Given the interface theorems above, the typed map $\Phi_D : \PBP_D(\mu_P, \mu_Q) \times \mathrm{Fin}\ 2 \to \MYD_D(\mathrm{dpToSYD}\ .\mathrm{D}\ dp)$ composes \texttt{Phi\_chain} with the extracted chain. The $\varepsilon$-twist preserves MYD properties (twistBD acts by $\pm 1$ on parity-forced rows).
 \end{definition}
+
+
+\section{Constructive bijection $\Phi_D^{\sim}$ (M1.5 phase A)}
+
+Reference: \texttt{lean/docs/blueprints/M1\_5\_bijection.md}.
+
+\begin{definition}[Shape-$dp$ coherence]
+  \label{def:DPCoherent_D}
+  \lean{BMSZ.DPCoherent_D}
+  \leanok
+  \uses{def:DualPart, def:dpartColLens}
+  $(\mu_P, \mu_Q)$ is coherent with $dp$ when their column-length lists match $\mathrm{dpartColLensP/Q\_D}\ dp$.
+\end{definition}
+
+\begin{theorem}[$\Psi_D$: constructive inverse --- Phase B]
+  \label{thm:Psi_D}
+  \lean{BMSZ.Psi_D, BMSZ.Psi_D_Phi_D, BMSZ.Phi_D_Psi_D}
+  \uses{def:Phi_D_typed, def:DPCoherent_D}
+  Inverse map $\Psi_D : \MYD_D(O) \to \PBP_D \times \mathrm{Fin}\ 2$ plus round-trip identities. Proof plan (phase B): paper \S11.14 reverse theta-lift. Stated as \texttt{axiom}s in phase A.
+\end{theorem}
+
+\begin{theorem}[$\Phi_D$ is a constructive bijection]
+  \label{thm:Phi_D_equiv}
+  \lean{BMSZ.Phi_D_equiv}
+  \leanok
+  \uses{thm:Psi_D, def:Phi_D_typed}
+  From $\Phi_D$, $\Psi_D$, and the round-trips we assemble a Lean \texttt{Equiv}: $\PBP_D(\mu_P, \mu_Q) \times \mathrm{Fin}\ 2 \xrightarrow{\sim} \MYD_D(\mathrm{dpToSYD\ .D\ dp})$. This is paper's Prop~11.15 for D type, with an \emph{explicit} inverse rather than abstract existence.
+\end{theorem}

@@ -13,3 +13,4 @@ import CombUnipotent.MYD.DPToSYD
 import CombUnipotent.MYD.PairClassify
 import CombUnipotent.MYD.PhiD
 import CombUnipotent.MYD.PhiDTyped
+import CombUnipotent.MYD.Bijection
