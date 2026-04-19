@@ -98,14 +98,15 @@ theorem exists_descentChain_D {μP μQ : YoungDiagram} (σ : PBPSet .D μP μQ) 
     each step in a descent chain has a singleton ILS-thetaLift.
 
     This is the essential sign-bound content of paper §11.5-11.6.
-    Kept as axiom pending the full sign-preservation proof. -/
-axiom descent_step_thetaLift_singleton {τ : PBP} (hγ : τ.γ = .D)
+    TODO: prove via existing `ILS.thetaLift_CD_nonempty` + sign bound. -/
+theorem descent_step_thetaLift_singleton {τ : PBP} (hγ : τ.γ = .D)
     (E_inner : ILS) :
     ∃ E' : ILS, ILS.thetaLift
       (stepPreTwist E_inner (toACStepData_D τ hγ))
       (toACStepData_D τ hγ).γ
       (toACStepData_D τ hγ).p
-      (toACStepData_D τ hγ).q = [E']
+      (toACStepData_D τ hγ).q = [E'] := by
+  sorry
 
 /-- **Theorem (M1.4.2 partial)**: any valid descent chain for τ is
     ChainSingleton-valid.
@@ -129,7 +130,7 @@ theorem descentChain_D_singleton {τ : PBP} {chain : List ACStepData}
     exact ⟨stepPostTwist E' (toACStepData_D τ_outer hγ),
            ChainSingleton.snoc h_inner h_theta⟩
 
-/-- **Axiom (M1.4.3)**: the ILS `E` extracted from a valid descent
+/-- **Theorem (M1.4.3)**: the ILS `E` extracted from a valid descent
     chain satisfies the MYD properties.
 
     Proof plan: induction on the chain tracking two invariants:
@@ -137,14 +138,15 @@ theorem descentChain_D_singleton {τ : PBP} {chain : List ACStepData}
     (b) shape growth matching the orbit's partition transpose
     (`partTranspose dp`).
 
-    The `dp` parameter is the dual partition corresponding to τ's
-    shapes; for the typed Phi_D we'll pass it explicitly. -/
-axiom descentChain_D_in_MYD {τ : PBP} {chain : List ACStepData}
+    TODO: apply `thetaLift_{CD,MB}_sign` (MYD.lean:564, 655) + sign
+    preservation + parity inductive argument. -/
+theorem descentChain_D_in_MYD {τ : PBP} {chain : List ACStepData}
     {E : ILS} (dp : DualPart)
     (_h_chain : IsDescentChain_D τ chain)
     (_h_sing : ChainSingleton (baseILS .D) chain E) :
     (∀ (j : ℕ) (h : j < E.length), MYDRowValid .D (j + 1) E[j])
-    ∧ absValues E = (dpToSYD .D dp).rows
+    ∧ absValues E = (dpToSYD .D dp).rows := by
+  sorry
 
 /-! ## twistBD preserves MYD properties
 

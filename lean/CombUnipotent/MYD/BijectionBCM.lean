@@ -46,14 +46,14 @@ Identical signature to D's `Phi_D_equiv`: source has `× Fin 2`.
 
     Phase A axiom; Phase B construction follows the D template with
     `doubleDescent_B_PBP` and `toACStepData_Bplus`. -/
-axiom Phi_Bplus_equiv {μP μQ : YoungDiagram} (dp : DualPart)
+noncomputable def Phi_Bplus_equiv {μP μQ : YoungDiagram} (dp : DualPart)
     (_h_coh : DPCoherent_Bplus μP μQ dp) :
-    PBPSet .Bplus μP μQ × Fin 2 ≃ MYD .Bplus (dpToSYD .Bplus dp)
+    PBPSet .Bplus μP μQ × Fin 2 ≃ MYD .Bplus (dpToSYD .Bplus dp) := sorry
 
 /-- **Paper Prop 11.15 (B⁻)**: analogous to B⁺. -/
-axiom Phi_Bminus_equiv {μP μQ : YoungDiagram} (dp : DualPart)
+noncomputable def Phi_Bminus_equiv {μP μQ : YoungDiagram} (dp : DualPart)
     (_h_coh : DPCoherent_Bminus μP μQ dp) :
-    PBPSet .Bminus μP μQ × Fin 2 ≃ MYD .Bminus (dpToSYD .Bminus dp)
+    PBPSet .Bminus μP μQ × Fin 2 ≃ MYD .Bminus (dpToSYD .Bminus dp) := sorry
 
 /-! ## Paper Prop 11.17: C / M bijections
 
@@ -67,13 +67,13 @@ freedom).
 
     Phase A axiom. Phase B construction would use the C → D → C
     descent structure (single descent alternates types; double = C→C). -/
-axiom Phi_C_equiv {μP μQ : YoungDiagram} (dp : DualPart)
+noncomputable def Phi_C_equiv {μP μQ : YoungDiagram} (dp : DualPart)
     (_h_coh : DPCoherent_C μP μQ dp) :
-    PBPSet .C μP μQ ≃ MYD .C (dpToSYD .C dp)
+    PBPSet .C μP μQ ≃ MYD .C (dpToSYD .C dp) := sorry
 
 /-- **Paper Prop 11.17 (M = C̃)**: analogous to C. -/
-axiom Phi_M_equiv {μP μQ : YoungDiagram} (dp : DualPart)
+noncomputable def Phi_M_equiv {μP μQ : YoungDiagram} (dp : DualPart)
     (_h_coh : DPCoherent_M μP μQ dp) :
-    PBPSet .M μP μQ ≃ MYD .M (dpToSYD .M dp)
+    PBPSet .M μP μQ ≃ MYD .M (dpToSYD .M dp) := sorry
 
 end BMSZ

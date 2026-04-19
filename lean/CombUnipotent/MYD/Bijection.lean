@@ -26,36 +26,36 @@ namespace BMSZ
 def DPCoherent_D (μP μQ : YoungDiagram) (dp : DualPart) : Prop :=
   μP.colLens = dpartColLensP_D dp ∧ μQ.colLens = dpartColLensQ_D dp
 
-/-- **Axiom (M1.5.1)**: inverse map `Psi_D : MYD .D O → PBPSet .D μP μQ × Fin 2`.
+/-- **Inverse map** `Psi_D : MYD .D O → PBPSet .D μP μQ × Fin 2`.
 
-    Proof plan (phase B): paper §11.14 algorithmic construction —
-    iterate inverse theta-lift, un-truncate + un-twist + recurse until
-    hitting the base MYD, then assemble the PBP by augmenting
-    inner-to-outer. -/
-axiom Psi_D {μP μQ : YoungDiagram} (dp : DualPart)
+    TODO: paper §11.14 algorithmic construction — iterate inverse
+    theta-lift, un-truncate + un-twist + recurse until hitting the
+    base MYD, then assemble the PBP by augmenting inner-to-outer. -/
+noncomputable def Psi_D {μP μQ : YoungDiagram} (dp : DualPart)
     (_h_coh : DPCoherent_D μP μQ dp)
     (_E : MYD .D (dpToSYD .D dp)) :
-    PBPSet .D μP μQ × Fin 2
+    PBPSet .D μP μQ × Fin 2 := sorry
 
-/-- **Axiom (M1.5.1)**: `Psi_D ∘ Phi_D = id` on the source side.
+/-- `Psi_D ∘ Phi_D = id` on the source side.
 
-    Proof plan (phase B): induction on the chain — each descent step
-    of `Phi_D` is exactly reversed by the inverse-theta-lift step of
-    `Psi_D`. -/
-axiom Psi_D_Phi_D {μP μQ : YoungDiagram} (dp : DualPart)
+    TODO: induction on the chain — each descent step of `Phi_D` is
+    exactly reversed by the inverse-theta-lift step of `Psi_D`. -/
+theorem Psi_D_Phi_D {μP μQ : YoungDiagram} (dp : DualPart)
     (h_coh : DPCoherent_D μP μQ dp)
     (σ : PBPSet .D μP μQ) (ε : Fin 2) :
-    Psi_D dp h_coh (Phi_D dp σ ε) = (σ, ε)
+    Psi_D dp h_coh (Phi_D dp σ ε) = (σ, ε) := by
+  sorry
 
-/-- **Axiom (M1.5.1)**: `Phi_D ∘ Psi_D = id` on the target side.
+/-- `Phi_D ∘ Psi_D = id` on the target side.
 
-    Proof plan (phase B): symmetric to `Psi_D_Phi_D`; follows from
-    paper's surjectivity (§11.14). -/
-axiom Phi_D_Psi_D {μP μQ : YoungDiagram} (dp : DualPart)
+    TODO: symmetric to `Psi_D_Phi_D`; follows from paper's surjectivity
+    (§11.14). -/
+theorem Phi_D_Psi_D {μP μQ : YoungDiagram} (dp : DualPart)
     (h_coh : DPCoherent_D μP μQ dp)
     (E : MYD .D (dpToSYD .D dp)) :
     let ⟨σ, ε⟩ := Psi_D dp h_coh E
-    Phi_D dp σ ε = E
+    Phi_D dp σ ε = E := by
+  sorry
 
 /-- **Main theorem (M1.5)**: constructive bijection
     `PBPSet .D μP μQ × Fin 2 ≃ MYD .D (dpToSYD .D dp)`.
