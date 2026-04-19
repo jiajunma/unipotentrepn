@@ -393,3 +393,29 @@ Reference: \texttt{lean/docs/blueprints/M1\_6\_extend\_to\_BCM.md}.
   \uses{def:DPCoherent_BCM}
   For $\gamma \in \{C, \tilde{C}\}$, $\PBP_\gamma(\mu_P, \mu_Q) \xrightarrow{\sim} \MYD_\gamma(\mathrm{dpToSYD\ .\gamma\ dp})$ --- \emph{no} $\mathrm{Fin}\ 2$ factor. Phase A axiom; phase B uses the alternating C$\to$D$\to$C descent structure.
 \end{theorem}
+
+
+\section{Fintype and cardinality equalities (M1.7)}
+
+Reference: \texttt{lean/docs/blueprints/M1\_7\_Fintype\_MYD.md}.
+
+\begin{definition}[Fintype instance for $\MYD_\gamma(O)$]
+  \label{def:fintype_MYD}
+  \lean{BMSZ.fintype_MYD_D, BMSZ.fintype_MYD_Bplus, BMSZ.fintype_MYD_Bminus, BMSZ.fintype_MYD_C, BMSZ.fintype_MYD_M}
+  \leanok
+  \uses{thm:Phi_D_equiv, thm:Phi_B_equiv, thm:Phi_CM_equiv}
+  For each $\gamma$ and $dp$ with coherence $h_{coh}$, $\MYD_\gamma(\mathrm{dpToSYD\ .\gamma\ dp})$ inherits a $\mathrm{Fintype}$ via $\mathrm{Fintype.ofEquiv}$ applied to $\Phi_\gamma^{\sim}$.
+\end{definition}
+
+\begin{theorem}[Cardinality equalities]
+  \label{thm:card_PBPSet_eq_MYD}
+  \lean{BMSZ.card_PBPSet_D_Fin2_eq_MYD, BMSZ.card_PBPSet_Bplus_Fin2_eq_MYD, BMSZ.card_PBPSet_Bminus_Fin2_eq_MYD, BMSZ.card_PBPSet_C_eq_MYD, BMSZ.card_PBPSet_M_eq_MYD}
+  \leanok
+  \uses{thm:Phi_D_equiv, thm:Phi_B_equiv, thm:Phi_CM_equiv}
+  Using $\mathrm{Nat.card\_congr}$ on each $\Phi_\gamma^{\sim}$, we obtain paper's card equalities as immediate corollaries:
+  \begin{itemize}
+    \item B/D: $|\PBP_\gamma \times \mathrm{Fin}\ 2| = |\MYD_\gamma(O)|$.
+    \item C/M: $|\PBP_\gamma| = |\MYD_\gamma(O)|$.
+  \end{itemize}
+  These are paper Prop 11.15 / Prop 11.17 at the cardinality level, derived from the bijections.
+\end{theorem}
