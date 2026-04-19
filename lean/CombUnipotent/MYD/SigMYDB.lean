@@ -303,4 +303,55 @@ private theorem sign_baseILS_Bminus : ILS.sign (baseILS .Bminus) = (0, 1) := by
   unfold baseILS ILS.sign
   decide
 
+/-- Sign match for Bminus chain: outer Bminus step lifts via thetaLift_MB
+    + post-twist preserves sign. -/
+theorem descentChain_sign_match_Bminus {τ : PBP} {chain : List ACStepData}
+    {E : ILS}
+    (h_chain : IsDescentChain_Bminus τ chain)
+    (h_sing : ChainSingleton (baseILS .Bminus) chain E) :
+    ILS.sign E = signTarget_Bminus' τ := by
+  cases h_chain with
+  | base hγ h_empty =>
+    cases h_sing
+    show ILS.sign (baseILS .Bminus) = signTarget_Bminus' τ
+    rw [sign_baseILS_Bminus]
+    unfold signTarget_Bminus'
+    rw [signature_empty_Bminus τ hγ h_empty]
+    rfl
+  | step hγ h_rest =>
+    -- τ is from outer scope; chain is unified to chain_inner ++ [...]
+    rename_i chain_inner
+    obtain ⟨E_mid, E', _h_inner_sing, h_theta, h_E_final⟩ :=
+      ChainSingleton.snoc_inv h_sing
+    -- Bminus has no pre-twist
+    have h_preTwist : stepPreTwist E_mid (toACStepData_Bminus τ hγ) = E_mid := by
+      unfold stepPreTwist
+      simp [toACStepData_Bminus]
+    -- target .Bminus dispatches to thetaLift_MB
+    have h_tl : ILS.thetaLift E_mid .Bminus
+                  (toACStepData_Bminus τ hγ).p
+                  (toACStepData_Bminus τ hγ).q = [E'] := by
+      rw [← h_preTwist]
+      show ILS.thetaLift (stepPreTwist E_mid (toACStepData_Bminus τ hγ))
+        (toACStepData_Bminus τ hγ).γ
+        (toACStepData_Bminus τ hγ).p
+        (toACStepData_Bminus τ hγ).q = [E']
+      exact h_theta
+    have h_tl_mb : ILS.thetaLift_MB E_mid
+                    (toACStepData_Bminus τ hγ).p
+                    (toACStepData_Bminus τ hγ).q = [E'] := by
+      simpa [ILS.thetaLift] using h_tl
+    have h_sign_E' : ILS.sign E' =
+        ((toACStepData_Bminus τ hγ).p, (toACStepData_Bminus τ hγ).q) :=
+      ILS.thetaLift_MB_sign E_mid _ _ E' (by rw [h_tl_mb]; simp)
+    have h_sign_E : ILS.sign E = ILS.sign E' := by
+      rw [h_E_final]
+      unfold stepPostTwist
+      split_ifs with hpost
+      · exact ILS.twistBD_sign E' 1 (-1) (Or.inl rfl) (Or.inr rfl)
+      · rfl
+    rw [h_sign_E, h_sign_E']
+    unfold signTarget_Bminus' toACStepData_Bminus
+    simp
+
 end BMSZ
