@@ -99,3 +99,63 @@ different purpose in Option C.
 
 **Next session task**: refactor `MYD γ O` per Option C, then retry
 step case induction. Estimated ~1 full session.
+
+## Deeper analysis (2026-04-19, second round)
+
+Looking at paper §9.2 + §10 more carefully, there are TWO distinct
+descent operations:
+
+1. **PBP-side descent** (paper §10): τ → doubleDescent_D_PBP τ;
+   corresponds to dp → dp.drop 2. This is the CURRENT formulation.
+2. **Orbit-side descent** (paper Lemma 9.2): O → ∇^s_{s'}(O);
+   shifts O(i+1) to O(i), adjusts O(1).
+
+These are DIFFERENT. `dpToSYD .D (dp.drop 2)` corresponds to NEITHER
+— it's `partTranspose (dp.drop 2)`, which reshuffles the partition
+structure globally.
+
+**Key insight**: for the descentChain to correctly match orbit
+descents, we need to track the orbit's ∇^s_{s'} descents separately,
+NOT just dp.drop 2.
+
+### Even simpler invariant: signature only
+
+`ILS.sign` (MYD.lean:69) exists and gives `ℤ × ℤ`. For MYD at orbit
+O, paper Def 9.10 says `Sign(E) = Sign(O)`. This is a single
+`ℤ × ℤ` equality, NOT a row-structural match.
+
+**Revised Option C**:
+```lean
+structure MYD (γ : RootType) (signature : ℤ × ℤ) where
+  E : ILS
+  parity : ∀ j h, MYDRowValid γ (j+1) E[j]
+  sign_match : ILS.sign E = signature
+```
+
+Indexed by signature (ℤ × ℤ), not by SYD O. For τ ∈ PBPSet .D μP μQ
+(QD orbit), the target signature is τ.signature = (p_τ, q_τ). With
+this formulation:
+
+- `descentChain_D_in_MYD` concludes `ILS.sign E = τ.signature`
+- Step case uses `ACResult.thetaLift_sign` (MYD.lean:821) directly:
+  each theta-lift step preserves signature
+- The induction is straightforward: inner chain has inner sign =
+  inner τ's sign; outer step adds ε_τ twist which changes sign
+  by a known formula.
+
+**This formulation** matches paper's signature-based framework and
+uses existing MYD.lean:821+ sign-preservation lemmas directly.
+
+### Subtlety: signature depends on τ, not just (μP, μQ)
+
+For general γ PBPs, different τ's with same shape can have different
+signatures. But under **quasi-distinguished** Ǒ (paper's assumption
+for Prop 11.15), `τ.signature = some_fixed_value` for all τ in
+PBPSet .D μP μQ. This is paper Prop 11.4 or similar.
+
+**For our formalization**, we should either:
+- Restrict to QD (add hypothesis)
+- Parameterize MYD by the τ-dependent signature
+
+The former is cleaner; matches paper's scope. QD already has an
+Is_QD predicate in `DPToSYD.lean` from previous session work.
