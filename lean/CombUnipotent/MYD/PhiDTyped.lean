@@ -151,6 +151,28 @@ def PBPIsCoherent_D (τ : PBP) (dp : DualPart) : Prop :=
 def PBPIsCoherent_D_ext (μP μQ : YoungDiagram) (dp : DualPart) : Prop :=
   μP.colLens = dpartColLensP_D dp ∧ μQ.colLens = dpartColLensQ_D dp
 
+/-- `dpartColLensP_D dp = []` iff `dp = []`. (partition utility) -/
+private theorem dpartColLensP_D_eq_nil_iff (dp : DualPart) :
+    dpartColLensP_D dp = [] ↔ dp = [] := by
+  constructor
+  · intro h
+    match dp with
+    | [] => rfl
+    | [r] => simp [dpartColLensP_D] at h
+    | _ :: _ :: _ => simp [dpartColLensP_D] at h
+  · intro h; subst h; rfl
+
+/-- `⊥.colLens = []`. -/
+private theorem YoungDiagram_bot_colLens : (⊥ : YoungDiagram).colLens = [] := by
+  apply List.length_eq_zero_iff.mp
+  rw [YoungDiagram.length_colLens]
+  -- (⊥ : YoungDiagram).rowLen 0 = 0: use rowLen_transpose + colLen_zero for ⊥
+  have : (⊥ : YoungDiagram).transpose = ⊥ := by ext; simp
+  have : (⊥ : YoungDiagram).rowLen 0 = (⊥ : YoungDiagram).colLen 0 := by
+    rw [← YoungDiagram.colLen_transpose, this]
+  rw [this]
+  exact (YoungDiagram.colLen_zero_eq_zero_iff_empty _).mpr rfl
+
 /-- **Theorem (M1.4.3)**: the ILS `E` extracted from a valid descent
     chain satisfies the MYD properties — parity + shape match the
     orbit `dpToSYD .D dp` whenever `dp` is coherent with `τ`'s shapes.
@@ -177,10 +199,8 @@ theorem descentChain_D_in_MYD {τ : PBP} {chain : List ACStepData}
     -- Both sides become empty.
     have hdp : dp = [] := by
       have hP := h_coh.1
-      rw [h_empty.1] at hP
-      -- ⊥.colLens = []; dpartColLensP_D dp = [] forces dp = []
-      unfold YoungDiagram.colLens at hP
-      sorry  -- dpartColLensP_D dp = [] → dp = [] (partition lemma)
+      rw [h_empty.1, YoungDiagram_bot_colLens] at hP
+      exact (dpartColLensP_D_eq_nil_iff dp).mp hP.symm
     subst hdp
     refine ⟨?_, ?_⟩
     · -- baseILS .D = [], so E.length = 0, vacuous
