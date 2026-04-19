@@ -181,26 +181,73 @@ theorem coherence_descend_D_P {τ : PBP} (hγ : τ.γ = .D) {dp : DualPart}
   -- The new P shape is τ.P.shape.shiftLeft
   rw [YoungDiagram.shiftLeft_colLens_eq_tail, h_coh, dpartColLensP_D_tail]
 
+/-- Helper: `dpartColLensQ_D` on a list of all-1's is empty. -/
+private theorem dpartColLensQ_D_all_ones_nil :
+    ∀ (xs : List ℕ), (∀ x ∈ xs, x = 1) → dpartColLensQ_D xs = [] := by
+  intro xs hall
+  match xs with
+  | [] => rfl
+  | [_] => rfl
+  | x :: y :: rest =>
+    have hy : y = 1 := hall y (by simp)
+    have hrest : ∀ z ∈ rest, z = 1 := fun z hz => hall z (by simp [hz])
+    simp only [dpartColLensQ_D, hy]
+    simp
+    exact dpartColLensQ_D_all_ones_nil rest hrest
+
 /-- **Sub-lemma 1 (Q-side coherence preservation)**: Q's coherence
     lifts to the doubleDescent PBP with `dp.drop 2`.
 
-    NOTE: the Q-side relation has a **conditional case** on
-    `r₂ > 1 vs r₂ ≤ 1` (from `dpartColLensQ_D`'s `if r₂ > 1 then ...`).
-    Under **sorted-descending + good-parity (all odd)** dp, when
-    `r₂ = 1`, all subsequent `r_i` are also 1, so `dpartColLensQ_D rest = []`;
-    then `tail []= [] = dpartColLensQ_D rest`. Works out.
-
-    Proving this requires either:
-    (a) threading sorted + good-parity hypotheses through, OR
-    (b) a cleaner invariant on Q's shape that doesn't need them.
-
-    Deferred to follow-up. -/
+    Uses sorted-descending + all-odd hypotheses to handle the `r₂ = 1`
+    boundary case (where all subsequent `r_i = 1`, so Q's shape is
+    unchanged under shiftLeft but `dpartColLensQ_D (dp.drop 2)` is
+    also empty). -/
 theorem coherence_descend_D_Q {τ : PBP} (hγ : τ.γ = .D) {dp : DualPart}
     (h_coh : τ.Q.shape.colLens = dpartColLensQ_D dp)
-    (_hsort : dp.SortedGE) (_hodd : ∀ r ∈ dp, Odd r) :
+    (hsort : dp.SortedGE) (hodd : ∀ r ∈ dp, Odd r) :
     (doubleDescent_D_PBP τ hγ).Q.shape.colLens =
     dpartColLensQ_D (dp.drop 2) := by
-  sorry
+  unfold doubleDescent_D_PBP
+  dsimp only
+  rw [YoungDiagram.shiftLeft_colLens_eq_tail, h_coh]
+  -- Need: (dpartColLensQ_D dp).tail = dpartColLensQ_D (dp.drop 2)
+  match dp, hsort, hodd with
+  | [], _, _ => rfl
+  | [_], _, _ => rfl
+  | r₁ :: r₂ :: rest, hs, ho =>
+    by_cases hr₂ : r₂ > 1
+    · -- Direct case: tail shifts correctly
+      simp only [dpartColLensQ_D, hr₂, if_true, List.tail_cons, List.drop]
+    · -- r₂ ≤ 1 AND r₂ odd (∈ dp): forces r₂ = 1 AND sorted + odd → all rest are 1
+      have hr₂_odd : Odd r₂ := ho r₂ (by simp)
+      have hr₂_eq : r₂ = 1 := by
+        obtain ⟨k, hk⟩ := hr₂_odd; omega
+      have hrest_ones : ∀ x ∈ rest, x = 1 := by
+        intro x hx
+        have hx_le : x ≤ r₂ := by
+          -- sorted descending: r₂ ≥ x via pairwise decomposition
+          obtain ⟨i, hi, hi_eq⟩ := List.mem_iff_getElem.mp hx
+          -- x = rest[i]; in the full list r₁ :: r₂ :: rest, x is at position i+2
+          have h_pos : (r₁ :: r₂ :: rest)[i + 2]'(by simp; omega) = x := by
+            simp [hi_eq]
+          have h_r₂_pos : (r₁ :: r₂ :: rest)[1]'(by simp) = r₂ := by simp
+          have h_anti : (r₁ :: r₂ :: rest).get ⟨1, by simp⟩ ≥
+              (r₁ :: r₂ :: rest).get ⟨i + 2, by simp; omega⟩ := by
+            apply hs
+            show (1 : ℕ) ≤ i + 2
+            omega
+          simp [List.get_eq_getElem] at h_anti
+          rw [hi_eq] at h_anti
+          exact h_anti
+        have hx_odd : Odd x := ho x (by simp [hx])
+        obtain ⟨k, hk⟩ := hx_odd; omega
+      -- dpartColLensQ_D (r₁ :: 1 :: rest) = dpartColLensQ_D rest
+      -- dp.drop 2 = rest
+      -- dpartColLensQ_D rest = [] (all ones)
+      -- (dpartColLensQ_D rest).tail = [].tail = []
+      simp only [dpartColLensQ_D, hr₂, if_false, List.drop]
+      rw [dpartColLensQ_D_all_ones_nil rest hrest_ones]
+      rfl
 
 /-- `dpartColLensQ_D` relation under `dp.drop 2`. Has a conditional case. -/
 private theorem dpartColLensQ_D_drop2 (dp : DualPart) :
