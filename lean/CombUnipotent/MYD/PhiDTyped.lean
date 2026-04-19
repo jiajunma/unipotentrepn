@@ -170,6 +170,34 @@ private theorem dpartColLensP_D_tail (dp : DualPart) :
   | [_] => rfl
   | _ :: _ :: _ => rfl
 
+/-- `SortedGE` is preserved under `List.drop`. -/
+private theorem List.SortedGE.drop {l : List ℕ} (h : l.SortedGE) (n : ℕ) :
+    (l.drop n).SortedGE := by
+  intro i j hij
+  have hi_len : n + i.val < l.length := by
+    have h_i := i.isLt
+    have h_dl : (l.drop n).length = l.length - n := List.length_drop
+    omega
+  have hj_len : n + j.val < l.length := by
+    have h_j := j.isLt
+    have h_dl : (l.drop n).length = l.length - n := List.length_drop
+    omega
+  have hij' : n + i.val ≤ n + j.val := by
+    have : i.val ≤ j.val := hij
+    omega
+  have h_ante := h (show (⟨n + i.val, hi_len⟩ : Fin l.length) ≤
+              ⟨n + j.val, hj_len⟩ from hij')
+  show (l.drop n).get i ≥ (l.drop n).get j
+  simp only [List.get_eq_getElem, List.getElem_drop]
+  simp only [List.get_eq_getElem] at h_ante
+  exact h_ante
+
+/-- `Odd` on all members is preserved under `List.drop`. -/
+private theorem drop_all_odd {l : List ℕ} (h : ∀ r ∈ l, Odd r) (n : ℕ) :
+    ∀ r ∈ l.drop n, Odd r := by
+  intro r hr
+  exact h r (List.mem_of_mem_drop hr)
+
 /-- **Sub-lemma 1 (P-side coherence preservation)**: P's coherence
     lifts to the doubleDescent PBP with `dp.drop 2`. -/
 theorem coherence_descend_D_P {τ : PBP} (hγ : τ.γ = .D) {dp : DualPart}
