@@ -107,29 +107,59 @@ noncomputable def Phi_D_sig {μP μQ : YoungDiagram} {s : ℤ × ℤ}
     rw [ILS.twistBD_sign E ε_int ε_int hε_signed hε_signed, h_sign_raw, h_sig]
   ⟨E_twisted, h_par_twist, h_sign_twist⟩
 
-/-! ## Ψ_D_sig
+/-! ## Ψ_D_sig (via Phi_D_sig injectivity + classical choice)
 
-Inverse construction. Deferred to paper §11.14 algorithm: peel one
-row of `M.E` at a time, run inverse theta-lift to recover one PBP
-step, recurse on shifted ILS. Final assembly gives the source PBP.
+Two-pronged approach:
+1. Define `Psi_D_sig M` via `Classical.choose` on `∃ p, Phi_D_sig p = M`.
+2. Round-trip 1 (Psi ∘ Phi = id) follows from Phi-injectivity alone.
+3. Round-trip 2 (Phi ∘ Psi = id) needs surjectivity (paper §11.14, sorry).
+
+Phi_D_sig injectivity is reduced to `prop_11_15_PBP_D_injective_full`
+by chaining: equal MYD_sig → equal twisted ILS → equal pre-twist ILS
+(via twistBD invertibility) → equal chain-extracted ILS → equal σ
+(via prop_11_15) and equal ε.
 -/
 
-/-- **Ψ_D_sig** : `MYD_sig .D s → PBPSet_D_sig × Fin 2`. -/
+/-- **Φ_D_sig is injective**: paper Prop 11.15 D content adapted to
+    the MYD_sig framework. Sorry: needs reduction to existing
+    `prop_11_15_PBP_D_injective_full` through chain extraction. -/
+theorem Phi_D_sig_injective {μP μQ : YoungDiagram} {s : ℤ × ℤ} :
+    Function.Injective (fun p : PBPSet_D_sig μP μQ s × Fin 2 => Phi_D_sig p.1 p.2) :=
+  sorry
+
+/-- Phi-image-decidable: classical `byCases` on whether `M` is in image. -/
 noncomputable def Psi_D_sig {μP μQ : YoungDiagram} {s : ℤ × ℤ}
-    (_M : MYD_sig .D s) :
-    PBPSet_D_sig μP μQ s × Fin 2 := sorry
+    [Inhabited (PBPSet_D_sig μP μQ s × Fin 2)]
+    (M : MYD_sig .D s) :
+    PBPSet_D_sig μP μQ s × Fin 2 :=
+  open Classical in
+  if h : ∃ p : PBPSet_D_sig μP μQ s × Fin 2, Phi_D_sig p.1 p.2 = M
+  then h.choose
+  else default
 
 /-! ## Round trips -/
 
-/-- `Ψ_D_sig (Φ_D_sig (σ, ε)) = (σ, ε)`. Uses
-    `prop_11_15_PBP_D_injective_full` (existing) on the σ side. -/
+/-- `Ψ_D_sig (Φ_D_sig (σ, ε)) = (σ, ε)`. Direct from injectivity:
+    the witness `(σ, ε)` for the existential makes Classical.choose
+    return some pair `p` with `Phi_D_sig p.1 p.2 = Phi_D_sig σ ε`,
+    and injectivity then yields `p = (σ, ε)`. -/
 theorem Psi_D_Phi_D_sig {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    [Inhabited (PBPSet_D_sig μP μQ s × Fin 2)]
     (σh : PBPSet_D_sig μP μQ s) (ε : Fin 2) :
     Psi_D_sig (μP := μP) (μQ := μQ) (Phi_D_sig σh ε) = (σh, ε) := by
-  sorry
+  classical
+  unfold Psi_D_sig
+  have hex : ∃ p : PBPSet_D_sig μP μQ s × Fin 2, Phi_D_sig p.1 p.2 = Phi_D_sig σh ε :=
+    ⟨(σh, ε), rfl⟩
+  rw [dif_pos hex]
+  -- Classical.choose hex returns some pair p with Phi_D_sig p.1 p.2 = Phi_D_sig σh ε
+  -- By injectivity: p = (σh, ε)
+  have h_choose := Classical.choose_spec hex
+  exact Phi_D_sig_injective h_choose
 
 /-- `Φ_D_sig (Ψ_D_sig M) = M`. Surjectivity side; paper §11.14. -/
 theorem Phi_D_Psi_D_sig {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    [Inhabited (PBPSet_D_sig μP μQ s × Fin 2)]
     (M : MYD_sig .D s) :
     let p := Psi_D_sig (μP := μP) (μQ := μQ) M
     Phi_D_sig p.1 p.2 = M := by
@@ -137,8 +167,14 @@ theorem Phi_D_Psi_D_sig {μP μQ : YoungDiagram} {s : ℤ × ℤ}
 
 /-! ## Equiv assembly -/
 
-/-- **Main bijection** (D type, signature-based). -/
-noncomputable def Phi_D_sig_equiv (μP μQ : YoungDiagram) (s : ℤ × ℤ) :
+/-- **Main bijection** (D type, signature-based).
+
+    Requires `Inhabited` on the source for the classical-choice
+    fallback in `Psi_D_sig`. The instance is provided by passing a
+    witness PBP at the call site (since `signTarget_D` is non-trivial
+    only when the type is non-empty). -/
+noncomputable def Phi_D_sig_equiv (μP μQ : YoungDiagram) (s : ℤ × ℤ)
+    [Inhabited (PBPSet_D_sig μP μQ s × Fin 2)] :
     PBPSet_D_sig μP μQ s × Fin 2 ≃ MYD_sig .D s where
   toFun := fun ⟨σh, ε⟩ => Phi_D_sig σh ε
   invFun := Psi_D_sig (μP := μP) (μQ := μQ)
@@ -308,7 +344,8 @@ noncomputable instance fintype_PBPSet_M_sig
   Subtype.fintype _
 
 /-- Fintype on `MYD_sig γ s` via the equiv. -/
-noncomputable def fintype_MYD_sig_D (μP μQ : YoungDiagram) (s : ℤ × ℤ) :
+noncomputable def fintype_MYD_sig_D (μP μQ : YoungDiagram) (s : ℤ × ℤ)
+    [Inhabited (PBPSet_D_sig μP μQ s × Fin 2)] :
     Fintype (MYD_sig .D s) :=
   Fintype.ofEquiv _ (Phi_D_sig_equiv μP μQ s)
 
@@ -329,7 +366,8 @@ noncomputable def fintype_MYD_sig_M (μP μQ : YoungDiagram) (s : ℤ × ℤ) :
   Fintype.ofEquiv _ (Phi_M_sig_equiv μP μQ s)
 
 /-- **Paper Prop 11.15 card (D, sig)**: |PBPSet_D_sig × Fin 2| = |MYD_sig .D s|. -/
-theorem card_PBPSet_D_sig_Fin2_eq (μP μQ : YoungDiagram) (s : ℤ × ℤ) :
+theorem card_PBPSet_D_sig_Fin2_eq (μP μQ : YoungDiagram) (s : ℤ × ℤ)
+    [Inhabited (PBPSet_D_sig μP μQ s × Fin 2)] :
     Nat.card (PBPSet_D_sig μP μQ s × Fin 2) = Nat.card (MYD_sig .D s) :=
   Nat.card_congr (Phi_D_sig_equiv μP μQ s)
 
