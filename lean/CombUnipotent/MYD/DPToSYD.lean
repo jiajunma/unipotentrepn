@@ -93,29 +93,30 @@ theorem dpToSYD_empty (γ : RootType) : dpToSYD γ [] = SYD.empty γ := by
 
 /-! ## Quasi-distinguished dual partitions
 
-A dual partition `Ǒ` is **quasi-distinguished** (for root type γ) when
-every γ-pair is either **primitive** (strictly decreasing) or **tailed**
-(second element is 0) — equivalently, no γ-pair is **balanced**
-(both positive and equal).
+Paper [BMSZ] arXiv:1712.05552:
 
-The γ-pair indexing convention (paper [BMSZb] §10):
-- γ ∈ {B⁺, B⁻, D}: pairs `(2i, 2i+1)` for `i ≥ 1` (1-indexed), i.e.
-  `(r_2, r_3), (r_4, r_5), (r_6, r_7), ...`
-- γ ∈ {C, M}: pairs `(2i-1, 2i)` for `i ≥ 1`, i.e.
-  `(r_1, r_2), (r_3, r_4), (r_5, r_6), ...`
+**Definition 3.5**: A ★-pair is a pair `(i, i+1)` of consecutive positive
+integers where:
+- i is odd if ★ ∈ {C, C̃, C*}
+- i is even if ★ ∈ {B, D, D*}
 
-A γ-pair `(r_{2i}, r_{2i+1})` (B/D) or `(r_{2i-1}, r_{2i})` (C/M) is:
-- **primitive** if first > second (strict inequality, positive first)
-- **tailed** if second = 0
-- **balanced** if first = second > 0 (both positive, equal)
+A ★-pair `(i, i+1)` is:
+- **vacant in Ǒ**: `r_i(Ǒ) = r_{i+1}(Ǒ) = 0`
+- **balanced in Ǒ**: `r_i(Ǒ) = r_{i+1}(Ǒ) > 0`
+- **tailed in Ǒ**: `r_i(Ǒ) - r_{i+1}(Ǒ)` positive and odd
+- **primitive in Ǒ**: `r_i(Ǒ) - r_{i+1}(Ǒ)` positive and even
 
-Since `dp` is a partition (decreasing), `primitive ∨ balanced ∨ tailed`
-holds for every pair. Quasi-distinguished excludes the balanced case.
+**Definition 4.8**: Ǒ is **quasi-distinguished** iff there is no ★-pair
+that is balanced in Ǒ.
 
-Reference: `docs/recursive_counting.md` §"balanced pair"; [BMSZb] Prop
-10.11 (b): "If (2,3) ∉ PP_★(Ǒ) [balanced pair]".
+In Lean we use 0-indexed positions, so the 1-indexed paper pair `(i, i+1)`
+becomes the 0-indexed pair `(i-1, i)`. Pair starts:
+- γ ∈ {B⁺, B⁻, D}: 0-indexed pair starts at odd positions (1, 3, 5, …)
+  corresponding to 1-indexed (2, 3), (4, 5), …
+- γ ∈ {C, M}: 0-indexed pair starts at even positions (0, 2, 4, …)
+  corresponding to 1-indexed (1, 2), (3, 4), …
 
-Paper [BMSZ] §11 uses QD to guarantee `L_τ` is a single MYD.
+(We omit C*, D* per the project directive skipping those real forms.)
 -/
 
 /-- 0-indexed offset of the γ-pairing: pairs start at this offset and
@@ -134,46 +135,81 @@ def IsPairStart (γ : RootType) (k : ℕ) : Prop :=
 instance (γ : RootType) (k : ℕ) : Decidable (IsPairStart γ k) := by
   unfold IsPairStart; exact inferInstance
 
-/-- A γ-pair starting at 0-indexed position `k` in `dp` is **balanced**:
-    both `dp[k]` and `dp[k+1]` exist, are positive, and equal. -/
+/-- Get entry at 0-indexed position `k` in `dp`, defaulting to 0 if out of bounds. -/
+def pairEntry (dp : DualPart) (k : ℕ) : ℕ := (dp[k]?).getD 0
+
+/-- A γ-pair starting at 0-indexed position `k` in `dp` is **vacant**
+    (paper Def 3.5): both entries are 0. -/
+def IsVacantPair (γ : RootType) (dp : DualPart) (k : ℕ) : Prop :=
+  IsPairStart γ k ∧ pairEntry dp k = 0 ∧ pairEntry dp (k + 1) = 0
+
+/-- A γ-pair starting at 0-indexed position `k` is **balanced** in `dp`
+    (paper Def 3.5): both entries positive and equal. -/
 def IsBalancedPair (γ : RootType) (dp : DualPart) (k : ℕ) : Prop :=
-  IsPairStart γ k ∧ ∃ (h₁ : k < dp.length) (h₂ : k + 1 < dp.length),
-    dp[k] = dp[k + 1] ∧ 0 < dp[k]
+  IsPairStart γ k ∧ 0 < pairEntry dp k ∧ pairEntry dp k = pairEntry dp (k + 1)
+
+/-- A γ-pair starting at 0-indexed position `k` is **tailed** in `dp`
+    (paper Def 3.5): the difference is positive and odd. -/
+def IsTailedPair (γ : RootType) (dp : DualPart) (k : ℕ) : Prop :=
+  IsPairStart γ k ∧ pairEntry dp (k + 1) < pairEntry dp k ∧
+  (pairEntry dp k - pairEntry dp (k + 1)) % 2 = 1
+
+/-- A γ-pair starting at 0-indexed position `k` is **primitive** in `dp`
+    (paper Def 3.5): the difference is positive and even. -/
+def IsPrimitivePair (γ : RootType) (dp : DualPart) (k : ℕ) : Prop :=
+  IsPairStart γ k ∧ pairEntry dp (k + 1) < pairEntry dp k ∧
+  (pairEntry dp k - pairEntry dp (k + 1)) % 2 = 0
+
+instance (γ : RootType) (dp : DualPart) (k : ℕ) :
+    Decidable (IsVacantPair γ dp k) := by
+  unfold IsVacantPair; exact inferInstance
 
 instance (γ : RootType) (dp : DualPart) (k : ℕ) :
     Decidable (IsBalancedPair γ dp k) := by
   unfold IsBalancedPair; exact inferInstance
 
-/-- **Quasi-distinguished** (paper [BMSZ] §11): the dual partition has
-    no balanced γ-pair. Every pair is either primitive (first > second)
-    or tailed (second = 0). -/
+instance (γ : RootType) (dp : DualPart) (k : ℕ) :
+    Decidable (IsTailedPair γ dp k) := by
+  unfold IsTailedPair; exact inferInstance
+
+instance (γ : RootType) (dp : DualPart) (k : ℕ) :
+    Decidable (IsPrimitivePair γ dp k) := by
+  unfold IsPrimitivePair; exact inferInstance
+
+/-- **Quasi-distinguished** (paper [BMSZ] Def 4.8): the dual partition
+    has no balanced γ-pair. Every γ-pair is vacant, tailed, or primitive. -/
 def IsQuasiDistinguished (γ : RootType) (dp : DualPart) : Prop :=
   ∀ k, ¬ IsBalancedPair γ dp k
 
 instance (γ : RootType) (dp : DualPart) :
     Decidable (IsQuasiDistinguished γ dp) := by
   unfold IsQuasiDistinguished
-  -- Only need to check k < dp.length
+  -- Out-of-range k: pairEntry dp k = 0, so 0 < 0 fails and IsBalancedPair is False.
   refine decidable_of_iff (∀ k ∈ List.range dp.length, ¬ IsBalancedPair γ dp k) ?_
   constructor
   · intro h k
     by_cases hk : k < dp.length
     · exact h k (List.mem_range.mpr hk)
-    · intro hbad
-      obtain ⟨_, h₁, _⟩ := hbad
-      exact hk h₁
+    · intro ⟨_, hpos, _⟩
+      have : pairEntry dp k = 0 := by
+        unfold pairEntry
+        simp [List.getElem?_eq_none (Nat.le_of_not_lt hk)]
+      omega
   · intro h k _; exact h k
 
-/-- Empty dp is quasi-distinguished (no pairs at all). -/
+/-- Empty dp is quasi-distinguished (no pairs). -/
 theorem IsQuasiDistinguished_nil (γ : RootType) :
     IsQuasiDistinguished γ [] := by
-  intro k ⟨_, h₁, _⟩
-  exact absurd h₁ (by simp)
+  intro k ⟨_, hpos, _⟩
+  simp [pairEntry] at hpos
 
-/-- Single-row dp is quasi-distinguished (no complete pair). -/
+/-- Single-row dp is quasi-distinguished. -/
 theorem IsQuasiDistinguished_singleton (γ : RootType) (r : ℕ) :
     IsQuasiDistinguished γ [r] := by
-  intro k ⟨_, _, h₂, _⟩
-  simp at h₂
+  intro k ⟨_, hpos, heq⟩
+  unfold pairEntry at hpos heq
+  match k with
+  | 0 => simp at heq; subst heq; exact absurd hpos (by simp)
+  | k + 1 => simp at hpos
 
 end BMSZ
