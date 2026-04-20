@@ -86,18 +86,18 @@ theorem exists_descentChain_C {μP μQ : YoungDiagram} (σ : PBPSet .C μP μQ)
     have hQeq : σ.val.Q.shape = μQ := σ.prop.2.2
     have h_sub : YoungDiagram.shiftLeft σ.val.Q.shape ≤ σ.val.P.shape := by
       rw [hPeq, hQeq]; exact h_sub_μ
-    -- Apply descentCD_PBP to get D-type PBP
-    let σD := descentCD_PBP σ h_sub_μ
-    -- Recurse via exists_descentChain_D on σD
-    obtain ⟨chain_D, h_chain_D⟩ := exists_descentChain_D σD
-    -- Attempt step assembly
-    refine ⟨chain_D ++ [toACStepData_C σ.val hγ ∅], ?_⟩
-    apply IsDescentChain_C.step hγ ∅ h_sub
-    -- h_rest : IsDescentChain_D (descentCD_PBP ⟨σ.val, hγ, rfl, rfl⟩ h_sub).val chain_D
-    -- h_chain_D : IsDescentChain_D σD.val chain_D where σD = descentCD_PBP σ h_sub_μ
-    -- These two val's are equal PBPs (same τ, same paint functions, shape fields
-    -- equal via σ.prop.2.1, σ.prop.2.2). Requires PBP/PaintedYoungDiagram.ext.
-    sorry
+    -- Using subst to align μP, μQ with σ.val's shapes
+    obtain ⟨τ_val, τ_γ, τ_P_eq, τ_Q_eq⟩ := σ
+    -- Now τ_val : PBP, with τ_val.γ = .C, τ_val.P.shape = μP, τ_val.Q.shape = μQ
+    subst τ_P_eq; subst τ_Q_eq
+    -- Now μP = τ_val.P.shape, μQ = τ_val.Q.shape
+    -- Apply descentCD_PBP
+    let σ' : PBPSet .C τ_val.P.shape τ_val.Q.shape := ⟨τ_val, τ_γ, rfl, rfl⟩
+    obtain ⟨chain_D, h_chain_D⟩ := exists_descentChain_D (descentCD_PBP σ' h_sub)
+    -- h_chain_D : IsDescentChain_D (descentCD_PBP σ' h_sub).val chain_D
+    -- IsDescentChain_C.step expects h_rest of same form
+    refine ⟨chain_D ++ [toACStepData_C τ_val τ_γ ∅], ?_⟩
+    exact IsDescentChain_C.step τ_γ ∅ h_sub h_chain_D
 
 /-- Every C-PBP admits a dp witness that makes it coherent. Classical
     choice + PBP structure. Paper-level: every C-PBP corresponds to
