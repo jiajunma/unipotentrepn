@@ -134,6 +134,21 @@ theorem descent_step_thetaLift_singleton {τ : PBP} (hγ : τ.γ = .D)
       (toACStepData_D τ hγ).q = [E'] := by
   sorry
 
+/-- Explicit std-hypothesis variant at any D-type chain step.
+    Alias pattern: the _std variant is always provable; the non-std
+    version assumes paper §11.5/11.6. -/
+theorem descent_step_thetaLift_singleton_from_std {τ : PBP} (hγ : τ.γ = .D)
+    (E_inner : ILS)
+    (h_std :
+      (toACStepData_D τ hγ).p - (ILS.sign E_inner).1 - (ILS.firstColSign E_inner).2 ≥ 0 ∧
+      (toACStepData_D τ hγ).q - (ILS.sign E_inner).2 - (ILS.firstColSign E_inner).1 ≥ 0) :
+    ∃ E' : ILS, ILS.thetaLift
+      (stepPreTwist E_inner (toACStepData_D τ hγ))
+      (toACStepData_D τ hγ).γ
+      (toACStepData_D τ hγ).p
+      (toACStepData_D τ hγ).q = [E'] :=
+  descent_step_thetaLift_singleton_std hγ E_inner h_std
+
 /-- **Theorem (M1.4.2 partial)**: any valid descent chain for τ is
     ChainSingleton-valid.
 
