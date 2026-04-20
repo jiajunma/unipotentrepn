@@ -78,18 +78,23 @@ theorem exists_descentChain_C {μP μQ : YoungDiagram} (σ : PBPSet .C μP μQ)
       rw [← σ.prop.2.1]; exact hP_raw
     have hQ_μ : μQ.colLens = dpartColLensQ_C (r₁ :: r₂ :: rest) := by
       rw [← σ.prop.2.2]; exact hQ_raw
-    have h_sub : YoungDiagram.shiftLeft μQ ≤ μP :=
+    have h_sub_μ : YoungDiagram.shiftLeft μQ ≤ μP :=
       _root_.shiftLeft_Q_le_P_of_dp hP_μ hQ_μ hsort hodd
+    -- Bridge h_sub_μ to h_sub over σ.val's shapes
+    have hγ : σ.val.γ = .C := σ.prop.1
+    have hPeq : σ.val.P.shape = μP := σ.prop.2.1
+    have hQeq : σ.val.Q.shape = μQ := σ.prop.2.2
+    have h_sub : YoungDiagram.shiftLeft σ.val.Q.shape ≤ σ.val.P.shape := by
+      rw [hPeq, hQeq]; exact h_sub_μ
     -- Apply descentCD_PBP to get D-type PBP
-    let σD := descentCD_PBP σ h_sub
+    let σD := descentCD_PBP σ h_sub_μ
     -- Recurse via exists_descentChain_D on σD
     obtain ⟨chain_D, h_chain_D⟩ := exists_descentChain_D σD
     -- Construct outer C chain via IsDescentChain_C.step
-    have hγ : σ.val.γ = .C := σ.prop.1
-    -- h_rest needs (descentCD_PBP ⟨τ, hγ, rfl, rfl⟩ h_sub').val where h_sub' uses τ's shapes
-    -- For σ : PBPSet .C μP μQ, σ.val.P.shape = μP and σ.val.Q.shape = μQ, so h_sub'
-    -- matches h_sub up to the shape equalities.
-    -- This requires careful bridging. Deferred.
+    -- Need: IsDescentChain_D (descentCD_PBP ⟨σ.val, hγ, rfl, rfl⟩ h_sub).val chain_D
+    -- We have: IsDescentChain_D σD.val chain_D
+    -- These are equal via equality of descentCD_raw calls (different shape args).
+    -- Deferred — bridging requires PBP.ext on descentCD_raw's shape vs derived shape.
     sorry
 
 /-- Every C-PBP admits a dp witness that makes it coherent. Classical
