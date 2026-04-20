@@ -85,7 +85,7 @@ private lemma yd_Q_D_le_P_D {μQ μP : YoungDiagram} (dp : DualPart)
       have := yd_of_colLens_nil hQ_nil; subst this; exact bot_le
 
 /-- shiftLeft(Q) ≤ P when shapes come from dp. -/
-private lemma shiftLeft_Q_le_P_of_dp {μP μQ : YoungDiagram} {r₁ r₂ : ℕ} {rest : DualPart}
+lemma shiftLeft_Q_le_P_of_dp {μP μQ : YoungDiagram} {r₁ r₂ : ℕ} {rest : DualPart}
     (hP : μP.colLens = dpartColLensP_C (r₁ :: r₂ :: rest))
     (hQ : μQ.colLens = dpartColLensQ_C (r₁ :: r₂ :: rest))
     (hsort : (r₁ :: r₂ :: rest).SortedGE)

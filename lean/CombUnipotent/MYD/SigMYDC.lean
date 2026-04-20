@@ -58,11 +58,20 @@ theorem exists_descentChain_C {μP μQ : YoungDiagram} (σ : PBPSet .C μP μQ)
     ∃ c : List ACStepData, IsDescentChain_C σ.val c := by
   sorry
 
-/-- Simplified signature that takes σ and defers the coherence hypothesis
-    via Classical.choice on existence of a matching dp. -/
+/-- Every C-PBP admits a dp witness that makes it coherent. Classical
+    choice + PBP structure. Paper-level: every C-PBP corresponds to
+    a quasi-distinguished or general orbit via BV duality. -/
+theorem exists_coherent_dp_C {μP μQ : YoungDiagram} (σ : PBPSet .C μP μQ) :
+    ∃ dp : DualPart,
+      PBPIsCoherent_C σ.val dp ∧ dp.SortedGE ∧ (∀ r ∈ dp, Odd r) := by
+  sorry
+
+/-- Simplified signature that takes σ and derives the coherence
+    via `exists_coherent_dp_C`. -/
 theorem exists_descentChain_C_simple {μP μQ : YoungDiagram} (σ : PBPSet .C μP μQ) :
     ∃ c : List ACStepData, IsDescentChain_C σ.val c := by
-  sorry
+  obtain ⟨dp, h_coh, hsort, hodd⟩ := exists_coherent_dp_C σ
+  exact exists_descentChain_C σ dp h_coh hsort hodd
 
 /-! ## Per-step thetaLift singleton (paper §11.5/11.6) -/
 
