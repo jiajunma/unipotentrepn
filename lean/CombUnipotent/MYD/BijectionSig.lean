@@ -122,18 +122,12 @@ by chaining: equal MYD_sig → equal twisted ILS → equal pre-twist ILS
 (via prop_11_15) and equal ε.
 -/
 
-/-- **Φ_D_sig is injective**. Paper Prop 11.15 D-type injectivity.
+/-- **Φ_D_sig is injective** (paper Prop 11.15 D-type).
 
-    FALSE for empty (μP, μQ) — Phi maps both ε values of the unique
-    empty τ to the same empty MYD_sig. Paper excludes `|Ǒ| = 0`.
-
-    Full NL proof: `lean/docs/blueprints/Phi_D_sig_injective_NL.md`.
-    Closure requires bridging chain-extracted E to ACResult form and
-    using `prop_11_15_PBP_D_injective_full` + `chain_extract_injective_D`
-    (σ recovery, paper Lemma 11.13 + `ddescent_inj_D`).
-
-    ~570 LOC estimated for full closure. -/
-theorem Phi_D_sig_injective {μP μQ : YoungDiagram} {s : ℤ × ℤ} :
+    Requires non-empty shape — for empty (μP, μQ), the map sends both
+    ε values of the unique empty τ to the same empty MYD_sig. -/
+theorem Phi_D_sig_injective {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    (_h_ne : μP.cells.card + μQ.cells.card > 0) :
     Function.Injective (fun p : PBPSet_D_sig μP μQ s × Fin 2 =>
       Phi_D_sig p.1 p.2) :=
   sorry
@@ -156,6 +150,7 @@ noncomputable def Psi_D_sig {μP μQ : YoungDiagram} {s : ℤ × ℤ}
     and injectivity then yields `p = (σ, ε)`. -/
 theorem Psi_D_Phi_D_sig {μP μQ : YoungDiagram} {s : ℤ × ℤ}
     [Inhabited (PBPSet_D_sig μP μQ s × Fin 2)]
+    (h_ne : μP.cells.card + μQ.cells.card > 0)
     (σh : PBPSet_D_sig μP μQ s) (ε : Fin 2) :
     Psi_D_sig (μP := μP) (μQ := μQ) (Phi_D_sig σh ε) = (σh, ε) := by
   classical
@@ -163,10 +158,8 @@ theorem Psi_D_Phi_D_sig {μP μQ : YoungDiagram} {s : ℤ × ℤ}
   have hex : ∃ p : PBPSet_D_sig μP μQ s × Fin 2, Phi_D_sig p.1 p.2 = Phi_D_sig σh ε :=
     ⟨(σh, ε), rfl⟩
   rw [dif_pos hex]
-  -- Classical.choose hex returns some pair p with Phi_D_sig p.1 p.2 = Phi_D_sig σh ε
-  -- By injectivity: p = (σh, ε)
   have h_choose := Classical.choose_spec hex
-  exact Phi_D_sig_injective h_choose
+  exact Phi_D_sig_injective h_ne h_choose
 
 /-- Phi_D_sig is surjective. Paper §11.14 algorithmic inverse. -/
 theorem Phi_D_sig_surjective {μP μQ : YoungDiagram} {s : ℤ × ℤ} :
@@ -190,18 +183,15 @@ theorem Phi_D_Psi_D_sig {μP μQ : YoungDiagram} {s : ℤ × ℤ}
 
 /-! ## Equiv assembly -/
 
-/-- **Main bijection** (D type, signature-based).
-
-    Requires `Inhabited` on the source for the classical-choice
-    fallback in `Psi_D_sig`. The instance is provided by passing a
-    witness PBP at the call site (since `signTarget_D` is non-trivial
-    only when the type is non-empty). -/
+/-- **Main bijection** (D type, signature-based). Requires non-empty
+    shape (paper Prop 11.15 excludes |Ǒ| = 0). -/
 noncomputable def Phi_D_sig_equiv (μP μQ : YoungDiagram) (s : ℤ × ℤ)
+    (h_ne : μP.cells.card + μQ.cells.card > 0)
     [Inhabited (PBPSet_D_sig μP μQ s × Fin 2)] :
     PBPSet_D_sig μP μQ s × Fin 2 ≃ MYD_sig .D s where
   toFun := fun ⟨σh, ε⟩ => Phi_D_sig σh ε
   invFun := Psi_D_sig (μP := μP) (μQ := μQ)
-  left_inv := fun ⟨σh, ε⟩ => Psi_D_Phi_D_sig σh ε
+  left_inv := fun ⟨σh, ε⟩ => Psi_D_Phi_D_sig h_ne σh ε
   right_inv := fun M => Phi_D_Psi_D_sig M
 
 /-! ## Signature targets for B⁻ / C / M (B⁺ is in SigMYDB.lean) -/
@@ -274,8 +264,10 @@ noncomputable def Phi_Bplus_sig {μP μQ : YoungDiagram} {s : ℤ × ℤ}
     rw [ILS.twistBD_sign E ε_int ε_int hε_signed hε_signed, h_sign_raw, h_sig]
   ⟨E_twisted, h_par_twist, h_sign_twist⟩
 
-/-- Phi_Bplus_sig injective. Sorry: paper Prop 11.15 reduction. -/
-theorem Phi_Bplus_sig_injective {μP μQ : YoungDiagram} {s : ℤ × ℤ} :
+/-- Phi_Bplus_sig injective (paper Prop 11.15 B+).
+    Requires non-empty shape. -/
+theorem Phi_Bplus_sig_injective {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    (_h_ne : μP.cells.card + μQ.cells.card > 0) :
     Function.Injective (fun p : PBPSet_Bplus_sig μP μQ s × Fin 2 => Phi_Bplus_sig p.1 p.2) :=
   sorry
 
@@ -290,6 +282,7 @@ noncomputable def Psi_Bplus_sig {μP μQ : YoungDiagram} {s : ℤ × ℤ}
 
 theorem Psi_Bplus_Phi_Bplus_sig {μP μQ : YoungDiagram} {s : ℤ × ℤ}
     [Inhabited (PBPSet_Bplus_sig μP μQ s × Fin 2)]
+    (h_ne : μP.cells.card + μQ.cells.card > 0)
     (σh : PBPSet_Bplus_sig μP μQ s) (ε : Fin 2) :
     Psi_Bplus_sig (μP := μP) (μQ := μQ) (Phi_Bplus_sig σh ε) = (σh, ε) := by
   classical
@@ -297,7 +290,7 @@ theorem Psi_Bplus_Phi_Bplus_sig {μP μQ : YoungDiagram} {s : ℤ × ℤ}
   have hex : ∃ p : PBPSet_Bplus_sig μP μQ s × Fin 2,
       Phi_Bplus_sig p.1 p.2 = Phi_Bplus_sig σh ε := ⟨(σh, ε), rfl⟩
   rw [dif_pos hex]
-  exact Phi_Bplus_sig_injective (Classical.choose_spec hex)
+  exact Phi_Bplus_sig_injective h_ne (Classical.choose_spec hex)
 
 /-- Phi_Bplus_sig is surjective. Paper §11.14. -/
 theorem Phi_Bplus_sig_surjective {μP μQ : YoungDiagram} {s : ℤ × ℤ} :
@@ -317,13 +310,14 @@ theorem Phi_Bplus_Psi_Bplus_sig {μP μQ : YoungDiagram} {s : ℤ × ℤ}
   simp only [dif_pos hex]
   exact Classical.choose_spec hex
 
-/-- **Paper Prop 11.15 (B⁺), signature variant**. -/
+/-- **Paper Prop 11.15 (B⁺), signature variant**. Requires non-empty shape. -/
 noncomputable def Phi_Bplus_sig_equiv (μP μQ : YoungDiagram) (s : ℤ × ℤ)
+    (h_ne : μP.cells.card + μQ.cells.card > 0)
     [Inhabited (PBPSet_Bplus_sig μP μQ s × Fin 2)] :
     PBPSet_Bplus_sig μP μQ s × Fin 2 ≃ MYD_sig .Bplus s where
   toFun := fun ⟨σh, ε⟩ => Phi_Bplus_sig σh ε
   invFun := Psi_Bplus_sig (μP := μP) (μQ := μQ)
-  left_inv := fun ⟨σh, ε⟩ => Psi_Bplus_Phi_Bplus_sig σh ε
+  left_inv := fun ⟨σh, ε⟩ => Psi_Bplus_Phi_Bplus_sig h_ne σh ε
   right_inv := fun M => Phi_Bplus_Psi_Bplus_sig M
 
 /-! ### Phi_Bminus_sig — uses descentChain_sign_match_Bminus (PROVED) -/
@@ -363,8 +357,8 @@ noncomputable def Phi_Bminus_sig {μP μQ : YoungDiagram} {s : ℤ × ℤ}
     rw [heq]; exact h_sig
   ⟨E_twisted, h_par_twist, h_sign_twist⟩
 
-/-- Phi_Bminus_sig injective. Sorry: paper Prop 11.15 reduction. -/
-theorem Phi_Bminus_sig_injective {μP μQ : YoungDiagram} {s : ℤ × ℤ} :
+theorem Phi_Bminus_sig_injective {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    (_h_ne : μP.cells.card + μQ.cells.card > 0) :
     Function.Injective (fun p : PBPSet_Bminus_sig μP μQ s × Fin 2 => Phi_Bminus_sig p.1 p.2) :=
   sorry
 
@@ -379,6 +373,7 @@ noncomputable def Psi_Bminus_sig {μP μQ : YoungDiagram} {s : ℤ × ℤ}
 
 theorem Psi_Bminus_Phi_Bminus_sig {μP μQ : YoungDiagram} {s : ℤ × ℤ}
     [Inhabited (PBPSet_Bminus_sig μP μQ s × Fin 2)]
+    (h_ne : μP.cells.card + μQ.cells.card > 0)
     (σh : PBPSet_Bminus_sig μP μQ s) (ε : Fin 2) :
     Psi_Bminus_sig (μP := μP) (μQ := μQ) (Phi_Bminus_sig σh ε) = (σh, ε) := by
   classical
@@ -386,7 +381,7 @@ theorem Psi_Bminus_Phi_Bminus_sig {μP μQ : YoungDiagram} {s : ℤ × ℤ}
   have hex : ∃ p : PBPSet_Bminus_sig μP μQ s × Fin 2,
       Phi_Bminus_sig p.1 p.2 = Phi_Bminus_sig σh ε := ⟨(σh, ε), rfl⟩
   rw [dif_pos hex]
-  exact Phi_Bminus_sig_injective (Classical.choose_spec hex)
+  exact Phi_Bminus_sig_injective h_ne (Classical.choose_spec hex)
 
 theorem Phi_Bminus_sig_surjective {μP μQ : YoungDiagram} {s : ℤ × ℤ} :
     Function.Surjective
@@ -405,13 +400,14 @@ theorem Phi_Bminus_Psi_Bminus_sig {μP μQ : YoungDiagram} {s : ℤ × ℤ}
   simp only [dif_pos hex]
   exact Classical.choose_spec hex
 
-/-- **Paper Prop 11.15 (B⁻), signature variant**. -/
+/-- **Paper Prop 11.15 (B⁻), signature variant**. Requires non-empty shape. -/
 noncomputable def Phi_Bminus_sig_equiv (μP μQ : YoungDiagram) (s : ℤ × ℤ)
+    (h_ne : μP.cells.card + μQ.cells.card > 0)
     [Inhabited (PBPSet_Bminus_sig μP μQ s × Fin 2)] :
     PBPSet_Bminus_sig μP μQ s × Fin 2 ≃ MYD_sig .Bminus s where
   toFun := fun ⟨σh, ε⟩ => Phi_Bminus_sig σh ε
   invFun := Psi_Bminus_sig (μP := μP) (μQ := μQ)
-  left_inv := fun ⟨σh, ε⟩ => Psi_Bminus_Phi_Bminus_sig σh ε
+  left_inv := fun ⟨σh, ε⟩ => Psi_Bminus_Phi_Bminus_sig h_ne σh ε
   right_inv := fun M => Phi_Bminus_Psi_Bminus_sig M
 
 /-! ### Phi_C_sig (no Fin 2 — paper Prop 11.17)
@@ -446,7 +442,8 @@ noncomputable def Phi_C_sig {μP μQ : YoungDiagram} {s : ℤ × ℤ}
   have h_par := descentChain_C_parity h_chain h_sing
   ⟨E, h_par, h_sign⟩
 
-theorem Phi_C_sig_injective {μP μQ : YoungDiagram} {s : ℤ × ℤ} :
+theorem Phi_C_sig_injective {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    (_h_ne : μP.cells.card + μQ.cells.card > 0) :
     Function.Injective (Phi_C_sig (μP := μP) (μQ := μQ) (s := s)) :=
   sorry
 
@@ -460,13 +457,14 @@ noncomputable def Psi_C_sig {μP μQ : YoungDiagram} {s : ℤ × ℤ}
 
 theorem Psi_C_Phi_C_sig {μP μQ : YoungDiagram} {s : ℤ × ℤ}
     [Inhabited (PBPSet_C_sig μP μQ s)]
+    (h_ne : μP.cells.card + μQ.cells.card > 0)
     (σh : PBPSet_C_sig μP μQ s) :
     Psi_C_sig (μP := μP) (μQ := μQ) (Phi_C_sig σh) = σh := by
   classical
   unfold Psi_C_sig
   have hex : ∃ x : PBPSet_C_sig μP μQ s, Phi_C_sig x = Phi_C_sig σh := ⟨σh, rfl⟩
   rw [dif_pos hex]
-  exact Phi_C_sig_injective (Classical.choose_spec hex)
+  exact Phi_C_sig_injective h_ne (Classical.choose_spec hex)
 
 theorem Phi_C_sig_surjective {μP μQ : YoungDiagram} {s : ℤ × ℤ} :
     Function.Surjective (Phi_C_sig (μP := μP) (μQ := μQ) (s := s)) :=
@@ -482,13 +480,14 @@ theorem Phi_C_Psi_C_sig {μP μQ : YoungDiagram} {s : ℤ × ℤ}
   simp only [dif_pos hex]
   exact Classical.choose_spec hex
 
-/-- **Paper Prop 11.17 (C), signature variant**. -/
+/-- **Paper Prop 11.17 (C), signature variant**. Requires non-empty. -/
 noncomputable def Phi_C_sig_equiv (μP μQ : YoungDiagram) (s : ℤ × ℤ)
+    (h_ne : μP.cells.card + μQ.cells.card > 0)
     [Inhabited (PBPSet_C_sig μP μQ s)] :
     PBPSet_C_sig μP μQ s ≃ MYD_sig .C s where
   toFun := Phi_C_sig
   invFun := Psi_C_sig (μP := μP) (μQ := μQ)
-  left_inv := fun σh => Psi_C_Phi_C_sig σh
+  left_inv := fun σh => Psi_C_Phi_C_sig h_ne σh
   right_inv := fun M => Phi_C_Psi_C_sig M
 
 /-! ### Phi_M_sig (no Fin 2 — paper Prop 11.17) -/
@@ -514,7 +513,8 @@ noncomputable def Phi_M_sig {μP μQ : YoungDiagram} {s : ℤ × ℤ}
   have h_par := descentChain_M_parity h_chain h_sing
   ⟨E, h_par, h_sign⟩
 
-theorem Phi_M_sig_injective {μP μQ : YoungDiagram} {s : ℤ × ℤ} :
+theorem Phi_M_sig_injective {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    (_h_ne : μP.cells.card + μQ.cells.card > 0) :
     Function.Injective (Phi_M_sig (μP := μP) (μQ := μQ) (s := s)) :=
   sorry
 
@@ -528,13 +528,14 @@ noncomputable def Psi_M_sig {μP μQ : YoungDiagram} {s : ℤ × ℤ}
 
 theorem Psi_M_Phi_M_sig {μP μQ : YoungDiagram} {s : ℤ × ℤ}
     [Inhabited (PBPSet_M_sig μP μQ s)]
+    (h_ne : μP.cells.card + μQ.cells.card > 0)
     (σh : PBPSet_M_sig μP μQ s) :
     Psi_M_sig (μP := μP) (μQ := μQ) (Phi_M_sig σh) = σh := by
   classical
   unfold Psi_M_sig
   have hex : ∃ x : PBPSet_M_sig μP μQ s, Phi_M_sig x = Phi_M_sig σh := ⟨σh, rfl⟩
   rw [dif_pos hex]
-  exact Phi_M_sig_injective (Classical.choose_spec hex)
+  exact Phi_M_sig_injective h_ne (Classical.choose_spec hex)
 
 theorem Phi_M_sig_surjective {μP μQ : YoungDiagram} {s : ℤ × ℤ} :
     Function.Surjective (Phi_M_sig (μP := μP) (μQ := μQ) (s := s)) :=
@@ -550,13 +551,14 @@ theorem Phi_M_Psi_M_sig {μP μQ : YoungDiagram} {s : ℤ × ℤ}
   simp only [dif_pos hex]
   exact Classical.choose_spec hex
 
-/-- **Paper Prop 11.17 (M), signature variant**. -/
+/-- **Paper Prop 11.17 (M), signature variant**. Requires non-empty. -/
 noncomputable def Phi_M_sig_equiv (μP μQ : YoungDiagram) (s : ℤ × ℤ)
+    (h_ne : μP.cells.card + μQ.cells.card > 0)
     [Inhabited (PBPSet_M_sig μP μQ s)] :
     PBPSet_M_sig μP μQ s ≃ MYD_sig .M s where
   toFun := Phi_M_sig
   invFun := Psi_M_sig (μP := μP) (μQ := μQ)
-  left_inv := fun σh => Psi_M_Phi_M_sig σh
+  left_inv := fun σh => Psi_M_Phi_M_sig h_ne σh
   right_inv := fun M => Phi_M_Psi_M_sig M
 
 /-! ## Fintype + cardinality corollaries -/
@@ -584,58 +586,68 @@ noncomputable instance fintype_PBPSet_M_sig
 
 /-- Fintype on `MYD_sig γ s` via the equiv. -/
 noncomputable def fintype_MYD_sig_D (μP μQ : YoungDiagram) (s : ℤ × ℤ)
+    (h_ne : μP.cells.card + μQ.cells.card > 0)
     [Inhabited (PBPSet_D_sig μP μQ s × Fin 2)] :
     Fintype (MYD_sig .D s) :=
-  Fintype.ofEquiv _ (Phi_D_sig_equiv μP μQ s)
+  Fintype.ofEquiv _ (Phi_D_sig_equiv μP μQ s h_ne)
 
 noncomputable def fintype_MYD_sig_Bplus (μP μQ : YoungDiagram) (s : ℤ × ℤ)
+    (h_ne : μP.cells.card + μQ.cells.card > 0)
     [Inhabited (PBPSet_Bplus_sig μP μQ s × Fin 2)] :
     Fintype (MYD_sig .Bplus s) :=
-  Fintype.ofEquiv _ (Phi_Bplus_sig_equiv μP μQ s)
+  Fintype.ofEquiv _ (Phi_Bplus_sig_equiv μP μQ s h_ne)
 
 noncomputable def fintype_MYD_sig_Bminus (μP μQ : YoungDiagram) (s : ℤ × ℤ)
+    (h_ne : μP.cells.card + μQ.cells.card > 0)
     [Inhabited (PBPSet_Bminus_sig μP μQ s × Fin 2)] :
     Fintype (MYD_sig .Bminus s) :=
-  Fintype.ofEquiv _ (Phi_Bminus_sig_equiv μP μQ s)
+  Fintype.ofEquiv _ (Phi_Bminus_sig_equiv μP μQ s h_ne)
 
 noncomputable def fintype_MYD_sig_C (μP μQ : YoungDiagram) (s : ℤ × ℤ)
+    (h_ne : μP.cells.card + μQ.cells.card > 0)
     [Inhabited (PBPSet_C_sig μP μQ s)] :
     Fintype (MYD_sig .C s) :=
-  Fintype.ofEquiv _ (Phi_C_sig_equiv μP μQ s)
+  Fintype.ofEquiv _ (Phi_C_sig_equiv μP μQ s h_ne)
 
 noncomputable def fintype_MYD_sig_M (μP μQ : YoungDiagram) (s : ℤ × ℤ)
+    (h_ne : μP.cells.card + μQ.cells.card > 0)
     [Inhabited (PBPSet_M_sig μP μQ s)] :
     Fintype (MYD_sig .M s) :=
-  Fintype.ofEquiv _ (Phi_M_sig_equiv μP μQ s)
+  Fintype.ofEquiv _ (Phi_M_sig_equiv μP μQ s h_ne)
 
 /-- **Paper Prop 11.15 card (D, sig)**: |PBPSet_D_sig × Fin 2| = |MYD_sig .D s|. -/
 theorem card_PBPSet_D_sig_Fin2_eq (μP μQ : YoungDiagram) (s : ℤ × ℤ)
+    (h_ne : μP.cells.card + μQ.cells.card > 0)
     [Inhabited (PBPSet_D_sig μP μQ s × Fin 2)] :
     Nat.card (PBPSet_D_sig μP μQ s × Fin 2) = Nat.card (MYD_sig .D s) :=
-  Nat.card_congr (Phi_D_sig_equiv μP μQ s)
+  Nat.card_congr (Phi_D_sig_equiv μP μQ s h_ne)
 
 /-- **Paper Prop 11.15 card (B⁺, sig)**. -/
 theorem card_PBPSet_Bplus_sig_Fin2_eq (μP μQ : YoungDiagram) (s : ℤ × ℤ)
+    (h_ne : μP.cells.card + μQ.cells.card > 0)
     [Inhabited (PBPSet_Bplus_sig μP μQ s × Fin 2)] :
     Nat.card (PBPSet_Bplus_sig μP μQ s × Fin 2) = Nat.card (MYD_sig .Bplus s) :=
-  Nat.card_congr (Phi_Bplus_sig_equiv μP μQ s)
+  Nat.card_congr (Phi_Bplus_sig_equiv μP μQ s h_ne)
 
 /-- **Paper Prop 11.15 card (B⁻, sig)**. -/
 theorem card_PBPSet_Bminus_sig_Fin2_eq (μP μQ : YoungDiagram) (s : ℤ × ℤ)
+    (h_ne : μP.cells.card + μQ.cells.card > 0)
     [Inhabited (PBPSet_Bminus_sig μP μQ s × Fin 2)] :
     Nat.card (PBPSet_Bminus_sig μP μQ s × Fin 2) = Nat.card (MYD_sig .Bminus s) :=
-  Nat.card_congr (Phi_Bminus_sig_equiv μP μQ s)
+  Nat.card_congr (Phi_Bminus_sig_equiv μP μQ s h_ne)
 
 /-- **Paper Prop 11.17 card (C, sig)**. -/
 theorem card_PBPSet_C_sig_eq (μP μQ : YoungDiagram) (s : ℤ × ℤ)
+    (h_ne : μP.cells.card + μQ.cells.card > 0)
     [Inhabited (PBPSet_C_sig μP μQ s)] :
     Nat.card (PBPSet_C_sig μP μQ s) = Nat.card (MYD_sig .C s) :=
-  Nat.card_congr (Phi_C_sig_equiv μP μQ s)
+  Nat.card_congr (Phi_C_sig_equiv μP μQ s h_ne)
 
 /-- **Paper Prop 11.17 card (M, sig)**. -/
 theorem card_PBPSet_M_sig_eq (μP μQ : YoungDiagram) (s : ℤ × ℤ)
+    (h_ne : μP.cells.card + μQ.cells.card > 0)
     [Inhabited (PBPSet_M_sig μP μQ s)] :
     Nat.card (PBPSet_M_sig μP μQ s) = Nat.card (MYD_sig .M s) :=
-  Nat.card_congr (Phi_M_sig_equiv μP μQ s)
+  Nat.card_congr (Phi_M_sig_equiv μP μQ s h_ne)
 
 end BMSZ

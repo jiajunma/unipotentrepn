@@ -70,10 +70,11 @@ noncomputable def Phi_D_qd_sig_equiv (μP μQ : YoungDiagram) (dp : DualPart)
     (hsort : dp.SortedGE)
     (hodd : ∀ r ∈ dp, Odd r)
     (h_qd : IsQuasiDistinguished .D dp) (s : ℤ × ℤ)
+    (h_ne : μP.cells.card + μQ.cells.card > 0)
     [hi : Inhabited (PBPSet_D_qd_sig μP μQ dp h_coh hsort hodd h_qd s × Fin 2)] :
     PBPSet_D_qd_sig μP μQ dp h_coh hsort hodd h_qd s × Fin 2 ≃ MYD_sig .D s :=
   have : Inhabited (PBPSet_D_sig μP μQ s × Fin 2) := hi
-  Phi_D_sig_equiv μP μQ s
+  Phi_D_sig_equiv μP μQ s h_ne
 
 -- B+/B-/C/M QD refinements
 
@@ -99,30 +100,34 @@ def PBPSet_M_qd_sig (μP μQ : YoungDiagram) (dp : DualPart)
 
 noncomputable def Phi_Bplus_qd_sig_equiv (μP μQ : YoungDiagram) (dp : DualPart)
     (hsort : dp.SortedGE) (h_qd : IsQuasiDistinguished .Bplus dp) (s : ℤ × ℤ)
+    (h_ne : μP.cells.card + μQ.cells.card > 0)
     [hi : Inhabited (PBPSet_Bplus_qd_sig μP μQ dp hsort h_qd s × Fin 2)] :
     PBPSet_Bplus_qd_sig μP μQ dp hsort h_qd s × Fin 2 ≃ MYD_sig .Bplus s :=
   have : Inhabited (PBPSet_Bplus_sig μP μQ s × Fin 2) := hi
-  Phi_Bplus_sig_equiv μP μQ s
+  Phi_Bplus_sig_equiv μP μQ s h_ne
 
 noncomputable def Phi_Bminus_qd_sig_equiv (μP μQ : YoungDiagram) (dp : DualPart)
     (hsort : dp.SortedGE) (h_qd : IsQuasiDistinguished .Bminus dp) (s : ℤ × ℤ)
+    (h_ne : μP.cells.card + μQ.cells.card > 0)
     [hi : Inhabited (PBPSet_Bminus_qd_sig μP μQ dp hsort h_qd s × Fin 2)] :
     PBPSet_Bminus_qd_sig μP μQ dp hsort h_qd s × Fin 2 ≃ MYD_sig .Bminus s :=
   have : Inhabited (PBPSet_Bminus_sig μP μQ s × Fin 2) := hi
-  Phi_Bminus_sig_equiv μP μQ s
+  Phi_Bminus_sig_equiv μP μQ s h_ne
 
 noncomputable def Phi_C_qd_sig_equiv (μP μQ : YoungDiagram) (dp : DualPart)
     (hsort : dp.SortedGE) (h_qd : IsQuasiDistinguished .C dp) (s : ℤ × ℤ)
+    (h_ne : μP.cells.card + μQ.cells.card > 0)
     [hi : Inhabited (PBPSet_C_qd_sig μP μQ dp hsort h_qd s)] :
     PBPSet_C_qd_sig μP μQ dp hsort h_qd s ≃ MYD_sig .C s :=
   have : Inhabited (PBPSet_C_sig μP μQ s) := hi
-  Phi_C_sig_equiv μP μQ s
+  Phi_C_sig_equiv μP μQ s h_ne
 
 noncomputable def Phi_M_qd_sig_equiv (μP μQ : YoungDiagram) (dp : DualPart)
     (hsort : dp.SortedGE) (h_qd : IsQuasiDistinguished .M dp) (s : ℤ × ℤ)
+    (h_ne : μP.cells.card + μQ.cells.card > 0)
     [hi : Inhabited (PBPSet_M_qd_sig μP μQ dp hsort h_qd s)] :
     PBPSet_M_qd_sig μP μQ dp hsort h_qd s ≃ MYD_sig .M s :=
   have : Inhabited (PBPSet_M_sig μP μQ s) := hi
-  Phi_M_sig_equiv μP μQ s
+  Phi_M_sig_equiv μP μQ s h_ne
 
 end BMSZ
