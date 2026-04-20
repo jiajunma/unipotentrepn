@@ -86,9 +86,39 @@ theorem exists_descentChain_Bplus {μP μQ : YoungDiagram} (σ : PBPSet .Bplus �
 
 /-! ## Per-step thetaLift singleton (paper §11.5/11.6) -/
 
-/-- Per-step thetaLift singleton for B+ chain: each step has a
-    singleton ILS-thetaLift. Mirror of `descent_step_thetaLift_singleton`
-    for D type. Paper §11.5/11.6 sign-bound argument. -/
+/-- Per-step thetaLift singleton for B+ chain: under the std hypothesis
+    `addp ≥ 0 ∧ addn ≥ 0`, the thetaLift_MB output is a singleton. -/
+theorem descent_step_thetaLift_singleton_Bplus_std {τ : PBP} (hγ : τ.γ = .Bplus)
+    (E_inner : ILS)
+    (h_std :
+      (toACStepData_Bplus τ hγ).p - (ILS.sign E_inner).1 - (ILS.firstColSign E_inner).2 ≥ 0 ∧
+      (toACStepData_Bplus τ hγ).q - (ILS.sign E_inner).2 - (ILS.firstColSign E_inner).1 ≥ 0) :
+    ∃ E' : ILS, ILS.thetaLift
+      (stepPreTwist E_inner (toACStepData_Bplus τ hγ))
+      (toACStepData_Bplus τ hγ).γ
+      (toACStepData_Bplus τ hγ).p
+      (toACStepData_Bplus τ hγ).q = [E'] := by
+  -- Bplus has no pre-twist
+  have h_preTwist : stepPreTwist E_inner (toACStepData_Bplus τ hγ) = E_inner := by
+    unfold stepPreTwist; simp [toACStepData_Bplus]
+  -- target .Bplus dispatches to thetaLift_MB
+  refine ⟨?_, ?_⟩
+  · exact ILS.augment ((toACStepData_Bplus τ hγ).p - (ILS.sign E_inner).1 -
+      (ILS.firstColSign E_inner).2,
+      (toACStepData_Bplus τ hγ).q - (ILS.sign E_inner).2 -
+      (ILS.firstColSign E_inner).1)
+      (ILS.charTwistCM E_inner
+        (((toACStepData_Bplus τ hγ).p - (toACStepData_Bplus τ hγ).q + 1) / 2))
+  rw [h_preTwist]
+  show ILS.thetaLift E_inner _ _ _ = _
+  simp only [ILS.thetaLift]
+  have hγ' : (toACStepData_Bplus τ hγ).γ = .Bplus := rfl
+  rw [hγ']
+  simp only [ILS.thetaLift_MB]
+  rw [if_pos h_std]
+
+/-- Per-step thetaLift singleton for B+ chain. Paper §11.5/11.6:
+    along a valid chain, the std hypothesis holds, yielding singleton. -/
 theorem descent_step_thetaLift_singleton_Bplus {τ : PBP} (hγ : τ.γ = .Bplus)
     (E_inner : ILS) :
     ∃ E' : ILS, ILS.thetaLift
@@ -96,6 +126,9 @@ theorem descent_step_thetaLift_singleton_Bplus {τ : PBP} (hγ : τ.γ = .Bplus)
       (toACStepData_Bplus τ hγ).γ
       (toACStepData_Bplus τ hγ).p
       (toACStepData_Bplus τ hγ).q = [E'] := by
+  -- The std hypothesis holds along valid chains by paper §11.5/11.6.
+  -- Deferred as a single sorry here; delegate via _std variant once
+  -- the std-condition lemma is available.
   sorry
 
 /-- Any valid B+ descent chain is `ChainSingleton`-valid. -/
