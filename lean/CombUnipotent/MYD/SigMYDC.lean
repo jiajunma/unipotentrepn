@@ -66,10 +66,30 @@ theorem exists_descentChain_C {μP μQ : YoungDiagram} (σ : PBPSet .C μP μQ)
     have hγ : σ.val.γ = .C := σ.prop.1
     have h_empty := PBPIsCoherent_C_empty h_coh
     exact ⟨[], IsDescentChain_C.base σ.val hγ h_empty⟩
-  | [_r], _, _, _ =>
-    -- Single-element dp: awkward case (μP empty but μQ may not be)
-    -- Paper handles via Lemma 11.2 directly; not fit IsDescentChain_C structure.
-    sorry
+  | [r], h_coh, _, hodd =>
+    -- Single-element dp:
+    --   dpartColLensP_C [r] = [] → μP is ⊥
+    --   dpartColLensQ_C [r] = if r > 1 then [(r-1)/2] else []
+    -- For r = 1 (odd, sorted): both shapes empty → base case.
+    -- For r ≥ 3 (odd): μQ has 1 column, shiftLeft μQ = ⊥ ≤ μP,
+    --   descentCD_PBP → D-PBP with empty shapes → inner chain = [].
+    have hγ : σ.val.γ = .C := σ.prop.1
+    have hr_odd : Odd r := hodd r (by simp)
+    have hP_empty : μP = ⊥ := by
+      have hP_nil : μP.colLens = [] := by
+        rw [← σ.prop.2.1]; simp [h_coh.1, dpartColLensP_C]
+      exact yd_of_colLens_nil hP_nil
+    by_cases hr : r = 1
+    · -- r = 1: μQ also empty
+      have hQ_empty : μQ = ⊥ := by
+        have hQ_nil : μQ.colLens = [] := by
+          rw [← σ.prop.2.2]; simp [h_coh.2, dpartColLensQ_C, hr]
+        exact yd_of_colLens_nil hQ_nil
+      have h_empty : σ.val.P.shape = ⊥ ∧ σ.val.Q.shape = ⊥ :=
+        ⟨σ.prop.2.1.trans hP_empty, σ.prop.2.2.trans hQ_empty⟩
+      exact ⟨[], IsDescentChain_C.base σ.val hγ h_empty⟩
+    · -- r ≥ 3 (odd): single-column μQ, descentCD reduces to empty
+      sorry
   | r₁ :: r₂ :: rest, h_coh, hsort, hodd =>
     -- Get h_sub via shiftLeft_Q_le_P_of_dp
     have hP_raw : σ.val.P.shape.colLens = dpartColLensP_C (r₁ :: r₂ :: rest) := h_coh.1
