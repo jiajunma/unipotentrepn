@@ -379,8 +379,8 @@ noncomputable def Phi_C_sig {μP μQ : YoungDiagram} {s : ℤ × ℤ}
     (σh : PBPSet_C_sig μP μQ s) : MYD_sig .C s :=
   let σ := σh.val
   let h_sig := σh.prop
-  let chain := Classical.choose (exists_descentChain_C σ)
-  let h_chain := Classical.choose_spec (exists_descentChain_C σ)
+  let chain := Classical.choose (exists_descentChain_C_simple σ)
+  let h_chain := Classical.choose_spec (exists_descentChain_C_simple σ)
   let E := Classical.choose (descentChain_C_singleton h_chain)
   let h_sing := Classical.choose_spec (descentChain_C_singleton h_chain)
   have h_sign : ILS.sign E = s := by

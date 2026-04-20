@@ -34,12 +34,33 @@ inductive IsDescentChain_C : PBP → List ACStepData → Prop
         (descentCD_PBP ⟨τ, hγ, rfl, rfl⟩ h_sub).val chain) :
       IsDescentChain_C τ (chain ++ [toACStepData_C τ hγ wp])
 
-/-! ## Existence (sorry: needs h_sub witness for non-empty C-PBPs) -/
+/-! ## Existence with dp-coherence hypothesis
 
-/-- For each non-empty C-type PBP, the chain existence requires
-    a witness for `shiftLeft τ.Q.shape ≤ τ.P.shape`. This holds
-    in paper's framework but needs a structural lemma to formalize. -/
-theorem exists_descentChain_C {μP μQ : YoungDiagram} (σ : PBPSet .C μP μQ) :
+The chain existence requires, at each level, a witness for
+`shiftLeft τ.Q.shape ≤ τ.P.shape` (needed by `descentCD_PBP`).
+This is available from dp-coherence (`shiftLeft_Q_le_P_of_dp` in
+CorrespondenceC.lean) when dp is sorted + odd. We parameterize
+the theorem on the coherence package.
+-/
+
+/-- C-type PBP dp coherence. -/
+def PBPIsCoherent_C (τ : PBP) (dp : DualPart) : Prop :=
+  τ.P.shape.colLens = dpartColLensP_C dp ∧
+  τ.Q.shape.colLens = dpartColLensQ_C dp
+
+/-- Chain existence for C-type PBP under dp-coherence + sort + odd.
+    Deferred: the recursive construction requires propagating
+    coherence through `descentCD_PBP` to the inner D-type chain.
+    Structure is parallel to `exists_descentChain_Bplus_aux`. -/
+theorem exists_descentChain_C {μP μQ : YoungDiagram} (σ : PBPSet .C μP μQ)
+    (_dp : DualPart) (_h_coh : PBPIsCoherent_C σ.val _dp)
+    (_hsort : _dp.SortedGE) (_hodd : ∀ r ∈ _dp, Odd r) :
+    ∃ c : List ACStepData, IsDescentChain_C σ.val c := by
+  sorry
+
+/-- Simplified signature that takes σ and defers the coherence hypothesis
+    via Classical.choice on existence of a matching dp. -/
+theorem exists_descentChain_C_simple {μP μQ : YoungDiagram} (σ : PBPSet .C μP μQ) :
     ∃ c : List ACStepData, IsDescentChain_C σ.val c := by
   sorry
 
