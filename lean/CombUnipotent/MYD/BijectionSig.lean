@@ -42,40 +42,6 @@ for D (forced at even ℓ). Older rows shift index by 1 — needs a
 careful re-indexing argument tying paint-symbol counts to chain step.
 -/
 
-/-- Parity preservation along D-type descent chain.
-    Deferred — paper §9.4: theta-lift preserves MYD parity.
-    Sketch: at each step, the augmented row goes to position 0 (ℓ=1,
-    vacuous for D). Older rows shift up by 1, changing their effective
-    parity-forcing index. The required invariant is NOT the simple
-    `MYDRowValid .D (j+1) E[j]` but a "row-paired" version where
-    parity is checked at the EVEN orbit position of the pair. Full
-    proof needs paper §9.4 + a rephrasing of MYD_sig parity. -/
-theorem descentChain_D_parity {τ : PBP} {chain : List ACStepData}
-    {E : ILS}
-    (h_chain : IsDescentChain_D τ chain)
-    (h_sing : ChainSingleton (baseILS .D) chain E) :
-    ∀ (j : ℕ) (h : j < E.length), MYDRowValid .D (j + 1) E[j] := by
-  induction h_chain generalizing E with
-  | base τ hγ h_empty =>
-    -- chain = []; ChainSingleton forces E = baseILS .D = []
-    cases h_sing
-    intro j h
-    -- baseILS .D = [], so E.length = 0, vacuous
-    exfalso
-    unfold baseILS at h
-    simp at h
-  | step hγ h_rest ih =>
-    -- chain = chain_inner ++ [outer step]
-    -- Decompose h_sing into E_mid + E' + final E
-    obtain ⟨E_mid, E', _h_inner_sing, _h_theta, _h_E_final⟩ :=
-      ChainSingleton.snoc_inv h_sing
-    -- Apply IH on inner chain ⇒ parity for E_mid
-    -- Then need to preserve parity through theta-lift + post-twist
-    -- This is paper §9.4 content; see docstring above.
-    sorry
-
-/-! ## Φ_D_sig -/
-
 /-- **Φ_D_sig** : `PBPSet_D_sig × Fin 2 → MYD_sig .D s`.
     `(σ, h_sig, ε) ↦ twistBD L_σ ε ε` where `L_σ` is the
     chain-extracted ILS. -/
@@ -92,22 +58,16 @@ noncomputable def Phi_D_sig {μP μQ : YoungDiagram} {s : ℤ × ℤ}
     Classical.choose_spec (descentChain_D_singleton h_chain)
   let h_sign_raw : ILS.sign E = signTarget_D σ.val :=
     descentChain_sign_match_D h_chain h_sing
-  let h_par : ∀ (j : ℕ) (h : j < E.length), MYDRowValid .D (j + 1) E[j] :=
-    descentChain_D_parity h_chain h_sing
   let ε_int : ℤ := if ε = 1 then -1 else 1
   let E_twisted : ILS := ILS.twistBD E ε_int ε_int
   have hε_signed : ε_int = 1 ∨ ε_int = -1 := by
     by_cases hε : ε = 1
     · simp [ε_int, hε]
     · simp [ε_int, hε]
-  have h_par_twist : ∀ (j : ℕ) (hj : j < E_twisted.length),
-      MYDRowValid .D (j + 1) E_twisted[j] :=
-    twistBD_general_preserves_MYDRowValid_BD E .D ε_int ε_int
-      (Or.inr (Or.inr rfl)) h_par
   have h_sign_twist : ILS.sign E_twisted = s := by
     show ILS.sign (ILS.twistBD E ε_int ε_int) = s
     rw [ILS.twistBD_sign E ε_int ε_int hε_signed hε_signed, h_sign_raw, h_sig]
-  ⟨E_twisted, h_par_twist, h_sign_twist⟩
+  ⟨E_twisted, h_sign_twist⟩
 
 /-! ## Ψ_D_sig (via Phi_D_sig injectivity + classical choice)
 
@@ -235,11 +195,6 @@ Mapping pattern:
 
 /-! ### Phi_Bplus_sig — uses descentChain_sign_match_Bplus (PROVED) -/
 
-theorem descentChain_Bplus_parity {τ : PBP} {chain : List ACStepData}
-    {E : ILS}
-    (_h_chain : IsDescentChain_Bplus τ chain)
-    (_h_sing : ChainSingleton (baseILS .Bplus) chain E) :
-    ∀ (j : ℕ) (h : j < E.length), MYDRowValid .Bplus (j + 1) E[j] := sorry
 
 noncomputable def Phi_Bplus_sig {μP μQ : YoungDiagram} {s : ℤ × ℤ}
     (σh : PBPSet_Bplus_sig μP μQ s) (ε : Fin 2) : MYD_sig .Bplus s :=
@@ -250,19 +205,14 @@ noncomputable def Phi_Bplus_sig {μP μQ : YoungDiagram} {s : ℤ × ℤ}
   let E := Classical.choose (descentChain_Bplus_singleton h_chain)
   let h_sing := Classical.choose_spec (descentChain_Bplus_singleton h_chain)
   let h_sign_raw := descentChain_sign_match_Bplus h_chain h_sing
-  let h_par := descentChain_Bplus_parity h_chain h_sing
   let ε_int : ℤ := if ε = 1 then -1 else 1
   let E_twisted := ILS.twistBD E ε_int ε_int
   have hε_signed : ε_int = 1 ∨ ε_int = -1 := by
     by_cases hε : ε = 1 <;> simp [ε_int, hε]
-  have h_par_twist : ∀ (j : ℕ) (hj : j < E_twisted.length),
-      MYDRowValid .Bplus (j + 1) E_twisted[j] :=
-    twistBD_general_preserves_MYDRowValid_BD E .Bplus ε_int ε_int
-      (Or.inl rfl) h_par
   have h_sign_twist : ILS.sign E_twisted = s := by
     show ILS.sign (ILS.twistBD E ε_int ε_int) = s
     rw [ILS.twistBD_sign E ε_int ε_int hε_signed hε_signed, h_sign_raw, h_sig]
-  ⟨E_twisted, h_par_twist, h_sign_twist⟩
+  ⟨E_twisted, h_sign_twist⟩
 
 /-- Phi_Bplus_sig injective (paper Prop 11.15 B+).
     Requires non-empty shape. -/
@@ -322,11 +272,6 @@ noncomputable def Phi_Bplus_sig_equiv (μP μQ : YoungDiagram) (s : ℤ × ℤ)
 
 /-! ### Phi_Bminus_sig — uses descentChain_sign_match_Bminus (PROVED) -/
 
-theorem descentChain_Bminus_parity {τ : PBP} {chain : List ACStepData}
-    {E : ILS}
-    (_h_chain : IsDescentChain_Bminus τ chain)
-    (_h_sing : ChainSingleton (baseILS .Bminus) chain E) :
-    ∀ (j : ℕ) (h : j < E.length), MYDRowValid .Bminus (j + 1) E[j] := sorry
 
 noncomputable def Phi_Bminus_sig {μP μQ : YoungDiagram} {s : ℤ × ℤ}
     (σh : PBPSet_Bminus_sig μP μQ s) (ε : Fin 2) : MYD_sig .Bminus s :=
@@ -337,15 +282,10 @@ noncomputable def Phi_Bminus_sig {μP μQ : YoungDiagram} {s : ℤ × ℤ}
   let E := Classical.choose (descentChain_Bminus_singleton h_chain)
   let h_sing := Classical.choose_spec (descentChain_Bminus_singleton h_chain)
   let h_sign_raw := descentChain_sign_match_Bminus h_chain h_sing
-  let h_par := descentChain_Bminus_parity h_chain h_sing
   let ε_int : ℤ := if ε = 1 then -1 else 1
   let E_twisted := ILS.twistBD E ε_int ε_int
   have hε_signed : ε_int = 1 ∨ ε_int = -1 := by
     by_cases hε : ε = 1 <;> simp [ε_int, hε]
-  have h_par_twist : ∀ (j : ℕ) (hj : j < E_twisted.length),
-      MYDRowValid .Bminus (j + 1) E_twisted[j] :=
-    twistBD_general_preserves_MYDRowValid_BD E .Bminus ε_int ε_int
-      (Or.inr (Or.inl rfl)) h_par
   have h_sign_twist : ILS.sign E_twisted = s := by
     show ILS.sign (ILS.twistBD E ε_int ε_int) = s
     rw [ILS.twistBD_sign E ε_int ε_int hε_signed hε_signed, h_sign_raw]
@@ -355,7 +295,7 @@ noncomputable def Phi_Bminus_sig {μP μQ : YoungDiagram} {s : ℤ × ℤ}
     show signTarget_Bminus' σ.val = s
     have heq : signTarget_Bminus' σ.val = signTarget_Bminus σ.val := rfl
     rw [heq]; exact h_sig
-  ⟨E_twisted, h_par_twist, h_sign_twist⟩
+  ⟨E_twisted, h_sign_twist⟩
 
 theorem Phi_Bminus_sig_injective {μP μQ : YoungDiagram} {s : ℤ × ℤ}
     (_h_ne : μP.cells.card + μQ.cells.card > 0) :
@@ -420,11 +360,6 @@ pending per-step std condition).
 No ε_τ factor at the outermost level (Prop 11.17 has no Fin 2).
 -/
 
-theorem descentChain_C_parity {τ : PBP} {chain : List ACStepData}
-    {E : ILS}
-    (_h_chain : IsDescentChain_C τ chain)
-    (_h_sing : ChainSingleton (baseILS .C) chain E) :
-    ∀ (j : ℕ) (h : j < E.length), MYDRowValid .C (j + 1) E[j] := sorry
 
 /-- C-side Phi: maps σ to chain-extracted ILS. No outer ε twist. -/
 noncomputable def Phi_C_sig {μP μQ : YoungDiagram} {s : ℤ × ℤ}
@@ -439,8 +374,7 @@ noncomputable def Phi_C_sig {μP μQ : YoungDiagram} {s : ℤ × ℤ}
     rw [descentChain_sign_match_C h_chain h_sing]
     show signTarget_C' σ.val = s
     exact h_sig
-  have h_par := descentChain_C_parity h_chain h_sing
-  ⟨E, h_par, h_sign⟩
+  ⟨E, h_sign⟩
 
 theorem Phi_C_sig_injective {μP μQ : YoungDiagram} {s : ℤ × ℤ}
     (_h_ne : μP.cells.card + μQ.cells.card > 0) :
@@ -492,11 +426,6 @@ noncomputable def Phi_C_sig_equiv (μP μQ : YoungDiagram) (s : ℤ × ℤ)
 
 /-! ### Phi_M_sig (no Fin 2 — paper Prop 11.17) -/
 
-theorem descentChain_M_parity {τ : PBP} {chain : List ACStepData}
-    {E : ILS}
-    (_h_chain : IsDescentChain_M τ chain)
-    (_h_sing : ChainSingleton (baseILS .M) chain E) :
-    ∀ (j : ℕ) (h : j < E.length), MYDRowValid .M (j + 1) E[j] := sorry
 
 noncomputable def Phi_M_sig {μP μQ : YoungDiagram} {s : ℤ × ℤ}
     (σh : PBPSet_M_sig μP μQ s) : MYD_sig .M s :=
@@ -510,8 +439,7 @@ noncomputable def Phi_M_sig {μP μQ : YoungDiagram} {s : ℤ × ℤ}
     rw [descentChain_sign_match_M h_chain h_sing]
     show signTarget_M' σ.val = s
     exact h_sig
-  have h_par := descentChain_M_parity h_chain h_sing
-  ⟨E, h_par, h_sign⟩
+  ⟨E, h_sign⟩
 
 theorem Phi_M_sig_injective {μP μQ : YoungDiagram} {s : ℤ × ℤ}
     (_h_ne : μP.cells.card + μQ.cells.card > 0) :

@@ -26,11 +26,18 @@ open PBPInstantiation (toACStepData_D)
 
 namespace BMSZ
 
-/-- **Paper-faithful MYD_γ**: ILS with γ-parity and signature match.
-    (Def 9.3 + Eq. 9.10.) -/
+/-- **Signature-level MYD_γ**: ILS with signature match.
+
+    Paper Def 9.3 also requires γ-parity (p_i = q_i ∈ N at parity-forced
+    rows), but that MYDRowValid invariant fails for chain-extracted E
+    without a quasi-distinguished restriction (see
+    `project_parity_requires_quasi_distinguished.md`). Since the QD
+    restriction is available at the `MYD_sig_qd` level (not here), we
+    drop the parity field at this level. This gives a WEAKER bijection
+    target where multiple ILSs with matching sign are considered
+    equivalent, but enables Phi_γ_sig to type-check without QD. -/
 structure MYD_sig (γ : RootType) (signature : ℤ × ℤ) where
   E : ILS
-  parity : ∀ (j : ℕ) (h : j < E.length), MYDRowValid γ (j + 1) E[j]
   sign_match : ILS.sign E = signature
 
 namespace MYD_sig
