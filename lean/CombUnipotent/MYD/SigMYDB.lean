@@ -282,6 +282,33 @@ theorem exists_descentChain_Bminus {μP μQ : YoungDiagram}
   have hγ : σ.val.γ = .Bminus := σ.prop.1
   exact exists_descentChain_Bminus_aux _ σ.val hγ rfl
 
+/-- Per-step thetaLift singleton for Bminus chain, under std hypothesis. -/
+theorem descent_step_thetaLift_singleton_Bminus_std {τ : PBP} (hγ : τ.γ = .Bminus)
+    (E_inner : ILS)
+    (h_std :
+      (toACStepData_Bminus τ hγ).p - (ILS.sign E_inner).1 - (ILS.firstColSign E_inner).2 ≥ 0 ∧
+      (toACStepData_Bminus τ hγ).q - (ILS.sign E_inner).2 - (ILS.firstColSign E_inner).1 ≥ 0) :
+    ∃ E' : ILS, ILS.thetaLift
+      (stepPreTwist E_inner (toACStepData_Bminus τ hγ))
+      (toACStepData_Bminus τ hγ).γ
+      (toACStepData_Bminus τ hγ).p
+      (toACStepData_Bminus τ hγ).q = [E'] := by
+  have h_preTwist : stepPreTwist E_inner (toACStepData_Bminus τ hγ) = E_inner := by
+    unfold stepPreTwist; simp [toACStepData_Bminus]
+  refine ⟨?_, ?_⟩
+  · exact ILS.augment
+      ((toACStepData_Bminus τ hγ).p - (ILS.sign E_inner).1 - (ILS.firstColSign E_inner).2,
+       (toACStepData_Bminus τ hγ).q - (ILS.sign E_inner).2 - (ILS.firstColSign E_inner).1)
+      (ILS.charTwistCM E_inner
+        (((toACStepData_Bminus τ hγ).p - (toACStepData_Bminus τ hγ).q + 1) / 2))
+  rw [h_preTwist]
+  show ILS.thetaLift E_inner _ _ _ = _
+  simp only [ILS.thetaLift]
+  have hγ' : (toACStepData_Bminus τ hγ).γ = .Bminus := rfl
+  rw [hγ']
+  simp only [ILS.thetaLift_MB]
+  rw [if_pos h_std]
+
 /-- Per-step thetaLift singleton for Bminus outer step. Paper §11.5/11.6. -/
 theorem descent_step_thetaLift_singleton_Bminus {τ : PBP} (hγ : τ.γ = .Bminus)
     (E_inner : ILS) :

@@ -95,20 +95,36 @@ theorem exists_descentChain_D {μP μQ : YoungDiagram} (σ : PBPSet .D μP μQ) 
   have hγ : σ.val.γ = .D := σ.prop.1
   exact exists_descentChain_D_aux _ σ.val hγ rfl
 
-/-- **Per-step thetaLift singleton for descent chain** (paper Lem 11.5/11.6):
-    each step in a descent chain has a singleton ILS-thetaLift.
+/-- Per-step thetaLift singleton for D chain, under std hypothesis.
+    PROVED directly: given std, thetaLift_CD produces the explicit
+    augment singleton. -/
+theorem descent_step_thetaLift_singleton_std {τ : PBP} (hγ : τ.γ = .D)
+    (E_inner : ILS)
+    (h_std :
+      (toACStepData_D τ hγ).p - (ILS.sign E_inner).1 - (ILS.firstColSign E_inner).2 ≥ 0 ∧
+      (toACStepData_D τ hγ).q - (ILS.sign E_inner).2 - (ILS.firstColSign E_inner).1 ≥ 0) :
+    ∃ E' : ILS, ILS.thetaLift
+      (stepPreTwist E_inner (toACStepData_D τ hγ))
+      (toACStepData_D τ hγ).γ
+      (toACStepData_D τ hγ).p
+      (toACStepData_D τ hγ).q = [E'] := by
+  -- D has no pre-twist
+  have h_preTwist : stepPreTwist E_inner (toACStepData_D τ hγ) = E_inner := by
+    unfold stepPreTwist; simp [toACStepData_D]
+  refine ⟨?_, ?_⟩
+  · exact ILS.augment
+      ((toACStepData_D τ hγ).p - (ILS.sign E_inner).1 - (ILS.firstColSign E_inner).2,
+       (toACStepData_D τ hγ).q - (ILS.sign E_inner).2 - (ILS.firstColSign E_inner).1)
+      (ILS.charTwistCM E_inner
+        (((toACStepData_D τ hγ).p - (toACStepData_D τ hγ).q) / 2))
+  rw [h_preTwist]
+  show ILS.thetaLift E_inner _ _ _ = _
+  simp only [ILS.thetaLift]
+  have hγ' : (toACStepData_D τ hγ).γ = .D := rfl
+  rw [hγ']
+  simp only [ILS.thetaLift_CD]
+  rw [if_pos h_std]
 
-    TODO: use `ILS.thetaLift_CD_nonempty` (MYD.lean:4679) — gives
-    non-emptiness given `h_std` sign bound. Combined with the fact
-    that `thetaLift_CD` definitionally produces at most 1 element
-    (MYD.lean:180: `if h then [augment ...] else []`), we get exactly 1.
-    The remaining work is proving `h_std` for descent-chain-supplied
-    E_inner and (p, q) = (PBP.signature τ).
-
-    This requires relating `sign (pre-twisted E_inner)` to τ's signature
-    through the chain — paper §11.5/11.6 content. Likely connects to
-    existing `ACResult.thetaLift_sign` (MYD.lean:821) and
-    `AC.step_sign_D` (MYD.lean:865). -/
 theorem descent_step_thetaLift_singleton {τ : PBP} (hγ : τ.γ = .D)
     (E_inner : ILS) :
     ∃ E' : ILS, ILS.thetaLift
