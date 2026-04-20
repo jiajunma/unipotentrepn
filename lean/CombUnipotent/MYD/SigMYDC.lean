@@ -90,11 +90,13 @@ theorem exists_descentChain_C {μP μQ : YoungDiagram} (σ : PBPSet .C μP μQ)
     let σD := descentCD_PBP σ h_sub_μ
     -- Recurse via exists_descentChain_D on σD
     obtain ⟨chain_D, h_chain_D⟩ := exists_descentChain_D σD
-    -- Construct outer C chain via IsDescentChain_C.step
-    -- Need: IsDescentChain_D (descentCD_PBP ⟨σ.val, hγ, rfl, rfl⟩ h_sub).val chain_D
-    -- We have: IsDescentChain_D σD.val chain_D
-    -- These are equal via equality of descentCD_raw calls (different shape args).
-    -- Deferred — bridging requires PBP.ext on descentCD_raw's shape vs derived shape.
+    -- Attempt step assembly
+    refine ⟨chain_D ++ [toACStepData_C σ.val hγ ∅], ?_⟩
+    apply IsDescentChain_C.step hγ ∅ h_sub
+    -- h_rest : IsDescentChain_D (descentCD_PBP ⟨σ.val, hγ, rfl, rfl⟩ h_sub).val chain_D
+    -- h_chain_D : IsDescentChain_D σD.val chain_D where σD = descentCD_PBP σ h_sub_μ
+    -- These two val's are equal PBPs (same τ, same paint functions, shape fields
+    -- equal via σ.prop.2.1, σ.prop.2.2). Requires PBP/PaintedYoungDiagram.ext.
     sorry
 
 /-- Every C-PBP admits a dp witness that makes it coherent. Classical
