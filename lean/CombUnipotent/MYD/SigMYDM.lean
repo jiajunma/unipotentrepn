@@ -43,9 +43,25 @@ inductive IsDescentChain_M : PBP → List ACStepData → Prop
 
 /-! ## Existence (sorry: needs h_sub witness for non-empty M-PBPs) -/
 
-theorem exists_descentChain_M {μP μQ : YoungDiagram} (σ : PBPSet .M μP μQ) :
+def PBPIsCoherent_M (τ : PBP) (dp : DualPart) : Prop :=
+  τ.P.shape.colLens = dpartColLensP_M dp ∧
+  τ.Q.shape.colLens = dpartColLensQ_M dp
+
+theorem exists_coherent_dp_M {μP μQ : YoungDiagram} (σ : PBPSet .M μP μQ) :
+    ∃ dp : DualPart,
+      PBPIsCoherent_M σ.val dp ∧ dp.SortedGE ∧ (∀ r ∈ dp, Even r) := by
+  sorry
+
+theorem exists_descentChain_M_coherent {μP μQ : YoungDiagram} (σ : PBPSet .M μP μQ)
+    (_dp : DualPart) (_h_coh : PBPIsCoherent_M σ.val _dp)
+    (_hsort : _dp.SortedGE) (_heven : ∀ r ∈ _dp, Even r) :
     ∃ c : List ACStepData, IsDescentChain_M σ.val c := by
   sorry
+
+theorem exists_descentChain_M {μP μQ : YoungDiagram} (σ : PBPSet .M μP μQ) :
+    ∃ c : List ACStepData, IsDescentChain_M σ.val c := by
+  obtain ⟨dp, h_coh, hsort, heven⟩ := exists_coherent_dp_M σ
+  exact exists_descentChain_M_coherent σ dp h_coh hsort heven
 
 /-! ## Per-step thetaLift singleton (paper §11.5/11.6) -/
 
