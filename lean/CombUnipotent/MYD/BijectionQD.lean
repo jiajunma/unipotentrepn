@@ -57,14 +57,23 @@ Deferred: full refactor requires updating `IsDescentChain_D` to carry
 QD predicate through each step and proving doubleDescent preserves QD.
 -/
 
+/-- The QD-refined D bijection is defined by delegation to the simpler
+    `Phi_D_sig_equiv`, noting that `PBPSet_D_qd_sig` is definitionally
+    equal to `PBPSet_D_sig` (the dp/coherence/sort/odd/QD are just evidence
+    that doesn't refine the type, only the theory's promise of validity).
+
+    In a future session, proving `Phi_D_sig_injective/surjective` with
+    QD hypotheses will give a stronger theorem where the equiv actually
+    uses QD-specific reasoning. -/
 noncomputable def Phi_D_qd_sig_equiv (μP μQ : YoungDiagram) (dp : DualPart)
     (h_coh : PBPIsCoherent_D_ext μP μQ dp)
     (hsort : dp.SortedGE)
     (hodd : ∀ r ∈ dp, Odd r)
     (h_qd : IsQuasiDistinguished .D dp) (s : ℤ × ℤ)
-    [Inhabited (PBPSet_D_qd_sig μP μQ dp h_coh hsort hodd h_qd s × Fin 2)] :
-    PBPSet_D_qd_sig μP μQ dp h_coh hsort hodd h_qd s × Fin 2 ≃ MYD_sig .D s := by
-  sorry
+    [hi : Inhabited (PBPSet_D_qd_sig μP μQ dp h_coh hsort hodd h_qd s × Fin 2)] :
+    PBPSet_D_qd_sig μP μQ dp h_coh hsort hodd h_qd s × Fin 2 ≃ MYD_sig .D s :=
+  have : Inhabited (PBPSet_D_sig μP μQ s × Fin 2) := hi
+  Phi_D_sig_equiv μP μQ s
 
 -- B+/B-/C/M QD refinements
 
@@ -90,26 +99,30 @@ def PBPSet_M_qd_sig (μP μQ : YoungDiagram) (dp : DualPart)
 
 noncomputable def Phi_Bplus_qd_sig_equiv (μP μQ : YoungDiagram) (dp : DualPart)
     (hsort : dp.SortedGE) (h_qd : IsQuasiDistinguished .Bplus dp) (s : ℤ × ℤ)
-    [Inhabited (PBPSet_Bplus_qd_sig μP μQ dp hsort h_qd s × Fin 2)] :
+    [hi : Inhabited (PBPSet_Bplus_qd_sig μP μQ dp hsort h_qd s × Fin 2)] :
     PBPSet_Bplus_qd_sig μP μQ dp hsort h_qd s × Fin 2 ≃ MYD_sig .Bplus s :=
-  sorry
+  have : Inhabited (PBPSet_Bplus_sig μP μQ s × Fin 2) := hi
+  Phi_Bplus_sig_equiv μP μQ s
 
 noncomputable def Phi_Bminus_qd_sig_equiv (μP μQ : YoungDiagram) (dp : DualPart)
     (hsort : dp.SortedGE) (h_qd : IsQuasiDistinguished .Bminus dp) (s : ℤ × ℤ)
-    [Inhabited (PBPSet_Bminus_qd_sig μP μQ dp hsort h_qd s × Fin 2)] :
+    [hi : Inhabited (PBPSet_Bminus_qd_sig μP μQ dp hsort h_qd s × Fin 2)] :
     PBPSet_Bminus_qd_sig μP μQ dp hsort h_qd s × Fin 2 ≃ MYD_sig .Bminus s :=
-  sorry
+  have : Inhabited (PBPSet_Bminus_sig μP μQ s × Fin 2) := hi
+  Phi_Bminus_sig_equiv μP μQ s
 
 noncomputable def Phi_C_qd_sig_equiv (μP μQ : YoungDiagram) (dp : DualPart)
     (hsort : dp.SortedGE) (h_qd : IsQuasiDistinguished .C dp) (s : ℤ × ℤ)
-    [Inhabited (PBPSet_C_qd_sig μP μQ dp hsort h_qd s)] :
+    [hi : Inhabited (PBPSet_C_qd_sig μP μQ dp hsort h_qd s)] :
     PBPSet_C_qd_sig μP μQ dp hsort h_qd s ≃ MYD_sig .C s :=
-  sorry
+  have : Inhabited (PBPSet_C_sig μP μQ s) := hi
+  Phi_C_sig_equiv μP μQ s
 
 noncomputable def Phi_M_qd_sig_equiv (μP μQ : YoungDiagram) (dp : DualPart)
     (hsort : dp.SortedGE) (h_qd : IsQuasiDistinguished .M dp) (s : ℤ × ℤ)
-    [Inhabited (PBPSet_M_qd_sig μP μQ dp hsort h_qd s)] :
+    [hi : Inhabited (PBPSet_M_qd_sig μP μQ dp hsort h_qd s)] :
     PBPSet_M_qd_sig μP μQ dp hsort h_qd s ≃ MYD_sig .M s :=
-  sorry
+  have : Inhabited (PBPSet_M_sig μP μQ s) := hi
+  Phi_M_sig_equiv μP μQ s
 
 end BMSZ
