@@ -129,3 +129,6 @@ dmypy.json
 .pyre/
 .pdf
 lean/.lake/
+
+# Intermediate analysis JSON dumps
+tmp/
