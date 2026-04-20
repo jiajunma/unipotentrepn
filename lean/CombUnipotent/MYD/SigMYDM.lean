@@ -86,10 +86,64 @@ theorem exists_descentChain_M_coherent {μP μQ : YoungDiagram} (σ : PBPSet .M 
       have h_empty : σ.val.P.shape = ⊥ ∧ σ.val.Q.shape = ⊥ :=
         ⟨σ.prop.2.1.trans hP_empty, σ.prop.2.2.trans hQ_empty⟩
       exact ⟨[], IsDescentChain_M.base σ.val hγ h_empty⟩
-    · -- r > 0 even: μP has 1 col, μQ empty, needs descentMB step
-      -- Requires tracking descentType_M and choosing step_to_Bplus or step_to_Bminus.
-      sorry
-  | _r₁ :: _r₂ :: _rest, _ => sorry
+    · -- r > 0 even: μP has 1 col of height r/2, μQ empty
+      -- descentMB_PBP gives PBP with shape (shiftLeft μP, μQ) = (⊥, ⊥)
+      -- Inner PBP is empty Bplus or Bminus depending on descentType_M
+      have hr_pos : r > 0 := Nat.pos_of_ne_zero hr
+      have h_descent_empty : (descentMB_PBP σ.val hγ).P.shape = ⊥ ∧
+                              (descentMB_PBP σ.val hγ).Q.shape = ⊥ := by
+        unfold descentMB_PBP
+        dsimp only
+        refine ⟨?_, ?_⟩
+        · -- shiftLeft μP = ⊥
+          have hP_colLens : σ.val.P.shape.colLens = [r/2] := by
+            rw [h_coh.1]; simp [dpartColLensP_M, dpartColLensQ_B, hr_pos]
+          have hshP_nil : (σ.val.P.shape.shiftLeft).colLens = [] := by
+            rw [YoungDiagram.colLens_shiftLeft, hP_colLens]; rfl
+          exact yd_of_colLens_nil hshP_nil
+        · -- Q unchanged = μQ = ⊥
+          exact σ.prop.2.2.trans hQ_empty
+      -- Case split on descentType_M
+      by_cases hd : PBP.descentType_M σ.val hγ = .Bplus
+      · -- Bplus case
+        have h_inner_γ : (descentMB_PBP σ.val hγ).γ = .Bplus := hd
+        have h_inner_chain : IsDescentChain_Bplus (descentMB_PBP σ.val hγ) [] :=
+          IsDescentChain_Bplus.base _ h_inner_γ h_descent_empty
+        refine ⟨[] ++ [toACStepData_M σ.val hγ ∅], ?_⟩
+        exact IsDescentChain_M.step_to_Bplus hγ ∅ hd h_inner_chain
+      · -- Bminus case (by descentType_M returning Bminus or Bplus)
+        have hd_bm : PBP.descentType_M σ.val hγ = .Bminus := by
+          unfold PBP.descentType_M at hd ⊢
+          split_ifs at hd ⊢ with h <;> simp_all
+        have h_inner_γ : (descentMB_PBP σ.val hγ).γ = .Bminus := hd_bm
+        have h_inner_chain : IsDescentChain_Bminus (descentMB_PBP σ.val hγ) [] :=
+          IsDescentChain_Bminus.base _ h_inner_γ h_descent_empty
+        refine ⟨[] ++ [toACStepData_M σ.val hγ ∅], ?_⟩
+        exact IsDescentChain_M.step_to_Bminus hγ ∅ hd_bm h_inner_chain
+  | _r₁ :: _r₂ :: _rest, _ =>
+    -- Apply descentMB_PBP to get inner B-PBP (Bplus or Bminus)
+    -- Recurse via exists_descentChain_Bplus or exists_descentChain_Bminus
+    have hγ : σ.val.γ = .M := σ.prop.1
+    by_cases hd : PBP.descentType_M σ.val hγ = .Bplus
+    · have h_inner_γ : (descentMB_PBP σ.val hγ).γ = .Bplus := hd
+      -- Package as PBPSet .Bplus to use exists_descentChain_Bplus
+      let σ_inner : PBPSet .Bplus (descentMB_PBP σ.val hγ).P.shape
+                              (descentMB_PBP σ.val hγ).Q.shape :=
+        ⟨descentMB_PBP σ.val hγ, h_inner_γ, rfl, rfl⟩
+      obtain ⟨chain_inner, h_chain_inner⟩ := exists_descentChain_Bplus σ_inner
+      refine ⟨chain_inner ++ [toACStepData_M σ.val hγ ∅], ?_⟩
+      exact IsDescentChain_M.step_to_Bplus hγ ∅ hd h_chain_inner
+    · -- Bminus case
+      have hd_bm : PBP.descentType_M σ.val hγ = .Bminus := by
+        unfold PBP.descentType_M at hd ⊢
+        split_ifs at hd ⊢ with h <;> simp_all
+      have h_inner_γ : (descentMB_PBP σ.val hγ).γ = .Bminus := hd_bm
+      let σ_inner : PBPSet .Bminus (descentMB_PBP σ.val hγ).P.shape
+                                (descentMB_PBP σ.val hγ).Q.shape :=
+        ⟨descentMB_PBP σ.val hγ, h_inner_γ, rfl, rfl⟩
+      obtain ⟨chain_inner, h_chain_inner⟩ := exists_descentChain_Bminus σ_inner
+      refine ⟨chain_inner ++ [toACStepData_M σ.val hγ ∅], ?_⟩
+      exact IsDescentChain_M.step_to_Bminus hγ ∅ hd_bm h_chain_inner
 
 theorem exists_descentChain_M {μP μQ : YoungDiagram} (σ : PBPSet .M μP μQ) :
     ∃ c : List ACStepData, IsDescentChain_M σ.val c := by
