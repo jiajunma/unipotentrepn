@@ -139,9 +139,11 @@ theorem exists_descentChain_C {μP μQ : YoungDiagram} (σ : PBPSet .C μP μQ)
     refine ⟨chain_D ++ [toACStepData_C τ_val τ_γ ∅], ?_⟩
     exact IsDescentChain_C.step τ_γ ∅ h_sub h_chain_D
 
-/-- Every C-PBP admits a dp witness that makes it coherent. Classical
-    choice + PBP structure. Paper-level: every C-PBP corresponds to
-    a quasi-distinguished or general orbit via BV duality. -/
+/-- Every C-PBP admits a dp witness that makes it coherent. Paper-level.
+    For arbitrary PBPSet .C elements, this may not hold — the shape pair
+    (μP, μQ) might not be in the image of dpartColLens_C. Closure requires
+    either a restriction (PBPSet must come from a valid dp) or external
+    witness. See `project_phi_injective_not_universal.md`. -/
 theorem exists_coherent_dp_C {μP μQ : YoungDiagram} (σ : PBPSet .C μP μQ) :
     ∃ dp : DualPart,
       PBPIsCoherent_C σ.val dp ∧ dp.SortedGE ∧ (∀ r ∈ dp, Odd r) := by
