@@ -52,11 +52,24 @@ theorem exists_coherent_dp_M {μP μQ : YoungDiagram} (σ : PBPSet .M μP μQ) :
       PBPIsCoherent_M σ.val dp ∧ dp.SortedGE ∧ (∀ r ∈ dp, Even r) := by
   sorry
 
+/-- Helper: for M-PBP coherent with empty dp, shapes are empty. -/
+private theorem PBPIsCoherent_M_empty {τ : PBP} (h_coh : PBPIsCoherent_M τ []) :
+    τ.P.shape = ⊥ ∧ τ.Q.shape = ⊥ := by
+  obtain ⟨hP, hQ⟩ := h_coh
+  simp [dpartColLensP_M, dpartColLensQ_M, dpartColLensP_B, dpartColLensQ_B] at hP hQ
+  exact ⟨yd_of_colLens_nil hP, yd_of_colLens_nil hQ⟩
+
 theorem exists_descentChain_M_coherent {μP μQ : YoungDiagram} (σ : PBPSet .M μP μQ)
-    (_dp : DualPart) (_h_coh : PBPIsCoherent_M σ.val _dp)
-    (_hsort : _dp.SortedGE) (_heven : ∀ r ∈ _dp, Even r) :
+    (dp : DualPart) (h_coh : PBPIsCoherent_M σ.val dp)
+    (_hsort : dp.SortedGE) (_heven : ∀ r ∈ dp, Even r) :
     ∃ c : List ACStepData, IsDescentChain_M σ.val c := by
-  sorry
+  match dp, h_coh with
+  | [], h_coh =>
+    have hγ : σ.val.γ = .M := σ.prop.1
+    have h_empty := PBPIsCoherent_M_empty h_coh
+    exact ⟨[], IsDescentChain_M.base σ.val hγ h_empty⟩
+  | [_r], _ => sorry
+  | _r₁ :: _r₂ :: _rest, _ => sorry
 
 theorem exists_descentChain_M {μP μQ : YoungDiagram} (σ : PBPSet .M μP μQ) :
     ∃ c : List ACStepData, IsDescentChain_M σ.val c := by
