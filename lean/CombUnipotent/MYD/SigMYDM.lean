@@ -49,6 +49,37 @@ theorem exists_descentChain_M {μP μQ : YoungDiagram} (σ : PBPSet .M μP μQ) 
 
 /-! ## Per-step thetaLift singleton (paper §11.5/11.6) -/
 
+/-- Per-step thetaLift singleton for M chain, under std hypothesis.
+    For target .M, thetaLift dispatches to thetaLift_BM (p-only,
+    since M-type signature has p = q). -/
+theorem descent_step_thetaLift_singleton_M_std {τ : PBP} (hγ : τ.γ = .M)
+    (wp : PPSet) (E_inner : ILS)
+    (h_std :
+      (toACStepData_M τ hγ wp).p - (ILS.sign (stepPreTwist E_inner
+        (toACStepData_M τ hγ wp))).1 - (ILS.firstColSign (stepPreTwist E_inner
+        (toACStepData_M τ hγ wp))).2 ≥ 0 ∧
+      (toACStepData_M τ hγ wp).p - (ILS.sign (stepPreTwist E_inner
+        (toACStepData_M τ hγ wp))).2 - (ILS.firstColSign (stepPreTwist E_inner
+        (toACStepData_M τ hγ wp))).1 ≥ 0) :
+    ∃ E' : ILS, ILS.thetaLift
+      (stepPreTwist E_inner (toACStepData_M τ hγ wp))
+      (toACStepData_M τ hγ wp).γ
+      (toACStepData_M τ hγ wp).p
+      (toACStepData_M τ hγ wp).q = [E'] := by
+  set E_pre := stepPreTwist E_inner (toACStepData_M τ hγ wp)
+  refine ⟨?_, ?_⟩
+  · exact ILS.charTwistCM (ILS.augment
+      ((toACStepData_M τ hγ wp).p - (ILS.sign E_pre).1 - (ILS.firstColSign E_pre).2,
+       (toACStepData_M τ hγ wp).p - (ILS.sign E_pre).2 - (ILS.firstColSign E_pre).1)
+      E_pre)
+      (((ILS.sign E_pre).1 - (ILS.sign E_pre).2 - 1) / 2)
+  show ILS.thetaLift E_pre _ _ _ = _
+  simp only [ILS.thetaLift]
+  have hγ' : (toACStepData_M τ hγ wp).γ = .M := rfl
+  rw [hγ']
+  simp only [ILS.thetaLift_BM]
+  rw [if_pos h_std]
+
 theorem descent_step_thetaLift_singleton_M {τ : PBP} (hγ : τ.γ = .M)
     (wp : PPSet) (E_inner : ILS) :
     ∃ E' : ILS, ILS.thetaLift
