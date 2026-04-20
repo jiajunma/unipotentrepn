@@ -16,6 +16,8 @@ existing `prop_11_15_PBP_D_injective_full`.
 -/
 import CombUnipotent.MYD.SigMYD
 import CombUnipotent.MYD.SigMYDB
+import CombUnipotent.MYD.SigMYDC
+import CombUnipotent.MYD.SigMYDM
 import CombUnipotent.MYD.PhiDTyped
 import CombUnipotent.CountingProof.Basic
 import Mathlib.SetTheory.Cardinal.Finite
@@ -356,12 +358,37 @@ noncomputable def Phi_Bminus_sig_equiv (μP μQ : YoungDiagram) (s : ℤ × ℤ)
   left_inv := fun ⟨σh, ε⟩ => Psi_Bminus_Phi_Bminus_sig σh ε
   right_inv := fun _ => sorry
 
-/-! ### Phi_C_sig (no Fin 2 — paper Prop 11.17) -/
+/-! ### Phi_C_sig (no Fin 2 — paper Prop 11.17)
 
-/-- C-side Phi: maps σ to chain-extracted twisted ILS.
-    No ε factor (paper Prop 11.17 has source = PBP only). -/
+C type: chain step has γ = .C, no pre-twist unless ε_wp = 1 (which
+requires PPSet). For the Phi function, we use the chain to extract E;
+sign match is via `descentChain_sign_match_C` (base proved, step sorry'd
+pending per-step std condition).
+
+No ε_τ factor at the outermost level (Prop 11.17 has no Fin 2).
+-/
+
+theorem descentChain_C_parity {τ : PBP} {chain : List ACStepData}
+    {E : ILS}
+    (_h_chain : IsDescentChain_C τ chain)
+    (_h_sing : ChainSingleton (baseILS .C) chain E) :
+    ∀ (j : ℕ) (h : j < E.length), MYDRowValid .C (j + 1) E[j] := sorry
+
+/-- C-side Phi: maps σ to chain-extracted ILS. No outer ε twist. -/
 noncomputable def Phi_C_sig {μP μQ : YoungDiagram} {s : ℤ × ℤ}
-    (σh : PBPSet_C_sig μP μQ s) : MYD_sig .C s := sorry
+    (σh : PBPSet_C_sig μP μQ s) : MYD_sig .C s :=
+  let σ := σh.val
+  let h_sig := σh.prop
+  let chain := Classical.choose (exists_descentChain_C σ)
+  let h_chain := Classical.choose_spec (exists_descentChain_C σ)
+  let E := Classical.choose (descentChain_C_singleton h_chain)
+  let h_sing := Classical.choose_spec (descentChain_C_singleton h_chain)
+  have h_sign : ILS.sign E = s := by
+    rw [descentChain_sign_match_C h_chain h_sing]
+    show signTarget_C' σ.val = s
+    exact h_sig
+  have h_par := descentChain_C_parity h_chain h_sing
+  ⟨E, h_par, h_sign⟩
 
 theorem Phi_C_sig_injective {μP μQ : YoungDiagram} {s : ℤ × ℤ} :
     Function.Injective (Phi_C_sig (μP := μP) (μQ := μQ) (s := s)) :=
@@ -396,8 +423,26 @@ noncomputable def Phi_C_sig_equiv (μP μQ : YoungDiagram) (s : ℤ × ℤ)
 
 /-! ### Phi_M_sig (no Fin 2 — paper Prop 11.17) -/
 
+theorem descentChain_M_parity {τ : PBP} {chain : List ACStepData}
+    {E : ILS}
+    (_h_chain : IsDescentChain_M τ chain)
+    (_h_sing : ChainSingleton (baseILS .M) chain E) :
+    ∀ (j : ℕ) (h : j < E.length), MYDRowValid .M (j + 1) E[j] := sorry
+
 noncomputable def Phi_M_sig {μP μQ : YoungDiagram} {s : ℤ × ℤ}
-    (σh : PBPSet_M_sig μP μQ s) : MYD_sig .M s := sorry
+    (σh : PBPSet_M_sig μP μQ s) : MYD_sig .M s :=
+  let σ := σh.val
+  let h_sig := σh.prop
+  let chain := Classical.choose (exists_descentChain_M σ)
+  let h_chain := Classical.choose_spec (exists_descentChain_M σ)
+  let E := Classical.choose (descentChain_M_singleton h_chain)
+  let h_sing := Classical.choose_spec (descentChain_M_singleton h_chain)
+  have h_sign : ILS.sign E = s := by
+    rw [descentChain_sign_match_M h_chain h_sing]
+    show signTarget_M' σ.val = s
+    exact h_sig
+  have h_par := descentChain_M_parity h_chain h_sing
+  ⟨E, h_par, h_sign⟩
 
 theorem Phi_M_sig_injective {μP μQ : YoungDiagram} {s : ℤ × ℤ} :
     Function.Injective (Phi_M_sig (μP := μP) (μQ := μQ) (s := s)) :=
