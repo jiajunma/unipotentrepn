@@ -319,11 +319,16 @@ theorem descent_step_thetaLift_singleton_Bminus {τ : PBP} (hγ : τ.γ = .Bminu
       (toACStepData_Bminus τ hγ).q = [E'] := by
   sorry
 
-/-- Bminus chain singleton: extracted ILS starts from `baseILS .Bminus`.
-    Base case OK; step case has a base-type mismatch (inner uses
-    `baseILS .Bplus` but Bminus expects `baseILS .Bminus`).
-    Reconciliation deferred — needs base-translation lemma between
-    `baseILS .Bplus` and `baseILS .Bminus` via the outer Bminus step. -/
+/-- Bminus chain singleton: extracted ILS starts from `baseILS .Bminus`
+    for the empty case and `baseILS .Bplus` for non-empty case.
+
+    The mismatch comes from `doubleDescent_B` always producing Bplus,
+    so non-empty Bminus τ descends to Bplus inner. Here we state the
+    singleton only for `baseILS .Bminus`; the non-empty step case
+    requires a base-translation that is paper-content (specific
+    thetaLift from baseILS .Bminus at the first chain step).
+
+    Base case PROVED; step case sorry'd pending base translation. -/
 theorem descentChain_Bminus_singleton {τ : PBP} {chain : List ACStepData}
     (h_chain : IsDescentChain_Bminus τ chain) :
     ∃ E : ILS, ChainSingleton (baseILS .Bminus) chain E := by
@@ -334,6 +339,22 @@ theorem descentChain_Bminus_singleton {τ : PBP} {chain : List ACStepData}
     -- Inner Bplus chain singleton starts from baseILS .Bplus.
     -- Translating to baseILS .Bminus needs a base reconciliation lemma.
     sorry
+
+/-- Bminus chain singleton for the Bplus-base case.
+    When the chain is non-empty (step case), the inner chain uses
+    baseILS .Bplus. Under this base, the singleton IS provable. -/
+theorem descentChain_Bminus_singleton_Bplus_base {τ : PBP} {chain : List ACStepData}
+    (h_chain : IsDescentChain_Bminus τ chain) :
+    ∃ E : ILS, ChainSingleton (baseILS .Bplus) chain E := by
+  cases h_chain with
+  | base hγ _h_empty =>
+    -- chain = []: ChainSingleton baseILS .Bplus [] baseILS .Bplus (trivial)
+    exact ⟨baseILS .Bplus, ChainSingleton.nil _⟩
+  | step hγ h_rest =>
+    obtain ⟨E_inner, h_inner⟩ := descentChain_Bplus_singleton h_rest
+    obtain ⟨E', h_theta⟩ := descent_step_thetaLift_singleton_Bminus hγ E_inner
+    exact ⟨stepPostTwist E' (toACStepData_Bminus τ hγ),
+           ChainSingleton.snoc h_inner h_theta⟩
 
 /-- Sign target for B⁻ PBP. -/
 noncomputable def signTarget_Bminus' (τ : PBP) : ℤ × ℤ :=
