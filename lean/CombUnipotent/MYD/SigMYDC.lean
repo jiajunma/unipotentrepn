@@ -70,13 +70,26 @@ theorem exists_descentChain_C {μP μQ : YoungDiagram} (σ : PBPSet .C μP μQ)
     -- Single-element dp: awkward case (μP empty but μQ may not be)
     -- Paper handles via Lemma 11.2 directly; not fit IsDescentChain_C structure.
     sorry
-  | _r₁ :: _r₂ :: _rest, _, _, _ =>
-    -- Recursive case: apply descentCD_PBP, then use exists_descentChain_D
-    -- on the inner D-PBP. Requires:
-    -- (a) h_sub from shiftLeft_Q_le_P_of_dp
-    -- (b) coherence of inner D-PBP with dp' = r₂ :: rest (for r₁ > 1)
-    --     or rest-shifted (for r₁ = 1)
-    -- (c) assembly via IsDescentChain_C.step
+  | r₁ :: r₂ :: rest, h_coh, hsort, hodd =>
+    -- Get h_sub via shiftLeft_Q_le_P_of_dp
+    have hP_raw : σ.val.P.shape.colLens = dpartColLensP_C (r₁ :: r₂ :: rest) := h_coh.1
+    have hQ_raw : σ.val.Q.shape.colLens = dpartColLensQ_C (r₁ :: r₂ :: rest) := h_coh.2
+    have hP_μ : μP.colLens = dpartColLensP_C (r₁ :: r₂ :: rest) := by
+      rw [← σ.prop.2.1]; exact hP_raw
+    have hQ_μ : μQ.colLens = dpartColLensQ_C (r₁ :: r₂ :: rest) := by
+      rw [← σ.prop.2.2]; exact hQ_raw
+    have h_sub : YoungDiagram.shiftLeft μQ ≤ μP :=
+      _root_.shiftLeft_Q_le_P_of_dp hP_μ hQ_μ hsort hodd
+    -- Apply descentCD_PBP to get D-type PBP
+    let σD := descentCD_PBP σ h_sub
+    -- Recurse via exists_descentChain_D on σD
+    obtain ⟨chain_D, h_chain_D⟩ := exists_descentChain_D σD
+    -- Construct outer C chain via IsDescentChain_C.step
+    have hγ : σ.val.γ = .C := σ.prop.1
+    -- h_rest needs (descentCD_PBP ⟨τ, hγ, rfl, rfl⟩ h_sub').val where h_sub' uses τ's shapes
+    -- For σ : PBPSet .C μP μQ, σ.val.P.shape = μP and σ.val.Q.shape = μQ, so h_sub'
+    -- matches h_sub up to the shape equalities.
+    -- This requires careful bridging. Deferred.
     sorry
 
 /-- Every C-PBP admits a dp witness that makes it coherent. Classical
