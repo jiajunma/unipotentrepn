@@ -66,10 +66,38 @@ theorem exists_descentChain_C_simple {μP μQ : YoungDiagram} (σ : PBPSet .C μ
 
 /-! ## Per-step thetaLift singleton (paper §11.5/11.6) -/
 
-/-- Per-step thetaLift singleton for C chain. The C step uses
-    `thetaLift_DC` (target .C dispatches to D→C lift), which needs
-    the std-case hypothesis `addp ≥ 0 ∧ addn ≥ 0` for sign preservation.
-    Paper §11.5/11.6 provides this via the chain's structure. -/
+/-- Per-step thetaLift singleton for C chain, under std hypothesis.
+    For target .C, thetaLift dispatches to thetaLift_DC (takes p only;
+    q ignored since C-type signature has p = q). -/
+theorem descent_step_thetaLift_singleton_C_std {τ : PBP} (hγ : τ.γ = .C)
+    (wp : PPSet) (E_inner : ILS)
+    (h_std :
+      (toACStepData_C τ hγ wp).p - (ILS.sign (stepPreTwist E_inner
+        (toACStepData_C τ hγ wp))).1 - (ILS.firstColSign (stepPreTwist E_inner
+        (toACStepData_C τ hγ wp))).2 ≥ 0 ∧
+      (toACStepData_C τ hγ wp).p - (ILS.sign (stepPreTwist E_inner
+        (toACStepData_C τ hγ wp))).2 - (ILS.firstColSign (stepPreTwist E_inner
+        (toACStepData_C τ hγ wp))).1 ≥ 0) :
+    ∃ E' : ILS, ILS.thetaLift
+      (stepPreTwist E_inner (toACStepData_C τ hγ wp))
+      (toACStepData_C τ hγ wp).γ
+      (toACStepData_C τ hγ wp).p
+      (toACStepData_C τ hγ wp).q = [E'] := by
+  set E_pre := stepPreTwist E_inner (toACStepData_C τ hγ wp)
+  refine ⟨?_, ?_⟩
+  · exact ILS.charTwistCM (ILS.augment
+      ((toACStepData_C τ hγ wp).p - (ILS.sign E_pre).1 - (ILS.firstColSign E_pre).2,
+       (toACStepData_C τ hγ wp).p - (ILS.sign E_pre).2 - (ILS.firstColSign E_pre).1)
+      E_pre)
+      (((ILS.sign E_pre).1 - (ILS.sign E_pre).2) / 2)
+  show ILS.thetaLift E_pre _ _ _ = _
+  simp only [ILS.thetaLift]
+  have hγ' : (toACStepData_C τ hγ wp).γ = .C := rfl
+  rw [hγ']
+  simp only [ILS.thetaLift_DC]
+  rw [if_pos h_std]
+
+/-- Per-step thetaLift singleton for C chain. Paper §11.5/11.6. -/
 theorem descent_step_thetaLift_singleton_C {τ : PBP} (hγ : τ.γ = .C)
     (wp : PPSet) (E_inner : ILS) :
     ∃ E' : ILS, ILS.thetaLift
