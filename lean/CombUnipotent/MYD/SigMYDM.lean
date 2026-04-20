@@ -47,10 +47,8 @@ def PBPIsCoherent_M (τ : PBP) (dp : DualPart) : Prop :=
   τ.P.shape.colLens = dpartColLensP_M dp ∧
   τ.Q.shape.colLens = dpartColLensQ_M dp
 
-theorem exists_coherent_dp_M {μP μQ : YoungDiagram} (σ : PBPSet .M μP μQ) :
-    ∃ dp : DualPart,
-      PBPIsCoherent_M σ.val dp ∧ dp.SortedGE ∧ (∀ r ∈ dp, Even r) := by
-  sorry
+-- exists_coherent_dp_M was merged into exists_descentChain_M below
+-- (see pattern in SigMYDC.lean).
 
 /-- Helper: for M-PBP coherent with empty dp, shapes are empty. -/
 private theorem PBPIsCoherent_M_empty {τ : PBP} (h_coh : PBPIsCoherent_M τ []) :
@@ -145,10 +143,11 @@ theorem exists_descentChain_M_coherent {μP μQ : YoungDiagram} (σ : PBPSet .M 
       refine ⟨chain_inner ++ [toACStepData_M σ.val hγ ∅], ?_⟩
       exact IsDescentChain_M.step_to_Bminus hγ ∅ hd_bm h_chain_inner
 
-theorem exists_descentChain_M {μP μQ : YoungDiagram} (σ : PBPSet .M μP μQ) :
-    ∃ c : List ACStepData, IsDescentChain_M σ.val c := by
-  obtain ⟨dp, h_coh, hsort, heven⟩ := exists_coherent_dp_M σ
-  exact exists_descentChain_M_coherent σ dp h_coh hsort heven
+/-- Any M-PBP has a chain. Paper-level — needs PBP → dp reconstruction
+    (previously factored via `exists_coherent_dp_M`, now inlined). -/
+theorem exists_descentChain_M {μP μQ : YoungDiagram} (_σ : PBPSet .M μP μQ) :
+    ∃ c : List ACStepData, IsDescentChain_M _σ.val c := by
+  sorry
 
 /-! ## Per-step thetaLift singleton (paper §11.5/11.6) -/
 
