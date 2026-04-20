@@ -68,7 +68,27 @@ theorem exists_descentChain_M_coherent {μP μQ : YoungDiagram} (σ : PBPSet .M 
     have hγ : σ.val.γ = .M := σ.prop.1
     have h_empty := PBPIsCoherent_M_empty h_coh
     exact ⟨[], IsDescentChain_M.base σ.val hγ h_empty⟩
-  | [_r], _ => sorry
+  | [r], h_coh =>
+    -- dpartColLensP_M [r] = dpartColLensQ_B [r] = if r > 0 then [r/2] else []
+    -- dpartColLensQ_M [r] = dpartColLensP_B [r] = []
+    have hγ : σ.val.γ = .M := σ.prop.1
+    have hQ_empty : μQ = ⊥ := by
+      have hQ_nil : μQ.colLens = [] := by
+        rw [← σ.prop.2.2]
+        simp [h_coh.2, dpartColLensQ_M, dpartColLensP_B]
+      exact yd_of_colLens_nil hQ_nil
+    by_cases hr : r = 0
+    · have hP_empty : μP = ⊥ := by
+        have hP_nil : μP.colLens = [] := by
+          rw [← σ.prop.2.1]
+          simp [h_coh.1, dpartColLensP_M, dpartColLensQ_B, hr]
+        exact yd_of_colLens_nil hP_nil
+      have h_empty : σ.val.P.shape = ⊥ ∧ σ.val.Q.shape = ⊥ :=
+        ⟨σ.prop.2.1.trans hP_empty, σ.prop.2.2.trans hQ_empty⟩
+      exact ⟨[], IsDescentChain_M.base σ.val hγ h_empty⟩
+    · -- r > 0 even: μP has 1 col, μQ empty, needs descentMB step
+      -- Requires tracking descentType_M and choosing step_to_Bplus or step_to_Bminus.
+      sorry
   | _r₁ :: _r₂ :: _rest, _ => sorry
 
 theorem exists_descentChain_M {μP μQ : YoungDiagram} (σ : PBPSet .M μP μQ) :
