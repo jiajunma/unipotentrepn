@@ -88,8 +88,28 @@ theorem exists_descentChain_C {μP μQ : YoungDiagram} (σ : PBPSet .C μP μQ)
       have h_empty : σ.val.P.shape = ⊥ ∧ σ.val.Q.shape = ⊥ :=
         ⟨σ.prop.2.1.trans hP_empty, σ.prop.2.2.trans hQ_empty⟩
       exact ⟨[], IsDescentChain_C.base σ.val hγ h_empty⟩
-    · -- r ≥ 3 (odd): single-column μQ, descentCD reduces to empty
-      sorry
+    · -- r ≥ 3 (odd): μQ has 1 col of height (r-1)/2, shiftLeft μQ = ⊥
+      have hr_gt : r > 1 := by
+        -- r odd and r ≠ 1: must have r ≥ 3 > 1
+        rcases hr_odd with ⟨k, hk⟩
+        omega
+      have hshQ_empty : YoungDiagram.shiftLeft μQ = ⊥ := by
+        have hQ_colLens : μQ.colLens = [(r-1)/2] := by
+          rw [← σ.prop.2.2]
+          simp [h_coh.2, dpartColLensQ_C, hr_gt]
+        have hshQ_nil : (YoungDiagram.shiftLeft μQ).colLens = [] := by
+          rw [YoungDiagram.colLens_shiftLeft, hQ_colLens]; rfl
+        exact yd_of_colLens_nil hshQ_nil
+      have h_sub_μ : YoungDiagram.shiftLeft μQ ≤ μP := by
+        rw [hshQ_empty]; exact bot_le
+      -- Now descent and chain construction
+      obtain ⟨τ_val, τ_γ, τ_P_eq, τ_Q_eq⟩ := σ
+      subst τ_P_eq; subst τ_Q_eq
+      let σ' : PBPSet .C τ_val.P.shape τ_val.Q.shape := ⟨τ_val, τ_γ, rfl, rfl⟩
+      have h_sub' : YoungDiagram.shiftLeft τ_val.Q.shape ≤ τ_val.P.shape := h_sub_μ
+      obtain ⟨chain_D, h_chain_D⟩ := exists_descentChain_D (descentCD_PBP σ' h_sub')
+      refine ⟨chain_D ++ [toACStepData_C τ_val τ_γ ∅], ?_⟩
+      exact IsDescentChain_C.step τ_γ ∅ h_sub' h_chain_D
   | r₁ :: r₂ :: rest, h_coh, hsort, hodd =>
     -- Get h_sub via shiftLeft_Q_le_P_of_dp
     have hP_raw : σ.val.P.shape.colLens = dpartColLensP_C (r₁ :: r₂ :: rest) := h_coh.1
