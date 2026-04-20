@@ -353,71 +353,6 @@ private theorem YoungDiagram_bot_colLens : (⊥ : YoungDiagram).colLens = [] := 
   rw [this]
   exact (YoungDiagram.colLen_zero_eq_zero_iff_empty _).mpr rfl
 
-/-- **Theorem (M1.4.3)**: the ILS `E` extracted from a valid descent
-    chain satisfies the MYD properties — parity + shape match the
-    orbit `dpToSYD .D dp` whenever `dp` is coherent with `τ`'s shapes.
-
-    Proof plan: induction on the chain tracking two invariants:
-    (a) parity preservation at each theta-lift step (paper §9.4),
-    (b) shape growth matching the orbit's partition transpose
-    (`partTranspose dp`).
-
-    TODO: apply `thetaLift_{CD,MB}_sign` (MYD.lean:564, 655) + sign
-    preservation + parity inductive argument. -/
-theorem descentChain_D_in_MYD {τ : PBP} {chain : List ACStepData}
-    {E : ILS} (dp : DualPart)
-    (h_coh : PBPIsCoherent_D τ dp)
-    (_hsort : dp.SortedGE)
-    (_hodd : ∀ r ∈ dp, Odd r)
-    (h_chain : IsDescentChain_D τ chain)
-    (h_sing : ChainSingleton (baseILS .D) chain E) :
-    (∀ (j : ℕ) (h : j < E.length), MYDRowValid .D (j + 1) E[j])
-    ∧ absValues E = (dpToSYD .D dp).rows := by
-  induction h_chain generalizing E dp with
-  | base τ hγ h_empty =>
-    -- chain = []; ChainSingleton constraints force E = baseILS .D = []
-    cases h_sing
-    -- E = baseILS .D = []. From empty shapes + coherence, dp = [].
-    -- Both sides become empty.
-    have hdp : dp = [] := by
-      have hP := h_coh.1
-      rw [h_empty.1, YoungDiagram_bot_colLens] at hP
-      exact (dpartColLensP_D_eq_nil_iff dp).mp hP.symm
-    subst hdp
-    refine ⟨?_, ?_⟩
-    · -- baseILS .D = [], so E.length = 0, vacuous
-      intro j h; exfalso; unfold baseILS at h; simp at h
-    · -- absValues [] = [] = (SYD.empty .D).rows
-      unfold absValues baseILS
-      simp [dpToSYD_empty, SYD.empty_rows]
-  | step hγ h_rest ih =>
-    rename_i τ_outer chain_inner
-    -- Decompose h_sing via snoc_inv into inner chain + end step + final.
-    obtain ⟨E_mid, E', h_inner_sing, h_theta, h_E_final⟩ :=
-      ChainSingleton.snoc_inv h_sing
-    -- Derive inner coherence + sort/odd on dp.drop 2
-    have h_coh_inner : PBPIsCoherent_D (doubleDescent_D_PBP τ_outer hγ) (dp.drop 2) :=
-      ⟨coherence_descend_D_P hγ h_coh.1,
-       coherence_descend_D_Q hγ h_coh.2 _hsort _hodd⟩
-    have h_sort_inner : (dp.drop 2).SortedGE := List.SortedGE.drop _hsort 2
-    have h_odd_inner : ∀ r ∈ dp.drop 2, Odd r := drop_all_odd _hodd 2
-    -- Apply IH on inner chain
-    have _ih_res := ih (dp.drop 2) h_coh_inner h_sort_inner h_odd_inner h_inner_sing
-    -- ih_res.1 : MYDRowValid for E_mid
-    -- ih_res.2 : absValues E_mid = (dpToSYD .D (dp.drop 2)).rows
-    --
-    -- From h_theta + thetaLift_CD_output_form: E' has explicit augment form.
-    -- From h_E_final + twistBD preservation: E inherits MYD properties from E'.
-    --
-    -- Remaining work (paper §9.4):
-    -- (1) charTwistCM_preserves_absValues (need to check MYD.lean)
-    -- (2) dpToSYD .D dp relationship with dp.drop 2's row + augmented row:
-    --     (dpToSYD .D dp).rows = new_outer_row :: (dpToSYD .D (dp.drop 2)).rows
-    -- (3) parity of the new augmented row: (addp, addn) with addp, addn ≥ 0.
-    --     Paper says row 1 (the new augmented one) is ℓ = 1 odd → for D
-    --     parity-forced is ℓ even, so the new row's parity is vacuous.
-    --     Remaining rows inherit from ih_res.1.
-    sorry
 
 /-! ## twistBD preserves MYD properties
 
@@ -531,54 +466,5 @@ theorem twistBD_general_preserves_MYDRowValid_BD (E : ILS) (γ : RootType)
     simp [hℓ_even]
   rw [heq]
   exact h j hj' hforced
-
-/-! ## Assembly: typed Phi_D -/
-
-/-- **Typed Φ_D** (paper Prop 11.15, D type):
-    $\Phi_D : \PBP_D(\mu_P, \mu_Q) \times \mathrm{Fin}\ 2 \to \MYD_D(\mathrm{dpToSYD\ .D\ dp})$,
-    $(\sigma, \varepsilon) \mapsto L_\sigma \otimes (\varepsilon, \varepsilon)$.
-
-    Constructed via the three interface axioms plus `Phi_chain` (M1.3):
-    1. `exists_descentChain_D` provides a chain.
-    2. `descentChain_D_singleton` extracts the unique `L_σ : ILS`.
-    3. `descentChain_D_in_MYD` certifies that `L_σ ∈ MYD .D (dpToSYD .D dp)`.
-    4. The ε-twist preserves MYD via `twistBD_preserves_*`. -/
-noncomputable def Phi_D {μP μQ : YoungDiagram} (dp : DualPart)
-    (h_coh : PBPIsCoherent_D_ext μP μQ dp)
-    (hsort : dp.SortedGE)
-    (hodd : ∀ r ∈ dp, Odd r)
-    (σ : PBPSet .D μP μQ) (ε : Fin 2) :
-    MYD .D (dpToSYD .D dp) :=
-  let chain : List ACStepData := Classical.choose (exists_descentChain_D σ)
-  let h_chain : IsDescentChain_D σ.val chain :=
-    Classical.choose_spec (exists_descentChain_D σ)
-  let E : ILS := Classical.choose (descentChain_D_singleton h_chain)
-  let h_sing : ChainSingleton (baseILS .D) chain E :=
-    Classical.choose_spec (descentChain_D_singleton h_chain)
-  -- Derive per-τ coherence from the external coherence + σ's shape
-  have h_coh_τ : PBPIsCoherent_D σ.val dp := by
-    constructor
-    · rw [σ.prop.2.1]; exact h_coh.1
-    · rw [σ.prop.2.2]; exact h_coh.2
-  let hMYD := descentChain_D_in_MYD dp h_coh_τ hsort hodd h_chain h_sing
-  let h_par := hMYD.1
-  let h_shape := hMYD.2
-  let E' := if ε = 1 then ILS.twistBD E (-1) (-1) else E
-  have h_E'_par : ∀ (j : ℕ) (hj : j < E'.length),
-      MYDRowValid .D (j + 1) E'[j] := by
-    by_cases hε : ε = 1
-    · simp [E', hε]
-      exact twistBD_preserves_MYDRowValid E .D (-1)
-        (Or.inr (Or.inr rfl)) (Or.inr rfl) h_par
-    · simp [E', hε]
-      exact h_par
-  have h_E'_shape : absValues E' = (dpToSYD .D dp).rows := by
-    by_cases hε : ε = 1
-    · simp [E', hε]
-      rw [twistBD_preserves_absValues E (-1) (-1) (Or.inr rfl) (Or.inr rfl)]
-      exact h_shape
-    · simp [E', hε]
-      exact h_shape
-  ⟨E', h_E'_par, h_E'_shape⟩
 
 end BMSZ
