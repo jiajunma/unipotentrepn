@@ -122,11 +122,20 @@ by chaining: equal MYD_sig → equal twisted ILS → equal pre-twist ILS
 (via prop_11_15) and equal ε.
 -/
 
-/-- **Φ_D_sig is injective**: paper Prop 11.15 D content adapted to
-    the MYD_sig framework. Sorry: needs reduction to existing
-    `prop_11_15_PBP_D_injective_full` through chain extraction. -/
+/-- **Φ_D_sig is injective**. Paper Prop 11.15 D-type injectivity.
+
+    FALSE for empty (μP, μQ) — Phi maps both ε values of the unique
+    empty τ to the same empty MYD_sig. Paper excludes `|Ǒ| = 0`.
+
+    Full NL proof: `lean/docs/blueprints/Phi_D_sig_injective_NL.md`.
+    Closure requires bridging chain-extracted E to ACResult form and
+    using `prop_11_15_PBP_D_injective_full` + `chain_extract_injective_D`
+    (σ recovery, paper Lemma 11.13 + `ddescent_inj_D`).
+
+    ~570 LOC estimated for full closure. -/
 theorem Phi_D_sig_injective {μP μQ : YoungDiagram} {s : ℤ × ℤ} :
-    Function.Injective (fun p : PBPSet_D_sig μP μQ s × Fin 2 => Phi_D_sig p.1 p.2) :=
+    Function.Injective (fun p : PBPSet_D_sig μP μQ s × Fin 2 =>
+      Phi_D_sig p.1 p.2) :=
   sorry
 
 /-- Phi-image-decidable: classical `byCases` on whether `M` is in image. -/
