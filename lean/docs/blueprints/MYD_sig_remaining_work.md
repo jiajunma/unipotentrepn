@@ -161,4 +161,33 @@ Total: ~2500 lines of focused formalization to fully close all sorries.
 - Round trip 1: all 5 PROVED (modulo Phi_*_sig_injective)
 - Round trip 2: all 5 sorry (paper §11.14)
 - Parity: all 5 base proved, step sorry
+- **Per-step thetaLift singleton: all 5 _std variants PROVED** (D, B+, B-, C, M)
+  Remaining sorry: "chain → std" reduction (paper §11.5/11.6)
+- `descentChain_Bminus_singleton_Bplus_base` ✅ PROVED
 - Build: GREEN throughout
+
+### Update after std variant pass (2026-04-20)
+
+All per-step singleton theorems now have the following structure:
+```
+descent_step_thetaLift_singleton_γ_std : PROVED   -- direct from thetaLift def
+descent_step_thetaLift_singleton_γ     : sorry    -- "chain-std holds"
+```
+
+This cleanly separates:
+- Algebraic content (std → singleton) — fully proved
+- Paper content (chain → std) — single remaining sorry per type
+
+The "chain → std" sorry is the focused target. Proving it for D unlocks
+descentChain_D_singleton, which unlocks 3 sorries transitively.
+
+## 3 critical structural findings (memory)
+
+1. `project_descent_structure.md`: [BMSZ] descent = [BMSZb] 𝔴=∅ case.
+   Chain uses doubleDescent, not ALT.
+2. `project_myd_pivot.md`: `MYD γ (dpToSYD γ dp)` structurally empty
+   for nontrivial dp. Use `MYD_sig γ s` instead.
+3. `project_chain_step_mismatch.md`: **Lean's `thetaLift_CD` has
+   1 augment per chain step, paper Eq (11.11) has 2.** This is the
+   deep reason why `dpToSYD` and parity don't match. Proper fix
+   requires refactoring the chain step to match paper's structure.
