@@ -63,9 +63,53 @@ noncomputable def Phi_D_qd_sig_equiv (μP μQ : YoungDiagram) (dp : DualPart)
     (hodd : ∀ r ∈ dp, Odd r)
     (h_qd : IsQuasiDistinguished .D dp) (s : ℤ × ℤ)
     [Inhabited (PBPSet_D_qd_sig μP μQ dp h_coh hsort hodd h_qd s × Fin 2)] :
-    PBPSet_D_qd_sig μP μQ dp h_coh hsort hodd h_qd s × Fin 2 ≃ MYD_sig .D s :=
+    PBPSet_D_qd_sig μP μQ dp h_coh hsort hodd h_qd s × Fin 2 ≃ MYD_sig .D s := by
   sorry
 
-/-! ## Parallel refinements for B+, B-, C, M deferred to future work -/
+-- B+/B-/C/M QD refinements
+
+def PBPSet_Bplus_qd_sig (μP μQ : YoungDiagram) (dp : DualPart)
+    (_hsort : dp.SortedGE) (_h_qd : IsQuasiDistinguished .Bplus dp)
+    (s : ℤ × ℤ) : Type :=
+  { σ : PBPSet .Bplus μP μQ // signTarget_Bplus σ.val = s }
+
+def PBPSet_Bminus_qd_sig (μP μQ : YoungDiagram) (dp : DualPart)
+    (_hsort : dp.SortedGE) (_h_qd : IsQuasiDistinguished .Bminus dp)
+    (s : ℤ × ℤ) : Type :=
+  { σ : PBPSet .Bminus μP μQ // signTarget_Bminus σ.val = s }
+
+def PBPSet_C_qd_sig (μP μQ : YoungDiagram) (dp : DualPart)
+    (_hsort : dp.SortedGE) (_h_qd : IsQuasiDistinguished .C dp)
+    (s : ℤ × ℤ) : Type :=
+  { σ : PBPSet .C μP μQ // signTarget_C σ.val = s }
+
+def PBPSet_M_qd_sig (μP μQ : YoungDiagram) (dp : DualPart)
+    (_hsort : dp.SortedGE) (_h_qd : IsQuasiDistinguished .M dp)
+    (s : ℤ × ℤ) : Type :=
+  { σ : PBPSet .M μP μQ // signTarget_M σ.val = s }
+
+noncomputable def Phi_Bplus_qd_sig_equiv (μP μQ : YoungDiagram) (dp : DualPart)
+    (hsort : dp.SortedGE) (h_qd : IsQuasiDistinguished .Bplus dp) (s : ℤ × ℤ)
+    [Inhabited (PBPSet_Bplus_qd_sig μP μQ dp hsort h_qd s × Fin 2)] :
+    PBPSet_Bplus_qd_sig μP μQ dp hsort h_qd s × Fin 2 ≃ MYD_sig .Bplus s :=
+  sorry
+
+noncomputable def Phi_Bminus_qd_sig_equiv (μP μQ : YoungDiagram) (dp : DualPart)
+    (hsort : dp.SortedGE) (h_qd : IsQuasiDistinguished .Bminus dp) (s : ℤ × ℤ)
+    [Inhabited (PBPSet_Bminus_qd_sig μP μQ dp hsort h_qd s × Fin 2)] :
+    PBPSet_Bminus_qd_sig μP μQ dp hsort h_qd s × Fin 2 ≃ MYD_sig .Bminus s :=
+  sorry
+
+noncomputable def Phi_C_qd_sig_equiv (μP μQ : YoungDiagram) (dp : DualPart)
+    (hsort : dp.SortedGE) (h_qd : IsQuasiDistinguished .C dp) (s : ℤ × ℤ)
+    [Inhabited (PBPSet_C_qd_sig μP μQ dp hsort h_qd s)] :
+    PBPSet_C_qd_sig μP μQ dp hsort h_qd s ≃ MYD_sig .C s :=
+  sorry
+
+noncomputable def Phi_M_qd_sig_equiv (μP μQ : YoungDiagram) (dp : DualPart)
+    (hsort : dp.SortedGE) (h_qd : IsQuasiDistinguished .M dp) (s : ℤ × ℤ)
+    [Inhabited (PBPSet_M_qd_sig μP μQ dp hsort h_qd s)] :
+    PBPSet_M_qd_sig μP μQ dp hsort h_qd s ≃ MYD_sig .M s :=
+  sorry
 
 end BMSZ
