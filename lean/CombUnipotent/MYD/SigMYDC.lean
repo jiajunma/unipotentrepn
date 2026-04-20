@@ -48,15 +48,36 @@ def PBPIsCoherent_C (τ : PBP) (dp : DualPart) : Prop :=
   τ.P.shape.colLens = dpartColLensP_C dp ∧
   τ.Q.shape.colLens = dpartColLensQ_C dp
 
-/-- Chain existence for C-type PBP under dp-coherence + sort + odd.
-    Deferred: the recursive construction requires propagating
-    coherence through `descentCD_PBP` to the inner D-type chain.
-    Structure is parallel to `exists_descentChain_Bplus_aux`. -/
+/-- Helper: for C-PBP coherent with empty dp, shapes are empty. -/
+private theorem PBPIsCoherent_C_empty {τ : PBP} (h_coh : PBPIsCoherent_C τ []) :
+    τ.P.shape = ⊥ ∧ τ.Q.shape = ⊥ := by
+  obtain ⟨hP, hQ⟩ := h_coh
+  simp [dpartColLensP_C, dpartColLensQ_C] at hP hQ
+  exact ⟨yd_of_colLens_nil hP, yd_of_colLens_nil hQ⟩
+
+/-- Chain existence for C-type PBP under dp-coherence + sort + odd. -/
 theorem exists_descentChain_C {μP μQ : YoungDiagram} (σ : PBPSet .C μP μQ)
-    (_dp : DualPart) (_h_coh : PBPIsCoherent_C σ.val _dp)
-    (_hsort : _dp.SortedGE) (_hodd : ∀ r ∈ _dp, Odd r) :
+    (dp : DualPart) (h_coh : PBPIsCoherent_C σ.val dp)
+    (hsort : dp.SortedGE) (hodd : ∀ r ∈ dp, Odd r) :
     ∃ c : List ACStepData, IsDescentChain_C σ.val c := by
-  sorry
+  match dp, h_coh, hsort, hodd with
+  | [], h_coh, _, _ =>
+    -- Empty dp → empty shapes → base chain
+    have hγ : σ.val.γ = .C := σ.prop.1
+    have h_empty := PBPIsCoherent_C_empty h_coh
+    exact ⟨[], IsDescentChain_C.base σ.val hγ h_empty⟩
+  | [_r], _, _, _ =>
+    -- Single-element dp: awkward case (μP empty but μQ may not be)
+    -- Paper handles via Lemma 11.2 directly; not fit IsDescentChain_C structure.
+    sorry
+  | _r₁ :: _r₂ :: _rest, _, _, _ =>
+    -- Recursive case: apply descentCD_PBP, then use exists_descentChain_D
+    -- on the inner D-PBP. Requires:
+    -- (a) h_sub from shiftLeft_Q_le_P_of_dp
+    -- (b) coherence of inner D-PBP with dp' = r₂ :: rest (for r₁ > 1)
+    --     or rest-shifted (for r₁ = 1)
+    -- (c) assembly via IsDescentChain_C.step
+    sorry
 
 /-- Every C-PBP admits a dp witness that makes it coherent. Classical
     choice + PBP structure. Paper-level: every C-PBP corresponds to
