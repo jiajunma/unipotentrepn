@@ -139,22 +139,13 @@ theorem exists_descentChain_C {μP μQ : YoungDiagram} (σ : PBPSet .C μP μQ)
     refine ⟨chain_D ++ [toACStepData_C τ_val τ_γ ∅], ?_⟩
     exact IsDescentChain_C.step τ_γ ∅ h_sub h_chain_D
 
-/-- Every C-PBP admits a dp witness that makes it coherent. Paper-level.
-    For arbitrary PBPSet .C elements, this may not hold — the shape pair
-    (μP, μQ) might not be in the image of dpartColLens_C. Closure requires
-    either a restriction (PBPSet must come from a valid dp) or external
-    witness. See `project_phi_injective_not_universal.md`. -/
-theorem exists_coherent_dp_C {μP μQ : YoungDiagram} (σ : PBPSet .C μP μQ) :
-    ∃ dp : DualPart,
-      PBPIsCoherent_C σ.val dp ∧ dp.SortedGE ∧ (∀ r ∈ dp, Odd r) := by
-  sorry
-
-/-- Simplified signature that takes σ and derives the coherence
-    via `exists_coherent_dp_C`. -/
+/-- Simplified signature: any C-PBP has a chain. Paper-level —
+    needs PBP → dp reconstruction (the `exists_coherent_dp_C` lemma
+    previously factored out is now inlined here as the single sorry
+    for the chain-from-arbitrary-PBP existence). -/
 theorem exists_descentChain_C_simple {μP μQ : YoungDiagram} (σ : PBPSet .C μP μQ) :
     ∃ c : List ACStepData, IsDescentChain_C σ.val c := by
-  obtain ⟨dp, h_coh, hsort, hodd⟩ := exists_coherent_dp_C σ
-  exact exists_descentChain_C σ dp h_coh hsort hodd
+  sorry
 
 /-! ## Per-step thetaLift singleton (paper §11.5/11.6) -/
 
