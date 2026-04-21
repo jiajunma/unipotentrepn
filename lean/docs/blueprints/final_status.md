@@ -93,6 +93,18 @@ hypothesis bundle below, which corresponds to crisp paper-content.
 4. `project_parity_requires_quasi_distinguished.md`: parity needs QD
 5. `project_phi_injective_not_universal.md`: injective false for empty
 
+## Axiom audit
+
+```
+'BMSZ.Phi_D_sig_equiv' depends on axioms: [propext, Classical.choice, Quot.sound]
+'BMSZ.Phi_C_sig_equiv' depends on axioms: [propext, Classical.choice, Quot.sound]
+'BMSZ.Phi_M_sig_equiv' depends on axioms: [propext, Classical.choice, Quot.sound]
+```
+
+Only Lean's three standard axioms. **No `sorryAx`**. No custom axioms.
+The equivs are honestly stated: their validity depends solely on the
+caller discharging the hypothesis bundle (see above table).
+
 ## Path forward (future sessions)
 
 The MYD_sig bijection layer is **sorry-free**. What remains is
