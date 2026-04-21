@@ -189,6 +189,21 @@ abbrev DescentStepSingleton_C : Prop :=
       (toACStepData_C τ hγ wp).p
       (toACStepData_C τ hγ wp).q = [E']
 
+/-- **Reduction**: `DescentStepSingleton_C` follows from a universal
+    std sign-bound hypothesis on the pre-twisted ILS. -/
+theorem descentStepSingleton_C_of_std
+    (h_std : ∀ (τ : PBP) (hγ : τ.γ = .C) (wp : PPSet) (E_inner : ILS),
+      (toACStepData_C τ hγ wp).p - (ILS.sign (stepPreTwist E_inner
+        (toACStepData_C τ hγ wp))).1 - (ILS.firstColSign (stepPreTwist E_inner
+        (toACStepData_C τ hγ wp))).2 ≥ 0 ∧
+      (toACStepData_C τ hγ wp).p - (ILS.sign (stepPreTwist E_inner
+        (toACStepData_C τ hγ wp))).2 - (ILS.firstColSign (stepPreTwist E_inner
+        (toACStepData_C τ hγ wp))).1 ≥ 0) :
+    DescentStepSingleton_C := by
+  intro τ hγ wp E_inner
+  exact descent_step_thetaLift_singleton_C_std hγ wp E_inner
+    (h_std τ hγ wp E_inner)
+
 theorem descentChain_C_singleton
     (h_step_D : DescentStepSingleton_D)
     (h_step_C : DescentStepSingleton_C)

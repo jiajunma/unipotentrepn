@@ -151,6 +151,18 @@ theorem descent_step_thetaLift_singleton_from_std {τ : PBP} (hγ : τ.γ = .D)
       (toACStepData_D τ hγ).q = [E'] :=
   descent_step_thetaLift_singleton_std hγ E_inner h_std
 
+/-- **Reduction**: `DescentStepSingleton_D` follows from a universal
+    std sign-bound hypothesis. Provides a cleaner discharge target
+    for future paper-content formalization: instead of proving
+    singleton directly, prove std-bound universally. -/
+theorem descentStepSingleton_D_of_std
+    (h_std : ∀ (τ : PBP) (hγ : τ.γ = .D) (E_inner : ILS),
+      (toACStepData_D τ hγ).p - (ILS.sign E_inner).1 - (ILS.firstColSign E_inner).2 ≥ 0 ∧
+      (toACStepData_D τ hγ).q - (ILS.sign E_inner).2 - (ILS.firstColSign E_inner).1 ≥ 0) :
+    DescentStepSingleton_D := by
+  intro τ hγ E_inner
+  exact descent_step_thetaLift_singleton_std hγ E_inner (h_std τ hγ E_inner)
+
 /-- **Theorem (M1.4.2 partial)**: any valid descent chain for τ is
     ChainSingleton-valid.
 

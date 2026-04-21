@@ -126,6 +126,18 @@ abbrev DescentStepSingleton_Bplus : Prop :=
       (toACStepData_Bplus τ hγ).p
       (toACStepData_Bplus τ hγ).q = [E']
 
+/-- **Reduction**: `DescentStepSingleton_Bplus` follows from a universal
+    std sign-bound hypothesis. -/
+theorem descentStepSingleton_Bplus_of_std
+    (h_std : ∀ (τ : PBP) (hγ : τ.γ = .Bplus) (E_inner : ILS),
+      (toACStepData_Bplus τ hγ).p - (ILS.sign E_inner).1 -
+        (ILS.firstColSign E_inner).2 ≥ 0 ∧
+      (toACStepData_Bplus τ hγ).q - (ILS.sign E_inner).2 -
+        (ILS.firstColSign E_inner).1 ≥ 0) :
+    DescentStepSingleton_Bplus := by
+  intro τ hγ E_inner
+  exact descent_step_thetaLift_singleton_Bplus_std hγ E_inner (h_std τ hγ E_inner)
+
 /-- Any valid B+ descent chain is `ChainSingleton`-valid. -/
 theorem descentChain_Bplus_singleton (h_step : DescentStepSingleton_Bplus)
     {τ : PBP} {chain : List ACStepData}
@@ -313,6 +325,18 @@ abbrev DescentStepSingleton_Bminus : Prop :=
       (toACStepData_Bminus τ hγ).γ
       (toACStepData_Bminus τ hγ).p
       (toACStepData_Bminus τ hγ).q = [E']
+
+/-- **Reduction**: `DescentStepSingleton_Bminus` follows from a
+    universal std sign-bound hypothesis. -/
+theorem descentStepSingleton_Bminus_of_std
+    (h_std : ∀ (τ : PBP) (hγ : τ.γ = .Bminus) (E_inner : ILS),
+      (toACStepData_Bminus τ hγ).p - (ILS.sign E_inner).1 -
+        (ILS.firstColSign E_inner).2 ≥ 0 ∧
+      (toACStepData_Bminus τ hγ).q - (ILS.sign E_inner).2 -
+        (ILS.firstColSign E_inner).1 ≥ 0) :
+    DescentStepSingleton_Bminus := by
+  intro τ hγ E_inner
+  exact descent_step_thetaLift_singleton_Bminus_std hγ E_inner (h_std τ hγ E_inner)
 
 /-- **Chain-singleton hypothesis (B−)**: every valid Bminus descent
     chain yields a `ChainSingleton (baseILS .Bminus)` witness.
