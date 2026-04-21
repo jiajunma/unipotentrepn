@@ -93,6 +93,31 @@ hypothesis bundle below, which corresponds to crisp paper-content.
 4. `project_parity_requires_quasi_distinguished.md`: parity needs QD
 5. `project_phi_injective_not_universal.md`: injective false for empty
 
+## Infrastructure additions (this session)
+
+Beyond 36 → 0 sorries, added:
+
+- **Chain-conditional `DescentStepSingleton_γ`** (γ ∈ {D, B+, C}): previous
+  form quantified over arbitrary E_inner (unsound). Now restricted
+  to chain-derived E_inner via `IsDescentChain_γ + ChainSingleton`.
+- **`descentStepSingleton_γ_of_std`** (γ ∈ {D, B+, B-, C}): reductions
+  from a chain-conditional std sign-bound hypothesis.
+- **`chainExists_γ_empty`** (γ ∈ {C, M}): concrete empty-shape discharge.
+- **`chainExists_γ_of_coherent_dp`** (γ ∈ {C, M}): reduction to "every
+  PBP has a coherent dp" (paper §9.4).
+- **`phi_γ_sig_surj_of_inj_card`** (all 5 γ): reduction from surjectivity
+  to injectivity + Fintype cardinality match.
+- **`ILS.trim`** + **`ILS.sign_trim`** (PROVED): canonical form stripping
+  trailing (0, 0) rows, preserves sign.
+- **`MYD_sig_trim γ s`**: refined finite subtype.
+- **`MYD_sig.toTrim`**: canonicalization map.
+
+Critical finding: `MYD_sig γ s` as defined is **not finite**
+(trailing zeros preserve sign), so the current `Phi_γ_sig_equiv`
+conditional theorem cannot be instantiated. `MYD_sig_trim` fixes
+this structurally; refactoring `Phi_γ_sig` to output
+`MYD_sig_trim` is future work.
+
 ## Axiom audit
 
 ```
