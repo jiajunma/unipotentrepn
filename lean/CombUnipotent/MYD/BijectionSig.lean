@@ -677,4 +677,81 @@ theorem card_PBPSet_M_sig_eq (μP μQ : YoungDiagram) (s : ℤ × ℤ)
   Nat.card_congr
     (Phi_M_sig_equiv μP μQ s h_chain h_sing h_sm h_inj h_surj)
 
+/-! ## Surjectivity reductions from injectivity + cardinality
+
+Paper Prop 11.14 (at PBP level) says: given an injective map `f : α → β`
+with `|α| = |β|` (witnessed by any equivalence `e : α ≃ β`), `f` is
+surjective. These reductions apply that pattern to reduce the `h_surj`
+hypothesis of each `Phi_γ_sig_equiv` to `h_inj` + a cardinality equality.
+
+Discharging the cardinality equality is paper content — follows from
+counting theorems of §10 — but is strictly a weaker hypothesis than
+supplying `h_surj` directly.
+-/
+
+/-- Surjectivity of `Phi_D_sig` reduced to injectivity + cardinality. -/
+theorem phi_D_sig_surj_of_inj_card {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    [Fintype (MYD_sig .D s)]
+    (h_step : DescentStepSingleton_D)
+    (h_card : Fintype.card (PBPSet_D_sig μP μQ s × Fin 2) =
+              Fintype.card (MYD_sig .D s))
+    (h_inj : Function.Injective
+      (fun p : PBPSet_D_sig μP μQ s × Fin 2 => Phi_D_sig h_step p.1 p.2)) :
+    Function.Surjective
+      (fun p : PBPSet_D_sig μP μQ s × Fin 2 => Phi_D_sig h_step p.1 p.2) :=
+  h_inj.surjective_of_fintype (Fintype.equivOfCardEq h_card)
+
+/-- Surjectivity of `Phi_Bplus_sig` reduced to injectivity + cardinality. -/
+theorem phi_Bplus_sig_surj_of_inj_card {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    [Fintype (MYD_sig .Bplus s)]
+    (h_step : DescentStepSingleton_Bplus)
+    (h_card : Fintype.card (PBPSet_Bplus_sig μP μQ s × Fin 2) =
+              Fintype.card (MYD_sig .Bplus s))
+    (h_inj : Function.Injective
+      (fun p : PBPSet_Bplus_sig μP μQ s × Fin 2 => Phi_Bplus_sig h_step p.1 p.2)) :
+    Function.Surjective
+      (fun p : PBPSet_Bplus_sig μP μQ s × Fin 2 => Phi_Bplus_sig h_step p.1 p.2) :=
+  h_inj.surjective_of_fintype (Fintype.equivOfCardEq h_card)
+
+/-- Surjectivity of `Phi_Bminus_sig` reduced to injectivity + cardinality. -/
+theorem phi_Bminus_sig_surj_of_inj_card {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    [Fintype (MYD_sig .Bminus s)]
+    (h_sing : DescentChainBminusSingleton)
+    (h_card : Fintype.card (PBPSet_Bminus_sig μP μQ s × Fin 2) =
+              Fintype.card (MYD_sig .Bminus s))
+    (h_inj : Function.Injective
+      (fun p : PBPSet_Bminus_sig μP μQ s × Fin 2 => Phi_Bminus_sig h_sing p.1 p.2)) :
+    Function.Surjective
+      (fun p : PBPSet_Bminus_sig μP μQ s × Fin 2 => Phi_Bminus_sig h_sing p.1 p.2) :=
+  h_inj.surjective_of_fintype (Fintype.equivOfCardEq h_card)
+
+/-- Surjectivity of `Phi_C_sig` reduced to injectivity + cardinality. -/
+theorem phi_C_sig_surj_of_inj_card {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    [Fintype (MYD_sig .C s)]
+    (h_step_D : DescentStepSingleton_D)
+    (h_step_C : DescentStepSingleton_C)
+    (h_chain : ChainExists_C μP μQ)
+    (h_sm : DescentChainSignMatch_C)
+    (h_card : Fintype.card (PBPSet_C_sig μP μQ s) =
+              Fintype.card (MYD_sig .C s))
+    (h_inj : Function.Injective
+      (Phi_C_sig (μP := μP) (μQ := μQ) (s := s) h_step_D h_step_C h_chain h_sm)) :
+    Function.Surjective
+      (Phi_C_sig (μP := μP) (μQ := μQ) (s := s) h_step_D h_step_C h_chain h_sm) :=
+  h_inj.surjective_of_fintype (Fintype.equivOfCardEq h_card)
+
+/-- Surjectivity of `Phi_M_sig` reduced to injectivity + cardinality. -/
+theorem phi_M_sig_surj_of_inj_card {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    [Fintype (MYD_sig .M s)]
+    (h_chain : ChainExists_M μP μQ)
+    (h_sing : DescentChainMSingleton)
+    (h_sm : DescentChainSignMatch_M)
+    (h_card : Fintype.card (PBPSet_M_sig μP μQ s) =
+              Fintype.card (MYD_sig .M s))
+    (h_inj : Function.Injective
+      (Phi_M_sig (μP := μP) (μQ := μQ) (s := s) h_chain h_sing h_sm)) :
+    Function.Surjective
+      (Phi_M_sig (μP := μP) (μQ := μQ) (s := s) h_chain h_sing h_sm) :=
+  h_inj.surjective_of_fintype (Fintype.equivOfCardEq h_card)
+
 end BMSZ
