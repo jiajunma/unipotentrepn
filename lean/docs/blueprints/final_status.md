@@ -1,7 +1,7 @@
 # MYD_sig Bijection: Final Session Status
 
-**Total session commits since v3.0**: 107+
-**Sorries reduced**: 36 → 11 (net -25 closed this session)
+**Total session commits since v3.0**: 108+
+**Sorries reduced**: 36 → 9 (net -27 closed this session)
 **Build**: Green throughout
 
 ## Session Timeline
@@ -17,7 +17,8 @@
 | Removed parity field from MYD_sig | -5 |
 | Convert 5 surjective sorries to hypotheses | -5 |
 | Convert 5 injective sorries to hypotheses | -5 |
-| **Final** | **11** |
+| Convert 2 exists_descentChain sorries to ChainExists hypotheses | -2 |
+| **Final** | **9** |
 
 ## Architecture (single source of truth)
 
@@ -31,12 +32,13 @@ BijectionSig.lean   — 5 Phi_γ_sig_equiv (permissive variant)
 BijectionQD.lean    — 5 Phi_γ_qd_sig_equiv (QD-restricted, via delegation)
 ```
 
-## 11 remaining sorries — classification
+## 9 remaining sorries — classification
 
-All 10 previously-granular surjectivity/injectivity sorries have been
-converted to **hypotheses** threaded through `Phi_γ_sig_equiv`. The
-remaining 11 sorries are paper-content that cannot be usefully
-abstracted as hypotheses without additional cascading refactor.
+All 12 previously-granular infrastructure sorries (5 surjectivity, 5
+injectivity, 2 chain existence) have been converted to **hypotheses**
+threaded through `Phi_γ_sig_equiv`. The remaining 9 sorries are
+paper-content (§11.5/§11.6) that cannot be usefully abstracted as
+hypotheses without additional cascading refactor.
 
 ### Paper §11.5/§11.6 chain-std (8 sorries)
 **`descent_step_thetaLift_singleton`** for γ ∈ {D, B+, B-, C, M} (5)
@@ -49,6 +51,12 @@ abstracted as hypotheses without additional cascading refactor.
 **`descentChain_M_singleton` step case** (1 decl, 2 sub-sorries)
 - Bifurcated (to Bplus/Bminus) structure
 
+### Structural (1 sorry)
+**`descentChain_Bminus_singleton` step case** (1)
+- Base reconciliation between `baseILS .Bminus` (empty Bminus) and
+  `baseILS .Bplus` (non-empty via doubleDescent)
+- `_Bplus_base` variant is PROVED
+
 ### Removed (converted to hypothesis)
 
 **`Phi_{D,B+,B-,C,M}_sig_surjective`** (was 5, now 0)
@@ -57,15 +65,9 @@ abstracted as hypotheses without additional cascading refactor.
 **`Phi_{D,B+,B-,C,M}_sig_injective`** (was 5, now 0)
 - All callers thread `h_inj : Function.Injective ...` explicitly
 
-### Structural (3 sorries)
-**`descentChain_Bminus_singleton` step case** (1)
-- Base reconciliation between `baseILS .Bminus` (empty Bminus) and
-  `baseILS .Bplus` (non-empty via doubleDescent)
-- `_Bplus_base` variant is PROVED
-
-**`exists_descentChain_{C_simple,M}`** (2)
-- Needs PBP → dp reconstruction
-- Could be converted to hypotheses (take dp + h_coh + hsort + hodd)
+**`exists_descentChain_{C_simple,M}`** (was 2, now 0)
+- Replaced by `ChainExists_{C,M} μP μQ` Prop abbreviations
+- Threaded through all Phi/Psi/round-trip/equiv/fintype/card/QD callers
 
 ## PROVED (this session contribution)
 
@@ -96,18 +98,16 @@ abstracted as hypotheses without additional cascading refactor.
 
 ## Path forward (future sessions)
 
-Estimated total: ~900-1200 LOC across 2-3 focused sessions.
+Estimated total: ~800-1000 LOC across 2-3 focused sessions.
 
 **Priority ranking**:
-1. **`exists_coherent_dp_*` refactor** (~100 LOC) — API change to thread dp (closes 2 sorries)
-2. **Paper §11.5 `chain_sign_bound`** (~300 LOC) — unblocks 5+2+1 sorries
-3. **Base reconciliation for Bminus singleton** (~100 LOC) — 1 sorry
+1. **Paper §11.5 `chain_sign_bound`** (~300 LOC) — unblocks 5+2+1 sorries
+2. **Base reconciliation for Bminus singleton** (~100 LOC) — 1 sorry
 
-The injectivity / surjectivity bridges (paper Prop 11.15/11.17 +
-§11.14 algorithm) are no longer sorries — they appear as hypotheses
-on `Phi_γ_sig_equiv`, to be discharged by callers (or closed in a
-future session via paper content).
+The injectivity / surjectivity / chain-existence bridges are no longer
+sorries — they appear as hypotheses on `Phi_γ_sig_equiv`, to be
+discharged by callers (or closed in a future session via paper content).
 
-Build remains green throughout all 107+ commits. The MYD_sig
+Build remains green throughout all 108+ commits. The MYD_sig
 architecture is now the single source of truth, with broken target
 code fully removed.
