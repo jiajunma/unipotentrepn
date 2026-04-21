@@ -24,6 +24,68 @@ import CombUnipotent.MYD
 
 open PBPInstantiation (toACStepData_D)
 
+/-! ## ILS trim — canonical form for MYD_sig finiteness
+
+Trailing `(0, 0)` rows don't affect `ILS.sign` (since
+`signRow i (0, 0) = (0, 0)`). To avoid the infinite family of
+sign-equivalent ILSs, we define a canonical `trim` form that
+strips trailing zeros. Used to build the refined finite subtype
+`BMSZ.MYD_sig_trim`.
+
+These are placed OUTSIDE `namespace BMSZ` to extend the existing
+top-level `ILS` namespace from `MYD.lean`.
+-/
+
+namespace ILS
+
+/-- Strip trailing `(0, 0)` rows from an ILS. -/
+def trim (E : ILS) : ILS :=
+  (E.reverse.dropWhile (· = (0, 0))).reverse
+
+@[simp] theorem trim_nil : trim [] = [] := rfl
+
+theorem trim_append_zero (E : ILS) :
+    trim (E ++ [(0, 0)]) = trim E := by
+  unfold trim
+  simp [List.reverse_append]
+
+/-- Appending `(0, 0)` to any ILS preserves `sign`. -/
+theorem sign_append_zero (E : ILS) :
+    sign (E ++ [(0, 0)]) = sign E := by
+  unfold sign
+  rw [List.zipIdx_append]
+  simp [List.foldl_append, signRow]
+
+/-- `trim` preserves `sign`. -/
+theorem sign_trim (E : ILS) : sign (trim E) = sign E := by
+  induction E using List.reverseRecOn with
+  | nil => simp [trim]
+  | append_singleton xs a ih =>
+    by_cases h : a = (0, 0)
+    · subst h
+      rw [trim_append_zero, sign_append_zero, ih]
+    · unfold trim
+      simp [List.reverse_append, h]
+
+/-- Predicate: ILS has no trailing `(0, 0)` row. -/
+def IsTrim (E : ILS) : Prop := E.getLast? ≠ some (0, 0)
+
+theorem isTrim_nil : IsTrim ([] : ILS) := by
+  unfold IsTrim; simp
+
+theorem trim_isTrim (E : ILS) : IsTrim (trim E) := by
+  induction E using List.reverseRecOn with
+  | nil => exact isTrim_nil
+  | append_singleton xs a ih =>
+    by_cases h : a = (0, 0)
+    · subst h
+      rw [trim_append_zero]
+      exact ih
+    · unfold trim IsTrim
+      simp [List.reverse_append, h]
+
+end ILS
+
 namespace BMSZ
 
 /-- **Signature-level MYD_γ**: ILS with signature match.
@@ -52,6 +114,38 @@ instance : DecidableEq (MYD_sig γ signature) := fun M₁ M₂ =>
     ⟨fun h => ext h, fun h => by rw [h]⟩
 
 end MYD_sig
+
+/-- **Trim-canonicalized MYD_sig**: subtype where `E` is trim. Used
+    to get a genuinely finite bijection target. -/
+structure MYD_sig_trim (γ : RootType) (signature : ℤ × ℤ) where
+  E : ILS
+  sign_match : ILS.sign E = signature
+  is_trim : ILS.IsTrim E
+
+namespace MYD_sig_trim
+
+variable {γ : RootType} {signature : ℤ × ℤ}
+
+theorem ext {M₁ M₂ : MYD_sig_trim γ signature} (h : M₁.E = M₂.E) : M₁ = M₂ := by
+  cases M₁; cases M₂; congr
+
+instance : DecidableEq (MYD_sig_trim γ signature) := fun M₁ M₂ =>
+  decidable_of_iff (M₁.E = M₂.E)
+    ⟨fun h => ext h, fun h => by rw [h]⟩
+
+end MYD_sig_trim
+
+/-- Canonicalize a `MYD_sig` to `MYD_sig_trim` by trimming. -/
+noncomputable def MYD_sig.toTrim {γ : RootType} {s : ℤ × ℤ}
+    (M : MYD_sig γ s) : MYD_sig_trim γ s where
+  E := ILS.trim M.E
+  sign_match := by rw [ILS.sign_trim]; exact M.sign_match
+  is_trim := ILS.trim_isTrim M.E
+
+/-- Forget the trim constraint. -/
+def MYD_sig_trim.toMYDSig {γ : RootType} {s : ℤ × ℤ}
+    (M : MYD_sig_trim γ s) : MYD_sig γ s :=
+  ⟨M.E, M.sign_match⟩
 
 /-! ## Signature preservation through descent chain
 
