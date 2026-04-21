@@ -147,6 +147,25 @@ theorem exists_descentChain_C {μP μQ : YoungDiagram} (σ : PBPSet .C μP μQ)
 abbrev ChainExists_C (μP μQ : YoungDiagram) : Prop :=
   ∀ σ : PBPSet .C μP μQ, ∃ c : List ACStepData, IsDescentChain_C σ.val c
 
+/-- **Concrete discharge of `ChainExists_C` for the empty-shape case**:
+    when μP = ⊥ and μQ = ⊥, every σ : PBPSet .C ⊥ ⊥ has empty shapes
+    by construction, and the empty chain witnesses `IsDescentChain_C`. -/
+theorem chainExists_C_empty : ChainExists_C (⊥ : YoungDiagram) ⊥ := by
+  intro σ
+  refine ⟨[], IsDescentChain_C.base σ.val σ.prop.1 ?_⟩
+  exact ⟨σ.prop.2.1, σ.prop.2.2⟩
+
+/-- **Discharge of `ChainExists_C` from per-σ dp-coherence witness**.
+    Reduces the universal chain-existence to a simpler paper content:
+    every PBP has a coherent dp. This mirrors paper §9.4 content. -/
+theorem chainExists_C_of_coherent_dp
+    (h : ∀ σ : PBPSet .C μP μQ, ∃ dp : DualPart,
+        PBPIsCoherent_C σ.val dp ∧ dp.SortedGE ∧ ∀ r ∈ dp, Odd r) :
+    ChainExists_C μP μQ := by
+  intro σ
+  obtain ⟨dp, h_coh, hsort, hodd⟩ := h σ
+  exact exists_descentChain_C σ dp h_coh hsort hodd
+
 /-! ## Per-step thetaLift singleton (paper §11.5/11.6) -/
 
 /-- Per-step thetaLift singleton for C chain, under std hypothesis.

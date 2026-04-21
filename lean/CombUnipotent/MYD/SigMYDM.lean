@@ -151,6 +151,21 @@ theorem exists_descentChain_M_coherent {μP μQ : YoungDiagram} (σ : PBPSet .M 
 abbrev ChainExists_M (μP μQ : YoungDiagram) : Prop :=
   ∀ σ : PBPSet .M μP μQ, ∃ c : List ACStepData, IsDescentChain_M σ.val c
 
+/-- **Concrete discharge of `ChainExists_M` for the empty-shape case**. -/
+theorem chainExists_M_empty : ChainExists_M (⊥ : YoungDiagram) ⊥ := by
+  intro σ
+  refine ⟨[], IsDescentChain_M.base σ.val σ.prop.1 ?_⟩
+  exact ⟨σ.prop.2.1, σ.prop.2.2⟩
+
+/-- **Discharge of `ChainExists_M` from per-σ dp-coherence witness**. -/
+theorem chainExists_M_of_coherent_dp
+    (h : ∀ σ : PBPSet .M μP μQ, ∃ dp : DualPart,
+        PBPIsCoherent_M σ.val dp ∧ dp.SortedGE ∧ ∀ r ∈ dp, Even r) :
+    ChainExists_M μP μQ := by
+  intro σ
+  obtain ⟨dp, h_coh, hsort, heven⟩ := h σ
+  exact exists_descentChain_M_coherent σ dp h_coh hsort heven
+
 /-! ## Per-step thetaLift singleton (paper §11.5/11.6) -/
 
 /-- Per-step thetaLift singleton for M chain, under std hypothesis.
