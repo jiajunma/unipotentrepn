@@ -699,7 +699,7 @@ theorem phi_D_sig_surj_of_inj_card {μP μQ : YoungDiagram} {s : ℤ × ℤ}
       (fun p : PBPSet_D_sig μP μQ s × Fin 2 => Phi_D_sig h_step p.1 p.2)) :
     Function.Surjective
       (fun p : PBPSet_D_sig μP μQ s × Fin 2 => Phi_D_sig h_step p.1 p.2) :=
-  h_inj.surjective_of_fintype (Fintype.equivOfCardEq h_card)
+  h_inj.surjective_of_finite (Fintype.equivOfCardEq h_card)
 
 /-- Surjectivity of `Phi_Bplus_sig` reduced to injectivity + cardinality. -/
 theorem phi_Bplus_sig_surj_of_inj_card {μP μQ : YoungDiagram} {s : ℤ × ℤ}
@@ -711,7 +711,7 @@ theorem phi_Bplus_sig_surj_of_inj_card {μP μQ : YoungDiagram} {s : ℤ × ℤ}
       (fun p : PBPSet_Bplus_sig μP μQ s × Fin 2 => Phi_Bplus_sig h_step p.1 p.2)) :
     Function.Surjective
       (fun p : PBPSet_Bplus_sig μP μQ s × Fin 2 => Phi_Bplus_sig h_step p.1 p.2) :=
-  h_inj.surjective_of_fintype (Fintype.equivOfCardEq h_card)
+  h_inj.surjective_of_finite (Fintype.equivOfCardEq h_card)
 
 /-- Surjectivity of `Phi_Bminus_sig` reduced to injectivity + cardinality. -/
 theorem phi_Bminus_sig_surj_of_inj_card {μP μQ : YoungDiagram} {s : ℤ × ℤ}
@@ -723,7 +723,7 @@ theorem phi_Bminus_sig_surj_of_inj_card {μP μQ : YoungDiagram} {s : ℤ × ℤ
       (fun p : PBPSet_Bminus_sig μP μQ s × Fin 2 => Phi_Bminus_sig h_sing p.1 p.2)) :
     Function.Surjective
       (fun p : PBPSet_Bminus_sig μP μQ s × Fin 2 => Phi_Bminus_sig h_sing p.1 p.2) :=
-  h_inj.surjective_of_fintype (Fintype.equivOfCardEq h_card)
+  h_inj.surjective_of_finite (Fintype.equivOfCardEq h_card)
 
 /-- Surjectivity of `Phi_C_sig` reduced to injectivity + cardinality. -/
 theorem phi_C_sig_surj_of_inj_card {μP μQ : YoungDiagram} {s : ℤ × ℤ}
@@ -738,7 +738,7 @@ theorem phi_C_sig_surj_of_inj_card {μP μQ : YoungDiagram} {s : ℤ × ℤ}
       (Phi_C_sig (μP := μP) (μQ := μQ) (s := s) h_step_D h_step_C h_chain h_sm)) :
     Function.Surjective
       (Phi_C_sig (μP := μP) (μQ := μQ) (s := s) h_step_D h_step_C h_chain h_sm) :=
-  h_inj.surjective_of_fintype (Fintype.equivOfCardEq h_card)
+  h_inj.surjective_of_finite (Fintype.equivOfCardEq h_card)
 
 /-- Surjectivity of `Phi_M_sig` reduced to injectivity + cardinality. -/
 theorem phi_M_sig_surj_of_inj_card {μP μQ : YoungDiagram} {s : ℤ × ℤ}
@@ -752,6 +752,6 @@ theorem phi_M_sig_surj_of_inj_card {μP μQ : YoungDiagram} {s : ℤ × ℤ}
       (Phi_M_sig (μP := μP) (μQ := μQ) (s := s) h_chain h_sing h_sm)) :
     Function.Surjective
       (Phi_M_sig (μP := μP) (μQ := μQ) (s := s) h_chain h_sing h_sm) :=
-  h_inj.surjective_of_fintype (Fintype.equivOfCardEq h_card)
+  h_inj.surjective_of_finite (Fintype.equivOfCardEq h_card)
 
 end BMSZ
