@@ -125,14 +125,18 @@ theorem descent_step_thetaLift_singleton_std {τ : PBP} (hγ : τ.γ = .D)
   simp only [ILS.thetaLift_CD]
   rw [if_pos h_std]
 
-theorem descent_step_thetaLift_singleton {τ : PBP} (hγ : τ.γ = .D)
-    (E_inner : ILS) :
+/-- **Paper §11.5/§11.6 per-step singleton hypothesis (D)**: along a
+    valid D chain, each thetaLift step returns a singleton. Threaded
+    as hypothesis to `descentChain_D_singleton`. The `_std` variant
+    above closes this under the std sign-bound assumption; the paper
+    asserts std always holds along a valid chain. -/
+abbrev DescentStepSingleton_D : Prop :=
+  ∀ (τ : PBP) (hγ : τ.γ = .D) (E_inner : ILS),
     ∃ E' : ILS, ILS.thetaLift
       (stepPreTwist E_inner (toACStepData_D τ hγ))
       (toACStepData_D τ hγ).γ
       (toACStepData_D τ hγ).p
-      (toACStepData_D τ hγ).q = [E'] := by
-  sorry
+      (toACStepData_D τ hγ).q = [E']
 
 /-- Explicit std-hypothesis variant at any D-type chain step.
     Alias pattern: the _std variant is always provable; the non-std
@@ -159,7 +163,8 @@ theorem descent_step_thetaLift_singleton_from_std {τ : PBP} (hγ : τ.γ = .D)
 
     This reduces the full axiom `descentChain_D_singleton` to the
     single-step sign-bound fact (paper §11.5/11.6 content). -/
-theorem descentChain_D_singleton {τ : PBP} {chain : List ACStepData}
+theorem descentChain_D_singleton (h_step : DescentStepSingleton_D)
+    {τ : PBP} {chain : List ACStepData}
     (h_chain : IsDescentChain_D τ chain) :
     ∃ E : ILS, ChainSingleton (baseILS .D) chain E := by
   induction h_chain with
@@ -167,7 +172,7 @@ theorem descentChain_D_singleton {τ : PBP} {chain : List ACStepData}
   | step hγ h_rest ih =>
     rename_i τ_outer chain_inner
     obtain ⟨E_inner, h_inner⟩ := ih
-    obtain ⟨E', h_theta⟩ := descent_step_thetaLift_singleton hγ E_inner
+    obtain ⟨E', h_theta⟩ := h_step τ_outer hγ E_inner
     exact ⟨stepPostTwist E' (toACStepData_D τ_outer hγ),
            ChainSingleton.snoc h_inner h_theta⟩
 

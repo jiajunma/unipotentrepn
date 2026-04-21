@@ -190,20 +190,15 @@ theorem descent_step_thetaLift_singleton_C {τ : PBP} (hγ : τ.γ = .C)
       (toACStepData_C τ hγ wp).q = [E'] := by
   sorry
 
-theorem descentChain_C_singleton {τ : PBP} {chain : List ACStepData}
+theorem descentChain_C_singleton (h_step_D : DescentStepSingleton_D)
+    {τ : PBP} {chain : List ACStepData}
     (h_chain : IsDescentChain_C τ chain) :
     ∃ E : ILS, ChainSingleton (baseILS .C) chain E := by
   cases h_chain with
   | base hγ h_empty => exact ⟨baseILS .C, ChainSingleton.nil _⟩
   | step hγ wp h_sub h_rest =>
-    -- inner chain is on D-type, baseILS .D = []
-    -- C chain's base is baseILS .C = []
-    -- Both empty bases agree, so we can apply descentChain_D_singleton
-    -- and snoc the outer C step.
-    obtain ⟨E_inner, h_inner⟩ := descentChain_D_singleton h_rest
+    obtain ⟨E_inner, h_inner⟩ := descentChain_D_singleton h_step_D h_rest
     obtain ⟨E', h_theta⟩ := descent_step_thetaLift_singleton_C hγ wp E_inner
-    -- Need to bridge: D-singleton starts from baseILS .D = [];
-    -- C-singleton starts from baseILS .C = []. Both equal!
     have h_base_eq : (baseILS .C : ILS) = baseILS .D := rfl
     rw [h_base_eq]
     exact ⟨stepPostTwist E' (toACStepData_C τ hγ wp),

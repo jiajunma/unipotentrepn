@@ -70,14 +70,15 @@ noncomputable def Phi_D_qd_sig_equiv (μP μQ : YoungDiagram) (dp : DualPart)
     (hsort : dp.SortedGE)
     (hodd : ∀ r ∈ dp, Odd r)
     (h_qd : IsQuasiDistinguished .D dp) (s : ℤ × ℤ)
+    (h_step : DescentStepSingleton_D)
     (h_inj : Function.Injective
-      (fun p : PBPSet_D_sig μP μQ s × Fin 2 => Phi_D_sig p.1 p.2))
+      (fun p : PBPSet_D_sig μP μQ s × Fin 2 => Phi_D_sig h_step p.1 p.2))
     (h_surj : Function.Surjective
-      (fun p : PBPSet_D_sig μP μQ s × Fin 2 => Phi_D_sig p.1 p.2))
+      (fun p : PBPSet_D_sig μP μQ s × Fin 2 => Phi_D_sig h_step p.1 p.2))
     [hi : Inhabited (PBPSet_D_qd_sig μP μQ dp h_coh hsort hodd h_qd s × Fin 2)] :
     PBPSet_D_qd_sig μP μQ dp h_coh hsort hodd h_qd s × Fin 2 ≃ MYD_sig .D s :=
   have : Inhabited (PBPSet_D_sig μP μQ s × Fin 2) := hi
-  Phi_D_sig_equiv μP μQ s h_inj h_surj
+  Phi_D_sig_equiv μP μQ s h_step h_inj h_surj
 
 -- B+/B-/C/M QD refinements
 
@@ -125,13 +126,16 @@ noncomputable def Phi_Bminus_qd_sig_equiv (μP μQ : YoungDiagram) (dp : DualPar
 
 noncomputable def Phi_C_qd_sig_equiv (μP μQ : YoungDiagram) (dp : DualPart)
     (hsort : dp.SortedGE) (h_qd : IsQuasiDistinguished .C dp) (s : ℤ × ℤ)
+    (h_step_D : DescentStepSingleton_D)
     (h_chain : ChainExists_C μP μQ)
-    (h_inj : Function.Injective (Phi_C_sig (μP := μP) (μQ := μQ) (s := s) h_chain))
-    (h_surj : Function.Surjective (Phi_C_sig (μP := μP) (μQ := μQ) (s := s) h_chain))
+    (h_inj : Function.Injective
+      (Phi_C_sig (μP := μP) (μQ := μQ) (s := s) h_step_D h_chain))
+    (h_surj : Function.Surjective
+      (Phi_C_sig (μP := μP) (μQ := μQ) (s := s) h_step_D h_chain))
     [hi : Inhabited (PBPSet_C_qd_sig μP μQ dp hsort h_qd s)] :
     PBPSet_C_qd_sig μP μQ dp hsort h_qd s ≃ MYD_sig .C s :=
   have : Inhabited (PBPSet_C_sig μP μQ s) := hi
-  Phi_C_sig_equiv μP μQ s h_chain h_inj h_surj
+  Phi_C_sig_equiv μP μQ s h_step_D h_chain h_inj h_surj
 
 noncomputable def Phi_M_qd_sig_equiv (μP μQ : YoungDiagram) (dp : DualPart)
     (hsort : dp.SortedGE) (h_qd : IsQuasiDistinguished .M dp) (s : ℤ × ℤ)
