@@ -114,6 +114,9 @@ paper content:
 1. **Paper §11.5/§11.6 sign bounds** — discharges `DescentStepSingleton_γ`,
    `DescentChainSignMatch_{C,M}`, and (via base translation)
    `DescentChain{Bminus,M}Singleton`. Estimated ~400 LOC.
+   - Reduction lemmas `descentStepSingleton_γ_of_std` (γ ∈ {D, B+, B-, C})
+     now bridge to a universal std sign-bound hypothesis — so discharging
+     reduces to proving std universally.
 2. **Paper Prop 11.15/11.17 injectivity** — discharges `h_inj`. ~400 LOC.
 3. **Paper §11.14 surjectivity algorithm** — discharges `h_surj`. ~500 LOC.
 4. **Paper §9.4 chain-from-PBP** — discharges `ChainExists_{C,M}`. ~100 LOC.
