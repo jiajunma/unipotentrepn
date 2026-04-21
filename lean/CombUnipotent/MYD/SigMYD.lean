@@ -72,14 +72,15 @@ noncomputable def signTarget_D (τ : PBP) : ℤ × ℤ :=
 /-- **Theorem**: along a valid descent chain, the extracted ILS has
     sign matching the τ-derived target (up to ε_τ twist details).
 
-    Proof outline (induction on chain):
+    Proof (induction on chain):
     - Base: E = baseILS .D = [], ILS.sign [] = (0, 0). τ has empty shapes,
       so PBP.signature τ = (0, 0) = signTarget_D τ. ✓
-    - Step: use `ACResult.thetaLift_sign` (MYD.lean:821) to show sign
-      is preserved through the chain's theta-lift + twist operations.
+    - Step: uses `ILS.thetaLift_CD_sign` to derive sign of the
+      post-lift ILS, then stepPostTwist preserves sign (for D: twistBD
+      with (1, -1) under ε_τ = 1, else identity).
 
-    Deferred: the exact (ε_τ-twisted) formula needs careful alignment
-    with `AC.step_sign_D` (MYD.lean:865). Stated as sorry for now. -/
+    FULLY PROVED — see `SigMYDB.lean` / `SigMYDC.lean` for the
+    B± / C analogues. -/
 theorem descentChain_sign_match_D {τ : PBP} {chain : List ACStepData}
     {E : ILS}
     (h_chain : IsDescentChain_D τ chain)

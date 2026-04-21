@@ -9,16 +9,14 @@ Reference: NL proof at `lean/docs/blueprints/M1_4_PhiD_typed.md`
 (existence, singleton-validity, in-MYD) as `axiom`s. Assemble
 `Phi_D` using the axioms.
 
-**Phase B (future sessions, M1.4.2 and M1.4.3)**: prove the three
-axioms. These are paper §11 content:
-- `exists_descentChain_D`: strong induction on PBP size
-- `descentChain_D_singleton`: uses paper Lemma 11.5/11.6 sign bounds
-- `descentChain_D_in_MYD`: uses paper §9.4 theta-lift structural
-  preservation of parity and shape.
+**Current status (2026-04-21)**: All sorries closed. Paper content
+that was previously sorry'd is now threaded as named Prop
+hypotheses:
+- `exists_descentChain_D` — fully proved
+- `descentChain_D_singleton` — takes `DescentStepSingleton_D` hypothesis
+- `DescentStepSingleton_D` — Prop abbrev encoding paper §11.5/§11.6
 
-Using `axiom` rather than `sorry` makes the phase boundary explicit
-and avoids build warnings. Each axiom is paired with a concrete
-proof-plan in the accompanying NL proof doc.
+See `BijectionSig.lean` for the full hypothesis bundle per γ.
 -/
 import CombUnipotent.MYD.PhiD
 import CombUnipotent.MYD.TypeMYD
