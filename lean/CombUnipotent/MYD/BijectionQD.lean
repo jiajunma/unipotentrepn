@@ -104,25 +104,27 @@ def PBPSet_M_qd_sig (μP μQ : YoungDiagram) (dp : DualPart)
 
 noncomputable def Phi_Bplus_qd_sig_equiv (μP μQ : YoungDiagram) (dp : DualPart)
     (hsort : dp.SortedGE) (h_qd : IsQuasiDistinguished .Bplus dp) (s : ℤ × ℤ)
+    (h_step : DescentStepSingleton_Bplus)
     (h_inj : Function.Injective
-      (fun p : PBPSet_Bplus_sig μP μQ s × Fin 2 => Phi_Bplus_sig p.1 p.2))
+      (fun p : PBPSet_Bplus_sig μP μQ s × Fin 2 => Phi_Bplus_sig h_step p.1 p.2))
     (h_surj : Function.Surjective
-      (fun p : PBPSet_Bplus_sig μP μQ s × Fin 2 => Phi_Bplus_sig p.1 p.2))
+      (fun p : PBPSet_Bplus_sig μP μQ s × Fin 2 => Phi_Bplus_sig h_step p.1 p.2))
     [hi : Inhabited (PBPSet_Bplus_qd_sig μP μQ dp hsort h_qd s × Fin 2)] :
     PBPSet_Bplus_qd_sig μP μQ dp hsort h_qd s × Fin 2 ≃ MYD_sig .Bplus s :=
   have : Inhabited (PBPSet_Bplus_sig μP μQ s × Fin 2) := hi
-  Phi_Bplus_sig_equiv μP μQ s h_inj h_surj
+  Phi_Bplus_sig_equiv μP μQ s h_step h_inj h_surj
 
 noncomputable def Phi_Bminus_qd_sig_equiv (μP μQ : YoungDiagram) (dp : DualPart)
     (hsort : dp.SortedGE) (h_qd : IsQuasiDistinguished .Bminus dp) (s : ℤ × ℤ)
+    (h_sing : DescentChainBminusSingleton)
     (h_inj : Function.Injective
-      (fun p : PBPSet_Bminus_sig μP μQ s × Fin 2 => Phi_Bminus_sig p.1 p.2))
+      (fun p : PBPSet_Bminus_sig μP μQ s × Fin 2 => Phi_Bminus_sig h_sing p.1 p.2))
     (h_surj : Function.Surjective
-      (fun p : PBPSet_Bminus_sig μP μQ s × Fin 2 => Phi_Bminus_sig p.1 p.2))
+      (fun p : PBPSet_Bminus_sig μP μQ s × Fin 2 => Phi_Bminus_sig h_sing p.1 p.2))
     [hi : Inhabited (PBPSet_Bminus_qd_sig μP μQ dp hsort h_qd s × Fin 2)] :
     PBPSet_Bminus_qd_sig μP μQ dp hsort h_qd s × Fin 2 ≃ MYD_sig .Bminus s :=
   have : Inhabited (PBPSet_Bminus_sig μP μQ s × Fin 2) := hi
-  Phi_Bminus_sig_equiv μP μQ s h_inj h_surj
+  Phi_Bminus_sig_equiv μP μQ s h_sing h_inj h_surj
 
 noncomputable def Phi_C_qd_sig_equiv (μP μQ : YoungDiagram) (dp : DualPart)
     (hsort : dp.SortedGE) (h_qd : IsQuasiDistinguished .C dp) (s : ℤ × ℤ)

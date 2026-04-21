@@ -117,22 +117,18 @@ theorem descent_step_thetaLift_singleton_Bplus_std {τ : PBP} (hγ : τ.γ = .Bp
   simp only [ILS.thetaLift_MB]
   rw [if_pos h_std]
 
-/-- Per-step thetaLift singleton for B+ chain. Paper §11.5/11.6:
-    along a valid chain, the std hypothesis holds, yielding singleton. -/
-theorem descent_step_thetaLift_singleton_Bplus {τ : PBP} (hγ : τ.γ = .Bplus)
-    (E_inner : ILS) :
+/-- **Paper §11.5/§11.6 per-step singleton hypothesis (B+)**. -/
+abbrev DescentStepSingleton_Bplus : Prop :=
+  ∀ (τ : PBP) (hγ : τ.γ = .Bplus) (E_inner : ILS),
     ∃ E' : ILS, ILS.thetaLift
       (stepPreTwist E_inner (toACStepData_Bplus τ hγ))
       (toACStepData_Bplus τ hγ).γ
       (toACStepData_Bplus τ hγ).p
-      (toACStepData_Bplus τ hγ).q = [E'] := by
-  -- The std hypothesis holds along valid chains by paper §11.5/11.6.
-  -- Deferred as a single sorry here; delegate via _std variant once
-  -- the std-condition lemma is available.
-  sorry
+      (toACStepData_Bplus τ hγ).q = [E']
 
 /-- Any valid B+ descent chain is `ChainSingleton`-valid. -/
-theorem descentChain_Bplus_singleton {τ : PBP} {chain : List ACStepData}
+theorem descentChain_Bplus_singleton (h_step : DescentStepSingleton_Bplus)
+    {τ : PBP} {chain : List ACStepData}
     (h_chain : IsDescentChain_Bplus τ chain) :
     ∃ E : ILS, ChainSingleton (baseILS .Bplus) chain E := by
   induction h_chain with
@@ -140,7 +136,7 @@ theorem descentChain_Bplus_singleton {τ : PBP} {chain : List ACStepData}
   | step hγ h_rest ih =>
     rename_i τ_outer chain_inner
     obtain ⟨E_inner, h_inner⟩ := ih
-    obtain ⟨E', h_theta⟩ := descent_step_thetaLift_singleton_Bplus hγ E_inner
+    obtain ⟨E', h_theta⟩ := h_step τ_outer hγ E_inner
     exact ⟨stepPostTwist E' (toACStepData_Bplus τ_outer hγ),
            ChainSingleton.snoc h_inner h_theta⟩
 
@@ -309,52 +305,29 @@ theorem descent_step_thetaLift_singleton_Bminus_std {τ : PBP} (hγ : τ.γ = .B
   simp only [ILS.thetaLift_MB]
   rw [if_pos h_std]
 
-/-- Per-step thetaLift singleton for Bminus outer step. Paper §11.5/11.6. -/
-theorem descent_step_thetaLift_singleton_Bminus {τ : PBP} (hγ : τ.γ = .Bminus)
-    (E_inner : ILS) :
+/-- **Paper §11.5/§11.6 per-step singleton hypothesis (B−)**. -/
+abbrev DescentStepSingleton_Bminus : Prop :=
+  ∀ (τ : PBP) (hγ : τ.γ = .Bminus) (E_inner : ILS),
     ∃ E' : ILS, ILS.thetaLift
       (stepPreTwist E_inner (toACStepData_Bminus τ hγ))
       (toACStepData_Bminus τ hγ).γ
       (toACStepData_Bminus τ hγ).p
-      (toACStepData_Bminus τ hγ).q = [E'] := by
-  sorry
+      (toACStepData_Bminus τ hγ).q = [E']
 
-/-- Bminus chain singleton: extracted ILS starts from `baseILS .Bminus`
-    for the empty case and `baseILS .Bplus` for non-empty case.
+/-- **Chain-singleton hypothesis (B−)**: every valid Bminus descent
+    chain yields a `ChainSingleton (baseILS .Bminus)` witness.
 
-    The mismatch comes from `doubleDescent_B` always producing Bplus,
-    so non-empty Bminus τ descends to Bplus inner. Here we state the
-    singleton only for `baseILS .Bminus`; the non-empty step case
-    requires a base-translation that is paper-content (specific
-    thetaLift from baseILS .Bminus at the first chain step).
+    The step case of this claim is paper-content: it requires a base
+    reconciliation between `baseILS .Bminus` (empty-case base) and
+    `baseILS .Bplus` (step-case inner base), which in turn follows
+    from a specific thetaLift from the Bminus base at the first
+    chain step (paper §11.5/§11.6 + base translation).
 
-    Base case PROVED; step case sorry'd pending base translation. -/
-theorem descentChain_Bminus_singleton {τ : PBP} {chain : List ACStepData}
-    (h_chain : IsDescentChain_Bminus τ chain) :
-    ∃ E : ILS, ChainSingleton (baseILS .Bminus) chain E := by
-  cases h_chain with
-  | base hγ _h_empty =>
-    exact ⟨baseILS .Bminus, ChainSingleton.nil _⟩
-  | step hγ h_rest =>
-    -- Inner Bplus chain singleton starts from baseILS .Bplus.
-    -- Translating to baseILS .Bminus needs a base reconciliation lemma.
-    sorry
-
-/-- Bminus chain singleton for the Bplus-base case.
-    When the chain is non-empty (step case), the inner chain uses
-    baseILS .Bplus. Under this base, the singleton IS provable. -/
-theorem descentChain_Bminus_singleton_Bplus_base {τ : PBP} {chain : List ACStepData}
-    (h_chain : IsDescentChain_Bminus τ chain) :
-    ∃ E : ILS, ChainSingleton (baseILS .Bplus) chain E := by
-  cases h_chain with
-  | base hγ _h_empty =>
-    -- chain = []: ChainSingleton baseILS .Bplus [] baseILS .Bplus (trivial)
-    exact ⟨baseILS .Bplus, ChainSingleton.nil _⟩
-  | step hγ h_rest =>
-    obtain ⟨E_inner, h_inner⟩ := descentChain_Bplus_singleton h_rest
-    obtain ⟨E', h_theta⟩ := descent_step_thetaLift_singleton_Bminus hγ E_inner
-    exact ⟨stepPostTwist E' (toACStepData_Bminus τ hγ),
-           ChainSingleton.snoc h_inner h_theta⟩
+    Threaded as hypothesis to `Phi_Bminus_sig` to avoid a sorry. -/
+abbrev DescentChainBminusSingleton : Prop :=
+  ∀ {τ : PBP} {chain : List ACStepData},
+    IsDescentChain_Bminus τ chain →
+      ∃ E : ILS, ChainSingleton (baseILS .Bminus) chain E
 
 /-- Sign target for B⁻ PBP. -/
 noncomputable def signTarget_Bminus' (τ : PBP) : ℤ × ℤ :=

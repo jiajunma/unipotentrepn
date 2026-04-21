@@ -193,13 +193,14 @@ Mapping pattern:
 
 
 noncomputable def Phi_Bplus_sig {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    (h_step : DescentStepSingleton_Bplus)
     (σh : PBPSet_Bplus_sig μP μQ s) (ε : Fin 2) : MYD_sig .Bplus s :=
   let σ := σh.val
   let h_sig := σh.prop
   let chain := Classical.choose (exists_descentChain_Bplus σ)
   let h_chain := Classical.choose_spec (exists_descentChain_Bplus σ)
-  let E := Classical.choose (descentChain_Bplus_singleton h_chain)
-  let h_sing := Classical.choose_spec (descentChain_Bplus_singleton h_chain)
+  let E := Classical.choose (descentChain_Bplus_singleton h_step h_chain)
+  let h_sing := Classical.choose_spec (descentChain_Bplus_singleton h_step h_chain)
   let h_sign_raw := descentChain_sign_match_Bplus h_chain h_sing
   let ε_int : ℤ := if ε = 1 then -1 else 1
   let E_twisted := ILS.twistBD E ε_int ε_int
@@ -211,66 +212,72 @@ noncomputable def Phi_Bplus_sig {μP μQ : YoungDiagram} {s : ℤ × ℤ}
   ⟨E_twisted, h_sign_twist⟩
 
 noncomputable def Psi_Bplus_sig {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    (h_step : DescentStepSingleton_Bplus)
     [Inhabited (PBPSet_Bplus_sig μP μQ s × Fin 2)]
     (M : MYD_sig .Bplus s) :
     PBPSet_Bplus_sig μP μQ s × Fin 2 :=
   open Classical in
-  if h : ∃ p : PBPSet_Bplus_sig μP μQ s × Fin 2, Phi_Bplus_sig p.1 p.2 = M
+  if h : ∃ p : PBPSet_Bplus_sig μP μQ s × Fin 2, Phi_Bplus_sig h_step p.1 p.2 = M
   then h.choose
   else default
 
 theorem Psi_Bplus_Phi_Bplus_sig {μP μQ : YoungDiagram} {s : ℤ × ℤ}
     [Inhabited (PBPSet_Bplus_sig μP μQ s × Fin 2)]
+    (h_step : DescentStepSingleton_Bplus)
     (h_inj : Function.Injective
-      (fun p : PBPSet_Bplus_sig μP μQ s × Fin 2 => Phi_Bplus_sig p.1 p.2))
+      (fun p : PBPSet_Bplus_sig μP μQ s × Fin 2 => Phi_Bplus_sig h_step p.1 p.2))
     (σh : PBPSet_Bplus_sig μP μQ s) (ε : Fin 2) :
-    Psi_Bplus_sig (μP := μP) (μQ := μQ) (Phi_Bplus_sig σh ε) = (σh, ε) := by
+    Psi_Bplus_sig (μP := μP) (μQ := μQ) h_step
+      (Phi_Bplus_sig h_step σh ε) = (σh, ε) := by
   classical
   unfold Psi_Bplus_sig
   have hex : ∃ p : PBPSet_Bplus_sig μP μQ s × Fin 2,
-      Phi_Bplus_sig p.1 p.2 = Phi_Bplus_sig σh ε := ⟨(σh, ε), rfl⟩
+      Phi_Bplus_sig h_step p.1 p.2 = Phi_Bplus_sig h_step σh ε := ⟨(σh, ε), rfl⟩
   rw [dif_pos hex]
   exact h_inj (Classical.choose_spec hex)
 
 theorem Phi_Bplus_Psi_Bplus_sig {μP μQ : YoungDiagram} {s : ℤ × ℤ}
     [Inhabited (PBPSet_Bplus_sig μP μQ s × Fin 2)]
+    (h_step : DescentStepSingleton_Bplus)
     (h_surj : Function.Surjective
-      (fun p : PBPSet_Bplus_sig μP μQ s × Fin 2 => Phi_Bplus_sig p.1 p.2))
+      (fun p : PBPSet_Bplus_sig μP μQ s × Fin 2 => Phi_Bplus_sig h_step p.1 p.2))
     (M : MYD_sig .Bplus s) :
-    let p := Psi_Bplus_sig (μP := μP) (μQ := μQ) M
-    Phi_Bplus_sig p.1 p.2 = M := by
+    let p := Psi_Bplus_sig (μP := μP) (μQ := μQ) h_step M
+    Phi_Bplus_sig h_step p.1 p.2 = M := by
   classical
   unfold Psi_Bplus_sig
   have hex : ∃ p : PBPSet_Bplus_sig μP μQ s × Fin 2,
-      Phi_Bplus_sig p.1 p.2 = M := h_surj M
+      Phi_Bplus_sig h_step p.1 p.2 = M := h_surj M
   simp only [dif_pos hex]
   exact Classical.choose_spec hex
 
 /-- **Paper Prop 11.15 (B⁺), signature variant**. -/
 noncomputable def Phi_Bplus_sig_equiv (μP μQ : YoungDiagram) (s : ℤ × ℤ)
+    (h_step : DescentStepSingleton_Bplus)
     (h_inj : Function.Injective
-      (fun p : PBPSet_Bplus_sig μP μQ s × Fin 2 => Phi_Bplus_sig p.1 p.2))
+      (fun p : PBPSet_Bplus_sig μP μQ s × Fin 2 => Phi_Bplus_sig h_step p.1 p.2))
     (h_surj : Function.Surjective
-      (fun p : PBPSet_Bplus_sig μP μQ s × Fin 2 => Phi_Bplus_sig p.1 p.2))
+      (fun p : PBPSet_Bplus_sig μP μQ s × Fin 2 => Phi_Bplus_sig h_step p.1 p.2))
     [Inhabited (PBPSet_Bplus_sig μP μQ s × Fin 2)] :
     PBPSet_Bplus_sig μP μQ s × Fin 2 ≃ MYD_sig .Bplus s where
-  toFun := fun ⟨σh, ε⟩ => Phi_Bplus_sig σh ε
-  invFun := Psi_Bplus_sig (μP := μP) (μQ := μQ)
-  left_inv := fun ⟨σh, ε⟩ => Psi_Bplus_Phi_Bplus_sig h_inj σh ε
-  right_inv := fun M => Phi_Bplus_Psi_Bplus_sig h_surj M
+  toFun := fun ⟨σh, ε⟩ => Phi_Bplus_sig h_step σh ε
+  invFun := Psi_Bplus_sig (μP := μP) (μQ := μQ) h_step
+  left_inv := fun ⟨σh, ε⟩ => Psi_Bplus_Phi_Bplus_sig h_step h_inj σh ε
+  right_inv := fun M => Phi_Bplus_Psi_Bplus_sig h_step h_surj M
 
 /-! ### Phi_Bminus_sig — uses descentChain_sign_match_Bminus (PROVED) -/
 
 
 noncomputable def Phi_Bminus_sig {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    (h_sing : DescentChainBminusSingleton)
     (σh : PBPSet_Bminus_sig μP μQ s) (ε : Fin 2) : MYD_sig .Bminus s :=
   let σ := σh.val
   let h_sig := σh.prop
   let chain := Classical.choose (exists_descentChain_Bminus σ)
   let h_chain := Classical.choose_spec (exists_descentChain_Bminus σ)
-  let E := Classical.choose (descentChain_Bminus_singleton h_chain)
-  let h_sing := Classical.choose_spec (descentChain_Bminus_singleton h_chain)
-  let h_sign_raw := descentChain_sign_match_Bminus h_chain h_sing
+  let E := Classical.choose (h_sing h_chain)
+  let h_sing' := Classical.choose_spec (h_sing h_chain)
+  let h_sign_raw := descentChain_sign_match_Bminus h_chain h_sing'
   let ε_int : ℤ := if ε = 1 then -1 else 1
   let E_twisted := ILS.twistBD E ε_int ε_int
   have hε_signed : ε_int = 1 ∨ ε_int = -1 := by
@@ -278,62 +285,64 @@ noncomputable def Phi_Bminus_sig {μP μQ : YoungDiagram} {s : ℤ × ℤ}
   have h_sign_twist : ILS.sign E_twisted = s := by
     show ILS.sign (ILS.twistBD E ε_int ε_int) = s
     rw [ILS.twistBD_sign E ε_int ε_int hε_signed hε_signed, h_sign_raw]
-    -- h_sign_raw : ILS.sign E = signTarget_Bminus' σ.val
-    -- Need: signTarget_Bminus' σ.val = s
-    -- σh.prop : signTarget_Bminus σh.val = s, and signTarget_Bminus = signTarget_Bminus' defeq
     show signTarget_Bminus' σ.val = s
     have heq : signTarget_Bminus' σ.val = signTarget_Bminus σ.val := rfl
     rw [heq]; exact h_sig
   ⟨E_twisted, h_sign_twist⟩
 
 noncomputable def Psi_Bminus_sig {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    (h_sing : DescentChainBminusSingleton)
     [Inhabited (PBPSet_Bminus_sig μP μQ s × Fin 2)]
     (M : MYD_sig .Bminus s) :
     PBPSet_Bminus_sig μP μQ s × Fin 2 :=
   open Classical in
-  if h : ∃ p : PBPSet_Bminus_sig μP μQ s × Fin 2, Phi_Bminus_sig p.1 p.2 = M
+  if h : ∃ p : PBPSet_Bminus_sig μP μQ s × Fin 2, Phi_Bminus_sig h_sing p.1 p.2 = M
   then h.choose
   else default
 
 theorem Psi_Bminus_Phi_Bminus_sig {μP μQ : YoungDiagram} {s : ℤ × ℤ}
     [Inhabited (PBPSet_Bminus_sig μP μQ s × Fin 2)]
+    (h_sing : DescentChainBminusSingleton)
     (h_inj : Function.Injective
-      (fun p : PBPSet_Bminus_sig μP μQ s × Fin 2 => Phi_Bminus_sig p.1 p.2))
+      (fun p : PBPSet_Bminus_sig μP μQ s × Fin 2 => Phi_Bminus_sig h_sing p.1 p.2))
     (σh : PBPSet_Bminus_sig μP μQ s) (ε : Fin 2) :
-    Psi_Bminus_sig (μP := μP) (μQ := μQ) (Phi_Bminus_sig σh ε) = (σh, ε) := by
+    Psi_Bminus_sig (μP := μP) (μQ := μQ) h_sing
+      (Phi_Bminus_sig h_sing σh ε) = (σh, ε) := by
   classical
   unfold Psi_Bminus_sig
   have hex : ∃ p : PBPSet_Bminus_sig μP μQ s × Fin 2,
-      Phi_Bminus_sig p.1 p.2 = Phi_Bminus_sig σh ε := ⟨(σh, ε), rfl⟩
+      Phi_Bminus_sig h_sing p.1 p.2 = Phi_Bminus_sig h_sing σh ε := ⟨(σh, ε), rfl⟩
   rw [dif_pos hex]
   exact h_inj (Classical.choose_spec hex)
 
 theorem Phi_Bminus_Psi_Bminus_sig {μP μQ : YoungDiagram} {s : ℤ × ℤ}
     [Inhabited (PBPSet_Bminus_sig μP μQ s × Fin 2)]
+    (h_sing : DescentChainBminusSingleton)
     (h_surj : Function.Surjective
-      (fun p : PBPSet_Bminus_sig μP μQ s × Fin 2 => Phi_Bminus_sig p.1 p.2))
+      (fun p : PBPSet_Bminus_sig μP μQ s × Fin 2 => Phi_Bminus_sig h_sing p.1 p.2))
     (M : MYD_sig .Bminus s) :
-    let p := Psi_Bminus_sig (μP := μP) (μQ := μQ) M
-    Phi_Bminus_sig p.1 p.2 = M := by
+    let p := Psi_Bminus_sig (μP := μP) (μQ := μQ) h_sing M
+    Phi_Bminus_sig h_sing p.1 p.2 = M := by
   classical
   unfold Psi_Bminus_sig
   have hex : ∃ p : PBPSet_Bminus_sig μP μQ s × Fin 2,
-      Phi_Bminus_sig p.1 p.2 = M := h_surj M
+      Phi_Bminus_sig h_sing p.1 p.2 = M := h_surj M
   simp only [dif_pos hex]
   exact Classical.choose_spec hex
 
 /-- **Paper Prop 11.15 (B⁻), signature variant**. -/
 noncomputable def Phi_Bminus_sig_equiv (μP μQ : YoungDiagram) (s : ℤ × ℤ)
+    (h_sing : DescentChainBminusSingleton)
     (h_inj : Function.Injective
-      (fun p : PBPSet_Bminus_sig μP μQ s × Fin 2 => Phi_Bminus_sig p.1 p.2))
+      (fun p : PBPSet_Bminus_sig μP μQ s × Fin 2 => Phi_Bminus_sig h_sing p.1 p.2))
     (h_surj : Function.Surjective
-      (fun p : PBPSet_Bminus_sig μP μQ s × Fin 2 => Phi_Bminus_sig p.1 p.2))
+      (fun p : PBPSet_Bminus_sig μP μQ s × Fin 2 => Phi_Bminus_sig h_sing p.1 p.2))
     [Inhabited (PBPSet_Bminus_sig μP μQ s × Fin 2)] :
     PBPSet_Bminus_sig μP μQ s × Fin 2 ≃ MYD_sig .Bminus s where
-  toFun := fun ⟨σh, ε⟩ => Phi_Bminus_sig σh ε
-  invFun := Psi_Bminus_sig (μP := μP) (μQ := μQ)
-  left_inv := fun ⟨σh, ε⟩ => Psi_Bminus_Phi_Bminus_sig h_inj σh ε
-  right_inv := fun M => Phi_Bminus_Psi_Bminus_sig h_surj M
+  toFun := fun ⟨σh, ε⟩ => Phi_Bminus_sig h_sing σh ε
+  invFun := Psi_Bminus_sig (μP := μP) (μQ := μQ) h_sing
+  left_inv := fun ⟨σh, ε⟩ => Psi_Bminus_Phi_Bminus_sig h_sing h_inj σh ε
+  right_inv := fun M => Phi_Bminus_Psi_Bminus_sig h_sing h_surj M
 
 /-! ### Phi_C_sig (no Fin 2 — paper Prop 11.17)
 
@@ -523,22 +532,24 @@ noncomputable def fintype_MYD_sig_D (μP μQ : YoungDiagram) (s : ℤ × ℤ)
   Fintype.ofEquiv _ (Phi_D_sig_equiv μP μQ s h_step h_inj h_surj)
 
 noncomputable def fintype_MYD_sig_Bplus (μP μQ : YoungDiagram) (s : ℤ × ℤ)
+    (h_step : DescentStepSingleton_Bplus)
     (h_inj : Function.Injective
-      (fun p : PBPSet_Bplus_sig μP μQ s × Fin 2 => Phi_Bplus_sig p.1 p.2))
+      (fun p : PBPSet_Bplus_sig μP μQ s × Fin 2 => Phi_Bplus_sig h_step p.1 p.2))
     (h_surj : Function.Surjective
-      (fun p : PBPSet_Bplus_sig μP μQ s × Fin 2 => Phi_Bplus_sig p.1 p.2))
+      (fun p : PBPSet_Bplus_sig μP μQ s × Fin 2 => Phi_Bplus_sig h_step p.1 p.2))
     [Inhabited (PBPSet_Bplus_sig μP μQ s × Fin 2)] :
     Fintype (MYD_sig .Bplus s) :=
-  Fintype.ofEquiv _ (Phi_Bplus_sig_equiv μP μQ s h_inj h_surj)
+  Fintype.ofEquiv _ (Phi_Bplus_sig_equiv μP μQ s h_step h_inj h_surj)
 
 noncomputable def fintype_MYD_sig_Bminus (μP μQ : YoungDiagram) (s : ℤ × ℤ)
+    (h_sing : DescentChainBminusSingleton)
     (h_inj : Function.Injective
-      (fun p : PBPSet_Bminus_sig μP μQ s × Fin 2 => Phi_Bminus_sig p.1 p.2))
+      (fun p : PBPSet_Bminus_sig μP μQ s × Fin 2 => Phi_Bminus_sig h_sing p.1 p.2))
     (h_surj : Function.Surjective
-      (fun p : PBPSet_Bminus_sig μP μQ s × Fin 2 => Phi_Bminus_sig p.1 p.2))
+      (fun p : PBPSet_Bminus_sig μP μQ s × Fin 2 => Phi_Bminus_sig h_sing p.1 p.2))
     [Inhabited (PBPSet_Bminus_sig μP μQ s × Fin 2)] :
     Fintype (MYD_sig .Bminus s) :=
-  Fintype.ofEquiv _ (Phi_Bminus_sig_equiv μP μQ s h_inj h_surj)
+  Fintype.ofEquiv _ (Phi_Bminus_sig_equiv μP μQ s h_sing h_inj h_surj)
 
 noncomputable def fintype_MYD_sig_C (μP μQ : YoungDiagram) (s : ℤ × ℤ)
     (h_step_D : DescentStepSingleton_D)
@@ -572,23 +583,25 @@ theorem card_PBPSet_D_sig_Fin2_eq (μP μQ : YoungDiagram) (s : ℤ × ℤ)
 
 /-- **Paper Prop 11.15 card (B⁺, sig)**. -/
 theorem card_PBPSet_Bplus_sig_Fin2_eq (μP μQ : YoungDiagram) (s : ℤ × ℤ)
+    (h_step : DescentStepSingleton_Bplus)
     (h_inj : Function.Injective
-      (fun p : PBPSet_Bplus_sig μP μQ s × Fin 2 => Phi_Bplus_sig p.1 p.2))
+      (fun p : PBPSet_Bplus_sig μP μQ s × Fin 2 => Phi_Bplus_sig h_step p.1 p.2))
     (h_surj : Function.Surjective
-      (fun p : PBPSet_Bplus_sig μP μQ s × Fin 2 => Phi_Bplus_sig p.1 p.2))
+      (fun p : PBPSet_Bplus_sig μP μQ s × Fin 2 => Phi_Bplus_sig h_step p.1 p.2))
     [Inhabited (PBPSet_Bplus_sig μP μQ s × Fin 2)] :
     Nat.card (PBPSet_Bplus_sig μP μQ s × Fin 2) = Nat.card (MYD_sig .Bplus s) :=
-  Nat.card_congr (Phi_Bplus_sig_equiv μP μQ s h_inj h_surj)
+  Nat.card_congr (Phi_Bplus_sig_equiv μP μQ s h_step h_inj h_surj)
 
 /-- **Paper Prop 11.15 card (B⁻, sig)**. -/
 theorem card_PBPSet_Bminus_sig_Fin2_eq (μP μQ : YoungDiagram) (s : ℤ × ℤ)
+    (h_sing : DescentChainBminusSingleton)
     (h_inj : Function.Injective
-      (fun p : PBPSet_Bminus_sig μP μQ s × Fin 2 => Phi_Bminus_sig p.1 p.2))
+      (fun p : PBPSet_Bminus_sig μP μQ s × Fin 2 => Phi_Bminus_sig h_sing p.1 p.2))
     (h_surj : Function.Surjective
-      (fun p : PBPSet_Bminus_sig μP μQ s × Fin 2 => Phi_Bminus_sig p.1 p.2))
+      (fun p : PBPSet_Bminus_sig μP μQ s × Fin 2 => Phi_Bminus_sig h_sing p.1 p.2))
     [Inhabited (PBPSet_Bminus_sig μP μQ s × Fin 2)] :
     Nat.card (PBPSet_Bminus_sig μP μQ s × Fin 2) = Nat.card (MYD_sig .Bminus s) :=
-  Nat.card_congr (Phi_Bminus_sig_equiv μP μQ s h_inj h_surj)
+  Nat.card_congr (Phi_Bminus_sig_equiv μP μQ s h_sing h_inj h_surj)
 
 /-- **Paper Prop 11.17 card (C, sig)**. -/
 theorem card_PBPSet_C_sig_eq (μP μQ : YoungDiagram) (s : ℤ × ℤ)
