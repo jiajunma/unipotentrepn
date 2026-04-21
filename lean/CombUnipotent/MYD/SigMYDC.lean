@@ -139,13 +139,13 @@ theorem exists_descentChain_C {μP μQ : YoungDiagram} (σ : PBPSet .C μP μQ)
     refine ⟨chain_D ++ [toACStepData_C τ_val τ_γ ∅], ?_⟩
     exact IsDescentChain_C.step τ_γ ∅ h_sub h_chain_D
 
-/-- Simplified signature: any C-PBP has a chain. Paper-level —
-    needs PBP → dp reconstruction (the `exists_coherent_dp_C` lemma
-    previously factored out is now inlined here as the single sorry
-    for the chain-from-arbitrary-PBP existence). -/
-theorem exists_descentChain_C_simple {μP μQ : YoungDiagram} (σ : PBPSet .C μP μQ) :
-    ∃ c : List ACStepData, IsDescentChain_C σ.val c := by
-  sorry
+/-- **Chain-existence hypothesis (C)**: every C-PBP in `PBPSet μP μQ`
+    has a descent chain. Paper-level fact (requires PBP → dp
+    reconstruction). Threaded as hypothesis to `Phi_C_sig` etc. to
+    avoid a sorry. Can be discharged via `exists_descentChain_C` once
+    a dp-witness is supplied. -/
+abbrev ChainExists_C (μP μQ : YoungDiagram) : Prop :=
+  ∀ σ : PBPSet .C μP μQ, ∃ c : List ACStepData, IsDescentChain_C σ.val c
 
 /-! ## Per-step thetaLift singleton (paper §11.5/11.6) -/
 

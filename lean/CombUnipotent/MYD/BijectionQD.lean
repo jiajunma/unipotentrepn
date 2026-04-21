@@ -125,20 +125,22 @@ noncomputable def Phi_Bminus_qd_sig_equiv (μP μQ : YoungDiagram) (dp : DualPar
 
 noncomputable def Phi_C_qd_sig_equiv (μP μQ : YoungDiagram) (dp : DualPart)
     (hsort : dp.SortedGE) (h_qd : IsQuasiDistinguished .C dp) (s : ℤ × ℤ)
-    (h_inj : Function.Injective (Phi_C_sig (μP := μP) (μQ := μQ) (s := s)))
-    (h_surj : Function.Surjective (Phi_C_sig (μP := μP) (μQ := μQ) (s := s)))
+    (h_chain : ChainExists_C μP μQ)
+    (h_inj : Function.Injective (Phi_C_sig (μP := μP) (μQ := μQ) (s := s) h_chain))
+    (h_surj : Function.Surjective (Phi_C_sig (μP := μP) (μQ := μQ) (s := s) h_chain))
     [hi : Inhabited (PBPSet_C_qd_sig μP μQ dp hsort h_qd s)] :
     PBPSet_C_qd_sig μP μQ dp hsort h_qd s ≃ MYD_sig .C s :=
   have : Inhabited (PBPSet_C_sig μP μQ s) := hi
-  Phi_C_sig_equiv μP μQ s h_inj h_surj
+  Phi_C_sig_equiv μP μQ s h_chain h_inj h_surj
 
 noncomputable def Phi_M_qd_sig_equiv (μP μQ : YoungDiagram) (dp : DualPart)
     (hsort : dp.SortedGE) (h_qd : IsQuasiDistinguished .M dp) (s : ℤ × ℤ)
-    (h_inj : Function.Injective (Phi_M_sig (μP := μP) (μQ := μQ) (s := s)))
-    (h_surj : Function.Surjective (Phi_M_sig (μP := μP) (μQ := μQ) (s := s)))
+    (h_chain : ChainExists_M μP μQ)
+    (h_inj : Function.Injective (Phi_M_sig (μP := μP) (μQ := μQ) (s := s) h_chain))
+    (h_surj : Function.Surjective (Phi_M_sig (μP := μP) (μQ := μQ) (s := s) h_chain))
     [hi : Inhabited (PBPSet_M_qd_sig μP μQ dp hsort h_qd s)] :
     PBPSet_M_qd_sig μP μQ dp hsort h_qd s ≃ MYD_sig .M s :=
   have : Inhabited (PBPSet_M_sig μP μQ s) := hi
-  Phi_M_sig_equiv μP μQ s h_inj h_surj
+  Phi_M_sig_equiv μP μQ s h_chain h_inj h_surj
 
 end BMSZ
