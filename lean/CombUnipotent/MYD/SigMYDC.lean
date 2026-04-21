@@ -180,17 +180,18 @@ theorem descent_step_thetaLift_singleton_C_std {τ : PBP} (hγ : τ.γ = .C)
   simp only [ILS.thetaLift_DC]
   rw [if_pos h_std]
 
-/-- Per-step thetaLift singleton for C chain. Paper §11.5/11.6. -/
-theorem descent_step_thetaLift_singleton_C {τ : PBP} (hγ : τ.γ = .C)
-    (wp : PPSet) (E_inner : ILS) :
+/-- **Paper §11.5/§11.6 per-step singleton hypothesis (C)**. -/
+abbrev DescentStepSingleton_C : Prop :=
+  ∀ (τ : PBP) (hγ : τ.γ = .C) (wp : PPSet) (E_inner : ILS),
     ∃ E' : ILS, ILS.thetaLift
       (stepPreTwist E_inner (toACStepData_C τ hγ wp))
       (toACStepData_C τ hγ wp).γ
       (toACStepData_C τ hγ wp).p
-      (toACStepData_C τ hγ wp).q = [E'] := by
-  sorry
+      (toACStepData_C τ hγ wp).q = [E']
 
-theorem descentChain_C_singleton (h_step_D : DescentStepSingleton_D)
+theorem descentChain_C_singleton
+    (h_step_D : DescentStepSingleton_D)
+    (h_step_C : DescentStepSingleton_C)
     {τ : PBP} {chain : List ACStepData}
     (h_chain : IsDescentChain_C τ chain) :
     ∃ E : ILS, ChainSingleton (baseILS .C) chain E := by
@@ -198,7 +199,7 @@ theorem descentChain_C_singleton (h_step_D : DescentStepSingleton_D)
   | base hγ h_empty => exact ⟨baseILS .C, ChainSingleton.nil _⟩
   | step hγ wp h_sub h_rest =>
     obtain ⟨E_inner, h_inner⟩ := descentChain_D_singleton h_step_D h_rest
-    obtain ⟨E', h_theta⟩ := descent_step_thetaLift_singleton_C hγ wp E_inner
+    obtain ⟨E', h_theta⟩ := h_step_C τ hγ wp E_inner
     have h_base_eq : (baseILS .C : ILS) = baseILS .D := rfl
     rw [h_base_eq]
     exact ⟨stepPostTwist E' (toACStepData_C τ hγ wp),
@@ -229,31 +230,29 @@ private theorem sign_baseILS_C : ILS.sign (baseILS .C) = (0, 0) := by
   unfold baseILS ILS.sign
   simp
 
-/-- Sign match for C chain. The key step: thetaLift_DC_sign_std
-    requires the std-case hypothesis (addp, addn ≥ 0). For C chain
-    in paper's framework, this is guaranteed; here we sorry it via
-    per-step singleton's std witness. -/
-theorem descentChain_sign_match_C {τ : PBP} {chain : List ACStepData}
-    {E : ILS}
-    (h_chain : IsDescentChain_C τ chain)
-    (h_sing : ChainSingleton (baseILS .C) chain E) :
-    ILS.sign E = signTarget_C' τ := by
-  cases h_chain with
-  | base hγ h_empty =>
-    cases h_sing
-    show ILS.sign (baseILS .C) = signTarget_C' τ
-    rw [sign_baseILS_C]
-    unfold signTarget_C'
-    rw [signature_empty_C τ hγ h_empty]
-    rfl
-  | step hγ wp h_sub h_rest =>
-    rename_i chain_inner
-    obtain ⟨E_mid, E', _h_inner_sing, h_theta, h_E_final⟩ :=
-      ChainSingleton.snoc_inv h_sing
-    -- C has pre-twist if ε_wp = 1: stepPreTwist applies twistBD (-1, -1)
-    -- twistBD preserves sign, so sign(stepPreTwist E_mid) = sign(E_mid)
-    -- ILS.thetaLift target .C = thetaLift_DC, sign preservation needs std hypothesis
-    -- Deferred: paper §11.5/11.6 std condition + sign match.
-    sorry
+/-- **Chain sign-match hypothesis (C)**: along any valid C descent
+    chain with singleton witness, the extracted ILS has signature
+    matching the paper-level `signTarget_C' τ`.
+
+    Base case is proved (empty chain + empty PBP). Step case is
+    paper §11.5/§11.6 content: depends on the per-step `thetaLift_DC`
+    producing an ILS with signature (n, n), which requires the std
+    sign-bound condition along valid chains.
+
+    Threaded as hypothesis to `Phi_C_sig` to avoid a sorry. -/
+abbrev DescentChainSignMatch_C : Prop :=
+  ∀ {τ : PBP} {chain : List ACStepData} {E : ILS},
+    IsDescentChain_C τ chain →
+    ChainSingleton (baseILS .C) chain E →
+    ILS.sign E = signTarget_C' τ
+
+/-- Base case of `DescentChainSignMatch_C`, fully proved. -/
+theorem descentChain_sign_match_C_base {τ : PBP} (hγ : τ.γ = .C)
+    (h_empty : τ.P.shape = ⊥ ∧ τ.Q.shape = ⊥) :
+    ILS.sign (baseILS .C) = signTarget_C' τ := by
+  rw [sign_baseILS_C]
+  unfold signTarget_C'
+  rw [signature_empty_C τ hγ h_empty]
+  rfl
 
 end BMSZ

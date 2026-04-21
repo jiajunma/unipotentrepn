@@ -129,15 +129,17 @@ noncomputable def Phi_Bminus_qd_sig_equiv (μP μQ : YoungDiagram) (dp : DualPar
 noncomputable def Phi_C_qd_sig_equiv (μP μQ : YoungDiagram) (dp : DualPart)
     (hsort : dp.SortedGE) (h_qd : IsQuasiDistinguished .C dp) (s : ℤ × ℤ)
     (h_step_D : DescentStepSingleton_D)
+    (h_step_C : DescentStepSingleton_C)
     (h_chain : ChainExists_C μP μQ)
+    (h_sm : DescentChainSignMatch_C)
     (h_inj : Function.Injective
-      (Phi_C_sig (μP := μP) (μQ := μQ) (s := s) h_step_D h_chain))
+      (Phi_C_sig (μP := μP) (μQ := μQ) (s := s) h_step_D h_step_C h_chain h_sm))
     (h_surj : Function.Surjective
-      (Phi_C_sig (μP := μP) (μQ := μQ) (s := s) h_step_D h_chain))
+      (Phi_C_sig (μP := μP) (μQ := μQ) (s := s) h_step_D h_step_C h_chain h_sm))
     [hi : Inhabited (PBPSet_C_qd_sig μP μQ dp hsort h_qd s)] :
     PBPSet_C_qd_sig μP μQ dp hsort h_qd s ≃ MYD_sig .C s :=
   have : Inhabited (PBPSet_C_sig μP μQ s) := hi
-  Phi_C_sig_equiv μP μQ s h_step_D h_chain h_inj h_surj
+  Phi_C_sig_equiv μP μQ s h_step_D h_step_C h_chain h_sm h_inj h_surj
 
 noncomputable def Phi_M_qd_sig_equiv (μP μQ : YoungDiagram) (dp : DualPart)
     (hsort : dp.SortedGE) (h_qd : IsQuasiDistinguished .M dp) (s : ℤ × ℤ)

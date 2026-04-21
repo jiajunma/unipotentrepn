@@ -356,81 +356,99 @@ No ε_τ factor at the outermost level (Prop 11.17 has no Fin 2).
 
 
 /-- C-side Phi: maps σ to chain-extracted ILS. No outer ε twist.
-    `h_chain` supplies the paper-level chain-existence fact for C;
-    `h_step_D` is used by the inner D chain singleton. -/
+
+    Hypotheses:
+    - `h_step_D` (inner D chain singleton), `h_step_C` (C chain singleton)
+    - `h_chain` (chain existence)
+    - `h_sm` (sign match)  -/
 noncomputable def Phi_C_sig {μP μQ : YoungDiagram} {s : ℤ × ℤ}
     (h_step_D : DescentStepSingleton_D)
+    (h_step_C : DescentStepSingleton_C)
     (h_chain : ChainExists_C μP μQ)
+    (h_sm : DescentChainSignMatch_C)
     (σh : PBPSet_C_sig μP μQ s) : MYD_sig .C s :=
   let σ := σh.val
   let h_sig := σh.prop
   let h_chain_σ := h_chain σ
   let chain := Classical.choose h_chain_σ
   let h_chain' := Classical.choose_spec h_chain_σ
-  let E := Classical.choose (descentChain_C_singleton h_step_D h_chain')
-  let h_sing := Classical.choose_spec (descentChain_C_singleton h_step_D h_chain')
+  let E := Classical.choose (descentChain_C_singleton h_step_D h_step_C h_chain')
+  let h_sing := Classical.choose_spec
+    (descentChain_C_singleton h_step_D h_step_C h_chain')
   have h_sign : ILS.sign E = s := by
-    rw [descentChain_sign_match_C h_chain' h_sing]
+    rw [h_sm h_chain' h_sing]
     show signTarget_C' σ.val = s
     exact h_sig
   ⟨E, h_sign⟩
 
 noncomputable def Psi_C_sig {μP μQ : YoungDiagram} {s : ℤ × ℤ}
     (h_step_D : DescentStepSingleton_D)
+    (h_step_C : DescentStepSingleton_C)
     (h_chain : ChainExists_C μP μQ)
+    (h_sm : DescentChainSignMatch_C)
     [Inhabited (PBPSet_C_sig μP μQ s)]
     (M : MYD_sig .C s) : PBPSet_C_sig μP μQ s :=
   open Classical in
-  if h : ∃ σh : PBPSet_C_sig μP μQ s, Phi_C_sig h_step_D h_chain σh = M
+  if h : ∃ σh : PBPSet_C_sig μP μQ s,
+      Phi_C_sig h_step_D h_step_C h_chain h_sm σh = M
   then h.choose
   else default
 
 theorem Psi_C_Phi_C_sig {μP μQ : YoungDiagram} {s : ℤ × ℤ}
     [Inhabited (PBPSet_C_sig μP μQ s)]
     (h_step_D : DescentStepSingleton_D)
+    (h_step_C : DescentStepSingleton_C)
     (h_chain : ChainExists_C μP μQ)
+    (h_sm : DescentChainSignMatch_C)
     (h_inj : Function.Injective
-      (Phi_C_sig (μP := μP) (μQ := μQ) (s := s) h_step_D h_chain))
+      (Phi_C_sig (μP := μP) (μQ := μQ) (s := s) h_step_D h_step_C h_chain h_sm))
     (σh : PBPSet_C_sig μP μQ s) :
-    Psi_C_sig (μP := μP) (μQ := μQ) h_step_D h_chain
-      (Phi_C_sig h_step_D h_chain σh) = σh := by
+    Psi_C_sig (μP := μP) (μQ := μQ) h_step_D h_step_C h_chain h_sm
+      (Phi_C_sig h_step_D h_step_C h_chain h_sm σh) = σh := by
   classical
   unfold Psi_C_sig
   have hex : ∃ x : PBPSet_C_sig μP μQ s,
-      Phi_C_sig h_step_D h_chain x = Phi_C_sig h_step_D h_chain σh := ⟨σh, rfl⟩
+      Phi_C_sig h_step_D h_step_C h_chain h_sm x =
+      Phi_C_sig h_step_D h_step_C h_chain h_sm σh := ⟨σh, rfl⟩
   rw [dif_pos hex]
   exact h_inj (Classical.choose_spec hex)
 
 theorem Phi_C_Psi_C_sig {μP μQ : YoungDiagram} {s : ℤ × ℤ}
     [Inhabited (PBPSet_C_sig μP μQ s)]
     (h_step_D : DescentStepSingleton_D)
+    (h_step_C : DescentStepSingleton_C)
     (h_chain : ChainExists_C μP μQ)
+    (h_sm : DescentChainSignMatch_C)
     (h_surj : Function.Surjective
-      (Phi_C_sig (μP := μP) (μQ := μQ) (s := s) h_step_D h_chain))
+      (Phi_C_sig (μP := μP) (μQ := μQ) (s := s) h_step_D h_step_C h_chain h_sm))
     (M : MYD_sig .C s) :
-    Phi_C_sig h_step_D h_chain
-      (Psi_C_sig (μP := μP) (μQ := μQ) h_step_D h_chain M) = M := by
+    Phi_C_sig h_step_D h_step_C h_chain h_sm
+      (Psi_C_sig (μP := μP) (μQ := μQ) h_step_D h_step_C h_chain h_sm M) = M := by
   classical
   unfold Psi_C_sig
   have hex : ∃ σh : PBPSet_C_sig μP μQ s,
-      Phi_C_sig h_step_D h_chain σh = M := h_surj M
+      Phi_C_sig h_step_D h_step_C h_chain h_sm σh = M := h_surj M
   simp only [dif_pos hex]
   exact Classical.choose_spec hex
 
 /-- **Paper Prop 11.17 (C), signature variant**. -/
 noncomputable def Phi_C_sig_equiv (μP μQ : YoungDiagram) (s : ℤ × ℤ)
     (h_step_D : DescentStepSingleton_D)
+    (h_step_C : DescentStepSingleton_C)
     (h_chain : ChainExists_C μP μQ)
+    (h_sm : DescentChainSignMatch_C)
     (h_inj : Function.Injective
-      (Phi_C_sig (μP := μP) (μQ := μQ) (s := s) h_step_D h_chain))
+      (Phi_C_sig (μP := μP) (μQ := μQ) (s := s) h_step_D h_step_C h_chain h_sm))
     (h_surj : Function.Surjective
-      (Phi_C_sig (μP := μP) (μQ := μQ) (s := s) h_step_D h_chain))
+      (Phi_C_sig (μP := μP) (μQ := μQ) (s := s) h_step_D h_step_C h_chain h_sm))
     [Inhabited (PBPSet_C_sig μP μQ s)] :
     PBPSet_C_sig μP μQ s ≃ MYD_sig .C s where
-  toFun := Phi_C_sig h_step_D h_chain
-  invFun := Psi_C_sig (μP := μP) (μQ := μQ) h_step_D h_chain
-  left_inv := fun σh => Psi_C_Phi_C_sig h_step_D h_chain h_inj σh
-  right_inv := fun M => Phi_C_Psi_C_sig h_step_D h_chain h_surj M
+  toFun := Phi_C_sig h_step_D h_step_C h_chain h_sm
+  invFun := Psi_C_sig (μP := μP) (μQ := μQ) h_step_D h_step_C h_chain h_sm
+  left_inv := fun σh =>
+    Psi_C_Phi_C_sig h_step_D h_step_C h_chain h_sm h_inj σh
+  right_inv := fun M =>
+    Phi_C_Psi_C_sig h_step_D h_step_C h_chain h_sm h_surj M
 
 /-! ### Phi_M_sig (no Fin 2 — paper Prop 11.17) -/
 
@@ -553,14 +571,17 @@ noncomputable def fintype_MYD_sig_Bminus (μP μQ : YoungDiagram) (s : ℤ × �
 
 noncomputable def fintype_MYD_sig_C (μP μQ : YoungDiagram) (s : ℤ × ℤ)
     (h_step_D : DescentStepSingleton_D)
+    (h_step_C : DescentStepSingleton_C)
     (h_chain : ChainExists_C μP μQ)
+    (h_sm : DescentChainSignMatch_C)
     (h_inj : Function.Injective
-      (Phi_C_sig (μP := μP) (μQ := μQ) (s := s) h_step_D h_chain))
+      (Phi_C_sig (μP := μP) (μQ := μQ) (s := s) h_step_D h_step_C h_chain h_sm))
     (h_surj : Function.Surjective
-      (Phi_C_sig (μP := μP) (μQ := μQ) (s := s) h_step_D h_chain))
+      (Phi_C_sig (μP := μP) (μQ := μQ) (s := s) h_step_D h_step_C h_chain h_sm))
     [Inhabited (PBPSet_C_sig μP μQ s)] :
     Fintype (MYD_sig .C s) :=
-  Fintype.ofEquiv _ (Phi_C_sig_equiv μP μQ s h_step_D h_chain h_inj h_surj)
+  Fintype.ofEquiv _
+    (Phi_C_sig_equiv μP μQ s h_step_D h_step_C h_chain h_sm h_inj h_surj)
 
 noncomputable def fintype_MYD_sig_M (μP μQ : YoungDiagram) (s : ℤ × ℤ)
     (h_chain : ChainExists_M μP μQ)
@@ -606,14 +627,17 @@ theorem card_PBPSet_Bminus_sig_Fin2_eq (μP μQ : YoungDiagram) (s : ℤ × ℤ)
 /-- **Paper Prop 11.17 card (C, sig)**. -/
 theorem card_PBPSet_C_sig_eq (μP μQ : YoungDiagram) (s : ℤ × ℤ)
     (h_step_D : DescentStepSingleton_D)
+    (h_step_C : DescentStepSingleton_C)
     (h_chain : ChainExists_C μP μQ)
+    (h_sm : DescentChainSignMatch_C)
     (h_inj : Function.Injective
-      (Phi_C_sig (μP := μP) (μQ := μQ) (s := s) h_step_D h_chain))
+      (Phi_C_sig (μP := μP) (μQ := μQ) (s := s) h_step_D h_step_C h_chain h_sm))
     (h_surj : Function.Surjective
-      (Phi_C_sig (μP := μP) (μQ := μQ) (s := s) h_step_D h_chain))
+      (Phi_C_sig (μP := μP) (μQ := μQ) (s := s) h_step_D h_step_C h_chain h_sm))
     [Inhabited (PBPSet_C_sig μP μQ s)] :
     Nat.card (PBPSet_C_sig μP μQ s) = Nat.card (MYD_sig .C s) :=
-  Nat.card_congr (Phi_C_sig_equiv μP μQ s h_step_D h_chain h_inj h_surj)
+  Nat.card_congr
+    (Phi_C_sig_equiv μP μQ s h_step_D h_step_C h_chain h_sm h_inj h_surj)
 
 /-- **Paper Prop 11.17 card (M, sig)**. -/
 theorem card_PBPSet_M_sig_eq (μP μQ : YoungDiagram) (s : ℤ × ℤ)
