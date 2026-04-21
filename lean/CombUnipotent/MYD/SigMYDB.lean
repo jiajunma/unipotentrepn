@@ -117,26 +117,34 @@ theorem descent_step_thetaLift_singleton_Bplus_std {τ : PBP} (hγ : τ.γ = .Bp
   simp only [ILS.thetaLift_MB]
   rw [if_pos h_std]
 
-/-- **Paper §11.5/§11.6 per-step singleton hypothesis (B+)**. -/
+/-- **Paper §11.5/§11.6 per-step singleton hypothesis (B+)**, chain-conditional. -/
 abbrev DescentStepSingleton_Bplus : Prop :=
-  ∀ (τ : PBP) (hγ : τ.γ = .Bplus) (E_inner : ILS),
+  ∀ (τ : PBP) (hγ : τ.γ = .Bplus)
+    (chain_inner : List ACStepData) (E_inner : ILS),
+    IsDescentChain_Bplus (doubleDescent_B_PBP τ (Or.inl hγ)) chain_inner →
+    ChainSingleton (baseILS .Bplus) chain_inner E_inner →
     ∃ E' : ILS, ILS.thetaLift
       (stepPreTwist E_inner (toACStepData_Bplus τ hγ))
       (toACStepData_Bplus τ hγ).γ
       (toACStepData_Bplus τ hγ).p
       (toACStepData_Bplus τ hγ).q = [E']
 
-/-- **Reduction**: `DescentStepSingleton_Bplus` follows from a universal
-    std sign-bound hypothesis. -/
+/-- **Reduction**: `DescentStepSingleton_Bplus` follows from a
+    chain-conditional std sign-bound hypothesis. -/
 theorem descentStepSingleton_Bplus_of_std
-    (h_std : ∀ (τ : PBP) (hγ : τ.γ = .Bplus) (E_inner : ILS),
+    (h_std : ∀ (τ : PBP) (hγ : τ.γ = .Bplus)
+              (chain_inner : List ACStepData) (E_inner : ILS)
+              (_h_chain : IsDescentChain_Bplus
+                (doubleDescent_B_PBP τ (Or.inl hγ)) chain_inner)
+              (_h_sing : ChainSingleton (baseILS .Bplus) chain_inner E_inner),
       (toACStepData_Bplus τ hγ).p - (ILS.sign E_inner).1 -
         (ILS.firstColSign E_inner).2 ≥ 0 ∧
       (toACStepData_Bplus τ hγ).q - (ILS.sign E_inner).2 -
         (ILS.firstColSign E_inner).1 ≥ 0) :
     DescentStepSingleton_Bplus := by
-  intro τ hγ E_inner
-  exact descent_step_thetaLift_singleton_Bplus_std hγ E_inner (h_std τ hγ E_inner)
+  intro τ hγ chain_inner E_inner h_chain h_sing
+  exact descent_step_thetaLift_singleton_Bplus_std hγ E_inner
+    (h_std τ hγ chain_inner E_inner h_chain h_sing)
 
 /-- Any valid B+ descent chain is `ChainSingleton`-valid. -/
 theorem descentChain_Bplus_singleton (h_step : DescentStepSingleton_Bplus)
@@ -148,7 +156,7 @@ theorem descentChain_Bplus_singleton (h_step : DescentStepSingleton_Bplus)
   | step hγ h_rest ih =>
     rename_i τ_outer chain_inner
     obtain ⟨E_inner, h_inner⟩ := ih
-    obtain ⟨E', h_theta⟩ := h_step τ_outer hγ E_inner
+    obtain ⟨E', h_theta⟩ := h_step τ_outer hγ chain_inner E_inner h_rest h_inner
     exact ⟨stepPostTwist E' (toACStepData_Bplus τ_outer hγ),
            ChainSingleton.snoc h_inner h_theta⟩
 

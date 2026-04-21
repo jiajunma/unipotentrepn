@@ -199,19 +199,34 @@ theorem descent_step_thetaLift_singleton_C_std {τ : PBP} (hγ : τ.γ = .C)
   simp only [ILS.thetaLift_DC]
   rw [if_pos h_std]
 
-/-- **Paper §11.5/§11.6 per-step singleton hypothesis (C)**. -/
+/-- **Paper §11.5/§11.6 per-step singleton hypothesis (C)**,
+    chain-conditional.
+
+    C's outer step takes both `wp : PPSet` (painted parameter) and
+    `h_sub` (shape containment witness needed by `descentCD_PBP`).
+    Inner chain is on the descended D-type PBP, so E_inner is from
+    a `ChainSingleton (baseILS .D)`. -/
 abbrev DescentStepSingleton_C : Prop :=
-  ∀ (τ : PBP) (hγ : τ.γ = .C) (wp : PPSet) (E_inner : ILS),
+  ∀ (τ : PBP) (hγ : τ.γ = .C) (wp : PPSet)
+    (h_sub : YoungDiagram.shiftLeft τ.Q.shape ≤ τ.P.shape)
+    (chain_inner : List ACStepData) (E_inner : ILS),
+    IsDescentChain_D (descentCD_PBP ⟨τ, hγ, rfl, rfl⟩ h_sub).val chain_inner →
+    ChainSingleton (baseILS .D) chain_inner E_inner →
     ∃ E' : ILS, ILS.thetaLift
       (stepPreTwist E_inner (toACStepData_C τ hγ wp))
       (toACStepData_C τ hγ wp).γ
       (toACStepData_C τ hγ wp).p
       (toACStepData_C τ hγ wp).q = [E']
 
-/-- **Reduction**: `DescentStepSingleton_C` follows from a universal
-    std sign-bound hypothesis on the pre-twisted ILS. -/
+/-- **Reduction**: `DescentStepSingleton_C` follows from a
+    chain-conditional std sign-bound hypothesis. -/
 theorem descentStepSingleton_C_of_std
-    (h_std : ∀ (τ : PBP) (hγ : τ.γ = .C) (wp : PPSet) (E_inner : ILS),
+    (h_std : ∀ (τ : PBP) (hγ : τ.γ = .C) (wp : PPSet)
+              (h_sub : YoungDiagram.shiftLeft τ.Q.shape ≤ τ.P.shape)
+              (chain_inner : List ACStepData) (E_inner : ILS)
+              (_h_chain : IsDescentChain_D
+                (descentCD_PBP ⟨τ, hγ, rfl, rfl⟩ h_sub).val chain_inner)
+              (_h_sing : ChainSingleton (baseILS .D) chain_inner E_inner),
       (toACStepData_C τ hγ wp).p - (ILS.sign (stepPreTwist E_inner
         (toACStepData_C τ hγ wp))).1 - (ILS.firstColSign (stepPreTwist E_inner
         (toACStepData_C τ hγ wp))).2 ≥ 0 ∧
@@ -219,9 +234,9 @@ theorem descentStepSingleton_C_of_std
         (toACStepData_C τ hγ wp))).2 - (ILS.firstColSign (stepPreTwist E_inner
         (toACStepData_C τ hγ wp))).1 ≥ 0) :
     DescentStepSingleton_C := by
-  intro τ hγ wp E_inner
+  intro τ hγ wp h_sub chain_inner E_inner h_chain h_sing
   exact descent_step_thetaLift_singleton_C_std hγ wp E_inner
-    (h_std τ hγ wp E_inner)
+    (h_std τ hγ wp h_sub chain_inner E_inner h_chain h_sing)
 
 theorem descentChain_C_singleton
     (h_step_D : DescentStepSingleton_D)
@@ -233,7 +248,7 @@ theorem descentChain_C_singleton
   | base hγ h_empty => exact ⟨baseILS .C, ChainSingleton.nil _⟩
   | step hγ wp h_sub h_rest =>
     obtain ⟨E_inner, h_inner⟩ := descentChain_D_singleton h_step_D h_rest
-    obtain ⟨E', h_theta⟩ := h_step_C τ hγ wp E_inner
+    obtain ⟨E', h_theta⟩ := h_step_C τ hγ wp h_sub _ E_inner h_rest h_inner
     have h_base_eq : (baseILS .C : ILS) = baseILS .D := rfl
     rw [h_base_eq]
     exact ⟨stepPostTwist E' (toACStepData_C τ hγ wp),

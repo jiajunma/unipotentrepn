@@ -124,12 +124,17 @@ theorem descent_step_thetaLift_singleton_std {τ : PBP} (hγ : τ.γ = .D)
   rw [if_pos h_std]
 
 /-- **Paper §11.5/§11.6 per-step singleton hypothesis (D)**: along a
-    valid D chain, each thetaLift step returns a singleton. Threaded
-    as hypothesis to `descentChain_D_singleton`. The `_std` variant
-    above closes this under the std sign-bound assumption; the paper
-    asserts std always holds along a valid chain. -/
+    valid D chain, each thetaLift step returns a singleton.
+
+    CHAIN-CONDITIONAL form: `E_inner` is restricted to ILSs arising
+    from an inner valid chain via `ChainSingleton`. This matches
+    paper §11.5/§11.6 scope — the std sign-bound holds for
+    chain-derived E_inner, not arbitrary ones. -/
 abbrev DescentStepSingleton_D : Prop :=
-  ∀ (τ : PBP) (hγ : τ.γ = .D) (E_inner : ILS),
+  ∀ (τ : PBP) (hγ : τ.γ = .D)
+    (chain_inner : List ACStepData) (E_inner : ILS),
+    IsDescentChain_D (doubleDescent_D_PBP τ hγ) chain_inner →
+    ChainSingleton (baseILS .D) chain_inner E_inner →
     ∃ E' : ILS, ILS.thetaLift
       (stepPreTwist E_inner (toACStepData_D τ hγ))
       (toACStepData_D τ hγ).γ
@@ -151,17 +156,19 @@ theorem descent_step_thetaLift_singleton_from_std {τ : PBP} (hγ : τ.γ = .D)
       (toACStepData_D τ hγ).q = [E'] :=
   descent_step_thetaLift_singleton_std hγ E_inner h_std
 
-/-- **Reduction**: `DescentStepSingleton_D` follows from a universal
-    std sign-bound hypothesis. Provides a cleaner discharge target
-    for future paper-content formalization: instead of proving
-    singleton directly, prove std-bound universally. -/
+/-- **Reduction**: `DescentStepSingleton_D` follows from a
+    chain-conditional std sign-bound hypothesis. -/
 theorem descentStepSingleton_D_of_std
-    (h_std : ∀ (τ : PBP) (hγ : τ.γ = .D) (E_inner : ILS),
+    (h_std : ∀ (τ : PBP) (hγ : τ.γ = .D)
+              (chain_inner : List ACStepData) (E_inner : ILS)
+              (_h_chain : IsDescentChain_D (doubleDescent_D_PBP τ hγ) chain_inner)
+              (_h_sing : ChainSingleton (baseILS .D) chain_inner E_inner),
       (toACStepData_D τ hγ).p - (ILS.sign E_inner).1 - (ILS.firstColSign E_inner).2 ≥ 0 ∧
       (toACStepData_D τ hγ).q - (ILS.sign E_inner).2 - (ILS.firstColSign E_inner).1 ≥ 0) :
     DescentStepSingleton_D := by
-  intro τ hγ E_inner
-  exact descent_step_thetaLift_singleton_std hγ E_inner (h_std τ hγ E_inner)
+  intro τ hγ chain_inner E_inner h_chain h_sing
+  exact descent_step_thetaLift_singleton_std hγ E_inner
+    (h_std τ hγ chain_inner E_inner h_chain h_sing)
 
 /-- **Theorem (M1.4.2 partial)**: any valid descent chain for τ is
     ChainSingleton-valid.
@@ -182,7 +189,7 @@ theorem descentChain_D_singleton (h_step : DescentStepSingleton_D)
   | step hγ h_rest ih =>
     rename_i τ_outer chain_inner
     obtain ⟨E_inner, h_inner⟩ := ih
-    obtain ⟨E', h_theta⟩ := h_step τ_outer hγ E_inner
+    obtain ⟨E', h_theta⟩ := h_step τ_outer hγ chain_inner E_inner h_rest h_inner
     exact ⟨stepPostTwist E' (toACStepData_D τ_outer hγ),
            ChainSingleton.snoc h_inner h_theta⟩
 
