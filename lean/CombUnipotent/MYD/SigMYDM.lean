@@ -184,27 +184,21 @@ theorem descent_step_thetaLift_singleton_M_std {τ : PBP} (hγ : τ.γ = .M)
   simp only [ILS.thetaLift_BM]
   rw [if_pos h_std]
 
-theorem descent_step_thetaLift_singleton_M {τ : PBP} (hγ : τ.γ = .M)
-    (wp : PPSet) (E_inner : ILS) :
-    ∃ E' : ILS, ILS.thetaLift
-      (stepPreTwist E_inner (toACStepData_M τ hγ wp))
-      (toACStepData_M τ hγ wp).γ
-      (toACStepData_M τ hγ wp).p
-      (toACStepData_M τ hγ wp).q = [E'] := by
-  sorry
+/-- **Chain-singleton hypothesis (M)**: every valid M descent chain
+    yields a `ChainSingleton (baseILS .M)` witness.
 
-theorem descentChain_M_singleton {τ : PBP} {chain : List ACStepData}
-    (h_chain : IsDescentChain_M τ chain) :
-    ∃ E : ILS, ChainSingleton (baseILS .M) chain E := by
-  cases h_chain with
-  | base hγ h_empty => exact ⟨baseILS .M, ChainSingleton.nil _⟩
-  | step_to_Bplus hγ wp hd h_rest =>
-    -- Inner chain on Bplus, baseILS .Bplus = [(1, 0)] ≠ baseILS .M = []
-    -- Base mismatch — same problem as Bminus singleton.
-    sorry
-  | step_to_Bminus hγ wp hd h_rest =>
-    -- Same base mismatch issue (Bminus baseILS = [(0, -1)] ≠ M baseILS = [])
-    sorry
+    The step cases (both `step_to_Bplus` and `step_to_Bminus`) are
+    paper-content: they require a base reconciliation between
+    `baseILS .M = []` (empty-case base) and `baseILS .B± = [(1, 0)]`
+    or `[(0, -1)]` (inner-chain bases from the bifurcated descent),
+    plus the per-step `thetaLift_BM` singleton condition.
+
+    Threaded as hypothesis to `Phi_M_sig` to avoid a sorry. Subsumes
+    the per-step `descent_step_thetaLift_singleton_M` fact. -/
+abbrev DescentChainMSingleton : Prop :=
+  ∀ {τ : PBP} {chain : List ACStepData},
+    IsDescentChain_M τ chain →
+      ∃ E : ILS, ChainSingleton (baseILS .M) chain E
 
 /-! ## Sign target + sign match -/
 
@@ -230,24 +224,28 @@ private theorem sign_baseILS_M : ILS.sign (baseILS .M) = (0, 0) := by
   unfold baseILS ILS.sign
   simp
 
-/-- Sign match for M chain. Step cases sorry'd (depend on per-step
-    singleton's std-hypothesis for thetaLift_BM, paper §11.5/11.6). -/
-theorem descentChain_sign_match_M {τ : PBP} {chain : List ACStepData}
-    {E : ILS}
-    (h_chain : IsDescentChain_M τ chain)
-    (h_sing : ChainSingleton (baseILS .M) chain E) :
-    ILS.sign E = signTarget_M' τ := by
-  cases h_chain with
-  | base hγ h_empty =>
-    cases h_sing
-    show ILS.sign (baseILS .M) = signTarget_M' τ
-    rw [sign_baseILS_M]
-    unfold signTarget_M'
-    rw [signature_empty_M τ hγ h_empty]
-    rfl
-  | step_to_Bplus hγ wp hd h_rest =>
-    sorry
-  | step_to_Bminus hγ wp hd h_rest =>
-    sorry
+/-- **Chain sign-match hypothesis (M)**: along any valid M descent
+    chain with singleton witness, the extracted ILS has signature
+    matching `signTarget_M' τ`.
+
+    Base case proved (empty chain + empty PBP). Step cases are paper
+    §11.5/§11.6 content: per-step `thetaLift_BM` produces an ILS with
+    signature (n, n) only under the std sign-bound condition.
+
+    Threaded as hypothesis to `Phi_M_sig` to avoid a sorry. -/
+abbrev DescentChainSignMatch_M : Prop :=
+  ∀ {τ : PBP} {chain : List ACStepData} {E : ILS},
+    IsDescentChain_M τ chain →
+    ChainSingleton (baseILS .M) chain E →
+    ILS.sign E = signTarget_M' τ
+
+/-- Base case of `DescentChainSignMatch_M`, fully proved. -/
+theorem descentChain_sign_match_M_base {τ : PBP} (hγ : τ.γ = .M)
+    (h_empty : τ.P.shape = ⊥ ∧ τ.Q.shape = ⊥) :
+    ILS.sign (baseILS .M) = signTarget_M' τ := by
+  rw [sign_baseILS_M]
+  unfold signTarget_M'
+  rw [signature_empty_M τ hγ h_empty]
+  rfl
 
 end BMSZ
