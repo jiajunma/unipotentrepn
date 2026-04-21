@@ -4,6 +4,16 @@
 
 **Total estimated effort**: ~1600 LOC across 5 focused sessions.
 
+## Completed refactors (this session)
+
+- **Chain-conditional DescentStepSingleton_γ** for γ ∈ {D, B+, C}:
+  Previously quantified over arbitrary E_inner (mathematically unsound).
+  Now restricted to chain-derived E_inner via IsDescentChain_γ + ChainSingleton.
+- **chainExists_γ_empty** : ChainExists_C ⊥ ⊥, ChainExists_M ⊥ ⊥ — empty-shape discharges.
+- **chainExists_γ_of_coherent_dp**: reduction to "every PBP has a coherent dp" (paper §9.4).
+- **descentStepSingleton_γ_of_std** (γ ∈ {D, B+, B-, C}): reduction from std sign-bound.
+- **phi_γ_sig_surj_of_inj_card** (all 5 γ): reduction from surjectivity to injectivity + Fintype cardinality match.
+
 ---
 
 ## Current hypotheses (by γ)
