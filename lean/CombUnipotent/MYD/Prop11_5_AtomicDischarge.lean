@@ -340,3 +340,29 @@ theorem prop_11_5_D_atomic_pbp_discharged
     ((PBP.signature τ).1 : ℤ) ((PBP.signature τ).2 : ℤ)
     (PBP.tailSignature_D τ).1 (PBP.tailSignature_D τ).2
     h_fc h_n₀ h_sign h_prop_11_4_p h_prop_11_4_q h_dsum h_descent h_residual γ₁
+
+/-! ## Parity of signature sum -/
+
+/-- For a B⁺-type PBP, `signature.1 + signature.2` is odd (= 2|τ| + 1). -/
+theorem PBP.signature_sum_Bplus_odd (τ : PBP) (hγ : τ.γ = .Bplus) :
+    Odd ((PBP.signature τ).1 + (PBP.signature τ).2) := by
+  refine ⟨PBP.cardCells τ, ?_⟩
+  have h := PBP.signature_sum_Bplus τ hγ
+  omega
+
+/-- For a B⁻-type PBP, `signature.1 + signature.2` is odd (= 2|τ| + 1). -/
+theorem PBP.signature_sum_Bminus_odd (τ : PBP) (hγ : τ.γ = .Bminus) :
+    Odd ((PBP.signature τ).1 + (PBP.signature τ).2) := by
+  refine ⟨PBP.cardCells τ, ?_⟩
+  have h := PBP.signature_sum_Bminus τ hγ
+  omega
+
+/-- For D/C/M-type PBP, `signature.1 + signature.2` is even. -/
+theorem PBP.signature_sum_DCM_even (τ : PBP)
+    (hγ : τ.γ = .D ∨ τ.γ = .C ∨ τ.γ = .M) :
+    Even ((PBP.signature τ).1 + (PBP.signature τ).2) := by
+  refine ⟨PBP.cardCells τ, ?_⟩
+  rcases hγ with h | h | h
+  · have := PBP.signature_sum_D τ h; omega
+  · have := PBP.signature_sum_C τ h; omega
+  · have := PBP.signature_sum_M τ h; omega
