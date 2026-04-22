@@ -241,6 +241,56 @@ theorem sign_nil : sign ([] : ILS) = (0, 0) := rfl
 theorem signRow_zero (i : ℕ) : signRow i (0, 0) = (0, 0) := by
   simp [signRow]
 
+/-- `firstColSignRow i (0, 0) = (0, 0)`. -/
+theorem firstColSignRow_zero (i : ℕ) : firstColSignRow i (0, 0) = (0, 0) := by
+  unfold firstColSignRow
+  split <;> simp
+
+/-- `firstColSign [] = (0, 0)`. -/
+theorem firstColSign_nil : firstColSign ([] : ILS) = (0, 0) := rfl
+
+/-- `firstColSignRow` is non-negative in both components (it's a pair of natAbs). -/
+theorem firstColSignRow_fst_nonneg (i : ℕ) (pq : ℤ × ℤ) :
+    0 ≤ (firstColSignRow i pq).1 := by
+  unfold firstColSignRow
+  split <;> exact Int.natCast_nonneg _
+
+theorem firstColSignRow_snd_nonneg (i : ℕ) (pq : ℤ × ℤ) :
+    0 ≤ (firstColSignRow i pq).2 := by
+  unfold firstColSignRow
+  split <;> exact Int.natCast_nonneg _
+
+/-- `firstColSign` is non-negative in both components. -/
+theorem firstColSign_fst_nonneg (E : ILS) : 0 ≤ (firstColSign E).1 := by
+  unfold firstColSign
+  suffices h : ∀ (acc : ℤ × ℤ), 0 ≤ acc.1 →
+      0 ≤ ((E.zipIdx).foldl
+        (fun acc ⟨pq, i⟩ => let s := firstColSignRow i pq; (acc.1 + s.1, acc.2 + s.2))
+        acc).1 by
+    exact h (0, 0) (le_refl 0)
+  intro acc h_acc
+  induction E.zipIdx generalizing acc with
+  | nil => exact h_acc
+  | cons hd tl ih =>
+    apply ih
+    simp only
+    exact Int.add_nonneg h_acc (firstColSignRow_fst_nonneg hd.2 hd.1)
+
+theorem firstColSign_snd_nonneg (E : ILS) : 0 ≤ (firstColSign E).2 := by
+  unfold firstColSign
+  suffices h : ∀ (acc : ℤ × ℤ), 0 ≤ acc.2 →
+      0 ≤ ((E.zipIdx).foldl
+        (fun acc ⟨pq, i⟩ => let s := firstColSignRow i pq; (acc.1 + s.1, acc.2 + s.2))
+        acc).2 by
+    exact h (0, 0) (le_refl 0)
+  intro acc h_acc
+  induction E.zipIdx generalizing acc with
+  | nil => exact h_acc
+  | cons hd tl ih =>
+    apply ih
+    simp only
+    exact Int.add_nonneg h_acc (firstColSignRow_snd_nonneg hd.2 hd.1)
+
 /-- `signRow i pq = (0, 0)` iff `pq = (0, 0)`. -/
 theorem signRow_eq_zero_iff (i : ℕ) (pq : ℤ × ℤ) :
     signRow i pq = (0, 0) ↔ pq = (0, 0) := by
