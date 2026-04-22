@@ -1595,6 +1595,89 @@ theorem Phi_Bminus_sig_trim_injective_zero {μP μQ : YoungDiagram}
   intro p _ _
   exact isEmptyElim p.1
 
+/-! ## D / C / M : signature (0, 0) forces ⊥ shapes
+
+For D/C/M types (no "+1" offset), a PBP with signature (0, 0) must
+have both shapes empty. Consequently `PBPSet_γ_sig μP μQ (0, 0)` is
+empty whenever either `μP` or `μQ` is non-bottom.
+-/
+
+/-- `PBPSet_D_sig μP μQ (0, 0)` is empty if `μP ≠ ⊥`. -/
+theorem PBPSet_D_sig_zero_eq_empty_of_P_ne_bot {μP μQ : YoungDiagram}
+    (hP : μP ≠ ⊥) :
+    IsEmpty (PBPSet_D_sig μP μQ (0, 0)) := by
+  refine ⟨fun M => ?_⟩
+  have h_eq : signTarget_D M.val.val = (0, 0) := M.prop
+  have hγ : M.val.val.γ = .D := M.val.prop.1
+  have h_shape : M.val.val.P.shape = μP := M.val.prop.2.1
+  have h_sig : PBP.signature M.val.val = (0, 0) := by
+    obtain ⟨h1, h2⟩ := Prod.ext_iff.mp h_eq
+    simp only at h1 h2
+    have h1' : ((PBP.signature M.val.val).1 : ℤ) = 0 := h1
+    have h2' : ((PBP.signature M.val.val).2 : ℤ) = 0 := h2
+    ext
+    · exact_mod_cast h1'
+    · exact_mod_cast h2'
+  exact hP (h_shape ▸
+    (PBP_shapes_empty_of_signature_zero_DCM _ (Or.inl hγ) h_sig).1)
+
+/-- `PBPSet_D_sig μP μQ (0, 0)` is empty if `μQ ≠ ⊥`. -/
+theorem PBPSet_D_sig_zero_eq_empty_of_Q_ne_bot {μP μQ : YoungDiagram}
+    (hQ : μQ ≠ ⊥) :
+    IsEmpty (PBPSet_D_sig μP μQ (0, 0)) := by
+  refine ⟨fun M => ?_⟩
+  have h_eq : signTarget_D M.val.val = (0, 0) := M.prop
+  have hγ : M.val.val.γ = .D := M.val.prop.1
+  have h_shape : M.val.val.Q.shape = μQ := M.val.prop.2.2
+  have h_sig : PBP.signature M.val.val = (0, 0) := by
+    obtain ⟨h1, h2⟩ := Prod.ext_iff.mp h_eq
+    simp only at h1 h2
+    have h1' : ((PBP.signature M.val.val).1 : ℤ) = 0 := h1
+    have h2' : ((PBP.signature M.val.val).2 : ℤ) = 0 := h2
+    ext
+    · exact_mod_cast h1'
+    · exact_mod_cast h2'
+  exact hQ (h_shape ▸
+    (PBP_shapes_empty_of_signature_zero_DCM _ (Or.inl hγ) h_sig).2)
+
+/-- `PBPSet_C_sig μP μQ (0, 0)` is empty if `μP ≠ ⊥`. -/
+theorem PBPSet_C_sig_zero_eq_empty_of_P_ne_bot {μP μQ : YoungDiagram}
+    (hP : μP ≠ ⊥) :
+    IsEmpty (PBPSet_C_sig μP μQ (0, 0)) := by
+  refine ⟨fun M => ?_⟩
+  have h_eq : signTarget_C M.val.val = (0, 0) := M.prop
+  have hγ : M.val.val.γ = .C := M.val.prop.1
+  have h_shape : M.val.val.P.shape = μP := M.val.prop.2.1
+  have h_sig : PBP.signature M.val.val = (0, 0) := by
+    obtain ⟨h1, h2⟩ := Prod.ext_iff.mp h_eq
+    simp only at h1 h2
+    have h1' : ((PBP.signature M.val.val).1 : ℤ) = 0 := h1
+    have h2' : ((PBP.signature M.val.val).2 : ℤ) = 0 := h2
+    ext
+    · exact_mod_cast h1'
+    · exact_mod_cast h2'
+  exact hP (h_shape ▸
+    (PBP_shapes_empty_of_signature_zero_DCM _ (Or.inr (Or.inl hγ)) h_sig).1)
+
+/-- `PBPSet_M_sig μP μQ (0, 0)` is empty if `μP ≠ ⊥`. -/
+theorem PBPSet_M_sig_zero_eq_empty_of_P_ne_bot {μP μQ : YoungDiagram}
+    (hP : μP ≠ ⊥) :
+    IsEmpty (PBPSet_M_sig μP μQ (0, 0)) := by
+  refine ⟨fun M => ?_⟩
+  have h_eq : signTarget_M M.val.val = (0, 0) := M.prop
+  have hγ : M.val.val.γ = .M := M.val.prop.1
+  have h_shape : M.val.val.P.shape = μP := M.val.prop.2.1
+  have h_sig : PBP.signature M.val.val = (0, 0) := by
+    obtain ⟨h1, h2⟩ := Prod.ext_iff.mp h_eq
+    simp only at h1 h2
+    have h1' : ((PBP.signature M.val.val).1 : ℤ) = 0 := h1
+    have h2' : ((PBP.signature M.val.val).2 : ℤ) = 0 := h2
+    ext
+    · exact_mod_cast h1'
+    · exact_mod_cast h2'
+  exact hP (h_shape ▸
+    (PBP_shapes_empty_of_signature_zero_DCM _ (Or.inr (Or.inr hγ)) h_sig).1)
+
 /-- Range of `Phi_Bplus_sig_trim` on the (0, 0) sector is empty
     (source is empty — no B⁺ PBP has signature (0, 0)). -/
 theorem Phi_Bplus_sig_trim_range_zero_empty {μP μQ : YoungDiagram}
