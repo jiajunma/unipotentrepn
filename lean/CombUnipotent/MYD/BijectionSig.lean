@@ -987,6 +987,68 @@ theorem Phi_M_sig_trim_zero {μP μQ : YoungDiagram}
     Phi_M_sig_trim h_chain h_sing h_sm σh = MYD_sig_trim.zero :=
   Subsingleton.elim _ _
 
+/-! ## Surjectivity in the (0, 0) sector
+
+Since `MYD_sig_trim γ (0, 0)` is a singleton and `Phi_γ_sig_trim` is
+defined on a non-empty source, surjectivity is automatic. This gives
+the FIRST UNCONDITIONAL surjectivity result for the trim variant
+(no h_surj hypothesis needed).
+-/
+
+theorem phi_D_sig_trim_surjective_zero {μP μQ : YoungDiagram}
+    (h_step : DescentStepSingleton_D)
+    [Inhabited (PBPSet_D_sig μP μQ (0, 0) × Fin 2)] :
+    Function.Surjective
+      (fun p : PBPSet_D_sig μP μQ (0, 0) × Fin 2 => Phi_D_sig_trim h_step p.1 p.2) := by
+  intro M
+  refine ⟨default, ?_⟩
+  exact Subsingleton.elim _ _
+
+theorem phi_Bplus_sig_trim_surjective_zero {μP μQ : YoungDiagram}
+    (h_step : DescentStepSingleton_Bplus)
+    [Inhabited (PBPSet_Bplus_sig μP μQ (0, 0) × Fin 2)] :
+    Function.Surjective
+      (fun p : PBPSet_Bplus_sig μP μQ (0, 0) × Fin 2 =>
+        Phi_Bplus_sig_trim h_step p.1 p.2) := by
+  intro M
+  refine ⟨default, ?_⟩
+  exact Subsingleton.elim _ _
+
+theorem phi_Bminus_sig_trim_surjective_zero {μP μQ : YoungDiagram}
+    (h_sing : DescentChainBminusSingleton)
+    [Inhabited (PBPSet_Bminus_sig μP μQ (0, 0) × Fin 2)] :
+    Function.Surjective
+      (fun p : PBPSet_Bminus_sig μP μQ (0, 0) × Fin 2 =>
+        Phi_Bminus_sig_trim h_sing p.1 p.2) := by
+  intro M
+  refine ⟨default, ?_⟩
+  exact Subsingleton.elim _ _
+
+theorem phi_C_sig_trim_surjective_zero {μP μQ : YoungDiagram}
+    (h_step_D : DescentStepSingleton_D)
+    (h_step_C : DescentStepSingleton_C)
+    (h_chain : ChainExists_C μP μQ)
+    (h_sm : DescentChainSignMatch_C)
+    [Inhabited (PBPSet_C_sig μP μQ (0, 0))] :
+    Function.Surjective
+      (Phi_C_sig_trim (μP := μP) (μQ := μQ) (s := (0, 0))
+        h_step_D h_step_C h_chain h_sm) := by
+  intro M
+  refine ⟨default, ?_⟩
+  exact Subsingleton.elim _ _
+
+theorem phi_M_sig_trim_surjective_zero {μP μQ : YoungDiagram}
+    (h_chain : ChainExists_M μP μQ)
+    (h_sing : DescentChainMSingleton)
+    (h_sm : DescentChainSignMatch_M)
+    [Inhabited (PBPSet_M_sig μP μQ (0, 0))] :
+    Function.Surjective
+      (Phi_M_sig_trim (μP := μP) (μQ := μQ) (s := (0, 0))
+        h_chain h_sing h_sm) := by
+  intro M
+  refine ⟨default, ?_⟩
+  exact Subsingleton.elim _ _
+
 /-! ## `Phi_γ_sig_trim_E = Phi_γ_sig_E` under std hypothesis
 
 Since chain-derived ILSs are trim (via `Phi_γ_sig_E_IsTrim`), `toTrim`
