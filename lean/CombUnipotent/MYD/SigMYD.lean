@@ -332,10 +332,19 @@ noncomputable instance fintype_MYD_sig_trim_neg_snd {γ : RootType} {s : ℤ × 
     (h : s.2 < 0) : Fintype (MYD_sig_trim γ s) :=
   @Fintype.ofIsEmpty _ (MYD_sig_trim_empty_of_sign_neg_snd h)
 
+
 /-- Forget the trim constraint. -/
 def MYD_sig_trim.toMYDSig {γ : RootType} {s : ℤ × ℤ}
     (M : MYD_sig_trim γ s) : MYD_sig γ s :=
   ⟨M.E, M.sign_match⟩
+
+/-- The trim canonical form of a MYD_sig_trim is itself (E-level). -/
+theorem toTrim_of_MYD_sig_trim_toMYDSig {γ : RootType} {s : ℤ × ℤ}
+    (M : MYD_sig_trim γ s) :
+    (MYD_sig.toTrim (MYD_sig_trim.toMYDSig M)).E = M.E := by
+  unfold MYD_sig.toTrim MYD_sig_trim.toMYDSig
+  simp only
+  exact ILS.trim_eq_self_of_IsTrim _ M.is_trim
 
 /-! ## Signature preservation through descent chain
 
