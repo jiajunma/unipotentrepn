@@ -135,6 +135,19 @@ Beyond 36 → 0 sorries, added:
   substantive paper §11.5/§11.6 claims for the trim invariant —
   chain-extracted ILS is trim along valid chains for every γ.
 
+### Trim integration into Phi (5 × 3 PROVED)
+
+- **`Phi_γ_sig_E_IsTrim`** (5): Phi outputs trim ILS under std hypothesis.
+- **`Phi_γ_sig_trim_E_eq_Phi_γ_sig_E`** (5): trim wrapper is identity
+  on Phi's image.
+- **`Phi_γ_sig_trim_injective_of_Phi_γ_sig_injective`** (5):
+  injectivity transfers between Phi and Phi_trim.
+- **`ILS.trim_eq_self_of_IsTrim`**: trim is identity on trim ILS.
+
+These complete the trim integration: future paper-level proof of
+`h_inj` for `Phi_γ_sig` (paper Prop 11.15/11.17 bridge) automatically
+discharges `h_inj` for `Phi_γ_sig_trim`.
+
 Critical finding: `MYD_sig γ s` as defined is **not finite**
 (trailing zeros preserve sign), so the current `Phi_γ_sig_equiv`
 conditional theorem cannot be instantiated. `MYD_sig_trim` fixes
