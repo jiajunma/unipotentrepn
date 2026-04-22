@@ -876,6 +876,36 @@ theorem Phi_Bminus_sig_E_IsTrim {μP μQ : YoungDiagram} {s : ℤ × ℤ}
       (Classical.choose_spec (h_sing
         (Classical.choose_spec (exists_descentChain_Bminus σh.val))))
 
+/-- `Phi_C_sig`'s output `E` is trim under per-step std hypotheses. -/
+theorem Phi_C_sig_E_IsTrim {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    (h_step_D : DescentStepSingleton_D)
+    (h_step_C : DescentStepSingleton_C)
+    (h_chain : ChainExists_C μP μQ)
+    (h_sm : DescentChainSignMatch_C)
+    (h_step_std_D : StepStdAndAugment_D)
+    (h_step_std_C : StepStdAndAugment_C)
+    (σh : PBPSet_C_sig μP μQ s) :
+    ILS.IsTrim (Phi_C_sig h_step_D h_step_C h_chain h_sm σh).E :=
+  chainSingleton_IsTrim_C h_step_std_C h_step_std_D
+    (Classical.choose_spec (h_chain σh.val))
+    (Classical.choose_spec (descentChain_C_singleton h_step_D h_step_C
+      (Classical.choose_spec (h_chain σh.val))))
+
+/-- `Phi_M_sig`'s output `E` is trim under per-step std hypotheses. -/
+theorem Phi_M_sig_E_IsTrim {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    (h_chain : ChainExists_M μP μQ)
+    (h_sing : DescentChainMSingleton)
+    (h_sm : DescentChainSignMatch_M)
+    (h_step_std_M : StepStdAndAugment_M)
+    (h_step_std_Bp : StepStdAndAugment_Bplus)
+    (h_step_std_Bm : StepStdAndAugment_Bminus)
+    (σh : PBPSet_M_sig μP μQ s) :
+    ILS.IsTrim (Phi_M_sig h_chain h_sing h_sm σh).E :=
+  chainSingleton_IsTrim_M h_step_std_M h_step_std_Bp h_step_std_Bm
+    (Classical.choose_spec (h_chain σh.val))
+    (Classical.choose_spec (h_sing
+      (Classical.choose_spec (h_chain σh.val))))
+
 /-! ## Trim-target equiv assembly
 
 These mirror `Phi_γ_sig_equiv` but with `MYD_sig_trim` as target,
