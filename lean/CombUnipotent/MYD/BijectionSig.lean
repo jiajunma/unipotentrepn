@@ -906,6 +906,66 @@ theorem Phi_M_sig_E_IsTrim {μP μQ : YoungDiagram} {s : ℤ × ℤ}
     (Classical.choose_spec (h_sing
       (Classical.choose_spec (h_chain σh.val))))
 
+/-! ## `Phi_γ_sig_trim_E = Phi_γ_sig_E` under std hypothesis
+
+Since chain-derived ILSs are trim (via `Phi_γ_sig_E_IsTrim`), `toTrim`
+acts as identity. So the trim wrapper changes nothing about the
+underlying ILS. -/
+
+theorem Phi_D_sig_trim_E_eq_Phi_D_sig_E {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    (h_step : DescentStepSingleton_D)
+    (h_step_std : StepStdAndAugment_D)
+    (σh : PBPSet_D_sig μP μQ s) (ε : Fin 2) :
+    (Phi_D_sig_trim h_step σh ε).E = (Phi_D_sig h_step σh ε).E := by
+  rw [Phi_D_sig_trim_E]
+  exact ILS.trim_eq_self_of_IsTrim _ (Phi_D_sig_E_IsTrim h_step h_step_std σh ε)
+
+theorem Phi_Bplus_sig_trim_E_eq_Phi_Bplus_sig_E {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    (h_step : DescentStepSingleton_Bplus)
+    (h_step_std : StepStdAndAugment_Bplus)
+    (σh : PBPSet_Bplus_sig μP μQ s) (ε : Fin 2) :
+    (Phi_Bplus_sig_trim h_step σh ε).E = (Phi_Bplus_sig h_step σh ε).E := by
+  rw [Phi_Bplus_sig_trim_E]
+  exact ILS.trim_eq_self_of_IsTrim _ (Phi_Bplus_sig_E_IsTrim h_step h_step_std σh ε)
+
+theorem Phi_Bminus_sig_trim_E_eq_Phi_Bminus_sig_E {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    (h_sing : DescentChainBminusSingleton)
+    (h_step_std_Bm : StepStdAndAugment_Bminus)
+    (h_step_std_Bp : StepStdAndAugment_Bplus)
+    (σh : PBPSet_Bminus_sig μP μQ s) (ε : Fin 2) :
+    (Phi_Bminus_sig_trim h_sing σh ε).E = (Phi_Bminus_sig h_sing σh ε).E := by
+  rw [Phi_Bminus_sig_trim_E]
+  exact ILS.trim_eq_self_of_IsTrim _
+    (Phi_Bminus_sig_E_IsTrim h_sing h_step_std_Bm h_step_std_Bp σh ε)
+
+theorem Phi_C_sig_trim_E_eq_Phi_C_sig_E {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    (h_step_D : DescentStepSingleton_D)
+    (h_step_C : DescentStepSingleton_C)
+    (h_chain : ChainExists_C μP μQ)
+    (h_sm : DescentChainSignMatch_C)
+    (h_step_std_D : StepStdAndAugment_D)
+    (h_step_std_C : StepStdAndAugment_C)
+    (σh : PBPSet_C_sig μP μQ s) :
+    (Phi_C_sig_trim h_step_D h_step_C h_chain h_sm σh).E =
+    (Phi_C_sig h_step_D h_step_C h_chain h_sm σh).E := by
+  rw [Phi_C_sig_trim_E]
+  exact ILS.trim_eq_self_of_IsTrim _
+    (Phi_C_sig_E_IsTrim h_step_D h_step_C h_chain h_sm h_step_std_D h_step_std_C σh)
+
+theorem Phi_M_sig_trim_E_eq_Phi_M_sig_E {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    (h_chain : ChainExists_M μP μQ)
+    (h_sing : DescentChainMSingleton)
+    (h_sm : DescentChainSignMatch_M)
+    (h_step_std_M : StepStdAndAugment_M)
+    (h_step_std_Bp : StepStdAndAugment_Bplus)
+    (h_step_std_Bm : StepStdAndAugment_Bminus)
+    (σh : PBPSet_M_sig μP μQ s) :
+    (Phi_M_sig_trim h_chain h_sing h_sm σh).E =
+    (Phi_M_sig h_chain h_sing h_sm σh).E := by
+  rw [Phi_M_sig_trim_E]
+  exact ILS.trim_eq_self_of_IsTrim _
+    (Phi_M_sig_E_IsTrim h_chain h_sing h_sm h_step_std_M h_step_std_Bp h_step_std_Bm σh)
+
 /-! ## Trim-target equiv assembly
 
 These mirror `Phi_γ_sig_equiv` but with `MYD_sig_trim` as target,
