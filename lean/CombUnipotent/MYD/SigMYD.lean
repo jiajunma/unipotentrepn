@@ -322,6 +322,16 @@ theorem MYD_sig_trim_empty_of_sign_neg_snd {γ : RootType} {s : ℤ × ℤ}
   rw [M.sign_match] at h_nn
   omega
 
+/-- `Fintype (MYD_sig_trim γ s)` when s has negative first component. -/
+noncomputable instance fintype_MYD_sig_trim_neg_fst {γ : RootType} {s : ℤ × ℤ}
+    (h : s.1 < 0) : Fintype (MYD_sig_trim γ s) :=
+  @Fintype.ofIsEmpty _ (MYD_sig_trim_empty_of_sign_neg_fst h)
+
+/-- `Fintype (MYD_sig_trim γ s)` when s has negative second component. -/
+noncomputable instance fintype_MYD_sig_trim_neg_snd {γ : RootType} {s : ℤ × ℤ}
+    (h : s.2 < 0) : Fintype (MYD_sig_trim γ s) :=
+  @Fintype.ofIsEmpty _ (MYD_sig_trim_empty_of_sign_neg_snd h)
+
 /-- Forget the trim constraint. -/
 def MYD_sig_trim.toMYDSig {γ : RootType} {s : ℤ × ℤ}
     (M : MYD_sig_trim γ s) : MYD_sig γ s :=
