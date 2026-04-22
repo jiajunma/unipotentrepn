@@ -848,4 +848,58 @@ noncomputable def Phi_M_sig_trim_equiv (μP μQ : YoungDiagram) (s : ℤ × ℤ)
     PBPSet_M_sig μP μQ s ≃ MYD_sig_trim .M s :=
   Equiv.ofBijective _ ⟨h_inj, h_surj⟩
 
+/-! ## Image equivs (only requires injectivity)
+
+Each `Phi_γ_sig_image_equiv` gives an equiv to the IMAGE of Phi
+(a Set in MYD_sig γ s) — needs only injectivity, not surjectivity.
+
+Useful as a partial bijection result that's discharge-able with
+fewer hypotheses.
+-/
+
+noncomputable def Phi_D_sig_image_equiv (μP μQ : YoungDiagram) (s : ℤ × ℤ)
+    (h_step : DescentStepSingleton_D)
+    (h_inj : Function.Injective
+      (fun p : PBPSet_D_sig μP μQ s × Fin 2 => Phi_D_sig h_step p.1 p.2)) :
+    PBPSet_D_sig μP μQ s × Fin 2 ≃
+      Set.range (fun p : PBPSet_D_sig μP μQ s × Fin 2 => Phi_D_sig h_step p.1 p.2) :=
+  Equiv.ofInjective _ h_inj
+
+noncomputable def Phi_Bplus_sig_image_equiv (μP μQ : YoungDiagram) (s : ℤ × ℤ)
+    (h_step : DescentStepSingleton_Bplus)
+    (h_inj : Function.Injective
+      (fun p : PBPSet_Bplus_sig μP μQ s × Fin 2 => Phi_Bplus_sig h_step p.1 p.2)) :
+    PBPSet_Bplus_sig μP μQ s × Fin 2 ≃
+      Set.range (fun p : PBPSet_Bplus_sig μP μQ s × Fin 2 => Phi_Bplus_sig h_step p.1 p.2) :=
+  Equiv.ofInjective _ h_inj
+
+noncomputable def Phi_Bminus_sig_image_equiv (μP μQ : YoungDiagram) (s : ℤ × ℤ)
+    (h_sing : DescentChainBminusSingleton)
+    (h_inj : Function.Injective
+      (fun p : PBPSet_Bminus_sig μP μQ s × Fin 2 => Phi_Bminus_sig h_sing p.1 p.2)) :
+    PBPSet_Bminus_sig μP μQ s × Fin 2 ≃
+      Set.range (fun p : PBPSet_Bminus_sig μP μQ s × Fin 2 => Phi_Bminus_sig h_sing p.1 p.2) :=
+  Equiv.ofInjective _ h_inj
+
+noncomputable def Phi_C_sig_image_equiv (μP μQ : YoungDiagram) (s : ℤ × ℤ)
+    (h_step_D : DescentStepSingleton_D)
+    (h_step_C : DescentStepSingleton_C)
+    (h_chain : ChainExists_C μP μQ)
+    (h_sm : DescentChainSignMatch_C)
+    (h_inj : Function.Injective
+      (Phi_C_sig (μP := μP) (μQ := μQ) (s := s) h_step_D h_step_C h_chain h_sm)) :
+    PBPSet_C_sig μP μQ s ≃
+      Set.range (Phi_C_sig (μP := μP) (μQ := μQ) (s := s) h_step_D h_step_C h_chain h_sm) :=
+  Equiv.ofInjective _ h_inj
+
+noncomputable def Phi_M_sig_image_equiv (μP μQ : YoungDiagram) (s : ℤ × ℤ)
+    (h_chain : ChainExists_M μP μQ)
+    (h_sing : DescentChainMSingleton)
+    (h_sm : DescentChainSignMatch_M)
+    (h_inj : Function.Injective
+      (Phi_M_sig (μP := μP) (μQ := μQ) (s := s) h_chain h_sing h_sm)) :
+    PBPSet_M_sig μP μQ s ≃
+      Set.range (Phi_M_sig (μP := μP) (μQ := μQ) (s := s) h_chain h_sing h_sm) :=
+  Equiv.ofInjective _ h_inj
+
 end BMSZ
