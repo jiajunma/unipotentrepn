@@ -1659,6 +1659,25 @@ theorem PBPSet_C_sig_zero_eq_empty_of_P_ne_bot {μP μQ : YoungDiagram}
   exact hP (h_shape ▸
     (PBP_shapes_empty_of_signature_zero_DCM _ (Or.inr (Or.inl hγ)) h_sig).1)
 
+/-- `PBPSet_C_sig μP μQ (0, 0)` is empty if `μQ ≠ ⊥`. -/
+theorem PBPSet_C_sig_zero_eq_empty_of_Q_ne_bot {μP μQ : YoungDiagram}
+    (hQ : μQ ≠ ⊥) :
+    IsEmpty (PBPSet_C_sig μP μQ (0, 0)) := by
+  refine ⟨fun M => ?_⟩
+  have h_eq : signTarget_C M.val.val = (0, 0) := M.prop
+  have hγ : M.val.val.γ = .C := M.val.prop.1
+  have h_shape : M.val.val.Q.shape = μQ := M.val.prop.2.2
+  have h_sig : PBP.signature M.val.val = (0, 0) := by
+    obtain ⟨h1, h2⟩ := Prod.ext_iff.mp h_eq
+    simp only at h1 h2
+    have h1' : ((PBP.signature M.val.val).1 : ℤ) = 0 := h1
+    have h2' : ((PBP.signature M.val.val).2 : ℤ) = 0 := h2
+    ext
+    · exact_mod_cast h1'
+    · exact_mod_cast h2'
+  exact hQ (h_shape ▸
+    (PBP_shapes_empty_of_signature_zero_DCM _ (Or.inr (Or.inl hγ)) h_sig).2)
+
 /-- `PBPSet_M_sig μP μQ (0, 0)` is empty if `μP ≠ ⊥`. -/
 theorem PBPSet_M_sig_zero_eq_empty_of_P_ne_bot {μP μQ : YoungDiagram}
     (hP : μP ≠ ⊥) :
@@ -1677,6 +1696,25 @@ theorem PBPSet_M_sig_zero_eq_empty_of_P_ne_bot {μP μQ : YoungDiagram}
     · exact_mod_cast h2'
   exact hP (h_shape ▸
     (PBP_shapes_empty_of_signature_zero_DCM _ (Or.inr (Or.inr hγ)) h_sig).1)
+
+/-- `PBPSet_M_sig μP μQ (0, 0)` is empty if `μQ ≠ ⊥`. -/
+theorem PBPSet_M_sig_zero_eq_empty_of_Q_ne_bot {μP μQ : YoungDiagram}
+    (hQ : μQ ≠ ⊥) :
+    IsEmpty (PBPSet_M_sig μP μQ (0, 0)) := by
+  refine ⟨fun M => ?_⟩
+  have h_eq : signTarget_M M.val.val = (0, 0) := M.prop
+  have hγ : M.val.val.γ = .M := M.val.prop.1
+  have h_shape : M.val.val.Q.shape = μQ := M.val.prop.2.2
+  have h_sig : PBP.signature M.val.val = (0, 0) := by
+    obtain ⟨h1, h2⟩ := Prod.ext_iff.mp h_eq
+    simp only at h1 h2
+    have h1' : ((PBP.signature M.val.val).1 : ℤ) = 0 := h1
+    have h2' : ((PBP.signature M.val.val).2 : ℤ) = 0 := h2
+    ext
+    · exact_mod_cast h1'
+    · exact_mod_cast h2'
+  exact hQ (h_shape ▸
+    (PBP_shapes_empty_of_signature_zero_DCM _ (Or.inr (Or.inr hγ)) h_sig).2)
 
 /-- Range of `Phi_Bplus_sig_trim` on the (0, 0) sector is empty
     (source is empty — no B⁺ PBP has signature (0, 0)). -/
@@ -1702,6 +1740,83 @@ theorem Phi_Bminus_sig_trim_range_zero_empty {μP μQ : YoungDiagram}
   simp only [Set.mem_range, Set.mem_empty_iff_false, iff_false]
   rintro ⟨p, _⟩
   exact isEmptyElim p.1
+
+/-! ## Universal Fintype instances for the (0, 0) sector
+
+For any `μP, μQ`, `PBPSet_{D,C,M}_sig μP μQ (0, 0)` is fully
+characterized: singleton when `μP = μQ = ⊥`, empty otherwise.
+This yields a universal Fintype instance (no shape hypothesis). -/
+
+/-- `PBPSet_D_sig μP μQ (0, 0)` is always finite. -/
+noncomputable instance fintype_PBPSet_D_sig_zero (μP μQ : YoungDiagram) :
+    Fintype (PBPSet_D_sig μP μQ (0, 0)) := by
+  classical
+  by_cases hP : μP = ⊥
+  · by_cases hQ : μQ = ⊥
+    · subst hP; subst hQ; infer_instance
+    · exact @Fintype.ofIsEmpty _ (PBPSet_D_sig_zero_eq_empty_of_Q_ne_bot hQ)
+  · exact @Fintype.ofIsEmpty _ (PBPSet_D_sig_zero_eq_empty_of_P_ne_bot hP)
+
+/-- `PBPSet_C_sig μP μQ (0, 0)` is always finite. -/
+noncomputable instance fintype_PBPSet_C_sig_zero (μP μQ : YoungDiagram) :
+    Fintype (PBPSet_C_sig μP μQ (0, 0)) := by
+  classical
+  by_cases hP : μP = ⊥
+  · by_cases hQ : μQ = ⊥
+    · subst hP; subst hQ; infer_instance
+    · exact @Fintype.ofIsEmpty _ (PBPSet_C_sig_zero_eq_empty_of_Q_ne_bot hQ)
+  · exact @Fintype.ofIsEmpty _ (PBPSet_C_sig_zero_eq_empty_of_P_ne_bot hP)
+
+/-- `PBPSet_M_sig μP μQ (0, 0)` is always finite. -/
+noncomputable instance fintype_PBPSet_M_sig_zero (μP μQ : YoungDiagram) :
+    Fintype (PBPSet_M_sig μP μQ (0, 0)) := by
+  classical
+  by_cases hP : μP = ⊥
+  · by_cases hQ : μQ = ⊥
+    · subst hP; subst hQ; infer_instance
+    · exact @Fintype.ofIsEmpty _ (PBPSet_M_sig_zero_eq_empty_of_Q_ne_bot hQ)
+  · exact @Fintype.ofIsEmpty _ (PBPSet_M_sig_zero_eq_empty_of_P_ne_bot hP)
+
+/-! ## Cardinality of the (0, 0) sector for D/C/M
+
+For `μP = μQ = ⊥`: singleton (cardinality 1).
+Otherwise: empty (cardinality 0). -/
+
+theorem card_PBPSet_D_sig_zero_bot :
+    Fintype.card (PBPSet_D_sig (⊥ : YoungDiagram) ⊥ (0, 0)) = 1 := by
+  exact Fintype.card_eq_one_iff.mpr ⟨default, fun _ => Subsingleton.elim _ _⟩
+
+theorem card_PBPSet_C_sig_zero_bot :
+    Fintype.card (PBPSet_C_sig (⊥ : YoungDiagram) ⊥ (0, 0)) = 1 := by
+  exact Fintype.card_eq_one_iff.mpr ⟨default, fun _ => Subsingleton.elim _ _⟩
+
+theorem card_PBPSet_M_sig_zero_bot :
+    Fintype.card (PBPSet_M_sig (⊥ : YoungDiagram) ⊥ (0, 0)) = 1 := by
+  exact Fintype.card_eq_one_iff.mpr ⟨default, fun _ => Subsingleton.elim _ _⟩
+
+theorem card_PBPSet_D_sig_zero_of_P_ne_bot {μP μQ : YoungDiagram} (hP : μP ≠ ⊥) :
+    Fintype.card (PBPSet_D_sig μP μQ (0, 0)) = 0 :=
+  @Fintype.card_eq_zero _ _ (PBPSet_D_sig_zero_eq_empty_of_P_ne_bot hP)
+
+theorem card_PBPSet_D_sig_zero_of_Q_ne_bot {μP μQ : YoungDiagram} (hQ : μQ ≠ ⊥) :
+    Fintype.card (PBPSet_D_sig μP μQ (0, 0)) = 0 :=
+  @Fintype.card_eq_zero _ _ (PBPSet_D_sig_zero_eq_empty_of_Q_ne_bot hQ)
+
+theorem card_PBPSet_C_sig_zero_of_P_ne_bot {μP μQ : YoungDiagram} (hP : μP ≠ ⊥) :
+    Fintype.card (PBPSet_C_sig μP μQ (0, 0)) = 0 :=
+  @Fintype.card_eq_zero _ _ (PBPSet_C_sig_zero_eq_empty_of_P_ne_bot hP)
+
+theorem card_PBPSet_C_sig_zero_of_Q_ne_bot {μP μQ : YoungDiagram} (hQ : μQ ≠ ⊥) :
+    Fintype.card (PBPSet_C_sig μP μQ (0, 0)) = 0 :=
+  @Fintype.card_eq_zero _ _ (PBPSet_C_sig_zero_eq_empty_of_Q_ne_bot hQ)
+
+theorem card_PBPSet_M_sig_zero_of_P_ne_bot {μP μQ : YoungDiagram} (hP : μP ≠ ⊥) :
+    Fintype.card (PBPSet_M_sig μP μQ (0, 0)) = 0 :=
+  @Fintype.card_eq_zero _ _ (PBPSet_M_sig_zero_eq_empty_of_P_ne_bot hP)
+
+theorem card_PBPSet_M_sig_zero_of_Q_ne_bot {μP μQ : YoungDiagram} (hQ : μQ ≠ ⊥) :
+    Fintype.card (PBPSet_M_sig μP μQ (0, 0)) = 0 :=
+  @Fintype.card_eq_zero _ _ (PBPSet_M_sig_zero_eq_empty_of_Q_ne_bot hQ)
 
 /-! ## `Phi_γ_sig_trim_E = Phi_γ_sig_E` under std hypothesis
 
