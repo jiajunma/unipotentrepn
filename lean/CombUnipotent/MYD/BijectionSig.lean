@@ -1299,6 +1299,47 @@ noncomputable def Phi_M_sig_trim_bot_zero_equiv
     PBPSet_M_sig (⊥ : YoungDiagram) ⊥ (0, 0) ≃ MYD_sig_trim .M (0, 0) :=
   Phi_M_sig_trim_zero_equiv h_chain h_sing h_sm
 
+/-! ## PBPSet_*_sig (⊥, ⊥) s is empty for s ≠ (0, 0)
+
+For empty shape (⊥), the only PBP is `emptyPBP_C` (resp. `emptyPBP_M`)
+with signature (0, 0). Therefore PBPSet_*_sig (⊥, ⊥) s for s ≠ (0, 0)
+is empty.
+-/
+
+theorem PBPSet_C_sig_bot_eq_empty {s : ℤ × ℤ} (h : s ≠ (0, 0)) :
+    IsEmpty (PBPSet_C_sig (⊥ : YoungDiagram) ⊥ s) := by
+  refine ⟨fun M => ?_⟩
+  have h_eq : signTarget_C M.val.val = s := M.prop
+  have h_unique : M.val = emptyPBPSet_C := Subsingleton.elim _ _
+  have h_sig : signTarget_C M.val.val = (0, 0) := by
+    rw [h_unique]
+    show signTarget_C emptyPBP_C = (0, 0)
+    unfold signTarget_C
+    rw [emptyPBP_C_signature]
+    rfl
+  exact h (h_eq.symm.trans h_sig)
+
+theorem PBPSet_M_sig_bot_eq_empty {s : ℤ × ℤ} (h : s ≠ (0, 0)) :
+    IsEmpty (PBPSet_M_sig (⊥ : YoungDiagram) ⊥ s) := by
+  refine ⟨fun M => ?_⟩
+  have h_eq : signTarget_M M.val.val = s := M.prop
+  have h_unique : M.val = emptyPBPSet_M := Subsingleton.elim _ _
+  have h_sig : signTarget_M M.val.val = (0, 0) := by
+    rw [h_unique]
+    show signTarget_M emptyPBP_M = (0, 0)
+    unfold signTarget_M
+    rw [emptyPBP_M_signature]
+    rfl
+  exact h (h_eq.symm.trans h_sig)
+
+noncomputable instance fintype_PBPSet_C_sig_bot_nonzero {s : ℤ × ℤ} (h : s ≠ (0, 0)) :
+    Fintype (PBPSet_C_sig (⊥ : YoungDiagram) ⊥ s) :=
+  @Fintype.ofIsEmpty _ (PBPSet_C_sig_bot_eq_empty h)
+
+noncomputable instance fintype_PBPSet_M_sig_bot_nonzero {s : ℤ × ℤ} (h : s ≠ (0, 0)) :
+    Fintype (PBPSet_M_sig (⊥ : YoungDiagram) ⊥ s) :=
+  @Fintype.ofIsEmpty _ (PBPSet_M_sig_bot_eq_empty h)
+
 /-! ## `Phi_γ_sig_trim_E = Phi_γ_sig_E` under std hypothesis
 
 Since chain-derived ILSs are trim (via `Phi_γ_sig_E_IsTrim`), `toTrim`
