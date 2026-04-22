@@ -519,6 +519,18 @@ theorem Q_colLens_length_le_one_of_C_P_bot {τ : PBP} (hγ : τ.γ = .C)
   rw [YoungDiagram.length_colLens]
   exact Q_rowLen_le_one_of_C_P_bot hγ hP 0
 
+/-- `PBPSet .C ⊥ μQ` is empty when μQ has more than 1 column. -/
+theorem PBPSet_C_P_bot_Q_multi_col_eq_empty {μQ : YoungDiagram}
+    (h : μQ.colLens.length ≥ 2) : IsEmpty (PBPSet .C (⊥ : YoungDiagram) μQ) := by
+  refine ⟨fun σ => ?_⟩
+  have hγ : σ.val.γ = .C := σ.prop.1
+  have hP : σ.val.P.shape = ⊥ := σ.prop.2.1
+  have hQ : σ.val.Q.shape = μQ := σ.prop.2.2
+  have h_len : σ.val.Q.shape.colLens.length ≤ 1 :=
+    Q_colLens_length_le_one_of_C_P_bot hγ hP
+  rw [hQ] at h_len
+  omega
+
 /-- **Concrete ChainExists_C for single-column Q**: given μP = ⊥ and
     μQ with single column of height k ≥ 1, the chain exists via dp = [2k+1].
     First non-trivial paper §9.4 case. -/
@@ -540,5 +552,34 @@ theorem chainExists_C_single_col_Q {μQ : YoungDiagram} {k : ℕ}
     subst hr
     exact ⟨k, by ring⟩
   exact exists_descentChain_C σ dp h_coh h_sort h_odd
+
+/-- 🎯🎯 **Full `chainExists_C ⊥ μQ` discharge for ANY μQ** (paper §9.4).
+    Combines:
+    - μQ.colLens = [] → μQ = ⊥ → chainExists_C_empty
+    - μQ.colLens = [k] → chainExists_C_single_col_Q
+    - μQ.colLens longer → PBPSet vacuously empty -/
+theorem chainExists_C_P_bot (μQ : YoungDiagram) :
+    ChainExists_C (⊥ : YoungDiagram) μQ := by
+  intro σ
+  have hγ : σ.val.γ = .C := σ.prop.1
+  have hP_σ : σ.val.P.shape = ⊥ := σ.prop.2.1
+  have hQ_σ : σ.val.Q.shape = μQ := σ.prop.2.2
+  have h_len : μQ.colLens.length ≤ 1 := by
+    rw [← hQ_σ]
+    exact Q_colLens_length_le_one_of_C_P_bot hγ hP_σ
+  match h : μQ.colLens with
+  | [] =>
+    have hμQ_bot : μQ = ⊥ := yd_of_colLens_nil h
+    subst hμQ_bot
+    exact chainExists_C_empty σ
+  | [k] =>
+    have hk_pos : k ≥ 1 := by
+      have hk_pos' : 0 < k :=
+        YoungDiagram.pos_of_mem_colLens μQ k (h ▸ List.mem_singleton.mpr rfl)
+      omega
+    exact chainExists_C_single_col_Q hk_pos h σ
+  | _ :: _ :: _ =>
+    rw [h] at h_len
+    simp at h_len
 
 end BMSZ
