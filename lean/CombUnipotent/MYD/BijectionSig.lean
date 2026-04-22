@@ -1547,6 +1547,54 @@ noncomputable instance fintype_PBPSet_Bminus_sig_bot_nontarget {s : ℤ × ℤ}
     Fintype (PBPSet_Bminus_sig (⊥ : YoungDiagram) ⊥ s) :=
   @Fintype.ofIsEmpty _ (PBPSet_Bminus_sig_bot_eq_empty h)
 
+/-! ## Vacuous injectivity of Phi on empty-source sectors
+
+When the source is empty, every function from it is injective.  For
+B⁺/B⁻, the (0, 0) sector is always empty (signature ≥ 1 in one
+coordinate), so injectivity is unconditional.
+-/
+
+/-- Phi_Bplus_sig is vacuously injective on the (0, 0) sector
+    (source is empty — no B⁺ PBP has signature.1 = 0). -/
+theorem Phi_Bplus_sig_injective_zero {μP μQ : YoungDiagram}
+    (h_step : DescentStepSingleton_Bplus) :
+    Function.Injective
+      (fun p : PBPSet_Bplus_sig μP μQ (0, 0) × Fin 2 =>
+        Phi_Bplus_sig h_step p.1 p.2) := by
+  haveI : IsEmpty (PBPSet_Bplus_sig μP μQ (0, 0)) := PBPSet_Bplus_sig_zero_eq_empty
+  intro p _ _
+  exact isEmptyElim p.1
+
+/-- Phi_Bminus_sig is vacuously injective on the (0, 0) sector. -/
+theorem Phi_Bminus_sig_injective_zero {μP μQ : YoungDiagram}
+    (h_sing : DescentChainBminusSingleton) :
+    Function.Injective
+      (fun p : PBPSet_Bminus_sig μP μQ (0, 0) × Fin 2 =>
+        Phi_Bminus_sig h_sing p.1 p.2) := by
+  haveI : IsEmpty (PBPSet_Bminus_sig μP μQ (0, 0)) := PBPSet_Bminus_sig_zero_eq_empty
+  intro p _ _
+  exact isEmptyElim p.1
+
+/-- Phi_Bplus_sig_trim is vacuously injective on the (0, 0) sector. -/
+theorem Phi_Bplus_sig_trim_injective_zero {μP μQ : YoungDiagram}
+    (h_step : DescentStepSingleton_Bplus) :
+    Function.Injective
+      (fun p : PBPSet_Bplus_sig μP μQ (0, 0) × Fin 2 =>
+        Phi_Bplus_sig_trim h_step p.1 p.2) := by
+  haveI : IsEmpty (PBPSet_Bplus_sig μP μQ (0, 0)) := PBPSet_Bplus_sig_zero_eq_empty
+  intro p _ _
+  exact isEmptyElim p.1
+
+/-- Phi_Bminus_sig_trim is vacuously injective on the (0, 0) sector. -/
+theorem Phi_Bminus_sig_trim_injective_zero {μP μQ : YoungDiagram}
+    (h_sing : DescentChainBminusSingleton) :
+    Function.Injective
+      (fun p : PBPSet_Bminus_sig μP μQ (0, 0) × Fin 2 =>
+        Phi_Bminus_sig_trim h_sing p.1 p.2) := by
+  haveI : IsEmpty (PBPSet_Bminus_sig μP μQ (0, 0)) := PBPSet_Bminus_sig_zero_eq_empty
+  intro p _ _
+  exact isEmptyElim p.1
+
 /-! ## `Phi_γ_sig_trim_E = Phi_γ_sig_E` under std hypothesis
 
 Since chain-derived ILSs are trim (via `Phi_γ_sig_E_IsTrim`), `toTrim`
