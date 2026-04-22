@@ -366,3 +366,21 @@ theorem PBP.signature_sum_DCM_even (τ : PBP)
   · have := PBP.signature_sum_D τ h; omega
   · have := PBP.signature_sum_C τ h; omega
   · have := PBP.signature_sum_M τ h; omega
+
+/-! ## Parity-based sector emptiness -/
+
+/-- No B⁺ PBP has signature `(a, b)` with `a + b` even. -/
+theorem PBP.no_Bplus_of_sum_even (τ : PBP) (hγ : τ.γ = .Bplus)
+    (h : Even ((PBP.signature τ).1 + (PBP.signature τ).2)) : False :=
+  (Nat.not_odd_iff_even.mpr h) (PBP.signature_sum_Bplus_odd τ hγ)
+
+/-- No B⁻ PBP has signature `(a, b)` with `a + b` even. -/
+theorem PBP.no_Bminus_of_sum_even (τ : PBP) (hγ : τ.γ = .Bminus)
+    (h : Even ((PBP.signature τ).1 + (PBP.signature τ).2)) : False :=
+  (Nat.not_odd_iff_even.mpr h) (PBP.signature_sum_Bminus_odd τ hγ)
+
+/-- No D/C/M PBP has signature `(a, b)` with `a + b` odd. -/
+theorem PBP.no_DCM_of_sum_odd (τ : PBP)
+    (hγ : τ.γ = .D ∨ τ.γ = .C ∨ τ.γ = .M)
+    (h : Odd ((PBP.signature τ).1 + (PBP.signature τ).2)) : False :=
+  (Nat.not_even_iff_odd.mpr h) (PBP.signature_sum_DCM_even τ hγ)
