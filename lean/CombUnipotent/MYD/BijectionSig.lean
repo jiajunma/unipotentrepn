@@ -1340,6 +1340,71 @@ noncomputable instance fintype_PBPSet_M_sig_bot_nonzero {s : ℤ × ℤ} (h : s 
     Fintype (PBPSet_M_sig (⊥ : YoungDiagram) ⊥ s) :=
   @Fintype.ofIsEmpty _ (PBPSet_M_sig_bot_eq_empty h)
 
+/-! ## D-type analogues (instances on ⊥⊥) -/
+
+/-- `Inhabited (PBPSet_D_sig ⊥ ⊥ (0, 0))` — concrete witness via emptyPBP_D. -/
+instance inhabited_PBPSet_D_sig_zero :
+    Inhabited (PBPSet_D_sig (⊥ : YoungDiagram) ⊥ (0, 0)) :=
+  ⟨⟨emptyPBPSet_D, by
+    show signTarget_D emptyPBP_D = (0, 0)
+    unfold signTarget_D
+    rw [emptyPBP_D_signature]
+    rfl⟩⟩
+
+/-- `Subsingleton (PBPSet .D ⊥ ⊥)` — uniqueness via PBP_eq_of_shapes_bot. -/
+instance subsingleton_PBPSet_D_bot :
+    Subsingleton (PBPSet .D (⊥ : YoungDiagram) ⊥) := by
+  refine ⟨fun σ₁ σ₂ => ?_⟩
+  apply Subtype.ext
+  apply PBP_eq_of_shapes_bot
+  · rw [σ₁.prop.1, σ₂.prop.1]
+  · exact σ₁.prop.2.1
+  · exact σ₁.prop.2.2
+  · exact σ₂.prop.2.1
+  · exact σ₂.prop.2.2
+
+/-- `Subsingleton (PBPSet_D_sig ⊥ ⊥ s)` for any s. -/
+instance subsingleton_PBPSet_D_sig_bot (s : ℤ × ℤ) :
+    Subsingleton (PBPSet_D_sig (⊥ : YoungDiagram) ⊥ s) := by
+  refine ⟨fun M₁ M₂ => ?_⟩
+  apply Subtype.ext
+  exact Subsingleton.elim _ _
+
+/-- `PBPSet_D_sig ⊥ ⊥ s` is empty for any `s ≠ (0, 0)`. -/
+theorem PBPSet_D_sig_bot_eq_empty {s : ℤ × ℤ} (h : s ≠ (0, 0)) :
+    IsEmpty (PBPSet_D_sig (⊥ : YoungDiagram) ⊥ s) := by
+  refine ⟨fun M => ?_⟩
+  have h_eq : signTarget_D M.val.val = s := M.prop
+  have h_unique : M.val = emptyPBPSet_D := Subsingleton.elim _ _
+  have h_sig : signTarget_D M.val.val = (0, 0) := by
+    rw [h_unique]
+    show signTarget_D emptyPBP_D = (0, 0)
+    unfold signTarget_D
+    rw [emptyPBP_D_signature]
+    rfl
+  exact h (h_eq.symm.trans h_sig)
+
+noncomputable instance fintype_PBPSet_D_sig_bot_nonzero {s : ℤ × ℤ} (h : s ≠ (0, 0)) :
+    Fintype (PBPSet_D_sig (⊥ : YoungDiagram) ⊥ s) :=
+  @Fintype.ofIsEmpty _ (PBPSet_D_sig_bot_eq_empty h)
+
+/-- `Phi_D_sig_trim` is constant (= `MYD_sig_trim.zero`) on the (⊥, ⊥) (0, 0)
+    sector. Follows directly from `Phi_D_sig_trim_zero`. -/
+theorem Phi_D_sig_trim_bot_zero_const
+    (h_step : DescentStepSingleton_D)
+    (σh : PBPSet_D_sig (⊥ : YoungDiagram) ⊥ (0, 0)) (ε : Fin 2) :
+    Phi_D_sig_trim h_step σh ε = MYD_sig_trim.zero :=
+  Phi_D_sig_trim_zero h_step σh ε
+
+/-- Range of `Phi_D_sig_trim` on the (⊥, ⊥) (0, 0) sector is the singleton
+    `{MYD_sig_trim.zero}`. Removes the `Inhabited` hypothesis via the
+    concrete instance. -/
+theorem Phi_D_sig_trim_bot_range_zero (h_step : DescentStepSingleton_D) :
+    Set.range
+      (fun p : PBPSet_D_sig (⊥ : YoungDiagram) ⊥ (0, 0) × Fin 2 =>
+        Phi_D_sig_trim h_step p.1 p.2) = {MYD_sig_trim.zero} :=
+  Phi_D_sig_trim_range_zero (μP := ⊥) (μQ := ⊥) h_step
+
 /-! ## `Phi_γ_sig_trim_E = Phi_γ_sig_E` under std hypothesis
 
 Since chain-derived ILSs are trim (via `Phi_γ_sig_E_IsTrim`), `toTrim`
