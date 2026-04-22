@@ -792,6 +792,39 @@ noncomputable def Phi_M_sig_trim {μP μQ : YoungDiagram} {s : ℤ × ℤ}
     (σh : PBPSet_M_sig μP μQ s) : MYD_sig_trim .M s :=
   (Phi_M_sig h_chain h_sing h_sm σh).toTrim
 
+/-- `Phi_D_sig_trim`'s `.E` field equals `trim` of `Phi_D_sig`'s output. -/
+theorem Phi_D_sig_trim_E {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    (h_step : DescentStepSingleton_D)
+    (σh : PBPSet_D_sig μP μQ s) (ε : Fin 2) :
+    (Phi_D_sig_trim h_step σh ε).E = ILS.trim (Phi_D_sig h_step σh ε).E := rfl
+
+theorem Phi_Bplus_sig_trim_E {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    (h_step : DescentStepSingleton_Bplus)
+    (σh : PBPSet_Bplus_sig μP μQ s) (ε : Fin 2) :
+    (Phi_Bplus_sig_trim h_step σh ε).E = ILS.trim (Phi_Bplus_sig h_step σh ε).E := rfl
+
+theorem Phi_Bminus_sig_trim_E {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    (h_sing : DescentChainBminusSingleton)
+    (σh : PBPSet_Bminus_sig μP μQ s) (ε : Fin 2) :
+    (Phi_Bminus_sig_trim h_sing σh ε).E = ILS.trim (Phi_Bminus_sig h_sing σh ε).E := rfl
+
+theorem Phi_C_sig_trim_E {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    (h_step_D : DescentStepSingleton_D)
+    (h_step_C : DescentStepSingleton_C)
+    (h_chain : ChainExists_C μP μQ)
+    (h_sm : DescentChainSignMatch_C)
+    (σh : PBPSet_C_sig μP μQ s) :
+    (Phi_C_sig_trim h_step_D h_step_C h_chain h_sm σh).E =
+    ILS.trim (Phi_C_sig h_step_D h_step_C h_chain h_sm σh).E := rfl
+
+theorem Phi_M_sig_trim_E {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    (h_chain : ChainExists_M μP μQ)
+    (h_sing : DescentChainMSingleton)
+    (h_sm : DescentChainSignMatch_M)
+    (σh : PBPSet_M_sig μP μQ s) :
+    (Phi_M_sig_trim h_chain h_sing h_sm σh).E =
+    ILS.trim (Phi_M_sig h_chain h_sing h_sm σh).E := rfl
+
 /-! ## Trim-target equiv assembly
 
 These mirror `Phi_γ_sig_equiv` but with `MYD_sig_trim` as target,
