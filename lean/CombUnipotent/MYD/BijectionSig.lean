@@ -1578,6 +1578,59 @@ theorem PBPSet_M_sig_fst_ne_snd_eq_empty {μP μQ : YoungDiagram} {s : ℤ × �
   have h2 : ((PBP.signature M.val.val).2 : ℤ) = s.2 := (Prod.ext_iff.mp h_eq).2
   exact h (h1.symm.trans (by exact_mod_cast heq) |>.trans h2)
 
+/-- `PBPSet_Bplus_sig μP μQ s` is empty when `s.1 + s.2` is even (B⁺
+    signature sum is always odd). -/
+theorem PBPSet_Bplus_sig_sum_even_eq_empty {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    (h : Even (s.1 + s.2)) :
+    IsEmpty (PBPSet_Bplus_sig μP μQ s) := by
+  refine ⟨fun M => ?_⟩
+  have h_eq : signTarget_Bplus M.val.val = s := M.prop
+  have hγ : M.val.val.γ = .Bplus := M.val.prop.1
+  have h_odd : Odd ((PBP.signature M.val.val).1 + (PBP.signature M.val.val).2) :=
+    PBP.signature_sum_Bplus_odd _ hγ
+  have h_target : signTarget_Bplus M.val.val =
+      (((PBP.signature M.val.val).1 : ℤ), ((PBP.signature M.val.val).2 : ℤ)) := rfl
+  rw [h_target] at h_eq
+  have h1 : ((PBP.signature M.val.val).1 : ℤ) = s.1 := (Prod.ext_iff.mp h_eq).1
+  have h2 : ((PBP.signature M.val.val).2 : ℤ) = s.2 := (Prod.ext_iff.mp h_eq).2
+  have h_sum_int : ((PBP.signature M.val.val).1 : ℤ) +
+      ((PBP.signature M.val.val).2 : ℤ) = s.1 + s.2 := by rw [h1, h2]
+  have h_odd_int : Odd (((PBP.signature M.val.val).1 : ℤ) +
+      ((PBP.signature M.val.val).2 : ℤ)) := by
+    rcases h_odd with ⟨k, hk⟩
+    refine ⟨(k : ℤ), ?_⟩
+    have : ((PBP.signature M.val.val).1 + (PBP.signature M.val.val).2 : ℤ) =
+      ((2 * k + 1 : ℕ) : ℤ) := by exact_mod_cast hk
+    push_cast at this; push_cast; omega
+  rw [h_sum_int] at h_odd_int
+  exact (Int.not_odd_iff_even.mpr h) h_odd_int
+
+/-- `PBPSet_Bminus_sig μP μQ s` is empty when `s.1 + s.2` is even. -/
+theorem PBPSet_Bminus_sig_sum_even_eq_empty {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    (h : Even (s.1 + s.2)) :
+    IsEmpty (PBPSet_Bminus_sig μP μQ s) := by
+  refine ⟨fun M => ?_⟩
+  have h_eq : signTarget_Bminus M.val.val = s := M.prop
+  have hγ : M.val.val.γ = .Bminus := M.val.prop.1
+  have h_odd : Odd ((PBP.signature M.val.val).1 + (PBP.signature M.val.val).2) :=
+    PBP.signature_sum_Bminus_odd _ hγ
+  have h_target : signTarget_Bminus M.val.val =
+      (((PBP.signature M.val.val).1 : ℤ), ((PBP.signature M.val.val).2 : ℤ)) := rfl
+  rw [h_target] at h_eq
+  have h1 : ((PBP.signature M.val.val).1 : ℤ) = s.1 := (Prod.ext_iff.mp h_eq).1
+  have h2 : ((PBP.signature M.val.val).2 : ℤ) = s.2 := (Prod.ext_iff.mp h_eq).2
+  have h_sum_int : ((PBP.signature M.val.val).1 : ℤ) +
+      ((PBP.signature M.val.val).2 : ℤ) = s.1 + s.2 := by rw [h1, h2]
+  have h_odd_int : Odd (((PBP.signature M.val.val).1 : ℤ) +
+      ((PBP.signature M.val.val).2 : ℤ)) := by
+    rcases h_odd with ⟨k, hk⟩
+    refine ⟨(k : ℤ), ?_⟩
+    have : ((PBP.signature M.val.val).1 + (PBP.signature M.val.val).2 : ℤ) =
+      ((2 * k + 1 : ℕ) : ℤ) := by exact_mod_cast hk
+    push_cast at this; push_cast; omega
+  rw [h_sum_int] at h_odd_int
+  exact (Int.not_odd_iff_even.mpr h) h_odd_int
+
 /-- `PBPSet_Bplus_sig ⊥ ⊥ s` is empty for any `s ≠ (1, 0)`. -/
 theorem PBPSet_Bplus_sig_bot_eq_empty {s : ℤ × ℤ} (h : s ≠ (1, 0)) :
     IsEmpty (PBPSet_Bplus_sig (⊥ : YoungDiagram) ⊥ s) := by
