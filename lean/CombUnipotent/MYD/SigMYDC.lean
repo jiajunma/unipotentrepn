@@ -254,6 +254,31 @@ theorem descentChain_C_singleton
     exact ⟨stepPostTwist E' (toACStepData_C τ hγ wp),
            ChainSingleton.snoc h_inner h_theta⟩
 
+/-- `toACStepData_C τ hγ wp` has non-negative `p` (signature is ℕ × ℕ). -/
+theorem toACStepData_C_p_nonneg (τ : PBP) (hγ : τ.γ = .C) (wp : PPSet) :
+    0 ≤ (toACStepData_C τ hγ wp).p := by
+  unfold toACStepData_C
+  simp only
+  exact Int.natCast_nonneg _
+
+/-- **Base case of std bound for C chain**: when `E_inner = baseILS .C = []`,
+    the std bound at outer step trivializes to signature non-negativity. -/
+theorem stepStdAndAugment_C_base_nil (τ : PBP) (hγ : τ.γ = .C) (wp : PPSet) :
+    (toACStepData_C τ hγ wp).p -
+      (ILS.sign (stepPreTwist [] (toACStepData_C τ hγ wp))).1 -
+      (ILS.firstColSign (stepPreTwist [] (toACStepData_C τ hγ wp))).2 ≥ 0 ∧
+    (toACStepData_C τ hγ wp).p -
+      (ILS.sign (stepPreTwist [] (toACStepData_C τ hγ wp))).2 -
+      (ILS.firstColSign (stepPreTwist [] (toACStepData_C τ hγ wp))).1 ≥ 0 := by
+  -- stepPreTwist [] _ = [] (twistBD on [] is []) or = [] (identity)
+  have h_pre : stepPreTwist ([] : ILS) (toACStepData_C τ hγ wp) = [] := by
+    unfold stepPreTwist
+    split_ifs <;> rfl
+  rw [h_pre]
+  show (_ : ℤ) ≥ 0 ∧ (_ : ℤ) ≥ 0
+  have hp := toACStepData_C_p_nonneg τ hγ wp
+  refine ⟨?_, ?_⟩ <;> simp [ILS.sign, ILS.firstColSign] <;> omega
+
 /-- **Chain trim for C-chains**.
 
     C chain has structure: (D inner steps) ++ [outer C step].
