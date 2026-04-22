@@ -234,6 +234,13 @@ theorem sign_snd_nonneg (E : ILS) : 0 ≤ (sign E).2 := by
     simp only
     exact Int.add_nonneg h_acc (signRow_snd_nonneg hd.2 hd.1)
 
+/-- `sign []` is `(0, 0)`. -/
+theorem sign_nil : sign ([] : ILS) = (0, 0) := rfl
+
+/-- `signRow i (0, 0)` is `(0, 0)`. -/
+theorem signRow_zero (i : ℕ) : signRow i (0, 0) = (0, 0) := by
+  simp [signRow]
+
 end ILS
 
 namespace BMSZ
