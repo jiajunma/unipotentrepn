@@ -487,6 +487,38 @@ theorem PBPIsCoherent_C_singleton_witness (τ : PBP) {r : ℕ}
 theorem singleton_sortedGE (r : ℕ) : ([r] : DualPart).SortedGE := by
   simp [List.SortedGE, Antitone]
 
+/-- For C-PBP with P=⊥, Q cells are all painted `.s`. -/
+theorem Q_all_s_of_C_P_bot {τ : PBP} (hγ : τ.γ = .C) (hP : τ.P.shape = ⊥)
+    (i j : ℕ) (h : (i, j) ∈ τ.Q.shape) : τ.Q.paint i j = .s := by
+  have h_not_dot : τ.Q.paint i j ≠ .dot := by
+    intro hdot
+    have := (τ.dot_match i j).mpr ⟨h, hdot⟩
+    rw [hP] at this
+    simp at this
+  exact τ.Q_nonDot_eq_s_of_C hγ i j h h_not_dot
+
+/-- For C-PBP with P=⊥, Q has at most 1 cell per row (from row_s). -/
+theorem Q_rowLen_le_one_of_C_P_bot {τ : PBP} (hγ : τ.γ = .C)
+    (hP : τ.P.shape = ⊥) (i : ℕ) : τ.Q.shape.rowLen i ≤ 1 := by
+  by_contra h_not
+  push_neg at h_not
+  -- rowLen i ≥ 2, so (i, 0) ∈ Q and (i, 1) ∈ Q
+  have h0 : (i, 0) ∈ τ.Q.shape := by
+    rw [YoungDiagram.mem_iff_lt_rowLen]; omega
+  have h1 : (i, 1) ∈ τ.Q.shape := by
+    rw [YoungDiagram.mem_iff_lt_rowLen]; omega
+  have hp0 : τ.Q.paint i 0 = .s := Q_all_s_of_C_P_bot hγ hP i 0 h0
+  have hp1 : τ.Q.paint i 1 = .s := Q_all_s_of_C_P_bot hγ hP i 1 h1
+  -- row_s: both .s at (i, 0) and (i, 1) on R side → j₁ = j₂
+  have := τ.row_s i .R .R 0 1 hp0 hp1
+  omega
+
+/-- For C-PBP with P=⊥, Q.shape.colLens has length ≤ 1. -/
+theorem Q_colLens_length_le_one_of_C_P_bot {τ : PBP} (hγ : τ.γ = .C)
+    (hP : τ.P.shape = ⊥) : τ.Q.shape.colLens.length ≤ 1 := by
+  rw [YoungDiagram.length_colLens]
+  exact Q_rowLen_le_one_of_C_P_bot hγ hP 0
+
 /-- **Concrete ChainExists_C for single-column Q**: given μP = ⊥ and
     μQ with single column of height k ≥ 1, the chain exists via dp = [2k+1].
     First non-trivial paper §9.4 case. -/
