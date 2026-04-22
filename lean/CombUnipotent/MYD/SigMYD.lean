@@ -733,20 +733,17 @@ abbrev StepStdAndAugment_D : Prop :=
        d.q - (ILS.sign (stepPreTwist E d)).2 -
         (ILS.firstColSign (stepPreTwist E d)).1) ≠ (0, 0))
 
-/-- **Chain trim for D-chains** (direct induction on chain).
-
-    Given the per-step std + ne_augment hypothesis, the chain-extracted
-    ILS for any D-chain is trim. Proved by induction on `IsDescentChain_D`,
-    using `step_trim_D` and the fact that all D-chain steps have γ = .D. -/
-theorem chainSingleton_IsTrim_D (h_step_std : StepStdAndAugment_D)
-    {τ : PBP} {chain : List ACStepData} {E : ILS}
+/-- Helper: chain trim with arbitrary initial ILS, for D-chain. -/
+theorem chainSingleton_IsTrim_D_init (h_step_std : StepStdAndAugment_D)
+    {τ : PBP} {chain : List ACStepData} {E_init E : ILS}
+    (h_init : ILS.IsTrim E_init)
     (h_chain : IsDescentChain_D τ chain)
-    (h_sing : ChainSingleton (baseILS .D) chain E) :
+    (h_sing : ChainSingleton E_init chain E) :
     ILS.IsTrim E := by
   induction h_chain generalizing E with
   | base τ hγ h_empty =>
     cases h_sing
-    exact baseILS_IsTrim .D
+    exact h_init
   | step hγ h_rest ih =>
     rename_i τ_outer chain_inner
     obtain ⟨E_mid, E', h_inner_sing, h_theta, h_E_final⟩ :=
@@ -758,6 +755,17 @@ theorem chainSingleton_IsTrim_D (h_step_std : StepStdAndAugment_D)
       step_trim_D E_mid (toACStepData_D τ_outer hγ) h_d_γ h_std h_ne h_trim_mid h_theta
     rw [h_E_final]
     exact h_trim_step
+
+/-- **Chain trim for D-chains** (direct induction on chain).
+
+    Given the per-step std + ne_augment hypothesis, the chain-extracted
+    ILS for any D-chain is trim. -/
+theorem chainSingleton_IsTrim_D (h_step_std : StepStdAndAugment_D)
+    {τ : PBP} {chain : List ACStepData} {E : ILS}
+    (h_chain : IsDescentChain_D τ chain)
+    (h_sing : ChainSingleton (baseILS .D) chain E) :
+    ILS.IsTrim E :=
+  chainSingleton_IsTrim_D_init h_step_std (baseILS_IsTrim .D) h_chain h_sing
 
 /-- Bundled per-step std + ne_augment hypothesis for B+ chains.
     (Used in SigMYDB.lean for `chainSingleton_IsTrim_Bplus`.) -/

@@ -254,6 +254,35 @@ theorem descentChain_C_singleton
     exact ⟨stepPostTwist E' (toACStepData_C τ hγ wp),
            ChainSingleton.snoc h_inner h_theta⟩
 
+/-- **Chain trim for C-chains**.
+
+    C chain has structure: (D inner steps) ++ [outer C step].
+    Note baseILS .C = baseILS .D = []. -/
+theorem chainSingleton_IsTrim_C
+    (h_step_std_C : StepStdAndAugment_C)
+    (h_step_std_D : StepStdAndAugment_D)
+    {τ : PBP} {chain : List ACStepData} {E : ILS}
+    (h_chain : IsDescentChain_C τ chain)
+    (h_sing : ChainSingleton (baseILS .C) chain E) :
+    ILS.IsTrim E := by
+  cases h_chain with
+  | base hγ h_empty =>
+    cases h_sing
+    exact baseILS_IsTrim .C
+  | step hγ wp h_sub h_rest =>
+    obtain ⟨E_mid, E', h_inner_sing, h_theta, h_E_final⟩ :=
+      ChainSingleton.snoc_inv h_sing
+    -- Inner D chain singleton starts from baseILS .C = baseILS .D = []
+    have h_trim_mid : ILS.IsTrim E_mid :=
+      chainSingleton_IsTrim_D_init h_step_std_D (baseILS_IsTrim .C) h_rest h_inner_sing
+    have h_d_γ : (toACStepData_C τ hγ wp).γ = .C := rfl
+    have ⟨h_std, h_ne⟩ := h_step_std_C E_mid (toACStepData_C τ hγ wp) h_d_γ
+    have h_trim_step :=
+      step_trim_C E_mid (toACStepData_C τ hγ wp) h_d_γ
+        h_std h_ne h_trim_mid h_theta
+    rw [h_E_final]
+    exact h_trim_step
+
 /-! ## Sign target + sign match -/
 
 /-- Sign target for C PBP. -/

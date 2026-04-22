@@ -215,6 +215,72 @@ abbrev DescentChainMSingleton : Prop :=
     IsDescentChain_M τ chain →
       ∃ E : ILS, ChainSingleton (baseILS .M) chain E
 
+/-- **Chain trim for M-chains**.
+
+    M chain has bifurcated step: outer M step + inner Bplus chain
+    OR outer M step + inner Bminus chain. -/
+theorem chainSingleton_IsTrim_M
+    (h_step_std_M : StepStdAndAugment_M)
+    (h_step_std_Bp : StepStdAndAugment_Bplus)
+    (h_step_std_Bm : StepStdAndAugment_Bminus)
+    {τ : PBP} {chain : List ACStepData} {E : ILS}
+    (h_chain : IsDescentChain_M τ chain)
+    (h_sing : ChainSingleton (baseILS .M) chain E) :
+    ILS.IsTrim E := by
+  cases h_chain with
+  | base hγ h_empty =>
+    cases h_sing
+    exact baseILS_IsTrim .M
+  | step_to_Bplus hγ wp hd h_rest =>
+    obtain ⟨E_mid, E', h_inner_sing, h_theta, h_E_final⟩ :=
+      ChainSingleton.snoc_inv h_sing
+    -- Inner Bplus chain singleton starts from baseILS .M (not .Bplus)
+    have h_trim_mid := chainSingleton_IsTrim_Bplus_init h_step_std_Bp
+      (baseILS_IsTrim .M) h_rest h_inner_sing
+    have h_d_γ : (toACStepData_M τ hγ wp).γ = .M := rfl
+    have ⟨h_std, h_ne⟩ := h_step_std_M E_mid (toACStepData_M τ hγ wp) h_d_γ
+    have h_trim_step :=
+      step_trim_M E_mid (toACStepData_M τ hγ wp) h_d_γ
+        h_std h_ne h_trim_mid h_theta
+    rw [h_E_final]
+    exact h_trim_step
+  | step_to_Bminus hγ wp hd h_rest =>
+    obtain ⟨E_mid, E', h_inner_sing, h_theta, h_E_final⟩ :=
+      ChainSingleton.snoc_inv h_sing
+    -- We need a chainSingleton_IsTrim_Bminus_init helper here.
+    -- Let's inline: for Bminus inner chain (which itself has Bplus
+    -- inner steps), induct similarly.
+    have h_trim_mid : ILS.IsTrim E_mid := by
+      -- Bminus inner chain. Use cases on h_rest (which is IsDescentChain_Bminus).
+      cases h_rest with
+      | base hγ_b h_empty_b =>
+        cases h_inner_sing
+        exact baseILS_IsTrim .M
+      | step hγ_b h_rest_b =>
+        obtain ⟨E_mid_inner, E'_inner, h_inner_sing_inner,
+                h_theta_inner, h_E_final_inner⟩ :=
+          ChainSingleton.snoc_inv h_inner_sing
+        have h_trim_inner :=
+          chainSingleton_IsTrim_Bplus_init h_step_std_Bp
+            (baseILS_IsTrim .M) h_rest_b h_inner_sing_inner
+        have h_d_γ_inner :
+            (PBPInstantiation.toACStepData_Bminus _ hγ_b).γ = .Bminus := rfl
+        have ⟨h_std_inner, h_ne_inner⟩ :=
+          h_step_std_Bm E_mid_inner (PBPInstantiation.toACStepData_Bminus _ hγ_b) h_d_γ_inner
+        have h_trim_step_inner :=
+          step_trim_Bminus E_mid_inner
+            (PBPInstantiation.toACStepData_Bminus _ hγ_b) h_d_γ_inner
+            h_std_inner h_ne_inner h_trim_inner h_theta_inner
+        rw [h_E_final_inner]
+        exact h_trim_step_inner
+    have h_d_γ : (toACStepData_M τ hγ wp).γ = .M := rfl
+    have ⟨h_std, h_ne⟩ := h_step_std_M E_mid (toACStepData_M τ hγ wp) h_d_γ
+    have h_trim_step :=
+      step_trim_M E_mid (toACStepData_M τ hγ wp) h_d_γ
+        h_std h_ne h_trim_mid h_theta
+    rw [h_E_final]
+    exact h_trim_step
+
 /-! ## Sign target + sign match -/
 
 noncomputable def signTarget_M' (τ : PBP) : ℤ × ℤ :=
