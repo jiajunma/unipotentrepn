@@ -718,6 +718,21 @@ theorem step_trim_C (E : ILS) (d : ACStepData) (hd : d.γ = .C)
   exact thetaLift_DC_preserves_trim_std (stepPreTwist E d) d.p
     h_std h_ne_augment (stepPreTwist_IsTrim E d h_trim) h_tl
 
+/-- Bundled per-step trim/std/ne_augment hypothesis for one chain
+    step. Provides everything needed to invoke `step_trim_γ` for the
+    matching γ. Discharges `StepPreservesTrim` universally. -/
+abbrev StepStdAndAugment_D : Prop :=
+  ∀ (E : ILS) (d : ACStepData), d.γ = .D →
+    (d.p - (ILS.sign (stepPreTwist E d)).1 -
+      (ILS.firstColSign (stepPreTwist E d)).2 ≥ 0 ∧
+     d.q - (ILS.sign (stepPreTwist E d)).2 -
+      (ILS.firstColSign (stepPreTwist E d)).1 ≥ 0) ∧
+    ((stepPreTwist E d) = [] →
+      (d.p - (ILS.sign (stepPreTwist E d)).1 -
+        (ILS.firstColSign (stepPreTwist E d)).2,
+       d.q - (ILS.sign (stepPreTwist E d)).2 -
+        (ILS.firstColSign (stepPreTwist E d)).1) ≠ (0, 0))
+
 /-- **Per-step trim preservation for M chain step** (uses p as n in BM). -/
 theorem step_trim_M (E : ILS) (d : ACStepData) (hd : d.γ = .M)
     (h_std :
