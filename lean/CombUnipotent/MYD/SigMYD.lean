@@ -241,6 +241,33 @@ theorem sign_nil : sign ([] : ILS) = (0, 0) := rfl
 theorem signRow_zero (i : ℕ) : signRow i (0, 0) = (0, 0) := by
   simp [signRow]
 
+/-- `signRow i pq = (0, 0)` iff `pq = (0, 0)`. -/
+theorem signRow_eq_zero_iff (i : ℕ) (pq : ℤ × ℤ) :
+    signRow i pq = (0, 0) ↔ pq = (0, 0) := by
+  refine ⟨fun h => ?_, fun h => h ▸ signRow_zero i⟩
+  have h1 : (signRow i pq).1 = 0 := h ▸ rfl
+  have h2 : (signRow i pq).2 = 0 := h ▸ rfl
+  -- Sum: (|a|+|b|)·(2h+r) = signRow.1 + signRow.2 = 0
+  have h_sum : (pq.1.natAbs + pq.2.natAbs : ℤ) *
+               (2 * (((i : ℤ) + 1) / 2) + ((i : ℤ) + 1) % 2) = 0 := by
+    have : (signRow i pq).1 + (signRow i pq).2 =
+           (pq.1.natAbs + pq.2.natAbs : ℤ) *
+             (2 * (((i : ℤ) + 1) / 2) + ((i : ℤ) + 1) % 2) := by
+      simp [signRow]; ring
+    omega
+  have h_pos : 2 * (((i : ℤ) + 1) / 2) + ((i : ℤ) + 1) % 2 > 0 := by omega
+  have h_nat_sum : pq.1.natAbs + pq.2.natAbs = 0 := by
+    have : (pq.1.natAbs + pq.2.natAbs : ℤ) = 0 := by
+      rcases mul_eq_zero.mp h_sum with hl | hr
+      · exact hl
+      · omega
+    exact_mod_cast this
+  have h_a : pq.1.natAbs = 0 := by omega
+  have h_b : pq.2.natAbs = 0 := by omega
+  ext
+  · exact Int.natAbs_eq_zero.mp h_a
+  · exact Int.natAbs_eq_zero.mp h_b
+
 end ILS
 
 namespace BMSZ
