@@ -143,6 +143,16 @@ Beyond 36 → 0 sorries, added:
 - **`Phi_γ_sig_trim_injective_of_Phi_γ_sig_injective`** (5):
   injectivity transfers between Phi and Phi_trim.
 - **`ILS.trim_eq_self_of_IsTrim`**: trim is identity on trim ILS.
+- **`ILS.signRow_{fst,snd}_nonneg`** (2): sign components are nonneg per row.
+- **`ILS.sign_{fst,snd}_nonneg`** (2): sign components are nonneg overall.
+- **`MYD_sig{,_trim}_empty_of_sign_neg_{fst,snd}`** (4): negative-sig
+  MYD_sig types are empty.
+- **`fintype_MYD_sig_trim_neg_{fst,snd}`** (2 instances): Fintype
+  derived for negative-sig MYD_sig_trim (cardinality 0).
+- **`Phi_γ_sig_trim_image_equiv`** (5): partial bijections via
+  Equiv.ofInjective, requires only injectivity.
+- **`phi_γ_sig_trim_surj_of_inj_card`** (5): surjectivity from
+  injectivity + Fintype + cardinality match.
 
 These complete the trim integration: future paper-level proof of
 `h_inj` for `Phi_γ_sig` (paper Prop 11.15/11.17 bridge) automatically
