@@ -433,6 +433,12 @@ noncomputable instance fintype_MYD_sig_trim_zero {γ : RootType} :
     Fintype (MYD_sig_trim γ (0, 0)) :=
   @Fintype.ofSubsingleton _ MYD_sig_trim.zero subsingleton_MYD_sig_trim_zero
 
+/-- `MYD_sig_trim γ (0, 0)` has cardinality 1 — explicit. -/
+theorem card_MYD_sig_trim_zero {γ : RootType} :
+    Fintype.card (MYD_sig_trim γ (0, 0)) = 1 := by
+  rw [Fintype.card_eq_one_iff]
+  exact ⟨MYD_sig_trim.zero, fun M => Subsingleton.elim _ _⟩
+
 
 /-- Forget the trim constraint. -/
 def MYD_sig_trim.toMYDSig {γ : RootType} {s : ℤ × ℤ}
