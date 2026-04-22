@@ -792,4 +792,60 @@ noncomputable def Phi_M_sig_trim {μP μQ : YoungDiagram} {s : ℤ × ℤ}
     (σh : PBPSet_M_sig μP μQ s) : MYD_sig_trim .M s :=
   (Phi_M_sig h_chain h_sing h_sm σh).toTrim
 
+/-! ## Trim-target equiv assembly
+
+These mirror `Phi_γ_sig_equiv` but with `MYD_sig_trim` as target,
+making the bijection instantiable (target is finite).
+-/
+
+noncomputable def Phi_D_sig_trim_equiv (μP μQ : YoungDiagram) (s : ℤ × ℤ)
+    (h_step : DescentStepSingleton_D)
+    (h_inj : Function.Injective
+      (fun p : PBPSet_D_sig μP μQ s × Fin 2 => Phi_D_sig_trim h_step p.1 p.2))
+    (h_surj : Function.Surjective
+      (fun p : PBPSet_D_sig μP μQ s × Fin 2 => Phi_D_sig_trim h_step p.1 p.2)) :
+    PBPSet_D_sig μP μQ s × Fin 2 ≃ MYD_sig_trim .D s :=
+  Equiv.ofBijective (fun p => Phi_D_sig_trim h_step p.1 p.2) ⟨h_inj, h_surj⟩
+
+noncomputable def Phi_Bplus_sig_trim_equiv (μP μQ : YoungDiagram) (s : ℤ × ℤ)
+    (h_step : DescentStepSingleton_Bplus)
+    (h_inj : Function.Injective
+      (fun p : PBPSet_Bplus_sig μP μQ s × Fin 2 => Phi_Bplus_sig_trim h_step p.1 p.2))
+    (h_surj : Function.Surjective
+      (fun p : PBPSet_Bplus_sig μP μQ s × Fin 2 => Phi_Bplus_sig_trim h_step p.1 p.2)) :
+    PBPSet_Bplus_sig μP μQ s × Fin 2 ≃ MYD_sig_trim .Bplus s :=
+  Equiv.ofBijective (fun p => Phi_Bplus_sig_trim h_step p.1 p.2) ⟨h_inj, h_surj⟩
+
+noncomputable def Phi_Bminus_sig_trim_equiv (μP μQ : YoungDiagram) (s : ℤ × ℤ)
+    (h_sing : DescentChainBminusSingleton)
+    (h_inj : Function.Injective
+      (fun p : PBPSet_Bminus_sig μP μQ s × Fin 2 => Phi_Bminus_sig_trim h_sing p.1 p.2))
+    (h_surj : Function.Surjective
+      (fun p : PBPSet_Bminus_sig μP μQ s × Fin 2 => Phi_Bminus_sig_trim h_sing p.1 p.2)) :
+    PBPSet_Bminus_sig μP μQ s × Fin 2 ≃ MYD_sig_trim .Bminus s :=
+  Equiv.ofBijective (fun p => Phi_Bminus_sig_trim h_sing p.1 p.2) ⟨h_inj, h_surj⟩
+
+noncomputable def Phi_C_sig_trim_equiv (μP μQ : YoungDiagram) (s : ℤ × ℤ)
+    (h_step_D : DescentStepSingleton_D)
+    (h_step_C : DescentStepSingleton_C)
+    (h_chain : ChainExists_C μP μQ)
+    (h_sm : DescentChainSignMatch_C)
+    (h_inj : Function.Injective
+      (Phi_C_sig_trim (μP := μP) (μQ := μQ) (s := s) h_step_D h_step_C h_chain h_sm))
+    (h_surj : Function.Surjective
+      (Phi_C_sig_trim (μP := μP) (μQ := μQ) (s := s) h_step_D h_step_C h_chain h_sm)) :
+    PBPSet_C_sig μP μQ s ≃ MYD_sig_trim .C s :=
+  Equiv.ofBijective _ ⟨h_inj, h_surj⟩
+
+noncomputable def Phi_M_sig_trim_equiv (μP μQ : YoungDiagram) (s : ℤ × ℤ)
+    (h_chain : ChainExists_M μP μQ)
+    (h_sing : DescentChainMSingleton)
+    (h_sm : DescentChainSignMatch_M)
+    (h_inj : Function.Injective
+      (Phi_M_sig_trim (μP := μP) (μQ := μQ) (s := s) h_chain h_sing h_sm))
+    (h_surj : Function.Surjective
+      (Phi_M_sig_trim (μP := μP) (μQ := μQ) (s := s) h_chain h_sing h_sm)) :
+    PBPSet_M_sig μP μQ s ≃ MYD_sig_trim .M s :=
+  Equiv.ofBijective _ ⟨h_inj, h_surj⟩
+
 end BMSZ
