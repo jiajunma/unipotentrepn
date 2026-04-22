@@ -1218,6 +1218,15 @@ theorem card_PBPSet_M_sig_zero_eq {μP μQ : YoungDiagram}
   rw [card_MYD_sig_trim_zero]
   exact Fintype.card_eq_one_iff.mpr ⟨default, fun _ => Subsingleton.elim _ _⟩
 
+/-- `Inhabited (PBPSet_C_sig ⊥ ⊥ (0, 0))` — concrete witness via emptyPBP_C. -/
+instance inhabited_PBPSet_C_sig_zero :
+    Inhabited (PBPSet_C_sig (⊥ : YoungDiagram) ⊥ (0, 0)) :=
+  ⟨⟨emptyPBPSet_C, by
+    show signTarget_C emptyPBP_C = (0, 0)
+    unfold signTarget_C
+    rw [emptyPBP_C_signature]
+    rfl⟩⟩
+
 /-! ## `Phi_γ_sig_trim_E = Phi_γ_sig_E` under std hypothesis
 
 Since chain-derived ILSs are trim (via `Phi_γ_sig_E_IsTrim`), `toTrim`

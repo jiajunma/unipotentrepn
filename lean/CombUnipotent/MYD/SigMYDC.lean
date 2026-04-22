@@ -199,6 +199,11 @@ theorem emptyPBP_C_Q_shape : emptyPBP_C.Q.shape = ⊥ := rfl
 def emptyPBPSet_C : PBPSet .C (⊥ : YoungDiagram) ⊥ :=
   ⟨emptyPBP_C, emptyPBP_C_γ, emptyPBP_C_P_shape, emptyPBP_C_Q_shape⟩
 
+/-- `emptyPBP_C`'s signature is `(0, 0)` (no painted cells). -/
+theorem emptyPBP_C_signature : PBP.signature emptyPBP_C = (0, 0) := by
+  unfold PBP.signature emptyPBP_C
+  simp [emptyPaintedYoungDiagram, PaintedYoungDiagram.countSym]
+
 /-- **Discharge of `ChainExists_C` from per-σ dp-coherence witness**.
     Reduces the universal chain-existence to a simpler paper content:
     every PBP has a coherent dp. This mirrors paper §9.4 content. -/
@@ -376,6 +381,12 @@ private theorem signature_empty_C (τ : PBP) (hγ : τ.γ = .C)
 private theorem sign_baseILS_C : ILS.sign (baseILS .C) = (0, 0) := by
   unfold baseILS ILS.sign
   simp
+
+/-- `signTarget_C' emptyPBP_C = (0, 0)`. -/
+theorem signTarget_C'_emptyPBP : signTarget_C' emptyPBP_C = (0, 0) := by
+  unfold signTarget_C'
+  rw [emptyPBP_C_signature]
+  rfl
 
 /-- **Chain sign-match hypothesis (C)**: along any valid C descent
     chain with singleton witness, the extracted ILS has signature
