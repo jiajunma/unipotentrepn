@@ -220,6 +220,38 @@ in both components, which depends on PBP non-emptiness analysis
 - **`phi_γ_sig_trim_surj_of_inj_card`** (5): surjectivity from
   injectivity + Fintype + cardinality match.
 
+### 🎯 Full 5-γ empty PBP infrastructure
+
+All 5 γ types now have an explicit empty PBP construction:
+
+- `emptyPBP_D`, `emptyPBPSet_D`, `emptyPBP_D_signature = (0, 0)` (D)
+- `emptyPBP_Bplus`, `emptyPBPSet_Bplus`, `emptyPBP_Bplus_signature = (1, 0)` (B⁺)
+- `emptyPBP_Bminus`, `emptyPBPSet_Bminus`, `emptyPBP_Bminus_signature = (0, 1)` (B⁻)
+- `emptyPBP_C`, `emptyPBPSet_C`, `emptyPBP_C_signature = (0, 0)` (C)
+- `emptyPBP_M`, `emptyPBPSet_M`, `emptyPBP_M_signature = (0, 0)` (M)
+
+Mirror subsingleton/inhabited instances on `PBPSet_γ_sig (⊥, ⊥) *`:
+
+- `inhabited_PBPSet_{D,C,M}_sig_zero` at (0, 0)
+- `inhabited_PBPSet_Bplus_sig_one` at (1, 0)
+- `inhabited_PBPSet_Bminus_sig_one` at (0, 1)
+- `subsingleton_PBPSet_γ_bot` and `subsingleton_PBPSet_γ_sig_bot` for all 5 γ
+- `PBPSet_γ_sig_bot_eq_empty` for non-target signatures (all 5 γ)
+
+### 🎯 B⁺/B⁻ signature lower bounds
+
+- `signature_Bplus_fst_pos`: any B⁺ PBP has `signature.1 ≥ 1`.
+- `signature_Bminus_snd_pos`: any B⁻ PBP has `signature.2 ≥ 1`.
+- `PBPSet_Bplus_sig_fst_lt_one_eq_empty` / `zero_eq_empty` (any μP, μQ).
+- `PBPSet_Bminus_sig_snd_lt_one_eq_empty` / `zero_eq_empty` (any μP, μQ).
+
+Consequence: **unconditional** vacuous injectivity of Phi_{B⁺,B⁻}_sig
+and Phi_{B⁺,B⁻}_sig_trim on the (0, 0) sector — source is empty, so
+no `h_inj` hypothesis is needed.
+
+- `Phi_Bplus_sig_injective_zero` / `Phi_Bplus_sig_trim_injective_zero`
+- `Phi_Bminus_sig_injective_zero` / `Phi_Bminus_sig_trim_injective_zero`
+
 These complete the trim integration: future paper-level proof of
 `h_inj` for `Phi_γ_sig` (paper Prop 11.15/11.17 bridge) automatically
 discharges `h_inj` for `Phi_γ_sig_trim`.
