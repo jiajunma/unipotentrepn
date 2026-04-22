@@ -509,4 +509,74 @@ theorem descentChain_sign_match_Bminus {τ : PBP} {chain : List ACStepData}
     unfold signTarget_Bminus' toACStepData_Bminus
     simp
 
+/-! ## Empty PBPs for B⁺ / B⁻
+
+For empty shape (⊥), painting constraints are vacuous. Signature is
+`(1, 0)` for B⁺ and `(0, 1)` for B⁻.
+-/
+
+/-- The empty B⁺ PBP. -/
+def emptyPBP_Bplus : PBP where
+  γ := .Bplus
+  P := emptyPaintedYoungDiagram_D
+  Q := emptyPaintedYoungDiagram_D
+  sym_P := fun i j h => by simp [emptyPaintedYoungDiagram_D] at h
+  sym_Q := fun i j h => by simp [emptyPaintedYoungDiagram_D] at h
+  dot_match := fun _ _ => Iff.rfl
+  mono_P := emptyPaintedYoungDiagram_D_layerMonotone
+  mono_Q := emptyPaintedYoungDiagram_D_layerMonotone
+  row_s := fun i s₁ s₂ j₁ j₂ h _ => by
+    cases s₁ <;> simp [paintBySide, emptyPaintedYoungDiagram_D] at h
+  row_r := fun i s₁ s₂ j₁ j₂ h _ => by
+    cases s₁ <;> simp [paintBySide, emptyPaintedYoungDiagram_D] at h
+  col_c_P := fun _ _ _ h _ => by simp [emptyPaintedYoungDiagram_D] at h
+  col_c_Q := fun _ _ _ h _ => by simp [emptyPaintedYoungDiagram_D] at h
+  col_d_P := fun _ _ _ h _ => by simp [emptyPaintedYoungDiagram_D] at h
+  col_d_Q := fun _ _ _ h _ => by simp [emptyPaintedYoungDiagram_D] at h
+
+theorem emptyPBP_Bplus_γ : emptyPBP_Bplus.γ = .Bplus := rfl
+theorem emptyPBP_Bplus_P_shape : emptyPBP_Bplus.P.shape = ⊥ := rfl
+theorem emptyPBP_Bplus_Q_shape : emptyPBP_Bplus.Q.shape = ⊥ := rfl
+
+/-- Empty B⁺ PBP in `PBPSet .Bplus ⊥ ⊥`. -/
+def emptyPBPSet_Bplus : PBPSet .Bplus (⊥ : YoungDiagram) ⊥ :=
+  ⟨emptyPBP_Bplus, emptyPBP_Bplus_γ, emptyPBP_Bplus_P_shape, emptyPBP_Bplus_Q_shape⟩
+
+/-- `emptyPBP_Bplus` has signature `(1, 0)`. -/
+theorem emptyPBP_Bplus_signature : PBP.signature emptyPBP_Bplus = (1, 0) := by
+  unfold PBP.signature emptyPBP_Bplus
+  simp [emptyPaintedYoungDiagram_D, PaintedYoungDiagram.countSym]
+
+/-- The empty B⁻ PBP. -/
+def emptyPBP_Bminus : PBP where
+  γ := .Bminus
+  P := emptyPaintedYoungDiagram_D
+  Q := emptyPaintedYoungDiagram_D
+  sym_P := fun i j h => by simp [emptyPaintedYoungDiagram_D] at h
+  sym_Q := fun i j h => by simp [emptyPaintedYoungDiagram_D] at h
+  dot_match := fun _ _ => Iff.rfl
+  mono_P := emptyPaintedYoungDiagram_D_layerMonotone
+  mono_Q := emptyPaintedYoungDiagram_D_layerMonotone
+  row_s := fun i s₁ s₂ j₁ j₂ h _ => by
+    cases s₁ <;> simp [paintBySide, emptyPaintedYoungDiagram_D] at h
+  row_r := fun i s₁ s₂ j₁ j₂ h _ => by
+    cases s₁ <;> simp [paintBySide, emptyPaintedYoungDiagram_D] at h
+  col_c_P := fun _ _ _ h _ => by simp [emptyPaintedYoungDiagram_D] at h
+  col_c_Q := fun _ _ _ h _ => by simp [emptyPaintedYoungDiagram_D] at h
+  col_d_P := fun _ _ _ h _ => by simp [emptyPaintedYoungDiagram_D] at h
+  col_d_Q := fun _ _ _ h _ => by simp [emptyPaintedYoungDiagram_D] at h
+
+theorem emptyPBP_Bminus_γ : emptyPBP_Bminus.γ = .Bminus := rfl
+theorem emptyPBP_Bminus_P_shape : emptyPBP_Bminus.P.shape = ⊥ := rfl
+theorem emptyPBP_Bminus_Q_shape : emptyPBP_Bminus.Q.shape = ⊥ := rfl
+
+/-- Empty B⁻ PBP in `PBPSet .Bminus ⊥ ⊥`. -/
+def emptyPBPSet_Bminus : PBPSet .Bminus (⊥ : YoungDiagram) ⊥ :=
+  ⟨emptyPBP_Bminus, emptyPBP_Bminus_γ, emptyPBP_Bminus_P_shape, emptyPBP_Bminus_Q_shape⟩
+
+/-- `emptyPBP_Bminus` has signature `(0, 1)`. -/
+theorem emptyPBP_Bminus_signature : PBP.signature emptyPBP_Bminus = (0, 1) := by
+  unfold PBP.signature emptyPBP_Bminus
+  simp [emptyPaintedYoungDiagram_D, PaintedYoungDiagram.countSym]
+
 end BMSZ

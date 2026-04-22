@@ -1405,6 +1405,105 @@ theorem Phi_D_sig_trim_bot_range_zero (h_step : DescentStepSingleton_D) :
         Phi_D_sig_trim h_step p.1 p.2) = {MYD_sig_trim.zero} :=
   Phi_D_sig_trim_range_zero (μP := ⊥) (μQ := ⊥) h_step
 
+/-! ## B⁺ / B⁻ analogues (instances on ⊥⊥)
+
+Signatures differ from the D/C/M case: empty B⁺ has signature `(1, 0)`
+and empty B⁻ has signature `(0, 1)`. -/
+
+/-- `Inhabited (PBPSet_Bplus_sig ⊥ ⊥ (1, 0))` — concrete witness via emptyPBP_Bplus. -/
+instance inhabited_PBPSet_Bplus_sig_one :
+    Inhabited (PBPSet_Bplus_sig (⊥ : YoungDiagram) ⊥ (1, 0)) :=
+  ⟨⟨emptyPBPSet_Bplus, by
+    show signTarget_Bplus emptyPBP_Bplus = (1, 0)
+    unfold signTarget_Bplus
+    rw [emptyPBP_Bplus_signature]
+    rfl⟩⟩
+
+/-- `Inhabited (PBPSet_Bminus_sig ⊥ ⊥ (0, 1))` — concrete witness via emptyPBP_Bminus. -/
+instance inhabited_PBPSet_Bminus_sig_one :
+    Inhabited (PBPSet_Bminus_sig (⊥ : YoungDiagram) ⊥ (0, 1)) :=
+  ⟨⟨emptyPBPSet_Bminus, by
+    show signTarget_Bminus emptyPBP_Bminus = (0, 1)
+    unfold signTarget_Bminus
+    rw [emptyPBP_Bminus_signature]
+    rfl⟩⟩
+
+/-- `Subsingleton (PBPSet .Bplus ⊥ ⊥)`. -/
+instance subsingleton_PBPSet_Bplus_bot :
+    Subsingleton (PBPSet .Bplus (⊥ : YoungDiagram) ⊥) := by
+  refine ⟨fun σ₁ σ₂ => ?_⟩
+  apply Subtype.ext
+  apply PBP_eq_of_shapes_bot
+  · rw [σ₁.prop.1, σ₂.prop.1]
+  · exact σ₁.prop.2.1
+  · exact σ₁.prop.2.2
+  · exact σ₂.prop.2.1
+  · exact σ₂.prop.2.2
+
+/-- `Subsingleton (PBPSet .Bminus ⊥ ⊥)`. -/
+instance subsingleton_PBPSet_Bminus_bot :
+    Subsingleton (PBPSet .Bminus (⊥ : YoungDiagram) ⊥) := by
+  refine ⟨fun σ₁ σ₂ => ?_⟩
+  apply Subtype.ext
+  apply PBP_eq_of_shapes_bot
+  · rw [σ₁.prop.1, σ₂.prop.1]
+  · exact σ₁.prop.2.1
+  · exact σ₁.prop.2.2
+  · exact σ₂.prop.2.1
+  · exact σ₂.prop.2.2
+
+/-- `Subsingleton (PBPSet_Bplus_sig ⊥ ⊥ s)` for any s. -/
+instance subsingleton_PBPSet_Bplus_sig_bot (s : ℤ × ℤ) :
+    Subsingleton (PBPSet_Bplus_sig (⊥ : YoungDiagram) ⊥ s) := by
+  refine ⟨fun M₁ M₂ => ?_⟩
+  apply Subtype.ext
+  exact Subsingleton.elim _ _
+
+/-- `Subsingleton (PBPSet_Bminus_sig ⊥ ⊥ s)` for any s. -/
+instance subsingleton_PBPSet_Bminus_sig_bot (s : ℤ × ℤ) :
+    Subsingleton (PBPSet_Bminus_sig (⊥ : YoungDiagram) ⊥ s) := by
+  refine ⟨fun M₁ M₂ => ?_⟩
+  apply Subtype.ext
+  exact Subsingleton.elim _ _
+
+/-- `PBPSet_Bplus_sig ⊥ ⊥ s` is empty for any `s ≠ (1, 0)`. -/
+theorem PBPSet_Bplus_sig_bot_eq_empty {s : ℤ × ℤ} (h : s ≠ (1, 0)) :
+    IsEmpty (PBPSet_Bplus_sig (⊥ : YoungDiagram) ⊥ s) := by
+  refine ⟨fun M => ?_⟩
+  have h_eq : signTarget_Bplus M.val.val = s := M.prop
+  have h_unique : M.val = emptyPBPSet_Bplus := Subsingleton.elim _ _
+  have h_sig : signTarget_Bplus M.val.val = (1, 0) := by
+    rw [h_unique]
+    show signTarget_Bplus emptyPBP_Bplus = (1, 0)
+    unfold signTarget_Bplus
+    rw [emptyPBP_Bplus_signature]
+    rfl
+  exact h (h_eq.symm.trans h_sig)
+
+/-- `PBPSet_Bminus_sig ⊥ ⊥ s` is empty for any `s ≠ (0, 1)`. -/
+theorem PBPSet_Bminus_sig_bot_eq_empty {s : ℤ × ℤ} (h : s ≠ (0, 1)) :
+    IsEmpty (PBPSet_Bminus_sig (⊥ : YoungDiagram) ⊥ s) := by
+  refine ⟨fun M => ?_⟩
+  have h_eq : signTarget_Bminus M.val.val = s := M.prop
+  have h_unique : M.val = emptyPBPSet_Bminus := Subsingleton.elim _ _
+  have h_sig : signTarget_Bminus M.val.val = (0, 1) := by
+    rw [h_unique]
+    show signTarget_Bminus emptyPBP_Bminus = (0, 1)
+    unfold signTarget_Bminus
+    rw [emptyPBP_Bminus_signature]
+    rfl
+  exact h (h_eq.symm.trans h_sig)
+
+noncomputable instance fintype_PBPSet_Bplus_sig_bot_nontarget {s : ℤ × ℤ}
+    (h : s ≠ (1, 0)) :
+    Fintype (PBPSet_Bplus_sig (⊥ : YoungDiagram) ⊥ s) :=
+  @Fintype.ofIsEmpty _ (PBPSet_Bplus_sig_bot_eq_empty h)
+
+noncomputable instance fintype_PBPSet_Bminus_sig_bot_nontarget {s : ℤ × ℤ}
+    (h : s ≠ (0, 1)) :
+    Fintype (PBPSet_Bminus_sig (⊥ : YoungDiagram) ⊥ s) :=
+  @Fintype.ofIsEmpty _ (PBPSet_Bminus_sig_bot_eq_empty h)
+
 /-! ## `Phi_γ_sig_trim_E = Phi_γ_sig_E` under std hypothesis
 
 Since chain-derived ILSs are trim (via `Phi_γ_sig_E_IsTrim`), `toTrim`
