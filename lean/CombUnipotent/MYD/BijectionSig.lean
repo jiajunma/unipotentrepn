@@ -1824,6 +1824,47 @@ noncomputable def Phi_M_sig_trim_bot_neg_snd_equiv {s : ℤ × ℤ} (h : s.2 < 0
   haveI : IsEmpty (MYD_sig_trim .M s) := MYD_sig_trim_empty_of_sign_neg_snd h
   exact Equiv.equivOfIsEmpty _ _
 
+/-! ## Consolidated cardinality count theorems on (⊥, ⊥)
+
+`Nat.card` simultaneously counts finite cardinalities and equals
+zero for empty types. Gives clean counting formulas without needing
+`[Fintype]` case-splitting. -/
+
+theorem nat_card_PBPSet_C_sig_bot_of_ne_zero {s : ℤ × ℤ} (hs : s ≠ (0, 0)) :
+    Nat.card (PBPSet_C_sig (⊥ : YoungDiagram) ⊥ s) = 0 :=
+  @Nat.card_of_isEmpty _ (PBPSet_C_sig_bot_eq_empty hs)
+
+theorem nat_card_PBPSet_M_sig_bot_of_ne_zero {s : ℤ × ℤ} (hs : s ≠ (0, 0)) :
+    Nat.card (PBPSet_M_sig (⊥ : YoungDiagram) ⊥ s) = 0 :=
+  @Nat.card_of_isEmpty _ (PBPSet_M_sig_bot_eq_empty hs)
+
+theorem nat_card_PBPSet_D_sig_bot_of_ne_zero {s : ℤ × ℤ} (hs : s ≠ (0, 0)) :
+    Nat.card (PBPSet_D_sig (⊥ : YoungDiagram) ⊥ s) = 0 :=
+  @Nat.card_of_isEmpty _ (PBPSet_D_sig_bot_eq_empty hs)
+
+theorem nat_card_PBPSet_Bplus_sig_bot_of_ne_one_zero {s : ℤ × ℤ}
+    (hs : s ≠ (1, 0)) :
+    Nat.card (PBPSet_Bplus_sig (⊥ : YoungDiagram) ⊥ s) = 0 :=
+  @Nat.card_of_isEmpty _ (PBPSet_Bplus_sig_bot_eq_empty hs)
+
+theorem nat_card_PBPSet_Bminus_sig_bot_of_ne_zero_one {s : ℤ × ℤ}
+    (hs : s ≠ (0, 1)) :
+    Nat.card (PBPSet_Bminus_sig (⊥ : YoungDiagram) ⊥ s) = 0 :=
+  @Nat.card_of_isEmpty _ (PBPSet_Bminus_sig_bot_eq_empty hs)
+
+/-- Bijection-transfer card equality for C: `PBPSet_C_sig ⊥ ⊥ (0,0)` and
+    `MYD_sig_trim .C (0, 0)` have the same Nat.card. -/
+theorem nat_card_PBPSet_C_sig_bot_zero_eq :
+    Nat.card (PBPSet_C_sig (⊥ : YoungDiagram) ⊥ (0, 0)) =
+    Nat.card (MYD_sig_trim .C (0, 0)) :=
+  Nat.card_congr Phi_C_sig_trim_bot_zero_equiv_unconditional
+
+/-- Bijection-transfer card equality for M. -/
+theorem nat_card_PBPSet_M_sig_bot_zero_eq :
+    Nat.card (PBPSet_M_sig (⊥ : YoungDiagram) ⊥ (0, 0)) =
+    Nat.card (MYD_sig_trim .M (0, 0)) :=
+  Nat.card_congr Phi_M_sig_trim_bot_zero_equiv_unconditional
+
 /-- Phi_Bplus_sig_trim is vacuously injective on the (0, 0) sector. -/
 theorem Phi_Bplus_sig_trim_injective_zero {μP μQ : YoungDiagram}
     (h_step : DescentStepSingleton_Bplus) :
