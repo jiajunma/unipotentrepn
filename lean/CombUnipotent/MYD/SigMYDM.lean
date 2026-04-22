@@ -158,6 +158,31 @@ theorem chainExists_M_empty : ChainExists_M (⊥ : YoungDiagram) ⊥ := by
   refine ⟨[], IsDescentChain_M.base σ.val σ.prop.1 ?_⟩
   exact ⟨σ.prop.2.1, σ.prop.2.2⟩
 
+/-- **Concrete ChainExists_M for single-column P**: given μP.colLens = [k]
+    (single column of height k ≥ 1) and μQ = ⊥, the chain exists via
+    dp = [2k]. M-type analog of chainExists_C_single_col_Q. -/
+theorem chainExists_M_single_col_P {μP : YoungDiagram} {k : ℕ}
+    (hk : k ≥ 1) (hP : μP.colLens = [k]) :
+    ChainExists_M μP (⊥ : YoungDiagram) := by
+  intro σ
+  let dp : DualPart := [2 * k]
+  have h2k_pos : 2 * k > 0 := by omega
+  have h2k_half : 2 * k / 2 = k := by omega
+  have hP_σ : σ.val.P.shape.colLens = [k] := by rw [σ.prop.2.1]; exact hP
+  have hQ_σ : σ.val.Q.shape = ⊥ := σ.prop.2.2
+  have h_coh : PBPIsCoherent_M σ.val dp := by
+    refine ⟨?_, ?_⟩
+    · rw [hP_σ]; simp [dp, dpartColLensP_M_singleton, h2k_pos, h2k_half]
+    · rw [hQ_σ]
+      exact _root_.colLens_bot
+  have h_sort : dp.SortedGE := by simp [dp, List.SortedGE, Antitone]
+  have h_even : ∀ r ∈ dp, Even r := by
+    intro r hr
+    simp [dp] at hr
+    subst hr
+    exact ⟨k, by ring⟩
+  exact exists_descentChain_M_coherent σ dp h_coh h_sort h_even
+
 /-- The empty M-type PBP (analogous to emptyPBP_C). -/
 def emptyPBP_M : PBP where
   γ := .M
