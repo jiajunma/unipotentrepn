@@ -906,6 +906,44 @@ theorem Phi_M_sig_E_IsTrim {μP μQ : YoungDiagram} {s : ℤ × ℤ}
     (Classical.choose_spec (h_sing
       (Classical.choose_spec (h_chain σh.val))))
 
+/-! ## Phi outputs trim ILS automatically (via toTrim) -/
+
+/-- `Phi_D_sig_trim` always outputs `MYD_sig_trim` (trim by construction). -/
+theorem Phi_D_sig_trim_E_IsTrim {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    (h_step : DescentStepSingleton_D)
+    (σh : PBPSet_D_sig μP μQ s) (ε : Fin 2) :
+    ILS.IsTrim (Phi_D_sig_trim h_step σh ε).E :=
+  (Phi_D_sig_trim h_step σh ε).is_trim
+
+theorem Phi_Bplus_sig_trim_E_IsTrim {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    (h_step : DescentStepSingleton_Bplus)
+    (σh : PBPSet_Bplus_sig μP μQ s) (ε : Fin 2) :
+    ILS.IsTrim (Phi_Bplus_sig_trim h_step σh ε).E :=
+  (Phi_Bplus_sig_trim h_step σh ε).is_trim
+
+theorem Phi_Bminus_sig_trim_E_IsTrim {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    (h_sing : DescentChainBminusSingleton)
+    (σh : PBPSet_Bminus_sig μP μQ s) (ε : Fin 2) :
+    ILS.IsTrim (Phi_Bminus_sig_trim h_sing σh ε).E :=
+  (Phi_Bminus_sig_trim h_sing σh ε).is_trim
+
+theorem Phi_C_sig_trim_E_IsTrim {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    (h_step_D : DescentStepSingleton_D)
+    (h_step_C : DescentStepSingleton_C)
+    (h_chain : ChainExists_C μP μQ)
+    (h_sm : DescentChainSignMatch_C)
+    (σh : PBPSet_C_sig μP μQ s) :
+    ILS.IsTrim (Phi_C_sig_trim h_step_D h_step_C h_chain h_sm σh).E :=
+  (Phi_C_sig_trim h_step_D h_step_C h_chain h_sm σh).is_trim
+
+theorem Phi_M_sig_trim_E_IsTrim {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    (h_chain : ChainExists_M μP μQ)
+    (h_sing : DescentChainMSingleton)
+    (h_sm : DescentChainSignMatch_M)
+    (σh : PBPSet_M_sig μP μQ s) :
+    ILS.IsTrim (Phi_M_sig_trim h_chain h_sing h_sm σh).E :=
+  (Phi_M_sig_trim h_chain h_sing h_sm σh).is_trim
+
 /-! ## `Phi_γ_sig_trim_E = Phi_γ_sig_E` under std hypothesis
 
 Since chain-derived ILSs are trim (via `Phi_γ_sig_E_IsTrim`), `toTrim`
