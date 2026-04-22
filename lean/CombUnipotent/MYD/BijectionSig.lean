@@ -902,4 +902,60 @@ noncomputable def Phi_M_sig_image_equiv (μP μQ : YoungDiagram) (s : ℤ × ℤ
       Set.range (Phi_M_sig (μP := μP) (μQ := μQ) (s := s) h_chain h_sing h_sm) :=
   Equiv.ofInjective _ h_inj
 
+/-! ## Image-cardinality bridges
+
+When Phi is injective, |source| = |image| via Nat.card_congr of the
+image equiv. These give cardinality results requiring only injectivity.
+-/
+
+theorem nat_card_PBPSet_D_eq_image (μP μQ : YoungDiagram) (s : ℤ × ℤ)
+    (h_step : DescentStepSingleton_D)
+    (h_inj : Function.Injective
+      (fun p : PBPSet_D_sig μP μQ s × Fin 2 => Phi_D_sig h_step p.1 p.2)) :
+    Nat.card (PBPSet_D_sig μP μQ s × Fin 2) =
+    Nat.card (Set.range
+      (fun p : PBPSet_D_sig μP μQ s × Fin 2 => Phi_D_sig h_step p.1 p.2)) :=
+  Nat.card_congr (Phi_D_sig_image_equiv μP μQ s h_step h_inj)
+
+theorem nat_card_PBPSet_Bplus_eq_image (μP μQ : YoungDiagram) (s : ℤ × ℤ)
+    (h_step : DescentStepSingleton_Bplus)
+    (h_inj : Function.Injective
+      (fun p : PBPSet_Bplus_sig μP μQ s × Fin 2 => Phi_Bplus_sig h_step p.1 p.2)) :
+    Nat.card (PBPSet_Bplus_sig μP μQ s × Fin 2) =
+    Nat.card (Set.range
+      (fun p : PBPSet_Bplus_sig μP μQ s × Fin 2 => Phi_Bplus_sig h_step p.1 p.2)) :=
+  Nat.card_congr (Phi_Bplus_sig_image_equiv μP μQ s h_step h_inj)
+
+theorem nat_card_PBPSet_Bminus_eq_image (μP μQ : YoungDiagram) (s : ℤ × ℤ)
+    (h_sing : DescentChainBminusSingleton)
+    (h_inj : Function.Injective
+      (fun p : PBPSet_Bminus_sig μP μQ s × Fin 2 => Phi_Bminus_sig h_sing p.1 p.2)) :
+    Nat.card (PBPSet_Bminus_sig μP μQ s × Fin 2) =
+    Nat.card (Set.range
+      (fun p : PBPSet_Bminus_sig μP μQ s × Fin 2 => Phi_Bminus_sig h_sing p.1 p.2)) :=
+  Nat.card_congr (Phi_Bminus_sig_image_equiv μP μQ s h_sing h_inj)
+
+theorem nat_card_PBPSet_C_eq_image (μP μQ : YoungDiagram) (s : ℤ × ℤ)
+    (h_step_D : DescentStepSingleton_D)
+    (h_step_C : DescentStepSingleton_C)
+    (h_chain : ChainExists_C μP μQ)
+    (h_sm : DescentChainSignMatch_C)
+    (h_inj : Function.Injective
+      (Phi_C_sig (μP := μP) (μQ := μQ) (s := s) h_step_D h_step_C h_chain h_sm)) :
+    Nat.card (PBPSet_C_sig μP μQ s) =
+    Nat.card (Set.range
+      (Phi_C_sig (μP := μP) (μQ := μQ) (s := s) h_step_D h_step_C h_chain h_sm)) :=
+  Nat.card_congr (Phi_C_sig_image_equiv μP μQ s h_step_D h_step_C h_chain h_sm h_inj)
+
+theorem nat_card_PBPSet_M_eq_image (μP μQ : YoungDiagram) (s : ℤ × ℤ)
+    (h_chain : ChainExists_M μP μQ)
+    (h_sing : DescentChainMSingleton)
+    (h_sm : DescentChainSignMatch_M)
+    (h_inj : Function.Injective
+      (Phi_M_sig (μP := μP) (μQ := μQ) (s := s) h_chain h_sing h_sm)) :
+    Nat.card (PBPSet_M_sig μP μQ s) =
+    Nat.card (Set.range
+      (Phi_M_sig (μP := μP) (μQ := μQ) (s := s) h_chain h_sing h_sm)) :=
+  Nat.card_congr (Phi_M_sig_image_equiv μP μQ s h_chain h_sing h_sm h_inj)
+
 end BMSZ
