@@ -279,6 +279,18 @@ Combined with the ⊥⊥ witnesses, the (0, 0) sector of
 All new theorems verified standard-axiom-only (propext, Classical.choice,
 Quot.sound). No sorryAx.
 
+### 🎯 Universal injectivity on (⊥, ⊥) for all γ
+
+Since `PBPSet_γ (⊥, ⊥)` is subsingleton, injectivity at this shape
+is trivial:
+
+- `Phi_{C,M}_sig_injective_bot` / `_trim_injective_bot`: any s
+- `Phi_D_sig_injective_bot_of_ne_zero` / `_trim`: s ≠ (0, 0)
+- `Phi_Bplus_sig_injective_bot_of_ne_one_zero`: s ≠ (1, 0)
+- `Phi_Bminus_sig_injective_bot_of_ne_zero_one`: s ≠ (0, 1)
+
+These discharge `h_inj` in `Phi_γ_sig_equiv` for the (⊥, ⊥) case.
+
 ### 🎯🎯🎯🎯🎯 FULLY UNCONDITIONAL BIJECTIONS on (⊥,⊥) (0,0)
 
 **These are the first fully-instantiated bijection theorems with
