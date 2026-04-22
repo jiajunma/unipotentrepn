@@ -1709,6 +1709,24 @@ theorem PBPSet_D_sig_P_bot_Q_ne_bot_eq_empty {μQ : YoungDiagram} (hQ : μQ ≠ 
   refine ⟨fun σ => ?_⟩
   exact isEmptyElim σ.val
 
+/-- `PBPSet .D μP μQ` is empty when `μQ ⊄ μP` (since D requires Q ≤ P). -/
+theorem PBPSet_D_Q_not_le_P_eq_empty {μP μQ : YoungDiagram} (h : ¬ μQ ≤ μP) :
+    IsEmpty (PBPSet .D μP μQ) := by
+  refine ⟨fun σ => ?_⟩
+  have hγ : σ.val.γ = .D := σ.prop.1
+  have hP : σ.val.P.shape = μP := σ.prop.2.1
+  have hQ : σ.val.Q.shape = μQ := σ.prop.2.2
+  have h_sub : σ.val.Q.shape ≤ σ.val.P.shape := PBP.Q_le_P_of_D _ hγ
+  rw [hP, hQ] at h_sub
+  exact h h_sub
+
+/-- `PBPSet_D_sig μP μQ s` is empty when `μQ ⊄ μP`. -/
+theorem PBPSet_D_sig_Q_not_le_P_eq_empty {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    (h : ¬ μQ ≤ μP) : IsEmpty (PBPSet_D_sig μP μQ s) := by
+  haveI := PBPSet_D_Q_not_le_P_eq_empty h
+  refine ⟨fun σ => ?_⟩
+  exact isEmptyElim σ.val
+
 /-- `PBPSet_Bminus_sig μP μQ s` is empty when `s.1 + s.2` is even. -/
 theorem PBPSet_Bminus_sig_sum_even_eq_empty {μP μQ : YoungDiagram} {s : ℤ × ℤ}
     (h : Even (s.1 + s.2)) :
