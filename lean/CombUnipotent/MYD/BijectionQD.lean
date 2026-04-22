@@ -155,4 +155,69 @@ noncomputable def Phi_M_qd_sig_equiv (μP μQ : YoungDiagram) (dp : DualPart)
   have : Inhabited (PBPSet_M_sig μP μQ s) := hi
   Phi_M_sig_equiv μP μQ s h_chain h_sing h_sm h_inj h_surj
 
+/-! ## QD trim variants (delegating to Phi_γ_sig_trim_equiv) -/
+
+noncomputable def Phi_D_qd_sig_trim_equiv (μP μQ : YoungDiagram) (dp : DualPart)
+    (h_coh : PBPIsCoherent_D_ext μP μQ dp)
+    (hsort : dp.SortedGE)
+    (hodd : ∀ r ∈ dp, Odd r)
+    (h_qd : IsQuasiDistinguished .D dp) (s : ℤ × ℤ)
+    (h_step : DescentStepSingleton_D)
+    (h_inj : Function.Injective
+      (fun p : PBPSet_D_sig μP μQ s × Fin 2 => Phi_D_sig_trim h_step p.1 p.2))
+    (h_surj : Function.Surjective
+      (fun p : PBPSet_D_sig μP μQ s × Fin 2 => Phi_D_sig_trim h_step p.1 p.2))
+    [_hi : Inhabited (PBPSet_D_qd_sig μP μQ dp h_coh hsort hodd h_qd s × Fin 2)] :
+    PBPSet_D_qd_sig μP μQ dp h_coh hsort hodd h_qd s × Fin 2 ≃ MYD_sig_trim .D s :=
+  Phi_D_sig_trim_equiv μP μQ s h_step h_inj h_surj
+
+noncomputable def Phi_Bplus_qd_sig_trim_equiv (μP μQ : YoungDiagram) (dp : DualPart)
+    (hsort : dp.SortedGE) (h_qd : IsQuasiDistinguished .Bplus dp) (s : ℤ × ℤ)
+    (h_step : DescentStepSingleton_Bplus)
+    (h_inj : Function.Injective
+      (fun p : PBPSet_Bplus_sig μP μQ s × Fin 2 => Phi_Bplus_sig_trim h_step p.1 p.2))
+    (h_surj : Function.Surjective
+      (fun p : PBPSet_Bplus_sig μP μQ s × Fin 2 => Phi_Bplus_sig_trim h_step p.1 p.2))
+    [_hi : Inhabited (PBPSet_Bplus_qd_sig μP μQ dp hsort h_qd s × Fin 2)] :
+    PBPSet_Bplus_qd_sig μP μQ dp hsort h_qd s × Fin 2 ≃ MYD_sig_trim .Bplus s :=
+  Phi_Bplus_sig_trim_equiv μP μQ s h_step h_inj h_surj
+
+noncomputable def Phi_Bminus_qd_sig_trim_equiv (μP μQ : YoungDiagram) (dp : DualPart)
+    (hsort : dp.SortedGE) (h_qd : IsQuasiDistinguished .Bminus dp) (s : ℤ × ℤ)
+    (h_sing : DescentChainBminusSingleton)
+    (h_inj : Function.Injective
+      (fun p : PBPSet_Bminus_sig μP μQ s × Fin 2 => Phi_Bminus_sig_trim h_sing p.1 p.2))
+    (h_surj : Function.Surjective
+      (fun p : PBPSet_Bminus_sig μP μQ s × Fin 2 => Phi_Bminus_sig_trim h_sing p.1 p.2))
+    [_hi : Inhabited (PBPSet_Bminus_qd_sig μP μQ dp hsort h_qd s × Fin 2)] :
+    PBPSet_Bminus_qd_sig μP μQ dp hsort h_qd s × Fin 2 ≃ MYD_sig_trim .Bminus s :=
+  Phi_Bminus_sig_trim_equiv μP μQ s h_sing h_inj h_surj
+
+noncomputable def Phi_C_qd_sig_trim_equiv (μP μQ : YoungDiagram) (dp : DualPart)
+    (hsort : dp.SortedGE) (h_qd : IsQuasiDistinguished .C dp) (s : ℤ × ℤ)
+    (h_step_D : DescentStepSingleton_D)
+    (h_step_C : DescentStepSingleton_C)
+    (h_chain : ChainExists_C μP μQ)
+    (h_sm : DescentChainSignMatch_C)
+    (h_inj : Function.Injective
+      (Phi_C_sig_trim (μP := μP) (μQ := μQ) (s := s) h_step_D h_step_C h_chain h_sm))
+    (h_surj : Function.Surjective
+      (Phi_C_sig_trim (μP := μP) (μQ := μQ) (s := s) h_step_D h_step_C h_chain h_sm))
+    [_hi : Inhabited (PBPSet_C_qd_sig μP μQ dp hsort h_qd s)] :
+    PBPSet_C_qd_sig μP μQ dp hsort h_qd s ≃ MYD_sig_trim .C s :=
+  Phi_C_sig_trim_equiv μP μQ s h_step_D h_step_C h_chain h_sm h_inj h_surj
+
+noncomputable def Phi_M_qd_sig_trim_equiv (μP μQ : YoungDiagram) (dp : DualPart)
+    (hsort : dp.SortedGE) (h_qd : IsQuasiDistinguished .M dp) (s : ℤ × ℤ)
+    (h_chain : ChainExists_M μP μQ)
+    (h_sing : DescentChainMSingleton)
+    (h_sm : DescentChainSignMatch_M)
+    (h_inj : Function.Injective
+      (Phi_M_sig_trim (μP := μP) (μQ := μQ) (s := s) h_chain h_sing h_sm))
+    (h_surj : Function.Surjective
+      (Phi_M_sig_trim (μP := μP) (μQ := μQ) (s := s) h_chain h_sing h_sm))
+    [_hi : Inhabited (PBPSet_M_qd_sig μP μQ dp hsort h_qd s)] :
+    PBPSet_M_qd_sig μP μQ dp hsort h_qd s ≃ MYD_sig_trim .M s :=
+  Phi_M_sig_trim_equiv μP μQ s h_chain h_sing h_sm h_inj h_surj
+
 end BMSZ
