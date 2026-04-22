@@ -161,6 +161,37 @@ theorem PBP.signature_sum_Bplus (τ : PBP) (hγ : τ.γ = .Bplus) :
   push_cast
   ring
 
+/-- For a C-type PBP, `signature.1 = signature.2 = |τ|` explicitly.
+    (This is stronger than `signature_sum_C` — direct equality.) -/
+theorem PBP.signature_fst_C (τ : PBP) (hγ : τ.γ = .C) :
+    ((PBP.signature τ).1 : ℤ) = (PBP.cardCells τ : ℤ) := by
+  have h := PBP.signature_sum_C τ hγ
+  have heq : (PBP.signature τ).1 = (PBP.signature τ).2 := by
+    unfold PBP.signature; simp only [hγ]
+  rw [← heq] at h
+  omega
+
+theorem PBP.signature_snd_C (τ : PBP) (hγ : τ.γ = .C) :
+    ((PBP.signature τ).2 : ℤ) = (PBP.cardCells τ : ℤ) := by
+  have heq : (PBP.signature τ).1 = (PBP.signature τ).2 := by
+    unfold PBP.signature; simp only [hγ]
+  rw [← heq]; exact PBP.signature_fst_C τ hγ
+
+/-- For an M-type PBP, `signature.1 = signature.2 = |τ|`. -/
+theorem PBP.signature_fst_M (τ : PBP) (hγ : τ.γ = .M) :
+    ((PBP.signature τ).1 : ℤ) = (PBP.cardCells τ : ℤ) := by
+  have h := PBP.signature_sum_M τ hγ
+  have heq : (PBP.signature τ).1 = (PBP.signature τ).2 := by
+    unfold PBP.signature; simp only [hγ]
+  rw [← heq] at h
+  omega
+
+theorem PBP.signature_snd_M (τ : PBP) (hγ : τ.γ = .M) :
+    ((PBP.signature τ).2 : ℤ) = (PBP.cardCells τ : ℤ) := by
+  have heq : (PBP.signature τ).1 = (PBP.signature τ).2 := by
+    unfold PBP.signature; simp only [hγ]
+  rw [← heq]; exact PBP.signature_fst_M τ hγ
+
 /-- For a B⁻-type PBP, `p + q = 2 * |τ| + 1`. -/
 theorem PBP.signature_sum_Bminus (τ : PBP) (hγ : τ.γ = .Bminus) :
     ((PBP.signature τ).1 : ℤ) + (PBP.signature τ).2 =
