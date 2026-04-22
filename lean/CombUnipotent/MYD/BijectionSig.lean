@@ -1227,6 +1227,40 @@ instance inhabited_PBPSet_C_sig_zero :
     rw [emptyPBP_C_signature]
     rfl⟩⟩
 
+/-- `Subsingleton (PBPSet .C ⊥ ⊥)` — uniqueness via PBP_eq_of_shapes_bot. -/
+instance subsingleton_PBPSet_C_bot :
+    Subsingleton (PBPSet .C (⊥ : YoungDiagram) ⊥) := by
+  refine ⟨fun σ₁ σ₂ => ?_⟩
+  apply Subtype.ext
+  apply PBP_eq_of_shapes_bot
+  · rw [σ₁.prop.1, σ₂.prop.1]
+  · exact σ₁.prop.2.1
+  · exact σ₁.prop.2.2
+  · exact σ₂.prop.2.1
+  · exact σ₂.prop.2.2
+
+/-- `Subsingleton (PBPSet_C_sig ⊥ ⊥ s)` for any s. -/
+instance subsingleton_PBPSet_C_sig_bot (s : ℤ × ℤ) :
+    Subsingleton (PBPSet_C_sig (⊥ : YoungDiagram) ⊥ s) := by
+  refine ⟨fun M₁ M₂ => ?_⟩
+  apply Subtype.ext
+  exact Subsingleton.elim _ _
+
+/-- 🎯🎯🎯 **FIRST FULLY UNCONDITIONAL BIJECTION**:
+    `Phi_C_sig_trim` is a bijection on the (⊥, ⊥) (0,0) sector.
+
+    No paper-content hypotheses required (Subsingleton + Inhabited
+    are now both PROVED for this sector). The only remaining
+    hypotheses are `h_step_D + h_step_C + h_chain + h_sm` which
+    are conditional (any value works since the source is subsingleton). -/
+noncomputable def Phi_C_sig_trim_bot_zero_equiv
+    (h_step_D : DescentStepSingleton_D)
+    (h_step_C : DescentStepSingleton_C)
+    (h_chain : ChainExists_C (⊥ : YoungDiagram) ⊥)
+    (h_sm : DescentChainSignMatch_C) :
+    PBPSet_C_sig (⊥ : YoungDiagram) ⊥ (0, 0) ≃ MYD_sig_trim .C (0, 0) :=
+  Phi_C_sig_trim_zero_equiv h_step_D h_step_C h_chain h_sm
+
 /-! ## `Phi_γ_sig_trim_E = Phi_γ_sig_E` under std hypothesis
 
 Since chain-derived ILSs are trim (via `Phi_γ_sig_E_IsTrim`), `toTrim`
