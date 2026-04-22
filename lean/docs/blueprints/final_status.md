@@ -186,6 +186,18 @@ For B+/B− base cases (E_inner = baseILS .Bplus = [(1,0)] or
 baseILS .Bminus = [(0,-1)]), the std bound requires signature ≥ 1
 in both components, which depends on PBP non-emptiness analysis
 (remaining paper content).
+
+### 🎯🎯🎯 FIRST FULL BIJECTION (this session)
+
+- **`Phi_C_sig_trim_zero_equiv`** + **`Phi_M_sig_trim_zero_equiv`**:
+  Full bijection `PBPSet_*_sig μP μQ (0,0) ≃ MYD_sig_trim .γ (0,0)`
+  under `[Subsingleton + Inhabited]` source hypotheses. Unconditional
+  on h_inj/h_surj — uses Subsingleton.elim for injectivity, our proved
+  surjectivity for surjectivity.
+
+  This is the **FIRST FULL BIJECTION** for our Phi machinery on a
+  non-trivial sector. The remaining Subsingleton hypothesis is
+  paper-content about PBP uniqueness on the (0,0) sector.
 - **`Phi_γ_sig_trim_image_equiv`** (5): partial bijections via
   Equiv.ofInjective, requires only injectivity.
 - **`phi_γ_sig_trim_surj_of_inj_card`** (5): surjectivity from
