@@ -330,4 +330,42 @@ theorem descentChain_sign_match_D {τ : PBP} {chain : List ACStepData}
     unfold signTarget_D toACStepData_D
     simp
 
+/-! ## Chain trim under per-step trim hypothesis
+
+Given a hypothesis that per-step thetaLift preserves trim status,
+the chain-extracted ILS is trim. This lets us turn `Phi_γ_sig` into
+a function targeting the finite `MYD_sig_trim` type.
+
+The per-step trim hypothesis is paper content — a variant of paper
+§11.5/§11.6's claim that chain-step thetaLift produces "canonical"
+augmented ILSs. All three trim-preservation building blocks
+(charTwistCM_IsTrim, twistBD_IsTrim, augment_IsTrim) are PROVED.
+-/
+
+/-- **Per-step trim preservation hypothesis**. Abstracts paper content
+    about chain-step thetaLift producing trim ILSs. -/
+abbrev StepPreservesTrim : Prop :=
+  ∀ (E : ILS) (d : ACStepData) (E' : ILS),
+    ILS.IsTrim E →
+    ILS.thetaLift (stepPreTwist E d) d.γ d.p d.q = [E'] →
+    ILS.IsTrim (stepPostTwist E' d)
+
+/-- **Chain trim**: given per-step trim preservation + trim initial ILS,
+    the final chain-extracted ILS is trim. -/
+theorem chainSingleton_IsTrim {chain : List ACStepData} {E_init E_final : ILS}
+    (h_step_trim : StepPreservesTrim)
+    (h_init : ILS.IsTrim E_init)
+    (h : ChainSingleton E_init chain E_final) :
+    ILS.IsTrim E_final := by
+  induction h with
+  | nil _ => exact h_init
+  | cons E' h_theta _h_rest ih =>
+    rename_i E d _rest _E_final
+    apply ih
+    exact h_step_trim E d E' h_init h_theta
+
+/-- `baseILS γ` is always trim. -/
+theorem baseILS_IsTrim (γ : RootType) : ILS.IsTrim (baseILS γ) := by
+  cases γ <;> (unfold baseILS ILS.IsTrim; simp)
+
 end BMSZ
