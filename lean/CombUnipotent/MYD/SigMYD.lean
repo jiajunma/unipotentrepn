@@ -170,6 +170,17 @@ theorem augment_IsTrim (E : ILS) (pq : ℤ × ℤ)
       simp only [List.getLast?_cons] at ht
       exact ht
 
+/-- For trim ILS, `trim` is the identity. -/
+theorem trim_eq_self_of_IsTrim (E : ILS) (h : IsTrim E) : trim E = E := by
+  induction E using List.reverseRecOn with
+  | nil => rfl
+  | append_singleton xs a _ih =>
+    unfold trim IsTrim at *
+    by_cases ha : a = (0, 0)
+    · subst ha
+      simp at h
+    · simp [List.reverse_append, ha]
+
 end ILS
 
 namespace BMSZ
