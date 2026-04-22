@@ -279,6 +279,31 @@ Combined with the ⊥⊥ witnesses, the (0, 0) sector of
 All new theorems verified standard-axiom-only (propext, Classical.choice,
 Quot.sound). No sorryAx.
 
+### 🎯🎯🎯 Paper §9.4 FULL ⊥-P discharge for C-type
+
+**`chainExists_C ⊥ μQ` fully discharged for ANY μQ**
+
+Unconditional theorem: `chainExists_C_P_bot : ∀ μQ, ChainExists_C ⊥ μQ`.
+
+Proof strategy:
+1. Structural analysis: C-PBP with P=⊥ forces Q cells all painted `.s`
+   (via dot_match + C-Q allowed paints `{.dot, .s}`)
+2. Row uniqueness: `row_s` → each row of Q has ≤ 1 cell
+3. Consequence: `Q.colLens.length ≤ 1`, so μQ is ⊥ or single-column
+4. Case split:
+   - `μQ.colLens = []` → `μQ = ⊥` → `chainExists_C_empty`
+   - `μQ.colLens = [k]` (k ≥ 1) → `chainExists_C_single_col_Q` (dp = [2k+1])
+   - `μQ.colLens ≥ 2` → vacuous (PBPSet empty via above constraints)
+
+Key supporting theorems:
+- `Q_all_s_of_C_P_bot`: Q cells are all `.s`
+- `Q_rowLen_le_one_of_C_P_bot`: each row of Q has ≤ 1 cell
+- `Q_colLens_length_le_one_of_C_P_bot`: colLens length ≤ 1
+- `PBPSet_C_P_bot_Q_multi_col_eq_empty`: vacuous for ≥ 2 columns
+
+**First shape-family-wide `ChainExists` discharge** — no hypothesis,
+no user input required. Depends only on standard Lean axioms.
+
 ### 🎯🎯 Paper §9.4 non-trivial case: single-column Q shape
 
 **First non-trivial `chainExists_C` discharge** beyond the empty base:
