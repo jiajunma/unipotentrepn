@@ -279,6 +279,34 @@ Combined with the ⊥⊥ witnesses, the (0, 0) sector of
 All new theorems verified standard-axiom-only (propext, Classical.choice,
 Quot.sound). No sorryAx.
 
+### 🎯 Universal Fintype + cardinality on (0,0) sector
+
+`PBPSet_γ_sig μP μQ (0, 0)` is now Fintype for all γ and all shapes:
+
+- `fintype_PBPSet_D_sig_zero` (any μP, μQ)
+- `fintype_PBPSet_C_sig_zero` (any μP, μQ)
+- `fintype_PBPSet_M_sig_zero` (any μP, μQ)
+- `fintype_PBPSet_Bplus_sig_zero` (any μP, μQ — always empty)
+- `fintype_PBPSet_Bminus_sig_zero` (any μP, μQ — always empty)
+
+Exact cardinalities:
+
+| γ | μP = ⊥ ∧ μQ = ⊥ | otherwise |
+|---|------|-----------|
+| D | 1 | 0 |
+| C | 1 | 0 |
+| M | 1 | 0 |
+| B⁺ | 0 | 0 |
+| B⁻ | 0 | 0 |
+
+Theorems: `card_PBPSet_{D,C,M}_sig_zero_bot = 1`,
+`card_PBPSet_{D,C,M}_sig_zero_of_{P,Q}_ne_bot = 0`,
+`card_PBPSet_{Bplus,Bminus}_sig_zero = 0`.
+
+This gives a concrete, computable description of the (0, 0) sector
+for all 5 γ types, which can feed into cardinality-based
+surjectivity arguments (`phi_γ_sig_trim_surj_of_inj_card`).
+
 These complete the trim integration: future paper-level proof of
 `h_inj` for `Phi_γ_sig` (paper Prop 11.15/11.17 bridge) automatically
 discharges `h_inj` for `Phi_γ_sig_trim`.
