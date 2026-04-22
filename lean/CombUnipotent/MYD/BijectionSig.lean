@@ -1746,6 +1746,84 @@ noncomputable def Phi_D_sig_trim_bot_neg_snd_equiv {s : ℤ × ℤ} (h : s.2 < 0
     Prod.isEmpty_left
   exact Equiv.equivOfIsEmpty _ _
 
+/-- B⁺ negative first-component: both empty. -/
+noncomputable def Phi_Bplus_sig_trim_bot_neg_fst_equiv {s : ℤ × ℤ} (h : s.1 < 0) :
+    PBPSet_Bplus_sig (⊥ : YoungDiagram) ⊥ s × Fin 2 ≃ MYD_sig_trim .Bplus s := by
+  haveI : IsEmpty (PBPSet_Bplus_sig (⊥ : YoungDiagram) ⊥ s) :=
+    PBPSet_Bplus_sig_fst_lt_one_eq_empty (by omega)
+  haveI : IsEmpty (MYD_sig_trim .Bplus s) := MYD_sig_trim_empty_of_sign_neg_fst h
+  haveI : IsEmpty (PBPSet_Bplus_sig (⊥ : YoungDiagram) ⊥ s × Fin 2) :=
+    Prod.isEmpty_left
+  exact Equiv.equivOfIsEmpty _ _
+
+/-- B⁺ negative second-component: both empty. -/
+noncomputable def Phi_Bplus_sig_trim_bot_neg_snd_equiv {s : ℤ × ℤ} (h : s.2 < 0) :
+    PBPSet_Bplus_sig (⊥ : YoungDiagram) ⊥ s × Fin 2 ≃ MYD_sig_trim .Bplus s := by
+  have hs : s ≠ (1, 0) := by rintro rfl; exact absurd h (by norm_num)
+  haveI : IsEmpty (PBPSet_Bplus_sig (⊥ : YoungDiagram) ⊥ s) :=
+    PBPSet_Bplus_sig_bot_eq_empty hs
+  haveI : IsEmpty (MYD_sig_trim .Bplus s) := MYD_sig_trim_empty_of_sign_neg_snd h
+  haveI : IsEmpty (PBPSet_Bplus_sig (⊥ : YoungDiagram) ⊥ s × Fin 2) :=
+    Prod.isEmpty_left
+  exact Equiv.equivOfIsEmpty _ _
+
+/-- B⁻ negative first-component: both empty. -/
+noncomputable def Phi_Bminus_sig_trim_bot_neg_fst_equiv {s : ℤ × ℤ} (h : s.1 < 0) :
+    PBPSet_Bminus_sig (⊥ : YoungDiagram) ⊥ s × Fin 2 ≃ MYD_sig_trim .Bminus s := by
+  have hs : s ≠ (0, 1) := by rintro rfl; exact absurd h (by norm_num)
+  haveI : IsEmpty (PBPSet_Bminus_sig (⊥ : YoungDiagram) ⊥ s) :=
+    PBPSet_Bminus_sig_bot_eq_empty hs
+  haveI : IsEmpty (MYD_sig_trim .Bminus s) := MYD_sig_trim_empty_of_sign_neg_fst h
+  haveI : IsEmpty (PBPSet_Bminus_sig (⊥ : YoungDiagram) ⊥ s × Fin 2) :=
+    Prod.isEmpty_left
+  exact Equiv.equivOfIsEmpty _ _
+
+/-- B⁻ negative second-component: both empty. -/
+noncomputable def Phi_Bminus_sig_trim_bot_neg_snd_equiv {s : ℤ × ℤ} (h : s.2 < 0) :
+    PBPSet_Bminus_sig (⊥ : YoungDiagram) ⊥ s × Fin 2 ≃ MYD_sig_trim .Bminus s := by
+  haveI : IsEmpty (PBPSet_Bminus_sig (⊥ : YoungDiagram) ⊥ s) :=
+    PBPSet_Bminus_sig_snd_lt_one_eq_empty (by omega)
+  haveI : IsEmpty (MYD_sig_trim .Bminus s) := MYD_sig_trim_empty_of_sign_neg_snd h
+  haveI : IsEmpty (PBPSet_Bminus_sig (⊥ : YoungDiagram) ⊥ s × Fin 2) :=
+    Prod.isEmpty_left
+  exact Equiv.equivOfIsEmpty _ _
+
+/-- C negative first-component: both empty. -/
+noncomputable def Phi_C_sig_trim_bot_neg_fst_equiv {s : ℤ × ℤ} (h : s.1 < 0) :
+    PBPSet_C_sig (⊥ : YoungDiagram) ⊥ s ≃ MYD_sig_trim .C s := by
+  have hs : s ≠ (0, 0) := by rintro rfl; exact absurd h (by norm_num)
+  haveI : IsEmpty (PBPSet_C_sig (⊥ : YoungDiagram) ⊥ s) :=
+    PBPSet_C_sig_bot_eq_empty hs
+  haveI : IsEmpty (MYD_sig_trim .C s) := MYD_sig_trim_empty_of_sign_neg_fst h
+  exact Equiv.equivOfIsEmpty _ _
+
+/-- C negative second-component: both empty. -/
+noncomputable def Phi_C_sig_trim_bot_neg_snd_equiv {s : ℤ × ℤ} (h : s.2 < 0) :
+    PBPSet_C_sig (⊥ : YoungDiagram) ⊥ s ≃ MYD_sig_trim .C s := by
+  have hs : s ≠ (0, 0) := by rintro rfl; exact absurd h (by norm_num)
+  haveI : IsEmpty (PBPSet_C_sig (⊥ : YoungDiagram) ⊥ s) :=
+    PBPSet_C_sig_bot_eq_empty hs
+  haveI : IsEmpty (MYD_sig_trim .C s) := MYD_sig_trim_empty_of_sign_neg_snd h
+  exact Equiv.equivOfIsEmpty _ _
+
+/-- M negative first-component: both empty. -/
+noncomputable def Phi_M_sig_trim_bot_neg_fst_equiv {s : ℤ × ℤ} (h : s.1 < 0) :
+    PBPSet_M_sig (⊥ : YoungDiagram) ⊥ s ≃ MYD_sig_trim .M s := by
+  have hs : s ≠ (0, 0) := by rintro rfl; exact absurd h (by norm_num)
+  haveI : IsEmpty (PBPSet_M_sig (⊥ : YoungDiagram) ⊥ s) :=
+    PBPSet_M_sig_bot_eq_empty hs
+  haveI : IsEmpty (MYD_sig_trim .M s) := MYD_sig_trim_empty_of_sign_neg_fst h
+  exact Equiv.equivOfIsEmpty _ _
+
+/-- M negative second-component: both empty. -/
+noncomputable def Phi_M_sig_trim_bot_neg_snd_equiv {s : ℤ × ℤ} (h : s.2 < 0) :
+    PBPSet_M_sig (⊥ : YoungDiagram) ⊥ s ≃ MYD_sig_trim .M s := by
+  have hs : s ≠ (0, 0) := by rintro rfl; exact absurd h (by norm_num)
+  haveI : IsEmpty (PBPSet_M_sig (⊥ : YoungDiagram) ⊥ s) :=
+    PBPSet_M_sig_bot_eq_empty hs
+  haveI : IsEmpty (MYD_sig_trim .M s) := MYD_sig_trim_empty_of_sign_neg_snd h
+  exact Equiv.equivOfIsEmpty _ _
+
 /-- Phi_Bplus_sig_trim is vacuously injective on the (0, 0) sector. -/
 theorem Phi_Bplus_sig_trim_injective_zero {μP μQ : YoungDiagram}
     (h_step : DescentStepSingleton_Bplus) :
