@@ -167,6 +167,10 @@ Beyond 36 → 0 sorries, added:
   Subsingleton.elim).
 - **`MYD_sig.zero`** + **`MYD_sig_trim_zero_toMYDSig`**: concrete
   zero elements at MYD_sig level + reflexivity.
+- **`Phi_γ_sig_zero`** (5 PROVED): Phi_γ_sig of (0,0)-sig input
+  collapses to MYD_sig.zero (under std hypothesis, via Phi outputs trim).
+- **`Phi_{D,C}_sig_trim_range_zero`** (2 PROVED):
+  Set.range Phi_γ_sig_trim on (0,0) sector = {MYD_sig_trim.zero}.
 - **`Phi_γ_sig_trim_image_equiv`** (5): partial bijections via
   Equiv.ofInjective, requires only injectivity.
 - **`phi_γ_sig_trim_surj_of_inj_card`** (5): surjectivity from
