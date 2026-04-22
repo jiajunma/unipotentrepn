@@ -84,6 +84,92 @@ theorem trim_isTrim (E : ILS) : IsTrim (trim E) := by
     · unfold trim IsTrim
       simp [List.reverse_append, h]
 
+/-! ### Trim preservation under natAbs-preserving list-index maps -/
+
+/-- A pair is nonzero iff at least one component has nonzero natAbs. -/
+theorem pair_ne_zero_iff (a : ℤ × ℤ) :
+    a ≠ (0, 0) ↔ a.1.natAbs ≠ 0 ∨ a.2.natAbs ≠ 0 := by
+  constructor
+  · intro h
+    by_contra h_and
+    push_neg at h_and
+    apply h
+    ext
+    · exact Int.natAbs_eq_zero.mp h_and.1
+    · exact Int.natAbs_eq_zero.mp h_and.2
+  · intro h h_eq
+    subst h_eq
+    simp at h
+
+/-- A natAbs-preserving row map sends nonzero rows to nonzero rows. -/
+theorem pair_ne_zero_of_natAbs_preserve {a b : ℤ × ℤ}
+    (h_eq : a.1.natAbs = b.1.natAbs ∧ a.2.natAbs = b.2.natAbs)
+    (h_ne : a ≠ (0, 0)) : b ≠ (0, 0) := by
+  rw [pair_ne_zero_iff] at h_ne ⊢
+  rcases h_ne with h | h
+  · left; rw [← h_eq.1]; exact h
+  · right; rw [← h_eq.2]; exact h
+
+/-- `charTwistCM` preserves trim status (uses natAbs-preservation). -/
+theorem charTwistCM_IsTrim (E : ILS) (j : ℤ) (h : IsTrim E) :
+    IsTrim (charTwistCM E j) := by
+  unfold charTwistCM
+  induction E using List.reverseRecOn with
+  | nil => unfold IsTrim; simp
+  | append_singleton xs a _ih =>
+    rw [List.mapIdx_append]
+    simp only [List.mapIdx_cons, List.mapIdx_nil]
+    -- Now goal is IsTrim (xs.mapIdx ... ++ [charTwistCMRow j xs.length a])
+    have h_last : a ≠ (0, 0) := by
+      unfold IsTrim at h
+      simp at h
+      exact h
+    have h_na := charTwistCMRow_natAbs j xs.length a
+    have h_twist_ne : charTwistCMRow j xs.length a ≠ (0, 0) :=
+      pair_ne_zero_of_natAbs_preserve ⟨h_na.1.symm, h_na.2.symm⟩ h_last
+    unfold IsTrim
+    simp
+    exact h_twist_ne
+
+/-- `twistBD` preserves trim status (tp, tn ∈ {1, -1}). -/
+theorem twistBD_IsTrim (E : ILS) (tp tn : ℤ)
+    (htp : tp = 1 ∨ tp = -1) (htn : tn = 1 ∨ tn = -1) (h : IsTrim E) :
+    IsTrim (twistBD E tp tn) := by
+  unfold twistBD
+  induction E using List.reverseRecOn with
+  | nil => unfold IsTrim; simp
+  | append_singleton xs a _ih =>
+    rw [List.mapIdx_append]
+    simp only [List.mapIdx_cons, List.mapIdx_nil]
+    have h_last : a ≠ (0, 0) := by
+      unfold IsTrim at h
+      simp at h
+      exact h
+    have h_na := twistBDRow_natAbs xs.length tp tn a htp htn
+    have h_twist_ne : twistBDRow xs.length tp tn a ≠ (0, 0) :=
+      pair_ne_zero_of_natAbs_preserve ⟨h_na.1.symm, h_na.2.symm⟩ h_last
+    unfold IsTrim
+    simp
+    exact h_twist_ne
+
+/-- Augment with a nonzero row: if E' = (addp, addn) :: E and (addp, addn) ≠ (0, 0)
+    OR E is trim and nonempty, then E' is trim. -/
+theorem augment_IsTrim (E : ILS) (pq : ℤ × ℤ)
+    (h : (E = [] ∧ pq ≠ (0, 0)) ∨ (E ≠ [] ∧ IsTrim E)) :
+    IsTrim (augment pq E) := by
+  unfold augment
+  unfold IsTrim
+  rcases h with ⟨h_nil, h_ne⟩ | ⟨h_ne, h_trim⟩
+  · subst h_nil
+    simp
+    exact h_ne
+  · match E, h_ne, h_trim with
+    | q :: rest, _, ht =>
+      simp only [List.getLast?_cons]
+      unfold IsTrim at ht
+      simp only [List.getLast?_cons] at ht
+      exact ht
+
 end ILS
 
 namespace BMSZ
