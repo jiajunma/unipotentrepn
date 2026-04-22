@@ -252,6 +252,33 @@ no `h_inj` hypothesis is needed.
 - `Phi_Bplus_sig_injective_zero` / `Phi_Bplus_sig_trim_injective_zero`
 - `Phi_Bminus_sig_injective_zero` / `Phi_Bminus_sig_trim_injective_zero`
 
+### 🎯 D/C/M: signature (0,0) forces empty shapes
+
+A fundamental structural fact about the signature:
+
+- `PaintedYoungDiagram.sum_countSym`: sum of `countSym` over all 5
+  DRCSymbols equals the total cell count (PROVED).
+- `PaintedYoungDiagram.shape_empty_of_countSym_all_zero`: all counts
+  zero forces `shape = ⊥` (PROVED).
+- `PBP_shapes_empty_of_signature_zero_DCM`: for γ ∈ {D, C, M},
+  `signature τ = (0, 0)` implies `τ.P.shape = ⊥ ∧ τ.Q.shape = ⊥`
+  (PROVED).
+
+Derived sector characterizations:
+
+- `PBPSet_D_sig_zero_eq_empty_of_{P,Q}_ne_bot`: the D-type (0, 0)
+  sector is empty whenever either shape is non-empty.
+- `PBPSet_C_sig_zero_eq_empty_of_P_ne_bot`: C-type analogue.
+- `PBPSet_M_sig_zero_eq_empty_of_P_ne_bot`: M-type analogue.
+
+Combined with the ⊥⊥ witnesses, the (0, 0) sector of
+`PBPSet_{D,C,M}_sig μP μQ` is now fully characterized:
+- singleton `{emptyPBPSet_γ}` when `μP = ⊥` and `μQ = ⊥`;
+- empty otherwise.
+
+All new theorems verified standard-axiom-only (propext, Classical.choice,
+Quot.sound). No sorryAx.
+
 These complete the trim integration: future paper-level proof of
 `h_inj` for `Phi_γ_sig` (paper Prop 11.15/11.17 bridge) automatically
 discharges `h_inj` for `Phi_γ_sig_trim`.
