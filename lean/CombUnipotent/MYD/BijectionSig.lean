@@ -1595,6 +1595,31 @@ theorem Phi_Bminus_sig_trim_injective_zero {μP μQ : YoungDiagram}
   intro p _ _
   exact isEmptyElim p.1
 
+/-- Range of `Phi_Bplus_sig_trim` on the (0, 0) sector is empty
+    (source is empty — no B⁺ PBP has signature (0, 0)). -/
+theorem Phi_Bplus_sig_trim_range_zero_empty {μP μQ : YoungDiagram}
+    (h_step : DescentStepSingleton_Bplus) :
+    Set.range
+      (fun p : PBPSet_Bplus_sig μP μQ (0, 0) × Fin 2 =>
+        Phi_Bplus_sig_trim h_step p.1 p.2) = ∅ := by
+  haveI : IsEmpty (PBPSet_Bplus_sig μP μQ (0, 0)) := PBPSet_Bplus_sig_zero_eq_empty
+  ext M
+  simp only [Set.mem_range, Set.mem_empty_iff_false, iff_false]
+  rintro ⟨p, _⟩
+  exact isEmptyElim p.1
+
+/-- Range of `Phi_Bminus_sig_trim` on the (0, 0) sector is empty. -/
+theorem Phi_Bminus_sig_trim_range_zero_empty {μP μQ : YoungDiagram}
+    (h_sing : DescentChainBminusSingleton) :
+    Set.range
+      (fun p : PBPSet_Bminus_sig μP μQ (0, 0) × Fin 2 =>
+        Phi_Bminus_sig_trim h_sing p.1 p.2) = ∅ := by
+  haveI : IsEmpty (PBPSet_Bminus_sig μP μQ (0, 0)) := PBPSet_Bminus_sig_zero_eq_empty
+  ext M
+  simp only [Set.mem_range, Set.mem_empty_iff_false, iff_false]
+  rintro ⟨p, _⟩
+  exact isEmptyElim p.1
+
 /-! ## `Phi_γ_sig_trim_E = Phi_γ_sig_E` under std hypothesis
 
 Since chain-derived ILSs are trim (via `Phi_γ_sig_E_IsTrim`), `toTrim`
