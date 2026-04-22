@@ -268,6 +268,15 @@ theorem signRow_eq_zero_iff (i : ℕ) (pq : ℤ × ℤ) :
   · exact Int.natAbs_eq_zero.mp h_a
   · exact Int.natAbs_eq_zero.mp h_b
 
+/-- `sign (E ++ [a]) = sign E + signRow E.length a` (componentwise). -/
+theorem sign_append_singleton (E : ILS) (a : ℤ × ℤ) :
+    sign (E ++ [a]) =
+      ((sign E).1 + (signRow E.length a).1, (sign E).2 + (signRow E.length a).2) := by
+  unfold sign
+  rw [List.zipIdx_append]
+  rw [List.foldl_append]
+  simp [List.zipIdx]
+
 end ILS
 
 namespace BMSZ
