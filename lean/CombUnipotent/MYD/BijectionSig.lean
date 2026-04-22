@@ -834,8 +834,6 @@ theorem Phi_D_sig_E_IsTrim {μP μQ : YoungDiagram} {s : ℤ × ℤ}
     (h_step_std : StepStdAndAugment_D)
     (σh : PBPSet_D_sig μP μQ s) (ε : Fin 2) :
     ILS.IsTrim (Phi_D_sig h_step σh ε).E := by
-  -- Phi_D_sig.E = twistBD (chain-extracted E) ε_int ε_int
-  -- twistBD preserves trim, chainSingleton_IsTrim_D gives trim
   show ILS.IsTrim (ILS.twistBD _ _ _)
   apply ILS.twistBD_IsTrim
   · by_cases hε : ε = 1 <;> simp [hε]
@@ -844,6 +842,39 @@ theorem Phi_D_sig_E_IsTrim {μP μQ : YoungDiagram} {s : ℤ × ℤ}
       (Classical.choose_spec (exists_descentChain_D σh.val))
       (Classical.choose_spec (descentChain_D_singleton h_step
         (Classical.choose_spec (exists_descentChain_D σh.val))))
+
+/-- Under per-step std + ne_augment hypothesis, `Phi_Bplus_sig`'s
+    output `E` is trim. -/
+theorem Phi_Bplus_sig_E_IsTrim {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    (h_step : DescentStepSingleton_Bplus)
+    (h_step_std : StepStdAndAugment_Bplus)
+    (σh : PBPSet_Bplus_sig μP μQ s) (ε : Fin 2) :
+    ILS.IsTrim (Phi_Bplus_sig h_step σh ε).E := by
+  show ILS.IsTrim (ILS.twistBD _ _ _)
+  apply ILS.twistBD_IsTrim
+  · by_cases hε : ε = 1 <;> simp [hε]
+  · by_cases hε : ε = 1 <;> simp [hε]
+  · exact chainSingleton_IsTrim_Bplus h_step_std
+      (Classical.choose_spec (exists_descentChain_Bplus σh.val))
+      (Classical.choose_spec (descentChain_Bplus_singleton h_step
+        (Classical.choose_spec (exists_descentChain_Bplus σh.val))))
+
+/-- Under chain-singleton + per-step std hypotheses for B+, `Phi_Bminus_sig`'s
+    output `E` is trim. -/
+theorem Phi_Bminus_sig_E_IsTrim {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    (h_sing : DescentChainBminusSingleton)
+    (h_step_std_Bm : StepStdAndAugment_Bminus)
+    (h_step_std_Bp : StepStdAndAugment_Bplus)
+    (σh : PBPSet_Bminus_sig μP μQ s) (ε : Fin 2) :
+    ILS.IsTrim (Phi_Bminus_sig h_sing σh ε).E := by
+  show ILS.IsTrim (ILS.twistBD _ _ _)
+  apply ILS.twistBD_IsTrim
+  · by_cases hε : ε = 1 <;> simp [hε]
+  · by_cases hε : ε = 1 <;> simp [hε]
+  · exact chainSingleton_IsTrim_Bminus h_step_std_Bm h_step_std_Bp
+      (Classical.choose_spec (exists_descentChain_Bminus σh.val))
+      (Classical.choose_spec (h_sing
+        (Classical.choose_spec (exists_descentChain_Bminus σh.val))))
 
 /-! ## Trim-target equiv assembly
 
