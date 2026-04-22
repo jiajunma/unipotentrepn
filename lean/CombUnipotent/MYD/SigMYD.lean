@@ -181,6 +181,27 @@ theorem trim_eq_self_of_IsTrim (E : ILS) (h : IsTrim E) : trim E = E := by
       simp at h
     · simp [List.reverse_append, ha]
 
+/-- `signRow i pq` produces non-negative components. -/
+theorem signRow_fst_nonneg (i : ℕ) (pq : ℤ × ℤ) : 0 ≤ (signRow i pq).1 := by
+  show 0 ≤ pq.1.natAbs * (((i : ℤ) + 1) / 2 + ((i : ℤ) + 1) % 2)
+            + pq.2.natAbs * (((i : ℤ) + 1) / 2)
+  have h1 : 0 ≤ ((i : ℤ) + 1) / 2 :=
+    Int.ediv_nonneg (by omega) (by norm_num)
+  have h2 : 0 ≤ ((i : ℤ) + 1) % 2 := Int.emod_nonneg _ (by norm_num)
+  exact Int.add_nonneg
+    (Int.mul_nonneg (Int.ofNat_nonneg _) (Int.add_nonneg h1 h2))
+    (Int.mul_nonneg (Int.ofNat_nonneg _) h1)
+
+theorem signRow_snd_nonneg (i : ℕ) (pq : ℤ × ℤ) : 0 ≤ (signRow i pq).2 := by
+  show 0 ≤ pq.2.natAbs * (((i : ℤ) + 1) / 2 + ((i : ℤ) + 1) % 2)
+            + pq.1.natAbs * (((i : ℤ) + 1) / 2)
+  have h1 : 0 ≤ ((i : ℤ) + 1) / 2 :=
+    Int.ediv_nonneg (by omega) (by norm_num)
+  have h2 : 0 ≤ ((i : ℤ) + 1) % 2 := Int.emod_nonneg _ (by norm_num)
+  exact Int.add_nonneg
+    (Int.mul_nonneg (Int.ofNat_nonneg _) (Int.add_nonneg h1 h2))
+    (Int.mul_nonneg (Int.ofNat_nonneg _) h1)
+
 end ILS
 
 namespace BMSZ
