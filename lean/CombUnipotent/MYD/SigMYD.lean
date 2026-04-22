@@ -634,9 +634,7 @@ theorem stepPreTwist_IsTrim (E : ILS) (d : ACStepData)
   · exact h_trim
 
 /-- **Per-step trim preservation for D chain step**: given std + ne_augment
-    on `stepPreTwist E d` and trim E, the post-twist output is trim.
-
-    Combines `thetaLift_CD_preserves_trim_std` + `stepPostTwist_IsTrim`. -/
+    on `stepPreTwist E d` and trim E, the post-twist output is trim. -/
 theorem step_trim_D (E : ILS) (d : ACStepData) (hd : d.γ = .D)
     (h_std :
       d.p - (ILS.sign (stepPreTwist E d)).1 -
@@ -655,6 +653,90 @@ theorem step_trim_D (E : ILS) (d : ACStepData) (hd : d.γ = .D)
   rw [hd] at h_tl
   unfold ILS.thetaLift at h_tl
   exact thetaLift_CD_preserves_trim_std (stepPreTwist E d) d.p d.q
+    h_std h_ne_augment (stepPreTwist_IsTrim E d h_trim) h_tl
+
+/-- **Per-step trim preservation for Bplus chain step**. -/
+theorem step_trim_Bplus (E : ILS) (d : ACStepData) (hd : d.γ = .Bplus)
+    (h_std :
+      d.p - (ILS.sign (stepPreTwist E d)).1 -
+        (ILS.firstColSign (stepPreTwist E d)).2 ≥ 0 ∧
+      d.q - (ILS.sign (stepPreTwist E d)).2 -
+        (ILS.firstColSign (stepPreTwist E d)).1 ≥ 0)
+    (h_ne_augment : (stepPreTwist E d) = [] →
+      (d.p - (ILS.sign (stepPreTwist E d)).1 -
+        (ILS.firstColSign (stepPreTwist E d)).2,
+       d.q - (ILS.sign (stepPreTwist E d)).2 -
+        (ILS.firstColSign (stepPreTwist E d)).1) ≠ (0, 0))
+    (h_trim : ILS.IsTrim E) {E' : ILS}
+    (h_tl : ILS.thetaLift (stepPreTwist E d) d.γ d.p d.q = [E']) :
+    ILS.IsTrim (stepPostTwist E' d) := by
+  apply stepPostTwist_IsTrim
+  rw [hd] at h_tl
+  unfold ILS.thetaLift at h_tl
+  exact thetaLift_MB_preserves_trim_std (stepPreTwist E d) d.p d.q
+    h_std h_ne_augment (stepPreTwist_IsTrim E d h_trim) h_tl
+
+/-- **Per-step trim preservation for Bminus chain step**. -/
+theorem step_trim_Bminus (E : ILS) (d : ACStepData) (hd : d.γ = .Bminus)
+    (h_std :
+      d.p - (ILS.sign (stepPreTwist E d)).1 -
+        (ILS.firstColSign (stepPreTwist E d)).2 ≥ 0 ∧
+      d.q - (ILS.sign (stepPreTwist E d)).2 -
+        (ILS.firstColSign (stepPreTwist E d)).1 ≥ 0)
+    (h_ne_augment : (stepPreTwist E d) = [] →
+      (d.p - (ILS.sign (stepPreTwist E d)).1 -
+        (ILS.firstColSign (stepPreTwist E d)).2,
+       d.q - (ILS.sign (stepPreTwist E d)).2 -
+        (ILS.firstColSign (stepPreTwist E d)).1) ≠ (0, 0))
+    (h_trim : ILS.IsTrim E) {E' : ILS}
+    (h_tl : ILS.thetaLift (stepPreTwist E d) d.γ d.p d.q = [E']) :
+    ILS.IsTrim (stepPostTwist E' d) := by
+  apply stepPostTwist_IsTrim
+  rw [hd] at h_tl
+  unfold ILS.thetaLift at h_tl
+  exact thetaLift_MB_preserves_trim_std (stepPreTwist E d) d.p d.q
+    h_std h_ne_augment (stepPreTwist_IsTrim E d h_trim) h_tl
+
+/-- **Per-step trim preservation for C chain step** (uses p as n in DC). -/
+theorem step_trim_C (E : ILS) (d : ACStepData) (hd : d.γ = .C)
+    (h_std :
+      d.p - (ILS.sign (stepPreTwist E d)).1 -
+        (ILS.firstColSign (stepPreTwist E d)).2 ≥ 0 ∧
+      d.p - (ILS.sign (stepPreTwist E d)).2 -
+        (ILS.firstColSign (stepPreTwist E d)).1 ≥ 0)
+    (h_ne_augment : (stepPreTwist E d) = [] →
+      (d.p - (ILS.sign (stepPreTwist E d)).1 -
+        (ILS.firstColSign (stepPreTwist E d)).2,
+       d.p - (ILS.sign (stepPreTwist E d)).2 -
+        (ILS.firstColSign (stepPreTwist E d)).1) ≠ (0, 0))
+    (h_trim : ILS.IsTrim E) {E' : ILS}
+    (h_tl : ILS.thetaLift (stepPreTwist E d) d.γ d.p d.q = [E']) :
+    ILS.IsTrim (stepPostTwist E' d) := by
+  apply stepPostTwist_IsTrim
+  rw [hd] at h_tl
+  unfold ILS.thetaLift at h_tl
+  exact thetaLift_DC_preserves_trim_std (stepPreTwist E d) d.p
+    h_std h_ne_augment (stepPreTwist_IsTrim E d h_trim) h_tl
+
+/-- **Per-step trim preservation for M chain step** (uses p as n in BM). -/
+theorem step_trim_M (E : ILS) (d : ACStepData) (hd : d.γ = .M)
+    (h_std :
+      d.p - (ILS.sign (stepPreTwist E d)).1 -
+        (ILS.firstColSign (stepPreTwist E d)).2 ≥ 0 ∧
+      d.p - (ILS.sign (stepPreTwist E d)).2 -
+        (ILS.firstColSign (stepPreTwist E d)).1 ≥ 0)
+    (h_ne_augment : (stepPreTwist E d) = [] →
+      (d.p - (ILS.sign (stepPreTwist E d)).1 -
+        (ILS.firstColSign (stepPreTwist E d)).2,
+       d.p - (ILS.sign (stepPreTwist E d)).2 -
+        (ILS.firstColSign (stepPreTwist E d)).1) ≠ (0, 0))
+    (h_trim : ILS.IsTrim E) {E' : ILS}
+    (h_tl : ILS.thetaLift (stepPreTwist E d) d.γ d.p d.q = [E']) :
+    ILS.IsTrim (stepPostTwist E' d) := by
+  apply stepPostTwist_IsTrim
+  rw [hd] at h_tl
+  unfold ILS.thetaLift at h_tl
+  exact thetaLift_BM_preserves_trim_std (stepPreTwist E d) d.p
     h_std h_ne_augment (stepPreTwist_IsTrim E d h_trim) h_tl
 
 end BMSZ
