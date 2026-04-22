@@ -279,6 +279,31 @@ Combined with the ⊥⊥ witnesses, the (0, 0) sector of
 All new theorems verified standard-axiom-only (propext, Classical.choice,
 Quot.sound). No sorryAx.
 
+### 🎯 Parity + signature-symmetry sector emptiness (shape-independent)
+
+These theorems hold for ANY μP, μQ (not restricted to empty shapes):
+
+- `PBPSet_{D,C,M}_sig_sum_odd_eq_empty`: D/C/M PBP has even signature sum;
+  any odd-sum sector is empty.
+- `PBPSet_{Bplus,Bminus}_sig_sum_even_eq_empty`: B⁺/B⁻ PBP has odd
+  signature sum; any even-sum sector is empty.
+- `PBPSet_{C,M}_sig_fst_ne_snd_eq_empty`: C/M PBP has equal components
+  signature (= |τ|); any asymmetric sector is empty.
+- `PBPSet_{Bplus,Bminus}_sig_{fst,snd}_lt_one_eq_empty`: B⁺ signature.1
+  ≥ 1, B⁻ signature.2 ≥ 1.
+
+These are **universal structural constraints** — the source is empty
+in these sectors for ALL shapes.
+
+Supporting theorems in `Prop11_5_AtomicDischarge.lean`:
+- `PBP.signature_sum_γ`: concrete sum identities (`2|τ|` or `2|τ|+1`) for all 5 γ
+- `PBP.signature_{fst,snd}_{C,M}`: signature = |τ| (direct equality)
+- `PBP.signature_fst_eq_snd_{C,M}`: C/M components are equal
+- `PBP.signature_sum_{Bplus,Bminus}_odd`: B± parity invariants
+- `PBP.signature_sum_DCM_even`: D/C/M parity invariant
+- `PBP.no_γ_of_sum_*`: direct False-valued witnesses
+- 5 × `PBP.{P,Q}_countSym_eq_zero_of_γ` in `Tail.lean`: paint constraint lemmas
+
 ### 🎯 10 × empty ≃ empty bijections on (⊥, ⊥) for negative-sig
 
 For any γ ∈ {D, B⁺, B⁻, C, M}, signatures with `s.1 < 0` or `s.2 < 0`
