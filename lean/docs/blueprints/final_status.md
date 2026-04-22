@@ -111,6 +111,12 @@ Beyond 36 → 0 sorries, added:
   trailing (0, 0) rows, preserves sign.
 - **`MYD_sig_trim γ s`**: refined finite subtype.
 - **`MYD_sig.toTrim`**: canonicalization map.
+- **`ILS.charTwistCM_IsTrim`**, **`ILS.twistBD_IsTrim`**,
+  **`ILS.augment_IsTrim`** (all PROVED): trim preservation under basic ops.
+- **`BMSZ.chainSingleton_IsTrim`** (PROVED conditionally on `StepPreservesTrim`):
+  chain-extracted ILS is trim.
+- **`BMSZ.thetaLift_{CD,DC,BM,MB}_preserves_trim_std`** (all 4 PROVED):
+  std-case per-target trim preservation — paper §11.5/§11.6 building blocks.
 
 Critical finding: `MYD_sig γ s` as defined is **not finite**
 (trailing zeros preserve sign), so the current `Phi_γ_sig_equiv`
