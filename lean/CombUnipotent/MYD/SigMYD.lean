@@ -414,6 +414,25 @@ noncomputable instance fintype_MYD_sig_trim_neg_snd {γ : RootType} {s : ℤ × 
     (h : s.2 < 0) : Fintype (MYD_sig_trim γ s) :=
   @Fintype.ofIsEmpty _ (MYD_sig_trim_empty_of_sign_neg_snd h)
 
+/-- For sign (0, 0), `MYD_sig_trim γ (0, 0)` is a subsingleton (only empty E). -/
+instance subsingleton_MYD_sig_trim_zero {γ : RootType} :
+    Subsingleton (MYD_sig_trim γ (0, 0)) := by
+  refine ⟨fun M₁ M₂ => MYD_sig_trim.ext ?_⟩
+  have h₁ := ILS.eq_nil_of_sign_zero_of_IsTrim M₁.E M₁.sign_match M₁.is_trim
+  have h₂ := ILS.eq_nil_of_sign_zero_of_IsTrim M₂.E M₂.sign_match M₂.is_trim
+  rw [h₁, h₂]
+
+/-- The unique element of `MYD_sig_trim γ (0, 0)` (the empty ILS). -/
+def MYD_sig_trim.zero {γ : RootType} : MYD_sig_trim γ (0, 0) where
+  E := []
+  sign_match := ILS.sign_nil
+  is_trim := ILS.isTrim_nil
+
+/-- `MYD_sig_trim γ (0, 0)` has cardinality 1. -/
+noncomputable instance fintype_MYD_sig_trim_zero {γ : RootType} :
+    Fintype (MYD_sig_trim γ (0, 0)) :=
+  @Fintype.ofSubsingleton _ MYD_sig_trim.zero subsingleton_MYD_sig_trim_zero
+
 
 /-- Forget the trim constraint. -/
 def MYD_sig_trim.toMYDSig {γ : RootType} {s : ℤ × ℤ}
