@@ -1879,6 +1879,33 @@ theorem nat_card_MYD_sig_trim_zero {γ : RootType} :
     Nat.card (MYD_sig_trim γ (0, 0)) = 1 := by
   simp [Nat.card_eq_fintype_card, card_MYD_sig_trim_zero]
 
+/-! ## Cardinality agreement across (⊥, ⊥) sectors
+
+For C/M: `Nat.card (PBPSet_γ_sig ⊥ ⊥ s) = Nat.card (MYD_sig_trim γ s)`
+holds for the bijection-confirmed sectors:
+- `s = (0, 0)`: both 1 (via unconditional bijection)
+- `s.1 < 0` or `s.2 < 0`: both 0 (both empty) -/
+
+theorem nat_card_eq_C_sig_bot_neg_fst {s : ℤ × ℤ} (h : s.1 < 0) :
+    Nat.card (PBPSet_C_sig (⊥ : YoungDiagram) ⊥ s) =
+    Nat.card (MYD_sig_trim .C s) :=
+  Nat.card_congr (Phi_C_sig_trim_bot_neg_fst_equiv h)
+
+theorem nat_card_eq_C_sig_bot_neg_snd {s : ℤ × ℤ} (h : s.2 < 0) :
+    Nat.card (PBPSet_C_sig (⊥ : YoungDiagram) ⊥ s) =
+    Nat.card (MYD_sig_trim .C s) :=
+  Nat.card_congr (Phi_C_sig_trim_bot_neg_snd_equiv h)
+
+theorem nat_card_eq_M_sig_bot_neg_fst {s : ℤ × ℤ} (h : s.1 < 0) :
+    Nat.card (PBPSet_M_sig (⊥ : YoungDiagram) ⊥ s) =
+    Nat.card (MYD_sig_trim .M s) :=
+  Nat.card_congr (Phi_M_sig_trim_bot_neg_fst_equiv h)
+
+theorem nat_card_eq_M_sig_bot_neg_snd {s : ℤ × ℤ} (h : s.2 < 0) :
+    Nat.card (PBPSet_M_sig (⊥ : YoungDiagram) ⊥ s) =
+    Nat.card (MYD_sig_trim .M s) :=
+  Nat.card_congr (Phi_M_sig_trim_bot_neg_snd_equiv h)
+
 /-- Phi_Bplus_sig_trim is vacuously injective on the (0, 0) sector. -/
 theorem Phi_Bplus_sig_trim_injective_zero {μP μQ : YoungDiagram}
     (h_step : DescentStepSingleton_Bplus) :
