@@ -453,4 +453,34 @@ theorem descentChain_sign_match_C_base {τ : PBP} (hγ : τ.γ = .C)
   rw [signature_empty_C τ hγ h_empty]
   rfl
 
+/-! ## Concrete dp values for paper §9.4
+
+Explicit witness: for `dp = [2k+1]` (k ≥ 1, odd), `dpartColLensP_C = []`
+and `dpartColLensQ_C = [k]`. Matches shapes (⊥, single column of height k).
+-/
+
+/-- `dpartColLensP_C [r] = []` for any `r`. -/
+theorem dpartColLensP_C_singleton (r : ℕ) : dpartColLensP_C [r] = [] := rfl
+
+/-- `dpartColLensQ_C [r] = [(r-1)/2]` when `r > 1`. -/
+theorem dpartColLensQ_C_singleton_pos {r : ℕ} (h : r > 1) :
+    dpartColLensQ_C [r] = [(r - 1) / 2] := by
+  unfold dpartColLensQ_C; simp [h]
+
+/-- `dpartColLensQ_C [r] = []` when `r ≤ 1`. -/
+theorem dpartColLensQ_C_singleton_le_one {r : ℕ} (h : r ≤ 1) :
+    dpartColLensQ_C [r] = [] := by
+  unfold dpartColLensQ_C; simp [Nat.not_lt.mpr h]
+
+/-- For odd `r > 1`: `dpartColLensQ_C [r] = [(r-1)/2]` is a single-column
+    witness. This gives: if `μP = ⊥` and `μQ.colLens = [(r-1)/2]`, then
+    `dp = [r]` is C-coherent. -/
+theorem PBPIsCoherent_C_singleton_witness (τ : PBP) {r : ℕ}
+    (h_r : r > 1) (hP : τ.P.shape = ⊥) (hQ : τ.Q.shape.colLens = [(r - 1) / 2]) :
+    PBPIsCoherent_C τ [r] := by
+  refine ⟨?_, ?_⟩
+  · rw [hP, dpartColLensP_C_singleton]
+    exact _root_.colLens_bot
+  · rw [hQ, dpartColLensQ_C_singleton_pos h_r]
+
 end BMSZ
