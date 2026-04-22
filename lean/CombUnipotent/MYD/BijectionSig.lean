@@ -825,6 +825,26 @@ theorem Phi_M_sig_trim_E {μP μQ : YoungDiagram} {s : ℤ × ℤ}
     (Phi_M_sig_trim h_chain h_sing h_sm σh).E =
     ILS.trim (Phi_M_sig h_chain h_sing h_sm σh).E := rfl
 
+/-! ## Phi outputs trim under StepStdAndAugment hypotheses -/
+
+/-- Under per-step std + ne_augment hypothesis, `Phi_D_sig`'s output
+    `E` is trim. -/
+theorem Phi_D_sig_E_IsTrim {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    (h_step : DescentStepSingleton_D)
+    (h_step_std : StepStdAndAugment_D)
+    (σh : PBPSet_D_sig μP μQ s) (ε : Fin 2) :
+    ILS.IsTrim (Phi_D_sig h_step σh ε).E := by
+  -- Phi_D_sig.E = twistBD (chain-extracted E) ε_int ε_int
+  -- twistBD preserves trim, chainSingleton_IsTrim_D gives trim
+  show ILS.IsTrim (ILS.twistBD _ _ _)
+  apply ILS.twistBD_IsTrim
+  · by_cases hε : ε = 1 <;> simp [hε]
+  · by_cases hε : ε = 1 <;> simp [hε]
+  · exact chainSingleton_IsTrim_D h_step_std
+      (Classical.choose_spec (exists_descentChain_D σh.val))
+      (Classical.choose_spec (descentChain_D_singleton h_step
+        (Classical.choose_spec (exists_descentChain_D σh.val))))
+
 /-! ## Trim-target equiv assembly
 
 These mirror `Phi_γ_sig_equiv` but with `MYD_sig_trim` as target,
