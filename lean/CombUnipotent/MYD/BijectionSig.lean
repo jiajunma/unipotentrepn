@@ -1865,6 +1865,20 @@ theorem nat_card_PBPSet_M_sig_bot_zero_eq :
     Nat.card (MYD_sig_trim .M (0, 0)) :=
   Nat.card_congr Phi_M_sig_trim_bot_zero_equiv_unconditional
 
+/-- `Nat.card (MYD_sig_trim γ s) = 0` for signatures with negative components. -/
+theorem nat_card_MYD_sig_trim_neg_fst_eq_zero {γ : RootType} {s : ℤ × ℤ}
+    (h : s.1 < 0) : Nat.card (MYD_sig_trim γ s) = 0 :=
+  @Nat.card_of_isEmpty _ (MYD_sig_trim_empty_of_sign_neg_fst h)
+
+theorem nat_card_MYD_sig_trim_neg_snd_eq_zero {γ : RootType} {s : ℤ × ℤ}
+    (h : s.2 < 0) : Nat.card (MYD_sig_trim γ s) = 0 :=
+  @Nat.card_of_isEmpty _ (MYD_sig_trim_empty_of_sign_neg_snd h)
+
+/-- `Nat.card (MYD_sig_trim γ (0, 0)) = 1`. -/
+theorem nat_card_MYD_sig_trim_zero {γ : RootType} :
+    Nat.card (MYD_sig_trim γ (0, 0)) = 1 := by
+  simp [Nat.card_eq_fintype_card, card_MYD_sig_trim_zero]
+
 /-- Phi_Bplus_sig_trim is vacuously injective on the (0, 0) sector. -/
 theorem Phi_Bplus_sig_trim_injective_zero {μP μQ : YoungDiagram}
     (h_step : DescentStepSingleton_Bplus) :
