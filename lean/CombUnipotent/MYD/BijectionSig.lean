@@ -1341,6 +1341,7 @@ noncomputable def Phi_M_sig_trim_bot_zero_equiv_unconditional :
   left_inv := fun _ => Subsingleton.elim _ _
   right_inv := fun _ => Subsingleton.elim _ _
 
+
 /-! ## PBPSet_*_sig (⊥, ⊥) s is empty for s ≠ (0, 0)
 
 For empty shape (⊥), the only PBP is `emptyPBP_C` (resp. `emptyPBP_M`)
@@ -1719,6 +1720,31 @@ theorem Phi_Bminus_sig_injective_bot_of_ne_zero_one {s : ℤ × ℤ}
     PBPSet_Bminus_sig_bot_eq_empty hs
   intro p _ _
   exact isEmptyElim p.1
+
+/-! ## Empty ≃ empty trivial bijections for negative-sig sectors -/
+
+/-- For `s.1 < 0`: source is empty (by `s ≠ base`) AND target is empty
+    (by negative sign). Gives a trivial bijection on (⊥, ⊥). -/
+noncomputable def Phi_D_sig_trim_bot_neg_fst_equiv {s : ℤ × ℤ} (h : s.1 < 0) :
+    PBPSet_D_sig (⊥ : YoungDiagram) ⊥ s × Fin 2 ≃ MYD_sig_trim .D s := by
+  have hs : s ≠ (0, 0) := by rintro rfl; exact absurd h (by norm_num)
+  haveI : IsEmpty (PBPSet_D_sig (⊥ : YoungDiagram) ⊥ s) :=
+    PBPSet_D_sig_bot_eq_empty hs
+  haveI : IsEmpty (MYD_sig_trim .D s) := MYD_sig_trim_empty_of_sign_neg_fst h
+  haveI : IsEmpty (PBPSet_D_sig (⊥ : YoungDiagram) ⊥ s × Fin 2) :=
+    Prod.isEmpty_left
+  exact Equiv.equivOfIsEmpty _ _
+
+/-- For `s.2 < 0`: similar. -/
+noncomputable def Phi_D_sig_trim_bot_neg_snd_equiv {s : ℤ × ℤ} (h : s.2 < 0) :
+    PBPSet_D_sig (⊥ : YoungDiagram) ⊥ s × Fin 2 ≃ MYD_sig_trim .D s := by
+  have hs : s ≠ (0, 0) := by rintro rfl; exact absurd h (by norm_num)
+  haveI : IsEmpty (PBPSet_D_sig (⊥ : YoungDiagram) ⊥ s) :=
+    PBPSet_D_sig_bot_eq_empty hs
+  haveI : IsEmpty (MYD_sig_trim .D s) := MYD_sig_trim_empty_of_sign_neg_snd h
+  haveI : IsEmpty (PBPSet_D_sig (⊥ : YoungDiagram) ⊥ s × Fin 2) :=
+    Prod.isEmpty_left
+  exact Equiv.equivOfIsEmpty _ _
 
 /-- Phi_Bplus_sig_trim is vacuously injective on the (0, 0) sector. -/
 theorem Phi_Bplus_sig_trim_injective_zero {μP μQ : YoungDiagram}
