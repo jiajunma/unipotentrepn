@@ -388,6 +388,46 @@ theorem signTarget_C'_emptyPBP : signTarget_C' emptyPBP_C = (0, 0) := by
   rw [emptyPBP_C_signature]
   rfl
 
+/-- A PaintedYoungDiagram with shape ⊥ has paint = (fun _ _ => .dot)
+    (forced by paint_outside). -/
+theorem PaintedYoungDiagram_paint_of_shape_bot (D : PaintedYoungDiagram)
+    (h : D.shape = ⊥) : D.paint = fun _ _ => .dot := by
+  funext i j
+  apply D.paint_outside
+  rw [h]
+  intro hmem
+  simp at hmem
+
+/-- Two PaintedYoungDiagrams with shape ⊥ are equal. -/
+theorem PaintedYoungDiagram_subsingleton_of_bot
+    (D₁ D₂ : PaintedYoungDiagram)
+    (h₁ : D₁.shape = ⊥) (h₂ : D₂.shape = ⊥) : D₁ = D₂ := by
+  cases D₁ with
+  | mk shape₁ paint₁ paint_outside₁ =>
+    cases D₂ with
+    | mk shape₂ paint₂ paint_outside₂ =>
+      simp only at h₁ h₂
+      subst h₁; subst h₂
+      have hp₁ : paint₁ = fun _ _ => .dot :=
+        PaintedYoungDiagram_paint_of_shape_bot ⟨⊥, paint₁, paint_outside₁⟩ rfl
+      have hp₂ : paint₂ = fun _ _ => .dot :=
+        PaintedYoungDiagram_paint_of_shape_bot ⟨⊥, paint₂, paint_outside₂⟩ rfl
+      simp only at hp₁ hp₂
+      subst hp₁; subst hp₂
+      rfl
+
+/-- Two PBPs with same γ and shape ⊥ are equal. -/
+theorem PBP_eq_of_shapes_bot {τ₁ τ₂ : PBP} (hγ : τ₁.γ = τ₂.γ)
+    (hP₁ : τ₁.P.shape = ⊥) (hQ₁ : τ₁.Q.shape = ⊥)
+    (hP₂ : τ₂.P.shape = ⊥) (hQ₂ : τ₂.Q.shape = ⊥) : τ₁ = τ₂ := by
+  cases τ₁
+  cases τ₂
+  simp only at hγ
+  subst hγ
+  congr 1
+  · exact PaintedYoungDiagram_subsingleton_of_bot _ _ hP₁ hP₂
+  · exact PaintedYoungDiagram_subsingleton_of_bot _ _ hQ₁ hQ₂
+
 /-- **Chain sign-match hypothesis (C)**: along any valid C descent
     chain with singleton witness, the extracted ILS has signature
     matching the paper-level `signTarget_C' τ`.
