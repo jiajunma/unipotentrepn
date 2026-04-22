@@ -215,6 +215,30 @@ abbrev DescentChainMSingleton : Prop :=
     IsDescentChain_M τ chain →
       ∃ E : ILS, ChainSingleton (baseILS .M) chain E
 
+/-- `toACStepData_M τ hγ wp` has non-negative `p`. -/
+theorem toACStepData_M_p_nonneg (τ : PBP) (hγ : τ.γ = .M) (wp : PPSet) :
+    0 ≤ (toACStepData_M τ hγ wp).p := by
+  unfold toACStepData_M
+  simp only
+  exact Int.natCast_nonneg _
+
+/-- **Base case of std bound for M chain**: when `E_inner = baseILS .M = []`,
+    the std bound at outer step trivializes to signature non-negativity. -/
+theorem stepStdAndAugment_M_base_nil (τ : PBP) (hγ : τ.γ = .M) (wp : PPSet) :
+    (toACStepData_M τ hγ wp).p -
+      (ILS.sign (stepPreTwist [] (toACStepData_M τ hγ wp))).1 -
+      (ILS.firstColSign (stepPreTwist [] (toACStepData_M τ hγ wp))).2 ≥ 0 ∧
+    (toACStepData_M τ hγ wp).p -
+      (ILS.sign (stepPreTwist [] (toACStepData_M τ hγ wp))).2 -
+      (ILS.firstColSign (stepPreTwist [] (toACStepData_M τ hγ wp))).1 ≥ 0 := by
+  have h_pre : stepPreTwist ([] : ILS) (toACStepData_M τ hγ wp) = [] := by
+    unfold stepPreTwist
+    split_ifs <;> rfl
+  rw [h_pre]
+  show (_ : ℤ) ≥ 0 ∧ (_ : ℤ) ≥ 0
+  have hp := toACStepData_M_p_nonneg τ hγ wp
+  refine ⟨?_, ?_⟩ <;> simp [ILS.sign, ILS.firstColSign] <;> omega
+
 /-- **Chain trim for M-chains**.
 
     M chain has bifurcated step: outer M step + inner Bplus chain
