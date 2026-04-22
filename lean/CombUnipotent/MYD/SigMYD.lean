@@ -284,7 +284,6 @@ theorem all_zero_of_sign_zero (E : ILS) (h : sign E = (0, 0)) :
   | nil => intro a ha; simp at ha
   | append_singleton xs a ih =>
     rw [sign_append_singleton] at h
-    -- (sign xs).1 ≥ 0, (signRow xs.length a).1 ≥ 0, sum = 0 → both = 0
     have h1 := sign_fst_nonneg xs
     have h2 := sign_snd_nonneg xs
     have h3 := signRow_fst_nonneg xs.length a
@@ -304,6 +303,18 @@ theorem all_zero_of_sign_zero (E : ILS) (h : sign E = (0, 0)) :
     · exact ih h_xs b hb
     · rw [List.mem_singleton] at hb
       exact hb.trans h_a_zero
+
+/-- A trim ILS with sign `(0, 0)` is empty. -/
+theorem eq_nil_of_sign_zero_of_IsTrim (E : ILS)
+    (h_sign : sign E = (0, 0)) (h_trim : IsTrim E) : E = [] := by
+  by_contra h_ne
+  have h_last_mem : E.getLast h_ne ∈ E := List.getLast_mem h_ne
+  have h_last_zero : E.getLast h_ne = (0, 0) :=
+    all_zero_of_sign_zero E h_sign _ h_last_mem
+  have h_last_some : E.getLast? = some (E.getLast h_ne) :=
+    List.getLast?_eq_getLast h_ne
+  rw [h_last_zero] at h_last_some
+  exact h_trim h_last_some
 
 end ILS
 
