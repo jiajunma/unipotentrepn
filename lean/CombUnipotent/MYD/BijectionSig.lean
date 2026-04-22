@@ -1617,6 +1617,109 @@ theorem Phi_Bminus_sig_injective_zero {μP μQ : YoungDiagram}
   intro p _ _
   exact isEmptyElim p.1
 
+/-! ## Injectivity on (⊥, ⊥) shape for ANY signature (C/M — no Fin 2)
+
+On the (⊥, ⊥) shape, `PBPSet_γ_sig ⊥ ⊥ s` is subsingleton for any
+signature (either singleton or empty, depending on s). Injectivity
+is therefore unconditional. This gives UNIVERSAL injectivity results
+on (⊥, ⊥) for C/M types. -/
+
+/-- Phi_C_sig is injective on (⊥, ⊥) for any signature (source is
+    subsingleton). -/
+theorem Phi_C_sig_injective_bot {s : ℤ × ℤ}
+    (h_step_D : DescentStepSingleton_D)
+    (h_step_C : DescentStepSingleton_C)
+    (h_chain : ChainExists_C (⊥ : YoungDiagram) ⊥)
+    (h_sm : DescentChainSignMatch_C) :
+    Function.Injective
+      (Phi_C_sig (μP := ⊥) (μQ := ⊥) (s := s) h_step_D h_step_C h_chain h_sm) :=
+  fun _ _ _ => Subsingleton.elim _ _
+
+/-- Phi_M_sig is injective on (⊥, ⊥) for any signature. -/
+theorem Phi_M_sig_injective_bot {s : ℤ × ℤ}
+    (h_chain : ChainExists_M (⊥ : YoungDiagram) ⊥)
+    (h_sing : DescentChainMSingleton)
+    (h_sm : DescentChainSignMatch_M) :
+    Function.Injective
+      (Phi_M_sig (μP := ⊥) (μQ := ⊥) (s := s) h_chain h_sing h_sm) :=
+  fun _ _ _ => Subsingleton.elim _ _
+
+/-- Phi_C_sig_trim is injective on (⊥, ⊥) for any signature. -/
+theorem Phi_C_sig_trim_injective_bot {s : ℤ × ℤ}
+    (h_step_D : DescentStepSingleton_D)
+    (h_step_C : DescentStepSingleton_C)
+    (h_chain : ChainExists_C (⊥ : YoungDiagram) ⊥)
+    (h_sm : DescentChainSignMatch_C) :
+    Function.Injective
+      (Phi_C_sig_trim (μP := ⊥) (μQ := ⊥) (s := s)
+        h_step_D h_step_C h_chain h_sm) :=
+  fun _ _ _ => Subsingleton.elim _ _
+
+/-- Phi_M_sig_trim is injective on (⊥, ⊥) for any signature. -/
+theorem Phi_M_sig_trim_injective_bot {s : ℤ × ℤ}
+    (h_chain : ChainExists_M (⊥ : YoungDiagram) ⊥)
+    (h_sing : DescentChainMSingleton)
+    (h_sm : DescentChainSignMatch_M) :
+    Function.Injective
+      (Phi_M_sig_trim (μP := ⊥) (μQ := ⊥) (s := s) h_chain h_sing h_sm) :=
+  fun _ _ _ => Subsingleton.elim _ _
+
+/-! ## Injectivity on (⊥, ⊥) for D/B⁺/B⁻ (with Fin 2 multiplier)
+
+For D/B⁺/B⁻, the Fin 2 multiplier doubles the source. Source is
+still subsingleton on (⊥, ⊥), so Phi is injective on the source
+AS A FUNCTION OF σh ALONE. But the full map (σh, ε) → MYD_sig
+is NOT injective on (⊥, ⊥) (0, 0) for D (proved by cardinality),
+and vacuously injective for B⁺/B⁻ (source empty).
+
+For D at (⊥, ⊥) with signature s ≠ (0, 0), the source is empty,
+so Phi is vacuously injective. -/
+
+/-- Phi_D_sig is vacuously injective on (⊥, ⊥) for `s ≠ (0, 0)`
+    (source is empty). -/
+theorem Phi_D_sig_injective_bot_of_ne_zero {s : ℤ × ℤ} (hs : s ≠ (0, 0))
+    (h_step : DescentStepSingleton_D) :
+    Function.Injective
+      (fun p : PBPSet_D_sig (⊥ : YoungDiagram) ⊥ s × Fin 2 =>
+        Phi_D_sig h_step p.1 p.2) := by
+  haveI : IsEmpty (PBPSet_D_sig (⊥ : YoungDiagram) ⊥ s) :=
+    PBPSet_D_sig_bot_eq_empty hs
+  intro p _ _
+  exact isEmptyElim p.1
+
+/-- Phi_D_sig_trim is vacuously injective on (⊥, ⊥) for `s ≠ (0, 0)`. -/
+theorem Phi_D_sig_trim_injective_bot_of_ne_zero {s : ℤ × ℤ} (hs : s ≠ (0, 0))
+    (h_step : DescentStepSingleton_D) :
+    Function.Injective
+      (fun p : PBPSet_D_sig (⊥ : YoungDiagram) ⊥ s × Fin 2 =>
+        Phi_D_sig_trim h_step p.1 p.2) := by
+  haveI : IsEmpty (PBPSet_D_sig (⊥ : YoungDiagram) ⊥ s) :=
+    PBPSet_D_sig_bot_eq_empty hs
+  intro p _ _
+  exact isEmptyElim p.1
+
+/-- Phi_Bplus_sig is vacuously injective on (⊥, ⊥) for `s ≠ (1, 0)`. -/
+theorem Phi_Bplus_sig_injective_bot_of_ne_one_zero {s : ℤ × ℤ}
+    (hs : s ≠ (1, 0)) (h_step : DescentStepSingleton_Bplus) :
+    Function.Injective
+      (fun p : PBPSet_Bplus_sig (⊥ : YoungDiagram) ⊥ s × Fin 2 =>
+        Phi_Bplus_sig h_step p.1 p.2) := by
+  haveI : IsEmpty (PBPSet_Bplus_sig (⊥ : YoungDiagram) ⊥ s) :=
+    PBPSet_Bplus_sig_bot_eq_empty hs
+  intro p _ _
+  exact isEmptyElim p.1
+
+/-- Phi_Bminus_sig is vacuously injective on (⊥, ⊥) for `s ≠ (0, 1)`. -/
+theorem Phi_Bminus_sig_injective_bot_of_ne_zero_one {s : ℤ × ℤ}
+    (hs : s ≠ (0, 1)) (h_sing : DescentChainBminusSingleton) :
+    Function.Injective
+      (fun p : PBPSet_Bminus_sig (⊥ : YoungDiagram) ⊥ s × Fin 2 =>
+        Phi_Bminus_sig h_sing p.1 p.2) := by
+  haveI : IsEmpty (PBPSet_Bminus_sig (⊥ : YoungDiagram) ⊥ s) :=
+    PBPSet_Bminus_sig_bot_eq_empty hs
+  intro p _ _
+  exact isEmptyElim p.1
+
 /-- Phi_Bplus_sig_trim is vacuously injective on the (0, 0) sector. -/
 theorem Phi_Bplus_sig_trim_injective_zero {μP μQ : YoungDiagram}
     (h_step : DescentStepSingleton_Bplus) :
