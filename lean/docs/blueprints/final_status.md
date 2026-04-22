@@ -279,6 +279,34 @@ Combined with the ⊥⊥ witnesses, the (0, 0) sector of
 All new theorems verified standard-axiom-only (propext, Classical.choice,
 Quot.sound). No sorryAx.
 
+### 🎯🎯🎯🎯🎯 FULLY UNCONDITIONAL BIJECTIONS on (⊥,⊥) (0,0)
+
+**These are the first fully-instantiated bijection theorems with
+NO paper-content hypotheses.** The canonical singleton-to-singleton
+map is constructed abstractly:
+
+- `Phi_C_sig_trim_bot_zero_equiv_unconditional`:
+  `PBPSet_C_sig ⊥ ⊥ (0,0) ≃ MYD_sig_trim .C (0,0)`
+- `Phi_M_sig_trim_bot_zero_equiv_unconditional`:
+  `PBPSet_M_sig ⊥ ⊥ (0,0) ≃ MYD_sig_trim .M (0,0)`
+
+Both depend only on `propext`, `Classical.choice`, `Quot.sound` —
+verified via `#print axioms`. NO hypothesis bundle needed.
+
+Also added `_auto` variants that plug in `chainExists_{C,M}_empty`
+but still carry the universal `h_step_*` / `h_sm` hypotheses:
+
+- `Phi_C_sig_trim_bot_zero_equiv_auto`
+- `Phi_M_sig_trim_bot_zero_equiv_auto`
+
+Cardinality mismatch theorems also record that D/B+/B- bijection
+cannot exist on (⊥, ⊥) (0, 0) by cardinality alone:
+
+- `card_source_ne_target_D_bot_zero` (2 ≠ 1)
+- `card_source_ne_target_Bplus_bot_zero` (0 ≠ 1)
+- `card_source_ne_target_Bminus_bot_zero` (0 ≠ 1)
+- `Phi_D_sig_trim_not_injective_bot_zero` (explicit non-injectivity)
+
 ### 🎯 Universal Fintype + cardinality on (0,0) sector
 
 `PBPSet_γ_sig μP μQ (0, 0)` is now Fintype for all γ and all shapes:
