@@ -292,6 +292,36 @@ noncomputable def MYD_sig.toTrim {γ : RootType} {s : ℤ × ℤ}
   sign_match := by rw [ILS.sign_trim]; exact M.sign_match
   is_trim := ILS.trim_isTrim M.E
 
+/-- Negative-component signatures yield empty `MYD_sig`. -/
+theorem MYD_sig_empty_of_sign_neg_fst {γ : RootType} {s : ℤ × ℤ}
+    (h : s.1 < 0) : IsEmpty (MYD_sig γ s) := by
+  refine ⟨fun M => ?_⟩
+  have h_nn := ILS.sign_fst_nonneg M.E
+  rw [M.sign_match] at h_nn
+  omega
+
+theorem MYD_sig_empty_of_sign_neg_snd {γ : RootType} {s : ℤ × ℤ}
+    (h : s.2 < 0) : IsEmpty (MYD_sig γ s) := by
+  refine ⟨fun M => ?_⟩
+  have h_nn := ILS.sign_snd_nonneg M.E
+  rw [M.sign_match] at h_nn
+  omega
+
+/-- Same for `MYD_sig_trim`. -/
+theorem MYD_sig_trim_empty_of_sign_neg_fst {γ : RootType} {s : ℤ × ℤ}
+    (h : s.1 < 0) : IsEmpty (MYD_sig_trim γ s) := by
+  refine ⟨fun M => ?_⟩
+  have h_nn := ILS.sign_fst_nonneg M.E
+  rw [M.sign_match] at h_nn
+  omega
+
+theorem MYD_sig_trim_empty_of_sign_neg_snd {γ : RootType} {s : ℤ × ℤ}
+    (h : s.2 < 0) : IsEmpty (MYD_sig_trim γ s) := by
+  refine ⟨fun M => ?_⟩
+  have h_nn := ILS.sign_snd_nonneg M.E
+  rw [M.sign_match] at h_nn
+  omega
+
 /-- Forget the trim constraint. -/
 def MYD_sig_trim.toMYDSig {γ : RootType} {s : ℤ × ℤ}
     (M : MYD_sig_trim γ s) : MYD_sig γ s :=
