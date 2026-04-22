@@ -1010,6 +1010,71 @@ theorem Phi_Bplus_sig_trim_injective_of_Phi_Bplus_sig_injective
   rw [← h1, ← h2]
   exact h_E
 
+theorem Phi_Bminus_sig_trim_injective_of_Phi_Bminus_sig_injective
+    {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    (h_sing : DescentChainBminusSingleton)
+    (h_step_std_Bm : StepStdAndAugment_Bminus)
+    (h_step_std_Bp : StepStdAndAugment_Bplus)
+    (h_inj : Function.Injective
+      (fun p : PBPSet_Bminus_sig μP μQ s × Fin 2 => Phi_Bminus_sig h_sing p.1 p.2)) :
+    Function.Injective
+      (fun p : PBPSet_Bminus_sig μP μQ s × Fin 2 => Phi_Bminus_sig_trim h_sing p.1 p.2) := by
+  intro ⟨σh₁, ε₁⟩ ⟨σh₂, ε₂⟩ h_eq
+  apply h_inj
+  apply MYD_sig.ext
+  have h1 := Phi_Bminus_sig_trim_E_eq_Phi_Bminus_sig_E h_sing h_step_std_Bm h_step_std_Bp σh₁ ε₁
+  have h2 := Phi_Bminus_sig_trim_E_eq_Phi_Bminus_sig_E h_sing h_step_std_Bm h_step_std_Bp σh₂ ε₂
+  have h_E := congrArg (·.E) h_eq
+  simp at h_E
+  rw [← h1, ← h2]
+  exact h_E
+
+theorem Phi_C_sig_trim_injective_of_Phi_C_sig_injective
+    {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    (h_step_D : DescentStepSingleton_D)
+    (h_step_C : DescentStepSingleton_C)
+    (h_chain : ChainExists_C μP μQ)
+    (h_sm : DescentChainSignMatch_C)
+    (h_step_std_D : StepStdAndAugment_D)
+    (h_step_std_C : StepStdAndAugment_C)
+    (h_inj : Function.Injective
+      (Phi_C_sig (μP := μP) (μQ := μQ) (s := s) h_step_D h_step_C h_chain h_sm)) :
+    Function.Injective
+      (Phi_C_sig_trim (μP := μP) (μQ := μQ) (s := s) h_step_D h_step_C h_chain h_sm) := by
+  intro σh₁ σh₂ h_eq
+  apply h_inj
+  apply MYD_sig.ext
+  have h1 := Phi_C_sig_trim_E_eq_Phi_C_sig_E h_step_D h_step_C h_chain h_sm
+    h_step_std_D h_step_std_C σh₁
+  have h2 := Phi_C_sig_trim_E_eq_Phi_C_sig_E h_step_D h_step_C h_chain h_sm
+    h_step_std_D h_step_std_C σh₂
+  have h_E := congrArg (·.E) h_eq
+  rw [← h1, ← h2]
+  exact h_E
+
+theorem Phi_M_sig_trim_injective_of_Phi_M_sig_injective
+    {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    (h_chain : ChainExists_M μP μQ)
+    (h_sing : DescentChainMSingleton)
+    (h_sm : DescentChainSignMatch_M)
+    (h_step_std_M : StepStdAndAugment_M)
+    (h_step_std_Bp : StepStdAndAugment_Bplus)
+    (h_step_std_Bm : StepStdAndAugment_Bminus)
+    (h_inj : Function.Injective
+      (Phi_M_sig (μP := μP) (μQ := μQ) (s := s) h_chain h_sing h_sm)) :
+    Function.Injective
+      (Phi_M_sig_trim (μP := μP) (μQ := μQ) (s := s) h_chain h_sing h_sm) := by
+  intro σh₁ σh₂ h_eq
+  apply h_inj
+  apply MYD_sig.ext
+  have h1 := Phi_M_sig_trim_E_eq_Phi_M_sig_E h_chain h_sing h_sm
+    h_step_std_M h_step_std_Bp h_step_std_Bm σh₁
+  have h2 := Phi_M_sig_trim_E_eq_Phi_M_sig_E h_chain h_sing h_sm
+    h_step_std_M h_step_std_Bp h_step_std_Bm σh₂
+  have h_E := congrArg (·.E) h_eq
+  rw [← h1, ← h2]
+  exact h_E
+
 /-! ## Trim-target equiv assembly
 
 These mirror `Phi_γ_sig_equiv` but with `MYD_sig_trim` as target,
