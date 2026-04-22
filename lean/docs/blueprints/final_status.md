@@ -117,6 +117,11 @@ Beyond 36 → 0 sorries, added:
   chain-extracted ILS is trim.
 - **`BMSZ.thetaLift_{CD,DC,BM,MB}_preserves_trim_std`** (all 4 PROVED):
   std-case per-target trim preservation — paper §11.5/§11.6 building blocks.
+- **`BMSZ.thetaLift_preserves_trim_std_{DB,CM}`**: dispatched versions
+  for both target-grouping conventions (DB uses (p,q), CM uses p-only).
+- **`BMSZ.thetaLift_{CD,DC,BM,MB}_step_complete_std`** (all 4 PROVED):
+  combined "singleton + trim + sign = target" — bundles three of the
+  five paper §11.5 sub-claims for one chain step.
 
 Critical finding: `MYD_sig γ s` as defined is **not finite**
 (trailing zeros preserve sign), so the current `Phi_γ_sig_equiv`
