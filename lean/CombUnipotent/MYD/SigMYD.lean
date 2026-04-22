@@ -202,6 +202,38 @@ theorem signRow_snd_nonneg (i : ℕ) (pq : ℤ × ℤ) : 0 ≤ (signRow i pq).2 
     (Int.mul_nonneg (Int.ofNat_nonneg _) (Int.add_nonneg h1 h2))
     (Int.mul_nonneg (Int.ofNat_nonneg _) h1)
 
+/-- The sign of any ILS has non-negative first component. -/
+theorem sign_fst_nonneg (E : ILS) : 0 ≤ (sign E).1 := by
+  unfold sign
+  -- foldl over zipIdx, accumulator (0, 0), updates with signRow components.
+  -- Generalize the accumulator to any non-negative one.
+  suffices h : ∀ (acc : ℤ × ℤ), 0 ≤ acc.1 →
+      0 ≤ ((E.zipIdx).foldl
+        (fun acc ⟨pq, i⟩ => let s := signRow i pq; (acc.1 + s.1, acc.2 + s.2)) acc).1 by
+    exact h (0, 0) (le_refl 0)
+  intro acc h_acc
+  induction E.zipIdx generalizing acc with
+  | nil => exact h_acc
+  | cons hd tl ih =>
+    apply ih
+    simp only
+    exact Int.add_nonneg h_acc (signRow_fst_nonneg hd.2 hd.1)
+
+/-- The sign of any ILS has non-negative second component. -/
+theorem sign_snd_nonneg (E : ILS) : 0 ≤ (sign E).2 := by
+  unfold sign
+  suffices h : ∀ (acc : ℤ × ℤ), 0 ≤ acc.2 →
+      0 ≤ ((E.zipIdx).foldl
+        (fun acc ⟨pq, i⟩ => let s := signRow i pq; (acc.1 + s.1, acc.2 + s.2)) acc).2 by
+    exact h (0, 0) (le_refl 0)
+  intro acc h_acc
+  induction E.zipIdx generalizing acc with
+  | nil => exact h_acc
+  | cons hd tl ih =>
+    apply ih
+    simp only
+    exact Int.add_nonneg h_acc (signRow_snd_nonneg hd.2 hd.1)
+
 end ILS
 
 namespace BMSZ
