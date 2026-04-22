@@ -279,6 +279,18 @@ Combined with the ⊥⊥ witnesses, the (0, 0) sector of
 All new theorems verified standard-axiom-only (propext, Classical.choice,
 Quot.sound). No sorryAx.
 
+### 🎯 10 × empty ≃ empty bijections on (⊥, ⊥) for negative-sig
+
+For any γ ∈ {D, B⁺, B⁻, C, M}, signatures with `s.1 < 0` or `s.2 < 0`
+give trivial unconditional bijections: both source and target are
+empty, so `Equiv.equivOfIsEmpty` applies directly.
+
+- `Phi_D_sig_trim_bot_neg_{fst,snd}_equiv` (Fin 2 variant)
+- `Phi_Bplus_sig_trim_bot_neg_{fst,snd}_equiv` (Fin 2 variant)
+- `Phi_Bminus_sig_trim_bot_neg_{fst,snd}_equiv` (Fin 2 variant)
+- `Phi_C_sig_trim_bot_neg_{fst,snd}_equiv` (no Fin 2)
+- `Phi_M_sig_trim_bot_neg_{fst,snd}_equiv` (no Fin 2)
+
 ### 🎯 Universal injectivity on (⊥, ⊥) for all γ
 
 Since `PBPSet_γ (⊥, ⊥)` is subsingleton, injectivity at this shape
