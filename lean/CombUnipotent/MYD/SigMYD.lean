@@ -520,7 +520,6 @@ theorem thetaLift_CD_step_complete_std
     (h_trim : ILS.IsTrim E) :
     ∃ E' : ILS, ILS.thetaLift_CD E p q = [E'] ∧
       ILS.IsTrim E' ∧ ILS.sign E' = (p, q) := by
-  -- Standard case: thetaLift_CD = [augment (addp, addn) (charTwistCM E γ)]
   refine ⟨ILS.augment
     (p - (ILS.sign E).1 - (ILS.firstColSign E).2,
      q - (ILS.sign E).2 - (ILS.firstColSign E).1)
@@ -533,6 +532,81 @@ theorem thetaLift_CD_step_complete_std
     exact h_ne_augment hE
   · apply ILS.thetaLift_CD_sign E p q
     simp only [ILS.thetaLift_CD, if_pos h_std]
+    exact List.mem_singleton.mpr rfl
+
+/-- **Complete step (std, target .C)**: thetaLift_DC produces singleton
+    with trim + sign = (n, n). -/
+theorem thetaLift_DC_step_complete_std
+    (E : ILS) (n : ℤ)
+    (h_std :
+      n - (ILS.sign E).1 - (ILS.firstColSign E).2 ≥ 0 ∧
+      n - (ILS.sign E).2 - (ILS.firstColSign E).1 ≥ 0)
+    (h_ne_augment : E = [] →
+      (n - (ILS.sign E).1 - (ILS.firstColSign E).2,
+       n - (ILS.sign E).2 - (ILS.firstColSign E).1) ≠ (0, 0))
+    (h_trim : ILS.IsTrim E) :
+    ∃ E' : ILS, ILS.thetaLift_DC E n = [E'] ∧
+      ILS.IsTrim E' ∧ ILS.sign E' = (n, n) := by
+  refine ⟨ILS.charTwistCM (ILS.augment
+    (n - (ILS.sign E).1 - (ILS.firstColSign E).2,
+     n - (ILS.sign E).2 - (ILS.firstColSign E).1) E)
+    (((ILS.sign E).1 - (ILS.sign E).2) / 2), ?_, ?_, ?_⟩
+  · simp only [ILS.thetaLift_DC, if_pos h_std]
+  · apply ILS.charTwistCM_IsTrim
+    exact augment_is_trim_of_cases h_trim h_ne_augment
+  · apply ILS.thetaLift_DC_sign_std E n h_std
+    simp only [ILS.thetaLift_DC, if_pos h_std]
+    exact List.mem_singleton.mpr rfl
+
+/-- **Complete step (std, target .M)**: thetaLift_BM produces singleton
+    with trim + sign = (n, n). -/
+theorem thetaLift_BM_step_complete_std
+    (E : ILS) (n : ℤ)
+    (h_std :
+      n - (ILS.sign E).1 - (ILS.firstColSign E).2 ≥ 0 ∧
+      n - (ILS.sign E).2 - (ILS.firstColSign E).1 ≥ 0)
+    (h_ne_augment : E = [] →
+      (n - (ILS.sign E).1 - (ILS.firstColSign E).2,
+       n - (ILS.sign E).2 - (ILS.firstColSign E).1) ≠ (0, 0))
+    (h_trim : ILS.IsTrim E) :
+    ∃ E' : ILS, ILS.thetaLift_BM E n = [E'] ∧
+      ILS.IsTrim E' ∧ ILS.sign E' = (n, n) := by
+  refine ⟨ILS.charTwistCM (ILS.augment
+    (n - (ILS.sign E).1 - (ILS.firstColSign E).2,
+     n - (ILS.sign E).2 - (ILS.firstColSign E).1) E)
+    (((ILS.sign E).1 - (ILS.sign E).2 - 1) / 2), ?_, ?_, ?_⟩
+  · simp only [ILS.thetaLift_BM, if_pos h_std]
+  · apply ILS.charTwistCM_IsTrim
+    exact augment_is_trim_of_cases h_trim h_ne_augment
+  · apply ILS.thetaLift_BM_sign_std E n h_std
+    simp only [ILS.thetaLift_BM, if_pos h_std]
+    exact List.mem_singleton.mpr rfl
+
+/-- **Complete step (std, target .Bplus/.Bminus)**: thetaLift_MB produces
+    singleton with trim + sign = (p, q). -/
+theorem thetaLift_MB_step_complete_std
+    (E : ILS) (p q : ℤ)
+    (h_std :
+      p - (ILS.sign E).1 - (ILS.firstColSign E).2 ≥ 0 ∧
+      q - (ILS.sign E).2 - (ILS.firstColSign E).1 ≥ 0)
+    (h_ne_augment : E = [] →
+      (p - (ILS.sign E).1 - (ILS.firstColSign E).2,
+       q - (ILS.sign E).2 - (ILS.firstColSign E).1) ≠ (0, 0))
+    (h_trim : ILS.IsTrim E) :
+    ∃ E' : ILS, ILS.thetaLift_MB E p q = [E'] ∧
+      ILS.IsTrim E' ∧ ILS.sign E' = (p, q) := by
+  refine ⟨ILS.augment
+    (p - (ILS.sign E).1 - (ILS.firstColSign E).2,
+     q - (ILS.sign E).2 - (ILS.firstColSign E).1)
+    (ILS.charTwistCM E ((p - q + 1) / 2)), ?_, ?_, ?_⟩
+  · simp only [ILS.thetaLift_MB, if_pos h_std]
+  · apply augment_is_trim_of_cases (ILS.charTwistCM_IsTrim _ _ h_trim)
+    intro hE
+    unfold ILS.charTwistCM at hE
+    rw [List.mapIdx_eq_nil_iff] at hE
+    exact h_ne_augment hE
+  · apply ILS.thetaLift_MB_sign E p q
+    simp only [ILS.thetaLift_MB, if_pos h_std]
     exact List.mem_singleton.mpr rfl
 
 end BMSZ
