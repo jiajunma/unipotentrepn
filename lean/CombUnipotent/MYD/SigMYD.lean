@@ -609,4 +609,52 @@ theorem thetaLift_MB_step_complete_std
     simp only [ILS.thetaLift_MB, if_pos h_std]
     exact List.mem_singleton.mpr rfl
 
+/-! ### Per-step trim preservation including stepPostTwist
+
+These combine thetaLift trim preservation with stepPostTwist's trim
+preservation (which uses `twistBD_IsTrim`). -/
+
+/-- `stepPostTwist E' d` preserves trim. -/
+theorem stepPostTwist_IsTrim (E' : ILS) (d : ACStepData)
+    (h_trim : ILS.IsTrim E') :
+    ILS.IsTrim (stepPostTwist E' d) := by
+  unfold stepPostTwist
+  split_ifs with hcond
+  · exact ILS.twistBD_IsTrim E' 1 (-1) (Or.inl rfl) (Or.inr rfl) h_trim
+  · exact h_trim
+
+/-- `stepPreTwist E d` preserves trim. -/
+theorem stepPreTwist_IsTrim (E : ILS) (d : ACStepData)
+    (h_trim : ILS.IsTrim E) :
+    ILS.IsTrim (stepPreTwist E d) := by
+  unfold stepPreTwist
+  split_ifs with hcond hwp
+  · exact ILS.twistBD_IsTrim E (-1) (-1) (Or.inr rfl) (Or.inr rfl) h_trim
+  · exact h_trim
+  · exact h_trim
+
+/-- **Per-step trim preservation for D chain step**: given std + ne_augment
+    on `stepPreTwist E d` and trim E, the post-twist output is trim.
+
+    Combines `thetaLift_CD_preserves_trim_std` + `stepPostTwist_IsTrim`. -/
+theorem step_trim_D (E : ILS) (d : ACStepData) (hd : d.γ = .D)
+    (h_std :
+      d.p - (ILS.sign (stepPreTwist E d)).1 -
+        (ILS.firstColSign (stepPreTwist E d)).2 ≥ 0 ∧
+      d.q - (ILS.sign (stepPreTwist E d)).2 -
+        (ILS.firstColSign (stepPreTwist E d)).1 ≥ 0)
+    (h_ne_augment : (stepPreTwist E d) = [] →
+      (d.p - (ILS.sign (stepPreTwist E d)).1 -
+        (ILS.firstColSign (stepPreTwist E d)).2,
+       d.q - (ILS.sign (stepPreTwist E d)).2 -
+        (ILS.firstColSign (stepPreTwist E d)).1) ≠ (0, 0))
+    (h_trim : ILS.IsTrim E) {E' : ILS}
+    (h_tl : ILS.thetaLift (stepPreTwist E d) d.γ d.p d.q = [E']) :
+    ILS.IsTrim (stepPostTwist E' d) := by
+  apply stepPostTwist_IsTrim
+  rw [hd] at h_tl
+  unfold ILS.thetaLift at h_tl
+  exact thetaLift_CD_preserves_trim_std (stepPreTwist E d) d.p d.q
+    h_std h_ne_augment (stepPreTwist_IsTrim E d h_trim) h_tl
+
 end BMSZ
