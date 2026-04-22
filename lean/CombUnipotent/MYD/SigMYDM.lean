@@ -8,6 +8,7 @@ on `descentType_M τ hγ`), followed by an inner B-chain.
 Reference: `lean/CombUnipotent/MYD/SigMYDC.lean` (C template).
 -/
 import CombUnipotent.MYD.SigMYDB
+import CombUnipotent.MYD.SigMYDC
 import CombUnipotent.MYD.PhiDTyped
 import CombUnipotent.CountingProof.CorrespondenceM
 import CombUnipotent.CountingProof.Basic
@@ -156,6 +157,38 @@ theorem chainExists_M_empty : ChainExists_M (⊥ : YoungDiagram) ⊥ := by
   intro σ
   refine ⟨[], IsDescentChain_M.base σ.val σ.prop.1 ?_⟩
   exact ⟨σ.prop.2.1, σ.prop.2.2⟩
+
+/-- The empty M-type PBP (analogous to emptyPBP_C). -/
+def emptyPBP_M : PBP where
+  γ := .M
+  P := emptyPaintedYoungDiagram
+  Q := emptyPaintedYoungDiagram
+  sym_P := fun i j h => by simp [emptyPaintedYoungDiagram] at h
+  sym_Q := fun i j h => by simp [emptyPaintedYoungDiagram] at h
+  dot_match := fun _ _ => Iff.rfl
+  mono_P := emptyPaintedYoungDiagram_layerMonotone
+  mono_Q := emptyPaintedYoungDiagram_layerMonotone
+  row_s := fun i s₁ s₂ j₁ j₂ h _ => by
+    cases s₁ <;> simp [paintBySide, emptyPaintedYoungDiagram] at h
+  row_r := fun i s₁ s₂ j₁ j₂ h _ => by
+    cases s₁ <;> simp [paintBySide, emptyPaintedYoungDiagram] at h
+  col_c_P := fun _ _ _ h _ => by simp [emptyPaintedYoungDiagram] at h
+  col_c_Q := fun _ _ _ h _ => by simp [emptyPaintedYoungDiagram] at h
+  col_d_P := fun _ _ _ h _ => by simp [emptyPaintedYoungDiagram] at h
+  col_d_Q := fun _ _ _ h _ => by simp [emptyPaintedYoungDiagram] at h
+
+theorem emptyPBP_M_γ : emptyPBP_M.γ = .M := rfl
+theorem emptyPBP_M_P_shape : emptyPBP_M.P.shape = ⊥ := rfl
+theorem emptyPBP_M_Q_shape : emptyPBP_M.Q.shape = ⊥ := rfl
+
+/-- Empty M-PBP element of `PBPSet .M ⊥ ⊥`. -/
+def emptyPBPSet_M : PBPSet .M (⊥ : YoungDiagram) ⊥ :=
+  ⟨emptyPBP_M, emptyPBP_M_γ, emptyPBP_M_P_shape, emptyPBP_M_Q_shape⟩
+
+/-- `emptyPBP_M`'s signature is `(0, 0)` (no painted cells). -/
+theorem emptyPBP_M_signature : PBP.signature emptyPBP_M = (0, 0) := by
+  unfold PBP.signature emptyPBP_M
+  simp [emptyPaintedYoungDiagram, PaintedYoungDiagram.countSym]
 
 /-- **Discharge of `ChainExists_M` from per-σ dp-coherence witness**. -/
 theorem chainExists_M_of_coherent_dp

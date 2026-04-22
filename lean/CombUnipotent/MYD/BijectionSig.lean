@@ -1261,6 +1261,44 @@ noncomputable def Phi_C_sig_trim_bot_zero_equiv
     PBPSet_C_sig (⊥ : YoungDiagram) ⊥ (0, 0) ≃ MYD_sig_trim .C (0, 0) :=
   Phi_C_sig_trim_zero_equiv h_step_D h_step_C h_chain h_sm
 
+/-! ## M-type analogues -/
+
+/-- `Inhabited (PBPSet_M_sig ⊥ ⊥ (0, 0))` — concrete witness via emptyPBP_M. -/
+instance inhabited_PBPSet_M_sig_zero :
+    Inhabited (PBPSet_M_sig (⊥ : YoungDiagram) ⊥ (0, 0)) :=
+  ⟨⟨emptyPBPSet_M, by
+    show signTarget_M emptyPBP_M = (0, 0)
+    unfold signTarget_M
+    rw [emptyPBP_M_signature]
+    rfl⟩⟩
+
+/-- `Subsingleton (PBPSet .M ⊥ ⊥)` — uniqueness via PBP_eq_of_shapes_bot. -/
+instance subsingleton_PBPSet_M_bot :
+    Subsingleton (PBPSet .M (⊥ : YoungDiagram) ⊥) := by
+  refine ⟨fun σ₁ σ₂ => ?_⟩
+  apply Subtype.ext
+  apply PBP_eq_of_shapes_bot
+  · rw [σ₁.prop.1, σ₂.prop.1]
+  · exact σ₁.prop.2.1
+  · exact σ₁.prop.2.2
+  · exact σ₂.prop.2.1
+  · exact σ₂.prop.2.2
+
+instance subsingleton_PBPSet_M_sig_bot (s : ℤ × ℤ) :
+    Subsingleton (PBPSet_M_sig (⊥ : YoungDiagram) ⊥ s) := by
+  refine ⟨fun M₁ M₂ => ?_⟩
+  apply Subtype.ext
+  exact Subsingleton.elim _ _
+
+/-- 🎯🎯🎯🎯 **SECOND INSTANTIABLE BIJECTION** (M-type analogue):
+    `PBPSet_M_sig (⊥, ⊥) (0, 0) ≃ MYD_sig_trim .M (0, 0)`. -/
+noncomputable def Phi_M_sig_trim_bot_zero_equiv
+    (h_chain : ChainExists_M (⊥ : YoungDiagram) ⊥)
+    (h_sing : DescentChainMSingleton)
+    (h_sm : DescentChainSignMatch_M) :
+    PBPSet_M_sig (⊥ : YoungDiagram) ⊥ (0, 0) ≃ MYD_sig_trim .M (0, 0) :=
+  Phi_M_sig_trim_zero_equiv h_chain h_sing h_sm
+
 /-! ## `Phi_γ_sig_trim_E = Phi_γ_sig_E` under std hypothesis
 
 Since chain-derived ILSs are trim (via `Phi_γ_sig_E_IsTrim`), `toTrim`
