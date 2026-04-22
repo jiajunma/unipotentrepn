@@ -1049,6 +1049,74 @@ theorem phi_M_sig_trim_surjective_zero {μP μQ : YoungDiagram}
   refine ⟨default, ?_⟩
   exact Subsingleton.elim _ _
 
+/-! ## Phi_γ_sig outputs MYD_sig.zero on (0,0) sector under std
+
+Under StepStdAndAugment_γ, Phi_γ_sig's output is trim (Phi_γ_sig_E_IsTrim).
+For sign (0, 0), trim ILS must be empty (eq_nil_of_sign_zero_of_IsTrim).
+So Phi_γ_sig's output is MYD_sig.zero.
+-/
+
+theorem Phi_D_sig_zero {μP μQ : YoungDiagram}
+    (h_step : DescentStepSingleton_D)
+    (h_step_std : StepStdAndAugment_D)
+    (σh : PBPSet_D_sig μP μQ (0, 0)) (ε : Fin 2) :
+    Phi_D_sig h_step σh ε = MYD_sig.zero := by
+  apply MYD_sig.ext
+  have h_trim := Phi_D_sig_E_IsTrim h_step h_step_std σh ε
+  have h_sign := (Phi_D_sig h_step σh ε).sign_match
+  exact ILS.eq_nil_of_sign_zero_of_IsTrim _ h_sign h_trim
+
+theorem Phi_Bplus_sig_zero {μP μQ : YoungDiagram}
+    (h_step : DescentStepSingleton_Bplus)
+    (h_step_std : StepStdAndAugment_Bplus)
+    (σh : PBPSet_Bplus_sig μP μQ (0, 0)) (ε : Fin 2) :
+    Phi_Bplus_sig h_step σh ε = MYD_sig.zero := by
+  apply MYD_sig.ext
+  have h_trim := Phi_Bplus_sig_E_IsTrim h_step h_step_std σh ε
+  have h_sign := (Phi_Bplus_sig h_step σh ε).sign_match
+  exact ILS.eq_nil_of_sign_zero_of_IsTrim _ h_sign h_trim
+
+theorem Phi_Bminus_sig_zero {μP μQ : YoungDiagram}
+    (h_sing : DescentChainBminusSingleton)
+    (h_step_std_Bm : StepStdAndAugment_Bminus)
+    (h_step_std_Bp : StepStdAndAugment_Bplus)
+    (σh : PBPSet_Bminus_sig μP μQ (0, 0)) (ε : Fin 2) :
+    Phi_Bminus_sig h_sing σh ε = MYD_sig.zero := by
+  apply MYD_sig.ext
+  have h_trim := Phi_Bminus_sig_E_IsTrim h_sing h_step_std_Bm h_step_std_Bp σh ε
+  have h_sign := (Phi_Bminus_sig h_sing σh ε).sign_match
+  exact ILS.eq_nil_of_sign_zero_of_IsTrim _ h_sign h_trim
+
+theorem Phi_C_sig_zero {μP μQ : YoungDiagram}
+    (h_step_D : DescentStepSingleton_D)
+    (h_step_C : DescentStepSingleton_C)
+    (h_chain : ChainExists_C μP μQ)
+    (h_sm : DescentChainSignMatch_C)
+    (h_step_std_D : StepStdAndAugment_D)
+    (h_step_std_C : StepStdAndAugment_C)
+    (σh : PBPSet_C_sig μP μQ (0, 0)) :
+    Phi_C_sig h_step_D h_step_C h_chain h_sm σh = MYD_sig.zero := by
+  apply MYD_sig.ext
+  have h_trim := Phi_C_sig_E_IsTrim h_step_D h_step_C h_chain h_sm
+    h_step_std_D h_step_std_C σh
+  have h_sign := (Phi_C_sig h_step_D h_step_C h_chain h_sm σh).sign_match
+  exact ILS.eq_nil_of_sign_zero_of_IsTrim _ h_sign h_trim
+
+theorem Phi_M_sig_zero {μP μQ : YoungDiagram}
+    (h_chain : ChainExists_M μP μQ)
+    (h_sing : DescentChainMSingleton)
+    (h_sm : DescentChainSignMatch_M)
+    (h_step_std_M : StepStdAndAugment_M)
+    (h_step_std_Bp : StepStdAndAugment_Bplus)
+    (h_step_std_Bm : StepStdAndAugment_Bminus)
+    (σh : PBPSet_M_sig μP μQ (0, 0)) :
+    Phi_M_sig h_chain h_sing h_sm σh = MYD_sig.zero := by
+  apply MYD_sig.ext
+  have h_trim := Phi_M_sig_E_IsTrim h_chain h_sing h_sm
+    h_step_std_M h_step_std_Bp h_step_std_Bm σh
+  have h_sign := (Phi_M_sig h_chain h_sing h_sm σh).sign_match
+  exact ILS.eq_nil_of_sign_zero_of_IsTrim _ h_sign h_trim
+
 /-! ## `Phi_γ_sig_trim_E = Phi_γ_sig_E` under std hypothesis
 
 Since chain-derived ILSs are trim (via `Phi_γ_sig_E_IsTrim`), `toTrim`
