@@ -371,15 +371,24 @@ this structurally; refactoring `Phi_γ_sig` to output
 
 ## Axiom audit
 
-```
-'BMSZ.Phi_D_sig_equiv' depends on axioms: [propext, Classical.choice, Quot.sound]
-'BMSZ.Phi_C_sig_equiv' depends on axioms: [propext, Classical.choice, Quot.sound]
-'BMSZ.Phi_M_sig_equiv' depends on axioms: [propext, Classical.choice, Quot.sound]
-```
+**42 key theorems verified standard-axiom-only** (`propext`,
+`Classical.choice`, `Quot.sound`). **No `sorryAx`**. No custom axioms.
 
-Only Lean's three standard axioms. **No `sorryAx`**. No custom axioms.
-The equivs are honestly stated: their validity depends solely on the
-caller discharging the hypothesis bundle (see above table).
+Verified:
+- 5 × `emptyPBP_γ_signature`
+- 2 × `Phi_{C,M}_sig_trim_bot_zero_equiv_unconditional`
+- 2 × `Phi_{C,M}_sig_trim_bot_zero_equiv_auto`
+- 10 × `Phi_γ_sig_trim_bot_neg_{fst,snd}_equiv` (all γ)
+- 3 × `card_source_ne_target_{D,Bplus,Bminus}_bot_zero`
+- 1 × `Phi_D_sig_trim_not_injective_bot_zero`
+- 7 × universal injectivity (all γ)
+- 8 × structural shape/signature lemmas
+- 3 × Nat.card bridges
+- 2 × `PaintedYoungDiagram.sum_countSym` / `shape_empty_of_countSym_all_zero`
+
+All equivs honestly stated: their validity depends solely on the
+caller discharging the hypothesis bundle (see above table) or on
+the concrete cases (⊥, ⊥) for the unconditional variants.
 
 ## Path forward (future sessions)
 
