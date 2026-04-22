@@ -1836,6 +1836,51 @@ theorem card_PBPSet_Bminus_sig_zero {μP μQ : YoungDiagram} :
     Fintype.card (PBPSet_Bminus_sig μP μQ (0, 0)) = 0 :=
   @Fintype.card_eq_zero _ _ PBPSet_Bminus_sig_zero_eq_empty
 
+/-! ## Cardinality mismatch on (⊥, ⊥) (0, 0) for D / B⁺ / B⁻
+
+Records paper's exclusion of the trivial partition case: in the
+(⊥, ⊥) (0, 0) sector, `PBPSet_γ_sig × Fin 2` cannot be in bijection
+with `MYD_sig_trim γ (0, 0)` for γ ∈ {D, B⁺, B⁻} because the
+cardinalities differ. For D: source has 2 elements, target has 1.
+For B⁺/B⁻: source has 0 elements, target has 1.
+
+This is the structural reason paper §11.5/§11.6 excludes |Ǒ| = 0. -/
+
+theorem card_source_ne_target_D_bot_zero :
+    Fintype.card (PBPSet_D_sig (⊥ : YoungDiagram) ⊥ (0, 0) × Fin 2) ≠
+      Fintype.card (MYD_sig_trim .D (0, 0)) := by
+  rw [Fintype.card_prod, card_PBPSet_D_sig_zero_bot, Fintype.card_fin,
+      card_MYD_sig_trim_zero]
+  decide
+
+theorem card_source_ne_target_Bplus_bot_zero :
+    Fintype.card (PBPSet_Bplus_sig (⊥ : YoungDiagram) ⊥ (0, 0) × Fin 2) ≠
+      Fintype.card (MYD_sig_trim .Bplus (0, 0)) := by
+  rw [Fintype.card_prod, card_PBPSet_Bplus_sig_zero, Fintype.card_fin,
+      card_MYD_sig_trim_zero]
+  decide
+
+theorem card_source_ne_target_Bminus_bot_zero :
+    Fintype.card (PBPSet_Bminus_sig (⊥ : YoungDiagram) ⊥ (0, 0) × Fin 2) ≠
+      Fintype.card (MYD_sig_trim .Bminus (0, 0)) := by
+  rw [Fintype.card_prod, card_PBPSet_Bminus_sig_zero, Fintype.card_fin,
+      card_MYD_sig_trim_zero]
+  decide
+
+/-- Phi_D_sig_trim at (⊥, ⊥) (0, 0) is NOT injective: both
+    `(emptyPBPSet_D, 0)` and `(emptyPBPSet_D, 1)` map to `MYD_sig_trim.zero`,
+    while the pairs differ. This witnesses the paper's |Ǒ| = 0 exclusion. -/
+theorem Phi_D_sig_trim_not_injective_bot_zero
+    (h_step : DescentStepSingleton_D) :
+    ¬ Function.Injective
+        (fun p : PBPSet_D_sig (⊥ : YoungDiagram) ⊥ (0, 0) × Fin 2 =>
+          Phi_D_sig_trim h_step p.1 p.2) := by
+  intro h_inj
+  have h_card_eq := Fintype.card_le_of_injective _ h_inj
+  rw [Fintype.card_prod, card_PBPSet_D_sig_zero_bot, Fintype.card_fin,
+      card_MYD_sig_trim_zero] at h_card_eq
+  omega
+
 /-! ## `Phi_γ_sig_trim_E = Phi_γ_sig_E` under std hypothesis
 
 Since chain-derived ILSs are trim (via `Phi_γ_sig_E_IsTrim`), `toTrim`
