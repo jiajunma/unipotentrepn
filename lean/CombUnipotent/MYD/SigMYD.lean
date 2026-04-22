@@ -459,4 +459,28 @@ theorem thetaLift_MB_preserves_trim_std
       rw [List.mapIdx_eq_nil_iff] at hE
       exact h_ne_augment hE)
 
+/-- **Dispatched thetaLift trim preservation (std case)** for D/B targets.
+
+    Covers targets where the std condition uses (p, q) meaningfully.
+    For C/M targets (where `thetaLift` ignores q and uses p-only std),
+    use `thetaLift_DC_preserves_trim_std` / `thetaLift_BM_preserves_trim_std`
+    directly. -/
+theorem thetaLift_preserves_trim_std_DB
+    (E : ILS) (γ : RootType) (p q : ℤ)
+    (hγ : γ = .D ∨ γ = .Bplus ∨ γ = .Bminus)
+    (h_std :
+      p - (ILS.sign E).1 - (ILS.firstColSign E).2 ≥ 0 ∧
+      q - (ILS.sign E).2 - (ILS.firstColSign E).1 ≥ 0)
+    (h_ne_augment : E = [] →
+      (p - (ILS.sign E).1 - (ILS.firstColSign E).2,
+       q - (ILS.sign E).2 - (ILS.firstColSign E).1) ≠ (0, 0))
+    (h_trim : ILS.IsTrim E) {E' : ILS}
+    (h_tl : ILS.thetaLift E γ p q = [E']) :
+    ILS.IsTrim E' := by
+  unfold ILS.thetaLift at h_tl
+  rcases hγ with rfl | rfl | rfl
+  · exact thetaLift_CD_preserves_trim_std E p q h_std h_ne_augment h_trim h_tl
+  · exact thetaLift_MB_preserves_trim_std E p q h_std h_ne_augment h_trim h_tl
+  · exact thetaLift_MB_preserves_trim_std E p q h_std h_ne_augment h_trim h_tl
+
 end BMSZ
