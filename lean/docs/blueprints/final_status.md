@@ -149,6 +149,15 @@ Beyond 36 → 0 sorries, added:
   MYD_sig types are empty.
 - **`fintype_MYD_sig_trim_neg_{fst,snd}`** (2 instances): Fintype
   derived for negative-sig MYD_sig_trim (cardinality 0).
+- **`ILS.signRow_eq_zero_iff`**: signRow = 0 iff input = 0 (clean iff).
+- **`ILS.sign_append_singleton`**: recursive sign formula for
+  E ++ [a].
+- **`ILS.all_zero_of_sign_zero`**: sign (0,0) implies all rows are (0,0).
+- **`ILS.eq_nil_of_sign_zero_of_IsTrim`**: trim ILS with sign (0,0) is empty.
+- **`subsingleton_MYD_sig_trim_zero`** + **`MYD_sig_trim.zero`** +
+  **`fintype_MYD_sig_trim_zero`** + **`card_MYD_sig_trim_zero`**:
+  **MYD_sig_trim γ (0,0) has cardinality 1** — first concrete
+  computable cardinality proof.
 - **`Phi_γ_sig_trim_image_equiv`** (5): partial bijections via
   Equiv.ofInjective, requires only injectivity.
 - **`phi_γ_sig_trim_surj_of_inj_card`** (5): surjectivity from
