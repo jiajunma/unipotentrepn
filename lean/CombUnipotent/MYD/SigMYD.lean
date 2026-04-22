@@ -720,7 +720,7 @@ theorem step_trim_C (E : ILS) (d : ACStepData) (hd : d.γ = .C)
 
 /-- Bundled per-step trim/std/ne_augment hypothesis for one chain
     step. Provides everything needed to invoke `step_trim_γ` for the
-    matching γ. Discharges `StepPreservesTrim` universally. -/
+    matching γ. -/
 abbrev StepStdAndAugment_D : Prop :=
   ∀ (E : ILS) (d : ACStepData), d.γ = .D →
     (d.p - (ILS.sign (stepPreTwist E d)).1 -
@@ -732,6 +732,34 @@ abbrev StepStdAndAugment_D : Prop :=
         (ILS.firstColSign (stepPreTwist E d)).2,
        d.q - (ILS.sign (stepPreTwist E d)).2 -
         (ILS.firstColSign (stepPreTwist E d)).1) ≠ (0, 0))
+
+/-- **Chain trim for D-chains** (direct induction on chain).
+
+    Given the per-step std + ne_augment hypothesis, the chain-extracted
+    ILS for any D-chain is trim. Proved by induction on `IsDescentChain_D`,
+    using `step_trim_D` and the fact that all D-chain steps have γ = .D
+    (toACStepData_D gives γ = .D). -/
+theorem chainSingleton_IsTrim_D (h_step_std : StepStdAndAugment_D)
+    {τ : PBP} {chain : List ACStepData} {E : ILS}
+    (h_chain : IsDescentChain_D τ chain)
+    (h_sing : ChainSingleton (baseILS .D) chain E) :
+    ILS.IsTrim E := by
+  induction h_chain generalizing E with
+  | base τ hγ h_empty =>
+    -- chain = [], E = baseILS .D = []
+    cases h_sing
+    exact baseILS_IsTrim .D
+  | step hγ h_rest ih =>
+    rename_i τ_outer chain_inner
+    obtain ⟨E_mid, E', h_inner_sing, h_theta, h_E_final⟩ :=
+      ChainSingleton.snoc_inv h_sing
+    have h_trim_mid := ih h_inner_sing
+    have h_d_γ : (toACStepData_D τ_outer hγ).γ = .D := rfl
+    have ⟨h_std, h_ne⟩ := h_step_std E_mid (toACStepData_D τ_outer hγ) h_d_γ
+    have h_trim_step :=
+      step_trim_D E_mid (toACStepData_D τ_outer hγ) h_d_γ h_std h_ne h_trim_mid h_theta
+    rw [h_E_final]
+    exact h_trim_step
 
 /-- **Per-step trim preservation for M chain step** (uses p as n in BM). -/
 theorem step_trim_M (E : ILS) (d : ACStepData) (hd : d.γ = .M)
