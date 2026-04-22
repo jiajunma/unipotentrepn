@@ -384,6 +384,57 @@ abbrev DescentChainBminusSingleton : Prop :=
     IsDescentChain_Bminus τ chain →
       ∃ E : ILS, ChainSingleton (baseILS .Bminus) chain E
 
+/-- Helper: chain trim with arbitrary initial ILS, for Bplus-chain
+    (generalization of chainSingleton_IsTrim_Bplus). -/
+theorem chainSingleton_IsTrim_Bplus_init (h_step_std : StepStdAndAugment_Bplus)
+    {τ : PBP} {chain : List ACStepData} {E_init E : ILS}
+    (h_init : ILS.IsTrim E_init)
+    (h_chain : IsDescentChain_Bplus τ chain)
+    (h_sing : ChainSingleton E_init chain E) :
+    ILS.IsTrim E := by
+  induction h_chain generalizing E with
+  | base τ hγ h_empty =>
+    cases h_sing
+    exact h_init
+  | step hγ h_rest ih =>
+    rename_i τ_outer chain_inner
+    obtain ⟨E_mid, E', h_inner_sing, h_theta, h_E_final⟩ :=
+      ChainSingleton.snoc_inv h_sing
+    have h_trim_mid := ih h_inner_sing
+    have h_d_γ : (toACStepData_Bplus τ_outer hγ).γ = .Bplus := rfl
+    have ⟨h_std, h_ne⟩ := h_step_std E_mid (toACStepData_Bplus τ_outer hγ) h_d_γ
+    have h_trim_step :=
+      step_trim_Bplus E_mid (toACStepData_Bplus τ_outer hγ) h_d_γ
+        h_std h_ne h_trim_mid h_theta
+    rw [h_E_final]
+    exact h_trim_step
+
+/-- **Chain trim for Bminus-chains**. -/
+theorem chainSingleton_IsTrim_Bminus
+    (h_step_std_Bm : StepStdAndAugment_Bminus)
+    (h_step_std_Bp : StepStdAndAugment_Bplus)
+    {τ : PBP} {chain : List ACStepData} {E : ILS}
+    (h_chain : IsDescentChain_Bminus τ chain)
+    (h_sing : ChainSingleton (baseILS .Bminus) chain E) :
+    ILS.IsTrim E := by
+  cases h_chain with
+  | base hγ h_empty =>
+    cases h_sing
+    exact baseILS_IsTrim .Bminus
+  | step hγ h_rest =>
+    obtain ⟨E_mid, E', h_inner_sing, h_theta, h_E_final⟩ :=
+      ChainSingleton.snoc_inv h_sing
+    -- Inner Bplus chain singleton starts from baseILS .Bminus (not .Bplus)
+    have h_trim_mid := chainSingleton_IsTrim_Bplus_init h_step_std_Bp
+      (baseILS_IsTrim .Bminus) h_rest h_inner_sing
+    have h_d_γ : (toACStepData_Bminus τ hγ).γ = .Bminus := rfl
+    have ⟨h_std, h_ne⟩ := h_step_std_Bm E_mid (toACStepData_Bminus τ hγ) h_d_γ
+    have h_trim_step :=
+      step_trim_Bminus E_mid (toACStepData_Bminus τ hγ) h_d_γ
+        h_std h_ne h_trim_mid h_theta
+    rw [h_E_final]
+    exact h_trim_step
+
 /-- Sign target for B⁻ PBP. -/
 noncomputable def signTarget_Bminus' (τ : PBP) : ℤ × ℤ :=
   let s := PBP.signature τ
