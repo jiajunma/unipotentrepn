@@ -1818,6 +1818,24 @@ theorem card_PBPSet_M_sig_zero_of_Q_ne_bot {μP μQ : YoungDiagram} (hQ : μQ �
     Fintype.card (PBPSet_M_sig μP μQ (0, 0)) = 0 :=
   @Fintype.card_eq_zero _ _ (PBPSet_M_sig_zero_eq_empty_of_Q_ne_bot hQ)
 
+/-- `PBPSet_Bplus_sig μP μQ (0, 0)` is always finite (always empty). -/
+noncomputable instance fintype_PBPSet_Bplus_sig_zero (μP μQ : YoungDiagram) :
+    Fintype (PBPSet_Bplus_sig μP μQ (0, 0)) :=
+  @Fintype.ofIsEmpty _ PBPSet_Bplus_sig_zero_eq_empty
+
+/-- `PBPSet_Bminus_sig μP μQ (0, 0)` is always finite (always empty). -/
+noncomputable instance fintype_PBPSet_Bminus_sig_zero (μP μQ : YoungDiagram) :
+    Fintype (PBPSet_Bminus_sig μP μQ (0, 0)) :=
+  @Fintype.ofIsEmpty _ PBPSet_Bminus_sig_zero_eq_empty
+
+theorem card_PBPSet_Bplus_sig_zero {μP μQ : YoungDiagram} :
+    Fintype.card (PBPSet_Bplus_sig μP μQ (0, 0)) = 0 :=
+  @Fintype.card_eq_zero _ _ PBPSet_Bplus_sig_zero_eq_empty
+
+theorem card_PBPSet_Bminus_sig_zero {μP μQ : YoungDiagram} :
+    Fintype.card (PBPSet_Bminus_sig μP μQ (0, 0)) = 0 :=
+  @Fintype.card_eq_zero _ _ PBPSet_Bminus_sig_zero_eq_empty
+
 /-! ## `Phi_γ_sig_trim_E = Phi_γ_sig_E` under std hypothesis
 
 Since chain-derived ILSs are trim (via `Phi_γ_sig_E_IsTrim`), `toTrim`
