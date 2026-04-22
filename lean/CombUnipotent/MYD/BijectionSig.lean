@@ -19,6 +19,7 @@ import CombUnipotent.MYD.SigMYDB
 import CombUnipotent.MYD.SigMYDC
 import CombUnipotent.MYD.SigMYDM
 import CombUnipotent.MYD.PhiDTyped
+import CombUnipotent.MYD.Prop11_5_AtomicDischarge
 import CombUnipotent.CountingProof.Basic
 import Mathlib.SetTheory.Cardinal.Finite
 
@@ -1544,6 +1545,38 @@ theorem PBPSet_Bplus_sig_zero_eq_empty {μP μQ : YoungDiagram} :
 theorem PBPSet_Bminus_sig_zero_eq_empty {μP μQ : YoungDiagram} :
     IsEmpty (PBPSet_Bminus_sig μP μQ (0, 0)) :=
   PBPSet_Bminus_sig_snd_lt_one_eq_empty (by norm_num)
+
+/-- For any μP, μQ, `PBPSet_C_sig μP μQ s` is empty when `s.1 ≠ s.2`. -/
+theorem PBPSet_C_sig_fst_ne_snd_eq_empty {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    (h : s.1 ≠ s.2) :
+    IsEmpty (PBPSet_C_sig μP μQ s) := by
+  refine ⟨fun M => ?_⟩
+  have h_eq : signTarget_C M.val.val = s := M.prop
+  have hγ : M.val.val.γ = .C := M.val.prop.1
+  have heq : (PBP.signature M.val.val).1 = (PBP.signature M.val.val).2 :=
+    PBP.signature_fst_eq_snd_C _ hγ
+  have h_target : signTarget_C M.val.val =
+      (((PBP.signature M.val.val).1 : ℤ), ((PBP.signature M.val.val).2 : ℤ)) := rfl
+  rw [h_target] at h_eq
+  have h1 : ((PBP.signature M.val.val).1 : ℤ) = s.1 := (Prod.ext_iff.mp h_eq).1
+  have h2 : ((PBP.signature M.val.val).2 : ℤ) = s.2 := (Prod.ext_iff.mp h_eq).2
+  exact h (h1.symm.trans (by exact_mod_cast heq) |>.trans h2)
+
+/-- For any μP, μQ, `PBPSet_M_sig μP μQ s` is empty when `s.1 ≠ s.2`. -/
+theorem PBPSet_M_sig_fst_ne_snd_eq_empty {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    (h : s.1 ≠ s.2) :
+    IsEmpty (PBPSet_M_sig μP μQ s) := by
+  refine ⟨fun M => ?_⟩
+  have h_eq : signTarget_M M.val.val = s := M.prop
+  have hγ : M.val.val.γ = .M := M.val.prop.1
+  have heq : (PBP.signature M.val.val).1 = (PBP.signature M.val.val).2 :=
+    PBP.signature_fst_eq_snd_M _ hγ
+  have h_target : signTarget_M M.val.val =
+      (((PBP.signature M.val.val).1 : ℤ), ((PBP.signature M.val.val).2 : ℤ)) := rfl
+  rw [h_target] at h_eq
+  have h1 : ((PBP.signature M.val.val).1 : ℤ) = s.1 := (Prod.ext_iff.mp h_eq).1
+  have h2 : ((PBP.signature M.val.val).2 : ℤ) = s.2 := (Prod.ext_iff.mp h_eq).2
+  exact h (h1.symm.trans (by exact_mod_cast heq) |>.trans h2)
 
 /-- `PBPSet_Bplus_sig ⊥ ⊥ s` is empty for any `s ≠ (1, 0)`. -/
 theorem PBPSet_Bplus_sig_bot_eq_empty {s : ℤ × ℤ} (h : s ≠ (1, 0)) :
