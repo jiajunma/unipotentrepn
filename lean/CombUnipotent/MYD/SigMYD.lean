@@ -368,4 +368,95 @@ theorem chainSingleton_IsTrim {chain : List ACStepData} {E_init E_final : ILS}
 theorem baseILS_IsTrim (γ : RootType) : ILS.IsTrim (baseILS γ) := by
   cases γ <;> (unfold baseILS ILS.IsTrim; simp)
 
+/-- Helper: `augment pq E` is trim when either nonempty trim E or
+    empty E with nonzero pq. -/
+theorem augment_is_trim_of_cases {E : ILS} {pq : ℤ × ℤ}
+    (h_trim : ILS.IsTrim E)
+    (h_ne : E = [] → pq ≠ (0, 0)) :
+    ILS.IsTrim (ILS.augment pq E) := by
+  by_cases hE : E = []
+  · exact ILS.augment_IsTrim E pq (Or.inl ⟨hE, h_ne hE⟩)
+  · exact ILS.augment_IsTrim E pq (Or.inr ⟨hE, h_trim⟩)
+
+/-- **Step-trim preservation (std case, target .D)** for `thetaLift_CD`. -/
+theorem thetaLift_CD_preserves_trim_std
+    (E : ILS) (p q : ℤ)
+    (h_std :
+      p - (ILS.sign E).1 - (ILS.firstColSign E).2 ≥ 0 ∧
+      q - (ILS.sign E).2 - (ILS.firstColSign E).1 ≥ 0)
+    (h_ne_augment : E = [] →
+      (p - (ILS.sign E).1 - (ILS.firstColSign E).2,
+       q - (ILS.sign E).2 - (ILS.firstColSign E).1) ≠ (0, 0))
+    (h_trim : ILS.IsTrim E) {E' : ILS}
+    (h_tl : ILS.thetaLift_CD E p q = [E']) :
+    ILS.IsTrim E' := by
+  simp only [ILS.thetaLift_CD, if_pos h_std] at h_tl
+  simp at h_tl
+  subst h_tl
+  exact augment_is_trim_of_cases (ILS.charTwistCM_IsTrim _ _ h_trim)
+    (by
+      intro hE
+      unfold ILS.charTwistCM at hE
+      rw [List.mapIdx_eq_nil_iff] at hE
+      exact h_ne_augment hE)
+
+/-- **Step-trim preservation (std case, target .C)** for `thetaLift_DC`. -/
+theorem thetaLift_DC_preserves_trim_std
+    (E : ILS) (n : ℤ)
+    (h_std :
+      n - (ILS.sign E).1 - (ILS.firstColSign E).2 ≥ 0 ∧
+      n - (ILS.sign E).2 - (ILS.firstColSign E).1 ≥ 0)
+    (h_ne_augment : E = [] →
+      (n - (ILS.sign E).1 - (ILS.firstColSign E).2,
+       n - (ILS.sign E).2 - (ILS.firstColSign E).1) ≠ (0, 0))
+    (h_trim : ILS.IsTrim E) {E' : ILS}
+    (h_tl : ILS.thetaLift_DC E n = [E']) :
+    ILS.IsTrim E' := by
+  simp only [ILS.thetaLift_DC, if_pos h_std] at h_tl
+  simp at h_tl
+  subst h_tl
+  apply ILS.charTwistCM_IsTrim
+  exact augment_is_trim_of_cases h_trim h_ne_augment
+
+/-- **Step-trim preservation (std case, target .M)** for `thetaLift_BM`. -/
+theorem thetaLift_BM_preserves_trim_std
+    (E : ILS) (n : ℤ)
+    (h_std :
+      n - (ILS.sign E).1 - (ILS.firstColSign E).2 ≥ 0 ∧
+      n - (ILS.sign E).2 - (ILS.firstColSign E).1 ≥ 0)
+    (h_ne_augment : E = [] →
+      (n - (ILS.sign E).1 - (ILS.firstColSign E).2,
+       n - (ILS.sign E).2 - (ILS.firstColSign E).1) ≠ (0, 0))
+    (h_trim : ILS.IsTrim E) {E' : ILS}
+    (h_tl : ILS.thetaLift_BM E n = [E']) :
+    ILS.IsTrim E' := by
+  simp only [ILS.thetaLift_BM, if_pos h_std] at h_tl
+  simp at h_tl
+  subst h_tl
+  apply ILS.charTwistCM_IsTrim
+  exact augment_is_trim_of_cases h_trim h_ne_augment
+
+/-- **Step-trim preservation (std case, target .Bplus/.Bminus)** for
+    `thetaLift_MB`. (augment wraps charTwistCM, like thetaLift_CD) -/
+theorem thetaLift_MB_preserves_trim_std
+    (E : ILS) (p q : ℤ)
+    (h_std :
+      p - (ILS.sign E).1 - (ILS.firstColSign E).2 ≥ 0 ∧
+      q - (ILS.sign E).2 - (ILS.firstColSign E).1 ≥ 0)
+    (h_ne_augment : E = [] →
+      (p - (ILS.sign E).1 - (ILS.firstColSign E).2,
+       q - (ILS.sign E).2 - (ILS.firstColSign E).1) ≠ (0, 0))
+    (h_trim : ILS.IsTrim E) {E' : ILS}
+    (h_tl : ILS.thetaLift_MB E p q = [E']) :
+    ILS.IsTrim E' := by
+  simp only [ILS.thetaLift_MB, if_pos h_std] at h_tl
+  simp at h_tl
+  subst h_tl
+  exact augment_is_trim_of_cases (ILS.charTwistCM_IsTrim _ _ h_trim)
+    (by
+      intro hE
+      unfold ILS.charTwistCM at hE
+      rw [List.mapIdx_eq_nil_iff] at hE
+      exact h_ne_augment hE)
+
 end BMSZ
