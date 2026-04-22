@@ -1194,10 +1194,6 @@ noncomputable def Phi_M_sig_trim_zero_equiv {μP μQ : YoungDiagram}
 /-! ## Cardinality result for the (0,0) bijection -/
 
 theorem card_PBPSet_C_sig_zero_eq {μP μQ : YoungDiagram}
-    (h_step_D : DescentStepSingleton_D)
-    (h_step_C : DescentStepSingleton_C)
-    (h_chain : ChainExists_C μP μQ)
-    (h_sm : DescentChainSignMatch_C)
     [Fintype (PBPSet_C_sig μP μQ (0, 0))]
     [Subsingleton (PBPSet_C_sig μP μQ (0, 0))]
     [Inhabited (PBPSet_C_sig μP μQ (0, 0))] :
@@ -1207,9 +1203,6 @@ theorem card_PBPSet_C_sig_zero_eq {μP μQ : YoungDiagram}
   exact Fintype.card_eq_one_iff.mpr ⟨default, fun _ => Subsingleton.elim _ _⟩
 
 theorem card_PBPSet_M_sig_zero_eq {μP μQ : YoungDiagram}
-    (h_chain : ChainExists_M μP μQ)
-    (h_sing : DescentChainMSingleton)
-    (h_sm : DescentChainSignMatch_M)
     [Fintype (PBPSet_M_sig μP μQ (0, 0))]
     [Subsingleton (PBPSet_M_sig μP μQ (0, 0))]
     [Inhabited (PBPSet_M_sig μP μQ (0, 0))] :
