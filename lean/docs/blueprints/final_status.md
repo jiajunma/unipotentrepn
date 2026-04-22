@@ -122,6 +122,17 @@ Beyond 36 → 0 sorries, added:
 - **`BMSZ.thetaLift_{CD,DC,BM,MB}_step_complete_std`** (all 4 PROVED):
   combined "singleton + trim + sign = target" — bundles three of the
   five paper §11.5 sub-claims for one chain step.
+- **`BMSZ.stepPreTwist_IsTrim`**, **`BMSZ.stepPostTwist_IsTrim`**:
+  twistBD-based step twists preserve trim.
+- **`BMSZ.step_trim_{D,Bplus,Bminus,C,M}`** (5 PROVED): per-step trim
+  preservation including stepPostTwist, for each chain type.
+- **`BMSZ.StepStdAndAugment_{D,Bplus,Bminus,C,M}`**: 5 bundled paper-content
+  hypotheses. Each says: ∀ E, d with d.γ = γ, std + ne_augment hold.
+- **`BMSZ.chainSingleton_IsTrim_{D,Bplus}`** (PROVED): **chain trim
+  along D / B+ chains**, given the universal std bundle. This is
+  the FIRST FULL DISCHARGE of a substantive paper §11.5 claim
+  for the trim invariant — chain-extracted ILS is trim along
+  valid chains.
 
 Critical finding: `MYD_sig γ s` as defined is **not finite**
 (trailing zeros preserve sign), so the current `Phi_γ_sig_equiv`
