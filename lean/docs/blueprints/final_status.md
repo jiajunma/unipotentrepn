@@ -187,17 +187,34 @@ baseILS .Bminus = [(0,-1)]), the std bound requires signature ≥ 1
 in both components, which depends on PBP non-emptiness analysis
 (remaining paper content).
 
-### 🎯🎯🎯 FIRST FULL BIJECTION (this session)
+### 🎯🎯🎯🎯 FIRST INSTANTIABLE BIJECTION (this session)
 
 - **`Phi_C_sig_trim_zero_equiv`** + **`Phi_M_sig_trim_zero_equiv`**:
   Full bijection `PBPSet_*_sig μP μQ (0,0) ≃ MYD_sig_trim .γ (0,0)`
-  under `[Subsingleton + Inhabited]` source hypotheses. Unconditional
-  on h_inj/h_surj — uses Subsingleton.elim for injectivity, our proved
-  surjectivity for surjectivity.
+  under `[Subsingleton + Inhabited]` source hypotheses.
 
-  This is the **FIRST FULL BIJECTION** for our Phi machinery on a
-  non-trivial sector. The remaining Subsingleton hypothesis is
-  paper-content about PBP uniqueness on the (0,0) sector.
+- **PBP empty construction** (paper §9.4):
+  - `emptyPaintedYoungDiagram` + `emptyPaintedYoungDiagram_layerMonotone`
+  - `emptyPBP_C` (full PBP construction with all field discharges)
+  - `emptyPBP_C_signature = (0, 0)`
+  - `signTarget_C'_emptyPBP = (0, 0)`
+  - `PaintedYoungDiagram_paint_of_shape_bot`
+  - `PaintedYoungDiagram_subsingleton_of_bot`
+  - `PBP_eq_of_shapes_bot` — paper §9.4 PBP uniqueness on empty shape
+
+- **`inhabited_PBPSet_C_sig_zero`** + **`subsingleton_PBPSet_C_bot`** +
+  **`subsingleton_PBPSet_C_sig_bot`**: instances proved.
+
+- **`Phi_C_sig_trim_bot_zero_equiv`**:
+  `PBPSet_C_sig (⊥,⊥) (0,0) ≃ MYD_sig_trim .C (0,0)` —
+  Both sides have cardinality 1 (PROVED). The bijection is concretely
+  established using fully-proven Subsingleton + Inhabited instances.
+
+  This is the **FIRST CONCRETELY INSTANTIATED BIJECTION** in the
+  bijection layer, depending on no unproven paper hypotheses for
+  the structural part (only the universal h_step_D / h_step_C / h_sm
+  hypotheses remain as parameters, which are vacuously needed since
+  the source is subsingleton).
 - **`Phi_γ_sig_trim_image_equiv`** (5): partial bijections via
   Equiv.ofInjective, requires only injectivity.
 - **`phi_γ_sig_trim_surj_of_inj_card`** (5): surjectivity from
