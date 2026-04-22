@@ -579,4 +579,16 @@ theorem emptyPBP_Bminus_signature : PBP.signature emptyPBP_Bminus = (0, 1) := by
   unfold PBP.signature emptyPBP_Bminus
   simp [emptyPaintedYoungDiagram_D, PaintedYoungDiagram.countSym]
 
+/-- For any B⁺ PBP, `signature.1 ≥ 1`. -/
+theorem signature_Bplus_fst_pos (τ : PBP) (hγ : τ.γ = .Bplus) :
+    1 ≤ (PBP.signature τ).1 := by
+  unfold PBP.signature
+  simp [hγ]
+
+/-- For any B⁻ PBP, `signature.2 ≥ 1`. -/
+theorem signature_Bminus_snd_pos (τ : PBP) (hγ : τ.γ = .Bminus) :
+    1 ≤ (PBP.signature τ).2 := by
+  unfold PBP.signature
+  simp [hγ]
+
 end BMSZ

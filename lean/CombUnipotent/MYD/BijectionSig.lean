@@ -1466,6 +1466,49 @@ instance subsingleton_PBPSet_Bminus_sig_bot (s : ℤ × ℤ) :
   apply Subtype.ext
   exact Subsingleton.elim _ _
 
+/-- For arbitrary shapes μP, μQ, `PBPSet_Bplus_sig μP μQ s` is empty when
+    `s.1 < 1` (i.e., for B⁺ type, the first signature component is always
+    at least `1`). -/
+theorem PBPSet_Bplus_sig_fst_lt_one_eq_empty {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    (h : s.1 < 1) :
+    IsEmpty (PBPSet_Bplus_sig μP μQ s) := by
+  refine ⟨fun M => ?_⟩
+  have h_eq : signTarget_Bplus M.val.val = s := M.prop
+  have hγ : M.val.val.γ = .Bplus := M.val.prop.1
+  have h_sig_pos : 1 ≤ (PBP.signature M.val.val).1 := signature_Bplus_fst_pos _ hγ
+  have h_target : (signTarget_Bplus M.val.val).1 = ((PBP.signature M.val.val).1 : ℤ) := rfl
+  have : 1 ≤ s.1 := by
+    rw [← h_eq, h_target]
+    exact_mod_cast h_sig_pos
+  omega
+
+/-- For arbitrary shapes μP, μQ, `PBPSet_Bminus_sig μP μQ s` is empty when
+    `s.2 < 1`. -/
+theorem PBPSet_Bminus_sig_snd_lt_one_eq_empty {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    (h : s.2 < 1) :
+    IsEmpty (PBPSet_Bminus_sig μP μQ s) := by
+  refine ⟨fun M => ?_⟩
+  have h_eq : signTarget_Bminus M.val.val = s := M.prop
+  have hγ : M.val.val.γ = .Bminus := M.val.prop.1
+  have h_sig_pos : 1 ≤ (PBP.signature M.val.val).2 := signature_Bminus_snd_pos _ hγ
+  have h_target : (signTarget_Bminus M.val.val).2 = ((PBP.signature M.val.val).2 : ℤ) := rfl
+  have : 1 ≤ s.2 := by
+    rw [← h_eq, h_target]
+    exact_mod_cast h_sig_pos
+  omega
+
+/-- `PBPSet_Bplus_sig μP μQ (0, 0)` is always empty (no Bplus PBP has
+    `signature.1 = 0`). -/
+theorem PBPSet_Bplus_sig_zero_eq_empty {μP μQ : YoungDiagram} :
+    IsEmpty (PBPSet_Bplus_sig μP μQ (0, 0)) :=
+  PBPSet_Bplus_sig_fst_lt_one_eq_empty (by norm_num)
+
+/-- `PBPSet_Bminus_sig μP μQ (0, 0)` is always empty (no Bminus PBP has
+    `signature.2 = 0`). -/
+theorem PBPSet_Bminus_sig_zero_eq_empty {μP μQ : YoungDiagram} :
+    IsEmpty (PBPSet_Bminus_sig μP μQ (0, 0)) :=
+  PBPSet_Bminus_sig_snd_lt_one_eq_empty (by norm_num)
+
 /-- `PBPSet_Bplus_sig ⊥ ⊥ s` is empty for any `s ≠ (1, 0)`. -/
 theorem PBPSet_Bplus_sig_bot_eq_empty {s : ℤ × ℤ} (h : s ≠ (1, 0)) :
     IsEmpty (PBPSet_Bplus_sig (⊥ : YoungDiagram) ⊥ s) := by
