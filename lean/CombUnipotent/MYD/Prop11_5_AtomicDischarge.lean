@@ -92,6 +92,94 @@ theorem PBP.signature_sum_D (τ : PBP) (hγ : τ.γ = .D) :
   push_cast
   ring
 
+/-- For a C-type PBP, the signature is `(n, n)` where `n` is the total
+    cell count. So `signature.1 = signature.2 = |τ|` and their sum is
+    `2 * |τ|`. -/
+theorem PBP.signature_sum_C (τ : PBP) (hγ : τ.γ = .C) :
+    ((PBP.signature τ).1 : ℤ) + (PBP.signature τ).2 =
+      2 * (PBP.cardCells τ : ℤ) := by
+  unfold PBP.signature
+  simp only [hγ]
+  -- For C, signature = (nDot + nR + nS + nC + nD, same)
+  -- Q has only {dot, s}, so Q.nR = Q.nC = Q.nD = 0
+  rw [PBP.Q_countSym_eq_zero_of_C τ hγ .r (by decide) (by decide),
+      PBP.Q_countSym_eq_zero_of_C τ hγ .c (by decide) (by decide),
+      PBP.Q_countSym_eq_zero_of_C τ hγ .d (by decide) (by decide)]
+  -- P has only {dot, r, c, d}, so P.nS = 0
+  rw [PBP.P_countSym_eq_zero_of_C τ hγ .s rfl]
+  unfold PBP.cardCells
+  rw [PaintedYoungDiagram.card_eq_sum_countSym τ.P,
+      PaintedYoungDiagram.card_eq_sum_countSym τ.Q]
+  rw [PBP.Q_countSym_eq_zero_of_C τ hγ .r (by decide) (by decide),
+      PBP.Q_countSym_eq_zero_of_C τ hγ .c (by decide) (by decide),
+      PBP.Q_countSym_eq_zero_of_C τ hγ .d (by decide) (by decide)]
+  rw [PBP.P_countSym_eq_zero_of_C τ hγ .s rfl]
+  push_cast
+  ring
+
+/-- For an M-type PBP: `p + q = 2 * |τ|`. Similar to C since M also has
+    `p = q = n` signature form. -/
+theorem PBP.signature_sum_M (τ : PBP) (hγ : τ.γ = .M) :
+    ((PBP.signature τ).1 : ℤ) + (PBP.signature τ).2 =
+      2 * (PBP.cardCells τ : ℤ) := by
+  unfold PBP.signature
+  simp only [hγ]
+  -- M: signature = (nDot + nR + nS + nC + nD, same)
+  -- P has only {dot, s, c}, Q has only {dot, r, d}
+  rw [PBP.P_countSym_eq_zero_of_M τ hγ .r (by decide) (by decide) (by decide),
+      PBP.P_countSym_eq_zero_of_M τ hγ .d (by decide) (by decide) (by decide),
+      PBP.Q_countSym_eq_zero_of_M τ hγ .s (by decide) (by decide) (by decide),
+      PBP.Q_countSym_eq_zero_of_M τ hγ .c (by decide) (by decide) (by decide)]
+  unfold PBP.cardCells
+  rw [PaintedYoungDiagram.card_eq_sum_countSym τ.P,
+      PaintedYoungDiagram.card_eq_sum_countSym τ.Q]
+  rw [PBP.P_countSym_eq_zero_of_M τ hγ .r (by decide) (by decide) (by decide),
+      PBP.P_countSym_eq_zero_of_M τ hγ .d (by decide) (by decide) (by decide),
+      PBP.Q_countSym_eq_zero_of_M τ hγ .s (by decide) (by decide) (by decide),
+      PBP.Q_countSym_eq_zero_of_M τ hγ .c (by decide) (by decide) (by decide)]
+  push_cast
+  ring
+
+/-- For a B⁺-type PBP, `p + q = 2 * |τ| + 1`. The `+1` offset comes
+    from the `(if τ.γ = .Bplus then 1 else 0)` in the signature formula. -/
+theorem PBP.signature_sum_Bplus (τ : PBP) (hγ : τ.γ = .Bplus) :
+    ((PBP.signature τ).1 : ℤ) + (PBP.signature τ).2 =
+      2 * (PBP.cardCells τ : ℤ) + 1 := by
+  unfold PBP.signature
+  simp only [hγ, show ¬(RootType.Bplus = .Bminus) from by decide,
+    ite_true, ite_false]
+  -- B⁺: P only {dot, c}, Q only {dot, s, r, d}
+  rw [PBP.P_countSym_eq_zero_of_B τ (Or.inl hγ) .r (by decide) (by decide),
+      PBP.P_countSym_eq_zero_of_B τ (Or.inl hγ) .s (by decide) (by decide),
+      PBP.P_countSym_eq_zero_of_B τ (Or.inl hγ) .d (by decide) (by decide)]
+  unfold PBP.cardCells
+  rw [PaintedYoungDiagram.card_eq_sum_countSym τ.P,
+      PaintedYoungDiagram.card_eq_sum_countSym τ.Q]
+  rw [PBP.P_countSym_eq_zero_of_B τ (Or.inl hγ) .r (by decide) (by decide),
+      PBP.P_countSym_eq_zero_of_B τ (Or.inl hγ) .s (by decide) (by decide),
+      PBP.P_countSym_eq_zero_of_B τ (Or.inl hγ) .d (by decide) (by decide)]
+  push_cast
+  ring
+
+/-- For a B⁻-type PBP, `p + q = 2 * |τ| + 1`. -/
+theorem PBP.signature_sum_Bminus (τ : PBP) (hγ : τ.γ = .Bminus) :
+    ((PBP.signature τ).1 : ℤ) + (PBP.signature τ).2 =
+      2 * (PBP.cardCells τ : ℤ) + 1 := by
+  unfold PBP.signature
+  simp only [hγ, show ¬(RootType.Bminus = .Bplus) from by decide,
+    ite_true, ite_false]
+  rw [PBP.P_countSym_eq_zero_of_B τ (Or.inr hγ) .r (by decide) (by decide),
+      PBP.P_countSym_eq_zero_of_B τ (Or.inr hγ) .s (by decide) (by decide),
+      PBP.P_countSym_eq_zero_of_B τ (Or.inr hγ) .d (by decide) (by decide)]
+  unfold PBP.cardCells
+  rw [PaintedYoungDiagram.card_eq_sum_countSym τ.P,
+      PaintedYoungDiagram.card_eq_sum_countSym τ.Q]
+  rw [PBP.P_countSym_eq_zero_of_B τ (Or.inr hγ) .r (by decide) (by decide),
+      PBP.P_countSym_eq_zero_of_B τ (Or.inr hγ) .s (by decide) (by decide),
+      PBP.P_countSym_eq_zero_of_B τ (Or.inr hγ) .d (by decide) (by decide)]
+  push_cast
+  ring
+
 /-! ### Fact 3: Tail signature sum -/
 
 /-- **Tail signature sum** for a D-type PBP: each tail cell contributes

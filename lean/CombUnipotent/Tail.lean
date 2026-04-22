@@ -347,6 +347,20 @@ theorem Q_countSym_eq_zero_of_D (τ : PBP) (hγ : τ.γ = .D)
   simp only [YoungDiagram.mem_cells] at hmem
   exact fun h => hσ ((τ.Q_all_dot_of_D hγ i j hmem) ▸ h.symm)
 
+/-- For C type, P has only `.dot`, `.r`, `.c`, `.d` symbols (not `.s`). -/
+theorem P_countSym_eq_zero_of_C (τ : PBP) (hγ : τ.γ = .C)
+    (σ : DRCSymbol) (hσ : σ = .s) :
+    τ.P.countSym σ = 0 := by
+  subst hσ
+  simp only [PaintedYoungDiagram.countSym, Finset.card_eq_zero, Finset.filter_eq_empty_iff]
+  intro ⟨i, j⟩ hmem
+  simp only [YoungDiagram.mem_cells] at hmem
+  intro h
+  have hallow := τ.sym_P i j hmem
+  rw [hγ] at hallow
+  simp only [DRCSymbol.allowed] at hallow
+  rcases hallow with h' | h' | h' | h' <;> rw [h'] at h <;> cases h
+
 /-- For C type, Q has only `.dot` and `.s` symbols. -/
 theorem Q_countSym_eq_zero_of_C (τ : PBP) (hγ : τ.γ = .C)
     (σ : DRCSymbol) (hσ : σ ≠ .dot) (hσ' : σ ≠ .s) :
