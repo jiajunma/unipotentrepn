@@ -1889,6 +1889,14 @@ theorem Phi_M_sig_injective_fst_ne_snd {μP μQ : YoungDiagram} {s : ℤ × ℤ}
   haveI : IsEmpty (PBPSet_M_sig μP μQ s) := PBPSet_M_sig_fst_ne_snd_eq_empty hs
   intro x _ _; exact isEmptyElim x
 
+theorem Phi_D_sig_injective_Q_not_le_P {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    (h : ¬ μQ ≤ μP) (h_step : DescentStepSingleton_D) :
+    Function.Injective
+      (fun p : PBPSet_D_sig μP μQ s × Fin 2 => Phi_D_sig h_step p.1 p.2) := by
+  haveI : IsEmpty (PBPSet_D_sig μP μQ s) := PBPSet_D_sig_Q_not_le_P_eq_empty h
+  intro p _ _
+  exact isEmptyElim p.1
+
 /-! ## Injectivity on (⊥, ⊥) shape for ANY signature (C/M — no Fin 2)
 
 On the (⊥, ⊥) shape, `PBPSet_γ_sig ⊥ ⊥ s` is subsingleton for any
