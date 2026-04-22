@@ -277,6 +277,34 @@ theorem sign_append_singleton (E : ILS) (a : ℤ × ℤ) :
   rw [List.foldl_append]
   simp [List.zipIdx]
 
+/-- If `sign E = (0, 0)`, then every row of E is `(0, 0)`. -/
+theorem all_zero_of_sign_zero (E : ILS) (h : sign E = (0, 0)) :
+    ∀ a ∈ E, a = (0, 0) := by
+  induction E using List.reverseRecOn with
+  | nil => intro a ha; simp at ha
+  | append_singleton xs a ih =>
+    rw [sign_append_singleton] at h
+    -- (sign xs).1 ≥ 0, (signRow xs.length a).1 ≥ 0, sum = 0 → both = 0
+    have h1 := sign_fst_nonneg xs
+    have h2 := sign_snd_nonneg xs
+    have h3 := signRow_fst_nonneg xs.length a
+    have h4 := signRow_snd_nonneg xs.length a
+    have h_xs : sign xs = (0, 0) := by
+      ext
+      · simp at h; omega
+      · simp at h; omega
+    have h_a : signRow xs.length a = (0, 0) := by
+      ext
+      · simp at h; omega
+      · simp at h; omega
+    have h_a_zero : a = (0, 0) := (signRow_eq_zero_iff _ _).mp h_a
+    intro b hb
+    rw [List.mem_append] at hb
+    rcases hb with hb | hb
+    · exact ih h_xs b hb
+    · rw [List.mem_singleton] at hb
+      exact hb.trans h_a_zero
+
 end ILS
 
 namespace BMSZ
