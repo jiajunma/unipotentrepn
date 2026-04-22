@@ -1776,6 +1776,76 @@ theorem Phi_Bminus_sig_injective_zero {μP μQ : YoungDiagram}
   intro p _ _
   exact isEmptyElim p.1
 
+/-! ## Universal injectivity for shape-independent empty sectors
+
+For any μP, μQ: injective proofs derived from source emptiness. -/
+
+theorem Phi_D_sig_injective_sum_odd {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    (hs : Odd (s.1 + s.2)) (h_step : DescentStepSingleton_D) :
+    Function.Injective
+      (fun p : PBPSet_D_sig μP μQ s × Fin 2 => Phi_D_sig h_step p.1 p.2) := by
+  haveI : IsEmpty (PBPSet_D_sig μP μQ s) := PBPSet_D_sig_sum_odd_eq_empty hs
+  intro p _ _
+  exact isEmptyElim p.1
+
+theorem Phi_Bplus_sig_injective_sum_even {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    (hs : Even (s.1 + s.2)) (h_step : DescentStepSingleton_Bplus) :
+    Function.Injective
+      (fun p : PBPSet_Bplus_sig μP μQ s × Fin 2 => Phi_Bplus_sig h_step p.1 p.2) := by
+  haveI : IsEmpty (PBPSet_Bplus_sig μP μQ s) := PBPSet_Bplus_sig_sum_even_eq_empty hs
+  intro p _ _
+  exact isEmptyElim p.1
+
+theorem Phi_Bminus_sig_injective_sum_even {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    (hs : Even (s.1 + s.2)) (h_sing : DescentChainBminusSingleton) :
+    Function.Injective
+      (fun p : PBPSet_Bminus_sig μP μQ s × Fin 2 => Phi_Bminus_sig h_sing p.1 p.2) := by
+  haveI : IsEmpty (PBPSet_Bminus_sig μP μQ s) := PBPSet_Bminus_sig_sum_even_eq_empty hs
+  intro p _ _
+  exact isEmptyElim p.1
+
+theorem Phi_C_sig_injective_sum_odd {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    (hs : Odd (s.1 + s.2))
+    (h_step_D : DescentStepSingleton_D)
+    (h_step_C : DescentStepSingleton_C)
+    (h_chain : ChainExists_C μP μQ)
+    (h_sm : DescentChainSignMatch_C) :
+    Function.Injective
+      (Phi_C_sig (μP := μP) (μQ := μQ) (s := s) h_step_D h_step_C h_chain h_sm) := by
+  haveI : IsEmpty (PBPSet_C_sig μP μQ s) := PBPSet_C_sig_sum_odd_eq_empty hs
+  intro x _ _; exact isEmptyElim x
+
+theorem Phi_M_sig_injective_sum_odd {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    (hs : Odd (s.1 + s.2))
+    (h_chain : ChainExists_M μP μQ)
+    (h_sing : DescentChainMSingleton)
+    (h_sm : DescentChainSignMatch_M) :
+    Function.Injective
+      (Phi_M_sig (μP := μP) (μQ := μQ) (s := s) h_chain h_sing h_sm) := by
+  haveI : IsEmpty (PBPSet_M_sig μP μQ s) := PBPSet_M_sig_sum_odd_eq_empty hs
+  intro x _ _; exact isEmptyElim x
+
+theorem Phi_C_sig_injective_fst_ne_snd {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    (hs : s.1 ≠ s.2)
+    (h_step_D : DescentStepSingleton_D)
+    (h_step_C : DescentStepSingleton_C)
+    (h_chain : ChainExists_C μP μQ)
+    (h_sm : DescentChainSignMatch_C) :
+    Function.Injective
+      (Phi_C_sig (μP := μP) (μQ := μQ) (s := s) h_step_D h_step_C h_chain h_sm) := by
+  haveI : IsEmpty (PBPSet_C_sig μP μQ s) := PBPSet_C_sig_fst_ne_snd_eq_empty hs
+  intro x _ _; exact isEmptyElim x
+
+theorem Phi_M_sig_injective_fst_ne_snd {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    (hs : s.1 ≠ s.2)
+    (h_chain : ChainExists_M μP μQ)
+    (h_sing : DescentChainMSingleton)
+    (h_sm : DescentChainSignMatch_M) :
+    Function.Injective
+      (Phi_M_sig (μP := μP) (μQ := μQ) (s := s) h_chain h_sing h_sm) := by
+  haveI : IsEmpty (PBPSet_M_sig μP μQ s) := PBPSet_M_sig_fst_ne_snd_eq_empty hs
+  intro x _ _; exact isEmptyElim x
+
 /-! ## Injectivity on (⊥, ⊥) shape for ANY signature (C/M — no Fin 2)
 
 On the (⊥, ⊥) shape, `PBPSet_γ_sig ⊥ ⊥ s` is subsingleton for any
