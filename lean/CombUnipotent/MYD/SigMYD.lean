@@ -463,8 +463,7 @@ theorem thetaLift_MB_preserves_trim_std
 
     Covers targets where the std condition uses (p, q) meaningfully.
     For C/M targets (where `thetaLift` ignores q and uses p-only std),
-    use `thetaLift_DC_preserves_trim_std` / `thetaLift_BM_preserves_trim_std`
-    directly. -/
+    use `thetaLift_preserves_trim_std_CM`. -/
 theorem thetaLift_preserves_trim_std_DB
     (E : ILS) (γ : RootType) (p q : ℤ)
     (hγ : γ = .D ∨ γ = .Bplus ∨ γ = .Bminus)
@@ -482,5 +481,28 @@ theorem thetaLift_preserves_trim_std_DB
   · exact thetaLift_CD_preserves_trim_std E p q h_std h_ne_augment h_trim h_tl
   · exact thetaLift_MB_preserves_trim_std E p q h_std h_ne_augment h_trim h_tl
   · exact thetaLift_MB_preserves_trim_std E p q h_std h_ne_augment h_trim h_tl
+
+/-- **Dispatched thetaLift trim preservation (std case)** for C/M targets.
+
+    `thetaLift E .C p q` = `thetaLift_DC E p` (ignores q)
+    `thetaLift E .M p q` = `thetaLift_BM E p` (ignores q)
+
+    Std condition uses p for both coordinates. -/
+theorem thetaLift_preserves_trim_std_CM
+    (E : ILS) (γ : RootType) (p q : ℤ)
+    (hγ : γ = .C ∨ γ = .M)
+    (h_std :
+      p - (ILS.sign E).1 - (ILS.firstColSign E).2 ≥ 0 ∧
+      p - (ILS.sign E).2 - (ILS.firstColSign E).1 ≥ 0)
+    (h_ne_augment : E = [] →
+      (p - (ILS.sign E).1 - (ILS.firstColSign E).2,
+       p - (ILS.sign E).2 - (ILS.firstColSign E).1) ≠ (0, 0))
+    (h_trim : ILS.IsTrim E) {E' : ILS}
+    (h_tl : ILS.thetaLift E γ p q = [E']) :
+    ILS.IsTrim E' := by
+  unfold ILS.thetaLift at h_tl
+  rcases hγ with rfl | rfl
+  · exact thetaLift_DC_preserves_trim_std E p h_std h_ne_augment h_trim h_tl
+  · exact thetaLift_BM_preserves_trim_std E p h_std h_ne_augment h_trim h_tl
 
 end BMSZ
