@@ -171,6 +171,21 @@ Beyond 36 → 0 sorries, added:
   collapses to MYD_sig.zero (under std hypothesis, via Phi outputs trim).
 - **`Phi_{D,C}_sig_trim_range_zero`** (2 PROVED):
   Set.range Phi_γ_sig_trim on (0,0) sector = {MYD_sig_trim.zero}.
+
+### Real paper §11.5/§11.6 content (base case PROVED)
+
+- **`firstColSignRow_zero`**, **`firstColSign_nil`** (2)
+- **`firstColSignRow_{fst,snd}_nonneg`** (2)
+- **`firstColSign_{fst,snd}_nonneg`** (2)
+- **`toACStepData_{D,C,M}_p_nonneg`** (3): signature ≥ 0 (PBP.signature is ℕ × ℕ).
+- **`stepStdAndAugment_{D,C,M}_base_nil`** (3): **FIRST PROVED CASE
+  of paper §11.5/§11.6 std bound** — when E_inner = baseILS γ = [],
+  the std bound at outer step trivializes to signature non-negativity.
+
+For B+/B− base cases (E_inner = baseILS .Bplus = [(1,0)] or
+baseILS .Bminus = [(0,-1)]), the std bound requires signature ≥ 1
+in both components, which depends on PBP non-emptiness analysis
+(remaining paper content).
 - **`Phi_γ_sig_trim_image_equiv`** (5): partial bijections via
   Equiv.ofInjective, requires only injectivity.
 - **`phi_γ_sig_trim_surj_of_inj_card`** (5): surjectivity from
