@@ -966,6 +966,50 @@ theorem Phi_M_sig_trim_E_eq_Phi_M_sig_E {μP μQ : YoungDiagram} {s : ℤ × ℤ
   exact ILS.trim_eq_self_of_IsTrim _
     (Phi_M_sig_E_IsTrim h_chain h_sing h_sm h_step_std_M h_step_std_Bp h_step_std_Bm σh)
 
+/-! ## Injectivity transfer Phi_γ_sig → Phi_γ_sig_trim under std
+
+Since Phi_γ_sig_trim's underlying E equals Phi_γ_sig's E (under std),
+injectivity of Phi_γ_sig implies injectivity of Phi_γ_sig_trim.
+-/
+
+theorem Phi_D_sig_trim_injective_of_Phi_D_sig_injective
+    {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    (h_step : DescentStepSingleton_D)
+    (h_step_std : StepStdAndAugment_D)
+    (h_inj : Function.Injective
+      (fun p : PBPSet_D_sig μP μQ s × Fin 2 => Phi_D_sig h_step p.1 p.2)) :
+    Function.Injective
+      (fun p : PBPSet_D_sig μP μQ s × Fin 2 => Phi_D_sig_trim h_step p.1 p.2) := by
+  intro ⟨σh₁, ε₁⟩ ⟨σh₂, ε₂⟩ h_eq
+  apply h_inj
+  -- h_eq : Phi_D_sig_trim ... σh₁ ε₁ = Phi_D_sig_trim ... σh₂ ε₂
+  -- Need: Phi_D_sig ... σh₁ ε₁ = Phi_D_sig ... σh₂ ε₂
+  apply MYD_sig.ext
+  have h1 := Phi_D_sig_trim_E_eq_Phi_D_sig_E h_step h_step_std σh₁ ε₁
+  have h2 := Phi_D_sig_trim_E_eq_Phi_D_sig_E h_step h_step_std σh₂ ε₂
+  have h_E := congrArg (·.E) h_eq
+  simp at h_E
+  rw [← h1, ← h2]
+  exact h_E
+
+theorem Phi_Bplus_sig_trim_injective_of_Phi_Bplus_sig_injective
+    {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    (h_step : DescentStepSingleton_Bplus)
+    (h_step_std : StepStdAndAugment_Bplus)
+    (h_inj : Function.Injective
+      (fun p : PBPSet_Bplus_sig μP μQ s × Fin 2 => Phi_Bplus_sig h_step p.1 p.2)) :
+    Function.Injective
+      (fun p : PBPSet_Bplus_sig μP μQ s × Fin 2 => Phi_Bplus_sig_trim h_step p.1 p.2) := by
+  intro ⟨σh₁, ε₁⟩ ⟨σh₂, ε₂⟩ h_eq
+  apply h_inj
+  apply MYD_sig.ext
+  have h1 := Phi_Bplus_sig_trim_E_eq_Phi_Bplus_sig_E h_step h_step_std σh₁ ε₁
+  have h2 := Phi_Bplus_sig_trim_E_eq_Phi_Bplus_sig_E h_step h_step_std σh₂ ε₂
+  have h_E := congrArg (·.E) h_eq
+  simp at h_E
+  rw [← h1, ← h2]
+  exact h_E
+
 /-! ## Trim-target equiv assembly
 
 These mirror `Phi_γ_sig_equiv` but with `MYD_sig_trim` as target,
