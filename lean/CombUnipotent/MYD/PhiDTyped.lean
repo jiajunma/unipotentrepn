@@ -113,6 +113,49 @@ theorem stepStdAndAugment_D_base_nil (τ : PBP) (hγ : τ.γ = .D) :
   obtain ⟨hp, hq⟩ := toACStepData_D_p_nonneg τ hγ
   refine ⟨?_, ?_⟩ <;> simp [ILS.sign, ILS.firstColSign] <;> omega
 
+/-- The empty PaintedYoungDiagram for D-type construction. -/
+def emptyPaintedYoungDiagram_D : PaintedYoungDiagram where
+  shape := ⊥
+  paint := fun _ _ => .dot
+  paint_outside := fun _ _ _ => rfl
+
+theorem emptyPaintedYoungDiagram_D_layerMonotone :
+    emptyPaintedYoungDiagram_D.layerMonotone := by
+  intro i₁ j₁ i₂ j₂ _ _ hmem
+  simp [emptyPaintedYoungDiagram_D] at hmem
+
+/-- The empty D-type PBP. -/
+def emptyPBP_D : PBP where
+  γ := .D
+  P := emptyPaintedYoungDiagram_D
+  Q := emptyPaintedYoungDiagram_D
+  sym_P := fun i j h => by simp [emptyPaintedYoungDiagram_D] at h
+  sym_Q := fun i j h => by simp [emptyPaintedYoungDiagram_D] at h
+  dot_match := fun _ _ => Iff.rfl
+  mono_P := emptyPaintedYoungDiagram_D_layerMonotone
+  mono_Q := emptyPaintedYoungDiagram_D_layerMonotone
+  row_s := fun i s₁ s₂ j₁ j₂ h _ => by
+    cases s₁ <;> simp [paintBySide, emptyPaintedYoungDiagram_D] at h
+  row_r := fun i s₁ s₂ j₁ j₂ h _ => by
+    cases s₁ <;> simp [paintBySide, emptyPaintedYoungDiagram_D] at h
+  col_c_P := fun _ _ _ h _ => by simp [emptyPaintedYoungDiagram_D] at h
+  col_c_Q := fun _ _ _ h _ => by simp [emptyPaintedYoungDiagram_D] at h
+  col_d_P := fun _ _ _ h _ => by simp [emptyPaintedYoungDiagram_D] at h
+  col_d_Q := fun _ _ _ h _ => by simp [emptyPaintedYoungDiagram_D] at h
+
+theorem emptyPBP_D_γ : emptyPBP_D.γ = .D := rfl
+theorem emptyPBP_D_P_shape : emptyPBP_D.P.shape = ⊥ := rfl
+theorem emptyPBP_D_Q_shape : emptyPBP_D.Q.shape = ⊥ := rfl
+
+/-- Empty D-PBP element of `PBPSet .D ⊥ ⊥`. -/
+def emptyPBPSet_D : PBPSet .D (⊥ : YoungDiagram) ⊥ :=
+  ⟨emptyPBP_D, emptyPBP_D_γ, emptyPBP_D_P_shape, emptyPBP_D_Q_shape⟩
+
+/-- `emptyPBP_D`'s signature is `(0, 0)`. -/
+theorem emptyPBP_D_signature : PBP.signature emptyPBP_D = (0, 0) := by
+  unfold PBP.signature emptyPBP_D
+  simp [emptyPaintedYoungDiagram_D, PaintedYoungDiagram.countSym]
+
 
 /-- Per-step thetaLift singleton for D chain, under std hypothesis.
     PROVED directly: given std, thetaLift_CD produces the explicit
