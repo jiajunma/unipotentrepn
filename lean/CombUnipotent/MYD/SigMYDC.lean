@@ -483,4 +483,30 @@ theorem PBPIsCoherent_C_singleton_witness (τ : PBP) {r : ℕ}
     exact _root_.colLens_bot
   · rw [hQ, dpartColLensQ_C_singleton_pos h_r]
 
+/-- Single-element `[r]` is always `SortedGE`. -/
+theorem singleton_sortedGE (r : ℕ) : ([r] : DualPart).SortedGE := by
+  simp [List.SortedGE, Antitone]
+
+/-- **Concrete ChainExists_C for single-column Q**: given μP = ⊥ and
+    μQ with single column of height k ≥ 1, the chain exists via dp = [2k+1].
+    First non-trivial paper §9.4 case. -/
+theorem chainExists_C_single_col_Q {μQ : YoungDiagram} {k : ℕ}
+    (hk : k ≥ 1) (hQ : μQ.colLens = [k]) :
+    ChainExists_C (⊥ : YoungDiagram) μQ := by
+  intro σ
+  let dp : DualPart := [2 * k + 1]
+  have hr_gt : 2 * k + 1 > 1 := by omega
+  have hr_half : (2 * k + 1 - 1) / 2 = k := by omega
+  have hP_σ : σ.val.P.shape = ⊥ := σ.prop.2.1
+  have hQ_σ : σ.val.Q.shape.colLens = [k] := by rw [σ.prop.2.2]; exact hQ
+  have h_coh : PBPIsCoherent_C σ.val dp :=
+    PBPIsCoherent_C_singleton_witness σ.val hr_gt hP_σ (by rw [hQ_σ, hr_half])
+  have h_sort : dp.SortedGE := singleton_sortedGE _
+  have h_odd : ∀ r ∈ dp, Odd r := by
+    intro r hr
+    simp [dp] at hr
+    subst hr
+    exact ⟨k, by ring⟩
+  exact exists_descentChain_C σ dp h_coh h_sort h_odd
+
 end BMSZ
