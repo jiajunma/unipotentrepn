@@ -1241,4 +1241,71 @@ theorem nat_card_PBPSet_M_eq_image (μP μQ : YoungDiagram) (s : ℤ × ℤ)
       (Phi_M_sig (μP := μP) (μQ := μQ) (s := s) h_chain h_sing h_sm)) :=
   Nat.card_congr (Phi_M_sig_image_equiv μP μQ s h_chain h_sing h_sm h_inj)
 
+/-! ## Trim-variant surjectivity reductions
+
+`Phi_γ_sig_trim` targets the (potentially) finite `MYD_sig_trim γ s`.
+Surjectivity reduces to injectivity + Fintype + cardinality match
+(unlike the original `Phi_γ_sig_equiv` whose target was infinite).
+-/
+
+theorem phi_D_sig_trim_surj_of_inj_card {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    [Fintype (MYD_sig_trim .D s)]
+    (h_step : DescentStepSingleton_D)
+    (h_card : Fintype.card (PBPSet_D_sig μP μQ s × Fin 2) =
+              Fintype.card (MYD_sig_trim .D s))
+    (h_inj : Function.Injective
+      (fun p : PBPSet_D_sig μP μQ s × Fin 2 => Phi_D_sig_trim h_step p.1 p.2)) :
+    Function.Surjective
+      (fun p : PBPSet_D_sig μP μQ s × Fin 2 => Phi_D_sig_trim h_step p.1 p.2) :=
+  h_inj.surjective_of_finite (Fintype.equivOfCardEq h_card)
+
+theorem phi_Bplus_sig_trim_surj_of_inj_card {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    [Fintype (MYD_sig_trim .Bplus s)]
+    (h_step : DescentStepSingleton_Bplus)
+    (h_card : Fintype.card (PBPSet_Bplus_sig μP μQ s × Fin 2) =
+              Fintype.card (MYD_sig_trim .Bplus s))
+    (h_inj : Function.Injective
+      (fun p : PBPSet_Bplus_sig μP μQ s × Fin 2 => Phi_Bplus_sig_trim h_step p.1 p.2)) :
+    Function.Surjective
+      (fun p : PBPSet_Bplus_sig μP μQ s × Fin 2 => Phi_Bplus_sig_trim h_step p.1 p.2) :=
+  h_inj.surjective_of_finite (Fintype.equivOfCardEq h_card)
+
+theorem phi_Bminus_sig_trim_surj_of_inj_card {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    [Fintype (MYD_sig_trim .Bminus s)]
+    (h_sing : DescentChainBminusSingleton)
+    (h_card : Fintype.card (PBPSet_Bminus_sig μP μQ s × Fin 2) =
+              Fintype.card (MYD_sig_trim .Bminus s))
+    (h_inj : Function.Injective
+      (fun p : PBPSet_Bminus_sig μP μQ s × Fin 2 => Phi_Bminus_sig_trim h_sing p.1 p.2)) :
+    Function.Surjective
+      (fun p : PBPSet_Bminus_sig μP μQ s × Fin 2 => Phi_Bminus_sig_trim h_sing p.1 p.2) :=
+  h_inj.surjective_of_finite (Fintype.equivOfCardEq h_card)
+
+theorem phi_C_sig_trim_surj_of_inj_card {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    [Fintype (MYD_sig_trim .C s)]
+    (h_step_D : DescentStepSingleton_D)
+    (h_step_C : DescentStepSingleton_C)
+    (h_chain : ChainExists_C μP μQ)
+    (h_sm : DescentChainSignMatch_C)
+    (h_card : Fintype.card (PBPSet_C_sig μP μQ s) =
+              Fintype.card (MYD_sig_trim .C s))
+    (h_inj : Function.Injective
+      (Phi_C_sig_trim (μP := μP) (μQ := μQ) (s := s) h_step_D h_step_C h_chain h_sm)) :
+    Function.Surjective
+      (Phi_C_sig_trim (μP := μP) (μQ := μQ) (s := s) h_step_D h_step_C h_chain h_sm) :=
+  h_inj.surjective_of_finite (Fintype.equivOfCardEq h_card)
+
+theorem phi_M_sig_trim_surj_of_inj_card {μP μQ : YoungDiagram} {s : ℤ × ℤ}
+    [Fintype (MYD_sig_trim .M s)]
+    (h_chain : ChainExists_M μP μQ)
+    (h_sing : DescentChainMSingleton)
+    (h_sm : DescentChainSignMatch_M)
+    (h_card : Fintype.card (PBPSet_M_sig μP μQ s) =
+              Fintype.card (MYD_sig_trim .M s))
+    (h_inj : Function.Injective
+      (Phi_M_sig_trim (μP := μP) (μQ := μQ) (s := s) h_chain h_sing h_sm)) :
+    Function.Surjective
+      (Phi_M_sig_trim (μP := μP) (μQ := μQ) (s := s) h_chain h_sing h_sm) :=
+  h_inj.surjective_of_finite (Fintype.equivOfCardEq h_card)
+
 end BMSZ
