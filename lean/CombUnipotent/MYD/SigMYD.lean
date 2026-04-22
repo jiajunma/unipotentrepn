@@ -428,6 +428,11 @@ def MYD_sig_trim.zero {γ : RootType} : MYD_sig_trim γ (0, 0) where
   sign_match := ILS.sign_nil
   is_trim := ILS.isTrim_nil
 
+/-- The empty MYD_sig with sign (0, 0). -/
+def MYD_sig.zero {γ : RootType} : MYD_sig γ (0, 0) where
+  E := []
+  sign_match := ILS.sign_nil
+
 /-- `MYD_sig_trim γ (0, 0)` has cardinality 1. -/
 noncomputable instance fintype_MYD_sig_trim_zero {γ : RootType} :
     Fintype (MYD_sig_trim γ (0, 0)) :=
@@ -452,6 +457,10 @@ theorem toTrim_of_MYD_sig_trim_toMYDSig {γ : RootType} {s : ℤ × ℤ}
   unfold MYD_sig.toTrim MYD_sig_trim.toMYDSig
   simp only
   exact ILS.trim_eq_self_of_IsTrim _ M.is_trim
+
+/-- `MYD_sig_trim.zero.toMYDSig` is `MYD_sig.zero`. -/
+theorem MYD_sig_trim_zero_toMYDSig {γ : RootType} :
+    MYD_sig_trim.toMYDSig (MYD_sig_trim.zero (γ := γ)) = MYD_sig.zero := rfl
 
 /-! ## Signature preservation through descent chain
 

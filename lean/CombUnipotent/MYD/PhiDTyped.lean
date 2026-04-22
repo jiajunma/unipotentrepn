@@ -93,6 +93,7 @@ theorem exists_descentChain_D {μP μQ : YoungDiagram} (σ : PBPSet .D μP μQ) 
   have hγ : σ.val.γ = .D := σ.prop.1
   exact exists_descentChain_D_aux _ σ.val hγ rfl
 
+
 /-- Per-step thetaLift singleton for D chain, under std hypothesis.
     PROVED directly: given std, thetaLift_CD produces the explicit
     augment singleton. -/
