@@ -93,6 +93,26 @@ theorem exists_descentChain_D {μP μQ : YoungDiagram} (σ : PBPSet .D μP μQ) 
   have hγ : σ.val.γ = .D := σ.prop.1
   exact exists_descentChain_D_aux _ σ.val hγ rfl
 
+/-- `toACStepData_D τ hγ` has non-negative `p` and `q` (signatures are nat). -/
+theorem toACStepData_D_p_nonneg (τ : PBP) (hγ : τ.γ = .D) :
+    0 ≤ (toACStepData_D τ hγ).p ∧ 0 ≤ (toACStepData_D τ hγ).q := by
+  unfold toACStepData_D
+  simp only
+  exact ⟨Int.natCast_nonneg _, Int.natCast_nonneg _⟩
+
+/-- **Base case of std bound for D chain**: when E_inner = baseILS .D = [],
+    the std bound at the outer step holds trivially since
+    sign [] = (0, 0) and firstColSign [] = (0, 0), reducing to
+    PBP signature non-negativity. -/
+theorem stepStdAndAugment_D_base_nil (τ : PBP) (hγ : τ.γ = .D) :
+    (toACStepData_D τ hγ).p - (ILS.sign ([] : ILS)).1 -
+      (ILS.firstColSign ([] : ILS)).2 ≥ 0 ∧
+    (toACStepData_D τ hγ).q - (ILS.sign ([] : ILS)).2 -
+      (ILS.firstColSign ([] : ILS)).1 ≥ 0 := by
+  show (_ : ℤ) ≥ 0 ∧ (_ : ℤ) ≥ 0
+  obtain ⟨hp, hq⟩ := toACStepData_D_p_nonneg τ hγ
+  refine ⟨?_, ?_⟩ <;> simp [ILS.sign, ILS.firstColSign] <;> omega
+
 
 /-- Per-step thetaLift singleton for D chain, under std hypothesis.
     PROVED directly: given std, thetaLift_CD produces the explicit
