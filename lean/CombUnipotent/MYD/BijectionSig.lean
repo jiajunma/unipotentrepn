@@ -1159,6 +1159,38 @@ theorem Phi_C_sig_trim_range_zero {μP μQ : YoungDiagram}
     rw [hM]
     exact Subsingleton.elim _ _
 
+/-! ## Bijection in (0,0) sector (C / M only, no Fin 2 multiplier)
+
+For C/M chains (without Fin 2), if the source `PBPSet_*_sig` is
+subsingleton, the bijection `Phi_*_sig_trim ≃ MYD_sig_trim` holds
+unconditionally on (0,0) sector — both sides have cardinality 1.
+-/
+
+/-- `Phi_C_sig_trim` is bijective on (0,0) sector when source is subsingleton. -/
+noncomputable def Phi_C_sig_trim_zero_equiv {μP μQ : YoungDiagram}
+    (h_step_D : DescentStepSingleton_D)
+    (h_step_C : DescentStepSingleton_C)
+    (h_chain : ChainExists_C μP μQ)
+    (h_sm : DescentChainSignMatch_C)
+    [Subsingleton (PBPSet_C_sig μP μQ (0, 0))]
+    [Inhabited (PBPSet_C_sig μP μQ (0, 0))] :
+    PBPSet_C_sig μP μQ (0, 0) ≃ MYD_sig_trim .C (0, 0) :=
+  Equiv.ofBijective (Phi_C_sig_trim h_step_D h_step_C h_chain h_sm)
+    ⟨fun _ _ _ => Subsingleton.elim _ _,
+     phi_C_sig_trim_surjective_zero h_step_D h_step_C h_chain h_sm⟩
+
+/-- `Phi_M_sig_trim` is bijective on (0,0) sector when source is subsingleton. -/
+noncomputable def Phi_M_sig_trim_zero_equiv {μP μQ : YoungDiagram}
+    (h_chain : ChainExists_M μP μQ)
+    (h_sing : DescentChainMSingleton)
+    (h_sm : DescentChainSignMatch_M)
+    [Subsingleton (PBPSet_M_sig μP μQ (0, 0))]
+    [Inhabited (PBPSet_M_sig μP μQ (0, 0))] :
+    PBPSet_M_sig μP μQ (0, 0) ≃ MYD_sig_trim .M (0, 0) :=
+  Equiv.ofBijective (Phi_M_sig_trim h_chain h_sing h_sm)
+    ⟨fun _ _ _ => Subsingleton.elim _ _,
+     phi_M_sig_trim_surjective_zero h_chain h_sing h_sm⟩
+
 /-! ## `Phi_γ_sig_trim_E = Phi_γ_sig_E` under std hypothesis
 
 Since chain-derived ILSs are trim (via `Phi_γ_sig_E_IsTrim`), `toTrim`
