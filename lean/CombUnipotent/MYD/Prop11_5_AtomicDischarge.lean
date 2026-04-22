@@ -384,3 +384,23 @@ theorem PBP.no_DCM_of_sum_odd (τ : PBP)
     (hγ : τ.γ = .D ∨ τ.γ = .C ∨ τ.γ = .M)
     (h : Odd ((PBP.signature τ).1 + (PBP.signature τ).2)) : False :=
   (Nat.not_even_iff_odd.mpr h) (PBP.signature_sum_DCM_even τ hγ)
+
+/-- For C-type PBP, `signature.1 = signature.2` (both equal to `|τ|`). -/
+theorem PBP.signature_fst_eq_snd_C (τ : PBP) (hγ : τ.γ = .C) :
+    (PBP.signature τ).1 = (PBP.signature τ).2 := by
+  unfold PBP.signature; simp only [hγ]
+
+/-- For M-type PBP, `signature.1 = signature.2`. -/
+theorem PBP.signature_fst_eq_snd_M (τ : PBP) (hγ : τ.γ = .M) :
+    (PBP.signature τ).1 = (PBP.signature τ).2 := by
+  unfold PBP.signature; simp only [hγ]
+
+/-- No C-type PBP has signature with distinct components. -/
+theorem PBP.no_C_of_fst_ne_snd (τ : PBP) (hγ : τ.γ = .C)
+    (h : (PBP.signature τ).1 ≠ (PBP.signature τ).2) : False :=
+  h (PBP.signature_fst_eq_snd_C τ hγ)
+
+/-- No M-type PBP has signature with distinct components. -/
+theorem PBP.no_M_of_fst_ne_snd (τ : PBP) (hγ : τ.γ = .M)
+    (h : (PBP.signature τ).1 ≠ (PBP.signature τ).2) : False :=
+  h (PBP.signature_fst_eq_snd_M τ hγ)
