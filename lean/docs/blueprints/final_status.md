@@ -158,6 +158,9 @@ Beyond 36 → 0 sorries, added:
   **`fintype_MYD_sig_trim_zero`** + **`card_MYD_sig_trim_zero`**:
   **MYD_sig_trim γ (0,0) has cardinality 1** — first concrete
   computable cardinality proof.
+- **`Phi_γ_sig_trim_E_IsTrim`** (5 trivial PROVED via .is_trim field).
+- **`Phi_γ_sig_trim_zero`** (5 PROVED): output for sign (0,0) input
+  is MYD_sig_trim.zero — concrete computation in (0,0) sector.
 - **`Phi_γ_sig_trim_image_equiv`** (5): partial bijections via
   Equiv.ofInjective, requires only injectivity.
 - **`phi_γ_sig_trim_surj_of_inj_card`** (5): surjectivity from
