@@ -146,6 +146,29 @@ theorem descentStepSingleton_Bplus_of_std
   exact descent_step_thetaLift_singleton_Bplus_std hγ E_inner
     (h_std τ hγ chain_inner E_inner h_chain h_sing)
 
+/-- **Chain trim for Bplus-chains** (analogous to chainSingleton_IsTrim_D). -/
+theorem chainSingleton_IsTrim_Bplus (h_step_std : StepStdAndAugment_Bplus)
+    {τ : PBP} {chain : List ACStepData} {E : ILS}
+    (h_chain : IsDescentChain_Bplus τ chain)
+    (h_sing : ChainSingleton (baseILS .Bplus) chain E) :
+    ILS.IsTrim E := by
+  induction h_chain generalizing E with
+  | base τ hγ h_empty =>
+    cases h_sing
+    exact baseILS_IsTrim .Bplus
+  | step hγ h_rest ih =>
+    rename_i τ_outer chain_inner
+    obtain ⟨E_mid, E', h_inner_sing, h_theta, h_E_final⟩ :=
+      ChainSingleton.snoc_inv h_sing
+    have h_trim_mid := ih h_inner_sing
+    have h_d_γ : (toACStepData_Bplus τ_outer hγ).γ = .Bplus := rfl
+    have ⟨h_std, h_ne⟩ := h_step_std E_mid (toACStepData_Bplus τ_outer hγ) h_d_γ
+    have h_trim_step :=
+      step_trim_Bplus E_mid (toACStepData_Bplus τ_outer hγ) h_d_γ
+        h_std h_ne h_trim_mid h_theta
+    rw [h_E_final]
+    exact h_trim_step
+
 /-- Any valid B+ descent chain is `ChainSingleton`-valid. -/
 theorem descentChain_Bplus_singleton (h_step : DescentStepSingleton_Bplus)
     {τ : PBP} {chain : List ACStepData}

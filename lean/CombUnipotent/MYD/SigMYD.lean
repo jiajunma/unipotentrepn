@@ -737,8 +737,7 @@ abbrev StepStdAndAugment_D : Prop :=
 
     Given the per-step std + ne_augment hypothesis, the chain-extracted
     ILS for any D-chain is trim. Proved by induction on `IsDescentChain_D`,
-    using `step_trim_D` and the fact that all D-chain steps have γ = .D
-    (toACStepData_D gives γ = .D). -/
+    using `step_trim_D` and the fact that all D-chain steps have γ = .D. -/
 theorem chainSingleton_IsTrim_D (h_step_std : StepStdAndAugment_D)
     {τ : PBP} {chain : List ACStepData} {E : ILS}
     (h_chain : IsDescentChain_D τ chain)
@@ -746,7 +745,6 @@ theorem chainSingleton_IsTrim_D (h_step_std : StepStdAndAugment_D)
     ILS.IsTrim E := by
   induction h_chain generalizing E with
   | base τ hγ h_empty =>
-    -- chain = [], E = baseILS .D = []
     cases h_sing
     exact baseILS_IsTrim .D
   | step hγ h_rest ih =>
@@ -760,6 +758,56 @@ theorem chainSingleton_IsTrim_D (h_step_std : StepStdAndAugment_D)
       step_trim_D E_mid (toACStepData_D τ_outer hγ) h_d_γ h_std h_ne h_trim_mid h_theta
     rw [h_E_final]
     exact h_trim_step
+
+/-- Bundled per-step std + ne_augment hypothesis for B+ chains.
+    (Used in SigMYDB.lean for `chainSingleton_IsTrim_Bplus`.) -/
+abbrev StepStdAndAugment_Bplus : Prop :=
+  ∀ (E : ILS) (d : ACStepData), d.γ = .Bplus →
+    (d.p - (ILS.sign (stepPreTwist E d)).1 -
+      (ILS.firstColSign (stepPreTwist E d)).2 ≥ 0 ∧
+     d.q - (ILS.sign (stepPreTwist E d)).2 -
+      (ILS.firstColSign (stepPreTwist E d)).1 ≥ 0) ∧
+    ((stepPreTwist E d) = [] →
+      (d.p - (ILS.sign (stepPreTwist E d)).1 -
+        (ILS.firstColSign (stepPreTwist E d)).2,
+       d.q - (ILS.sign (stepPreTwist E d)).2 -
+        (ILS.firstColSign (stepPreTwist E d)).1) ≠ (0, 0))
+
+abbrev StepStdAndAugment_Bminus : Prop :=
+  ∀ (E : ILS) (d : ACStepData), d.γ = .Bminus →
+    (d.p - (ILS.sign (stepPreTwist E d)).1 -
+      (ILS.firstColSign (stepPreTwist E d)).2 ≥ 0 ∧
+     d.q - (ILS.sign (stepPreTwist E d)).2 -
+      (ILS.firstColSign (stepPreTwist E d)).1 ≥ 0) ∧
+    ((stepPreTwist E d) = [] →
+      (d.p - (ILS.sign (stepPreTwist E d)).1 -
+        (ILS.firstColSign (stepPreTwist E d)).2,
+       d.q - (ILS.sign (stepPreTwist E d)).2 -
+        (ILS.firstColSign (stepPreTwist E d)).1) ≠ (0, 0))
+
+abbrev StepStdAndAugment_C : Prop :=
+  ∀ (E : ILS) (d : ACStepData), d.γ = .C →
+    (d.p - (ILS.sign (stepPreTwist E d)).1 -
+      (ILS.firstColSign (stepPreTwist E d)).2 ≥ 0 ∧
+     d.p - (ILS.sign (stepPreTwist E d)).2 -
+      (ILS.firstColSign (stepPreTwist E d)).1 ≥ 0) ∧
+    ((stepPreTwist E d) = [] →
+      (d.p - (ILS.sign (stepPreTwist E d)).1 -
+        (ILS.firstColSign (stepPreTwist E d)).2,
+       d.p - (ILS.sign (stepPreTwist E d)).2 -
+        (ILS.firstColSign (stepPreTwist E d)).1) ≠ (0, 0))
+
+abbrev StepStdAndAugment_M : Prop :=
+  ∀ (E : ILS) (d : ACStepData), d.γ = .M →
+    (d.p - (ILS.sign (stepPreTwist E d)).1 -
+      (ILS.firstColSign (stepPreTwist E d)).2 ≥ 0 ∧
+     d.p - (ILS.sign (stepPreTwist E d)).2 -
+      (ILS.firstColSign (stepPreTwist E d)).1 ≥ 0) ∧
+    ((stepPreTwist E d) = [] →
+      (d.p - (ILS.sign (stepPreTwist E d)).1 -
+        (ILS.firstColSign (stepPreTwist E d)).2,
+       d.p - (ILS.sign (stepPreTwist E d)).2 -
+        (ILS.firstColSign (stepPreTwist E d)).1) ≠ (0, 0))
 
 /-- **Per-step trim preservation for M chain step** (uses p as n in BM). -/
 theorem step_trim_M (E : ILS) (d : ACStepData) (hd : d.γ = .M)
