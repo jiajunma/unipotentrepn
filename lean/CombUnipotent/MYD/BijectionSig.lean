@@ -1117,6 +1117,48 @@ theorem Phi_M_sig_zero {μP μQ : YoungDiagram}
   have h_sign := (Phi_M_sig h_chain h_sing h_sm σh).sign_match
   exact ILS.eq_nil_of_sign_zero_of_IsTrim _ h_sign h_trim
 
+/-! ## Range characterization in (0,0) sector
+
+`Set.range Phi_γ_sig_trim` on (0,0) sector is `{MYD_sig_trim.zero}`
+(when source is non-empty) or `∅` (otherwise).
+-/
+
+theorem Phi_D_sig_trim_range_zero {μP μQ : YoungDiagram}
+    (h_step : DescentStepSingleton_D)
+    [_h : Inhabited (PBPSet_D_sig μP μQ (0, 0) × Fin 2)] :
+    Set.range
+      (fun p : PBPSet_D_sig μP μQ (0, 0) × Fin 2 => Phi_D_sig_trim h_step p.1 p.2)
+    = {MYD_sig_trim.zero} := by
+  ext M
+  refine ⟨?_, ?_⟩
+  · rintro ⟨p, hp⟩
+    rw [← hp]
+    exact Phi_D_sig_trim_zero h_step p.1 p.2
+  · intro hM
+    refine ⟨default, ?_⟩
+    rw [hM]
+    exact Subsingleton.elim _ _
+
+theorem Phi_C_sig_trim_range_zero {μP μQ : YoungDiagram}
+    (h_step_D : DescentStepSingleton_D)
+    (h_step_C : DescentStepSingleton_C)
+    (h_chain : ChainExists_C μP μQ)
+    (h_sm : DescentChainSignMatch_C)
+    [_h : Inhabited (PBPSet_C_sig μP μQ (0, 0))] :
+    Set.range
+      (Phi_C_sig_trim (μP := μP) (μQ := μQ) (s := (0, 0))
+        h_step_D h_step_C h_chain h_sm)
+    = {MYD_sig_trim.zero} := by
+  ext M
+  refine ⟨?_, ?_⟩
+  · rintro ⟨p, hp⟩
+    rw [← hp]
+    exact Phi_C_sig_trim_zero h_step_D h_step_C h_chain h_sm p
+  · intro hM
+    refine ⟨default, ?_⟩
+    rw [hM]
+    exact Subsingleton.elim _ _
+
 /-! ## `Phi_γ_sig_trim_E = Phi_γ_sig_E` under std hypothesis
 
 Since chain-derived ILSs are trim (via `Phi_γ_sig_E_IsTrim`), `toTrim`
