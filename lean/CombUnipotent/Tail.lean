@@ -347,6 +347,77 @@ theorem Q_countSym_eq_zero_of_D (τ : PBP) (hγ : τ.γ = .D)
   simp only [YoungDiagram.mem_cells] at hmem
   exact fun h => hσ ((τ.Q_all_dot_of_D hγ i j hmem) ▸ h.symm)
 
+/-- For C type, Q has only `.dot` and `.s` symbols. -/
+theorem Q_countSym_eq_zero_of_C (τ : PBP) (hγ : τ.γ = .C)
+    (σ : DRCSymbol) (hσ : σ ≠ .dot) (hσ' : σ ≠ .s) :
+    τ.Q.countSym σ = 0 := by
+  simp only [PaintedYoungDiagram.countSym, Finset.card_eq_zero, Finset.filter_eq_empty_iff]
+  intro ⟨i, j⟩ hmem
+  simp only [YoungDiagram.mem_cells] at hmem
+  intro h
+  have hallow := τ.sym_Q i j hmem
+  rw [hγ] at hallow
+  simp only [DRCSymbol.allowed] at hallow
+  have : τ.Q.paint i j ≠ σ := by
+    rcases hallow with h' | h'
+    · rw [h']; exact fun eq => hσ eq.symm
+    · rw [h']; exact fun eq => hσ' eq.symm
+  exact this h
+
+/-- For B⁺/B⁻ type, P has only `.dot` and `.c` symbols. -/
+theorem P_countSym_eq_zero_of_B (τ : PBP) (hγ : τ.γ = .Bplus ∨ τ.γ = .Bminus)
+    (σ : DRCSymbol) (hσ : σ ≠ .dot) (hσ' : σ ≠ .c) :
+    τ.P.countSym σ = 0 := by
+  simp only [PaintedYoungDiagram.countSym, Finset.card_eq_zero, Finset.filter_eq_empty_iff]
+  intro ⟨i, j⟩ hmem
+  simp only [YoungDiagram.mem_cells] at hmem
+  intro h
+  have hallow := τ.sym_P i j hmem
+  have : τ.P.paint i j ≠ σ := by
+    rcases hγ with h₁ | h₁ <;> rw [h₁] at hallow <;>
+      simp only [DRCSymbol.allowed] at hallow <;>
+      rcases hallow with h' | h' <;>
+      (first
+        | (rw [h']; exact fun eq => hσ eq.symm)
+        | (rw [h']; exact fun eq => hσ' eq.symm))
+  exact this h
+
+/-- For M type, P has only `.dot`, `.s`, `.c` symbols. -/
+theorem P_countSym_eq_zero_of_M (τ : PBP) (hγ : τ.γ = .M)
+    (σ : DRCSymbol) (hσ : σ ≠ .dot) (hσ' : σ ≠ .s) (hσ'' : σ ≠ .c) :
+    τ.P.countSym σ = 0 := by
+  simp only [PaintedYoungDiagram.countSym, Finset.card_eq_zero, Finset.filter_eq_empty_iff]
+  intro ⟨i, j⟩ hmem
+  simp only [YoungDiagram.mem_cells] at hmem
+  intro h
+  have hallow := τ.sym_P i j hmem
+  rw [hγ] at hallow
+  simp only [DRCSymbol.allowed] at hallow
+  have : τ.P.paint i j ≠ σ := by
+    rcases hallow with h' | h' | h'
+    · rw [h']; exact fun eq => hσ eq.symm
+    · rw [h']; exact fun eq => hσ' eq.symm
+    · rw [h']; exact fun eq => hσ'' eq.symm
+  exact this h
+
+/-- For M type, Q has only `.dot`, `.r`, `.d` symbols. -/
+theorem Q_countSym_eq_zero_of_M (τ : PBP) (hγ : τ.γ = .M)
+    (σ : DRCSymbol) (hσ : σ ≠ .dot) (hσ' : σ ≠ .r) (hσ'' : σ ≠ .d) :
+    τ.Q.countSym σ = 0 := by
+  simp only [PaintedYoungDiagram.countSym, Finset.card_eq_zero, Finset.filter_eq_empty_iff]
+  intro ⟨i, j⟩ hmem
+  simp only [YoungDiagram.mem_cells] at hmem
+  intro h
+  have hallow := τ.sym_Q i j hmem
+  rw [hγ] at hallow
+  simp only [DRCSymbol.allowed] at hallow
+  have : τ.Q.paint i j ≠ σ := by
+    rcases hallow with h' | h' | h'
+    · rw [h']; exact fun eq => hσ eq.symm
+    · rw [h']; exact fun eq => hσ' eq.symm
+    · rw [h']; exact fun eq => hσ'' eq.symm
+  exact this h
+
 /-- Columns ≥ 1 agree when paint agrees on columns ≥ 1. -/
 theorem countSymColGe1_eq (D₁ D₂ : PaintedYoungDiagram)
     (hshape : D₁.shape = D₂.shape)
