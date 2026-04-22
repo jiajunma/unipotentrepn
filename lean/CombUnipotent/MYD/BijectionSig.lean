@@ -944,6 +944,49 @@ theorem Phi_M_sig_trim_E_IsTrim {μP μQ : YoungDiagram} {s : ℤ × ℤ}
     ILS.IsTrim (Phi_M_sig_trim h_chain h_sing h_sm σh).E :=
   (Phi_M_sig_trim h_chain h_sing h_sm σh).is_trim
 
+/-! ## Range characterization for Phi_γ_sig_trim with sign (0, 0)
+
+For sign (0, 0), MYD_sig_trim γ (0, 0) is a singleton (proved earlier).
+So `Set.range Phi_γ_sig_trim ⊆ {MYD_sig_trim.zero}`. Equality holds
+iff source is non-empty.
+-/
+
+/-- Output of any `Phi_γ_sig_trim` with sign (0, 0) is `MYD_sig_trim.zero`. -/
+theorem Phi_D_sig_trim_zero {μP μQ : YoungDiagram}
+    (h_step : DescentStepSingleton_D)
+    (σh : PBPSet_D_sig μP μQ (0, 0)) (ε : Fin 2) :
+    Phi_D_sig_trim h_step σh ε = MYD_sig_trim.zero :=
+  Subsingleton.elim _ _
+
+theorem Phi_Bplus_sig_trim_zero {μP μQ : YoungDiagram}
+    (h_step : DescentStepSingleton_Bplus)
+    (σh : PBPSet_Bplus_sig μP μQ (0, 0)) (ε : Fin 2) :
+    Phi_Bplus_sig_trim h_step σh ε = MYD_sig_trim.zero :=
+  Subsingleton.elim _ _
+
+theorem Phi_Bminus_sig_trim_zero {μP μQ : YoungDiagram}
+    (h_sing : DescentChainBminusSingleton)
+    (σh : PBPSet_Bminus_sig μP μQ (0, 0)) (ε : Fin 2) :
+    Phi_Bminus_sig_trim h_sing σh ε = MYD_sig_trim.zero :=
+  Subsingleton.elim _ _
+
+theorem Phi_C_sig_trim_zero {μP μQ : YoungDiagram}
+    (h_step_D : DescentStepSingleton_D)
+    (h_step_C : DescentStepSingleton_C)
+    (h_chain : ChainExists_C μP μQ)
+    (h_sm : DescentChainSignMatch_C)
+    (σh : PBPSet_C_sig μP μQ (0, 0)) :
+    Phi_C_sig_trim h_step_D h_step_C h_chain h_sm σh = MYD_sig_trim.zero :=
+  Subsingleton.elim _ _
+
+theorem Phi_M_sig_trim_zero {μP μQ : YoungDiagram}
+    (h_chain : ChainExists_M μP μQ)
+    (h_sing : DescentChainMSingleton)
+    (h_sm : DescentChainSignMatch_M)
+    (σh : PBPSet_M_sig μP μQ (0, 0)) :
+    Phi_M_sig_trim h_chain h_sing h_sm σh = MYD_sig_trim.zero :=
+  Subsingleton.elim _ _
+
 /-! ## `Phi_γ_sig_trim_E = Phi_γ_sig_E` under std hypothesis
 
 Since chain-derived ILSs are trim (via `Phi_γ_sig_E_IsTrim`), `toTrim`
