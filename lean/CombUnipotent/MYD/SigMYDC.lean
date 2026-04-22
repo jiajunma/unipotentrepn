@@ -155,6 +155,50 @@ theorem chainExists_C_empty : ChainExists_C (⊥ : YoungDiagram) ⊥ := by
   refine ⟨[], IsDescentChain_C.base σ.val σ.prop.1 ?_⟩
   exact ⟨σ.prop.2.1, σ.prop.2.2⟩
 
+/-- The empty PaintedYoungDiagram (shape ⊥, all paint = dot). -/
+def emptyPaintedYoungDiagram : PaintedYoungDiagram where
+  shape := ⊥
+  paint := fun _ _ => .dot
+  paint_outside := fun _ _ _ => rfl
+
+/-- `layerMonotone` is vacuously satisfied for the empty diagram. -/
+theorem emptyPaintedYoungDiagram_layerMonotone :
+    emptyPaintedYoungDiagram.layerMonotone := by
+  intro i₁ j₁ i₂ j₂ _ _ hmem
+  simp [emptyPaintedYoungDiagram] at hmem
+
+/-- The empty C-type PBP. -/
+def emptyPBP_C : PBP where
+  γ := .C
+  P := emptyPaintedYoungDiagram
+  Q := emptyPaintedYoungDiagram
+  sym_P := fun i j h => by simp [emptyPaintedYoungDiagram] at h
+  sym_Q := fun i j h => by simp [emptyPaintedYoungDiagram] at h
+  dot_match := fun _ _ => Iff.rfl
+  mono_P := emptyPaintedYoungDiagram_layerMonotone
+  mono_Q := emptyPaintedYoungDiagram_layerMonotone
+  row_s := fun i s₁ s₂ j₁ j₂ h _ => by
+    cases s₁ <;> simp [paintBySide, emptyPaintedYoungDiagram] at h
+  row_r := fun i s₁ s₂ j₁ j₂ h _ => by
+    cases s₁ <;> simp [paintBySide, emptyPaintedYoungDiagram] at h
+  col_c_P := fun _ _ _ h _ => by simp [emptyPaintedYoungDiagram] at h
+  col_c_Q := fun _ _ _ h _ => by simp [emptyPaintedYoungDiagram] at h
+  col_d_P := fun _ _ _ h _ => by simp [emptyPaintedYoungDiagram] at h
+  col_d_Q := fun _ _ _ h _ => by simp [emptyPaintedYoungDiagram] at h
+
+/-- `emptyPBP_C` has γ = .C. -/
+theorem emptyPBP_C_γ : emptyPBP_C.γ = .C := rfl
+
+/-- `emptyPBP_C` has empty P shape. -/
+theorem emptyPBP_C_P_shape : emptyPBP_C.P.shape = ⊥ := rfl
+
+/-- `emptyPBP_C` has empty Q shape. -/
+theorem emptyPBP_C_Q_shape : emptyPBP_C.Q.shape = ⊥ := rfl
+
+/-- `emptyPBP_C` element of `PBPSet .C ⊥ ⊥`. -/
+def emptyPBPSet_C : PBPSet .C (⊥ : YoungDiagram) ⊥ :=
+  ⟨emptyPBP_C, emptyPBP_C_γ, emptyPBP_C_P_shape, emptyPBP_C_Q_shape⟩
+
 /-- **Discharge of `ChainExists_C` from per-σ dp-coherence witness**.
     Reduces the universal chain-existence to a simpler paper content:
     every PBP has a coherent dp. This mirrors paper §9.4 content. -/
