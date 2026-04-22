@@ -1906,6 +1906,33 @@ theorem nat_card_eq_M_sig_bot_neg_snd {s : ℤ × ℤ} (h : s.2 < 0) :
     Nat.card (MYD_sig_trim .M s) :=
   Nat.card_congr (Phi_M_sig_trim_bot_neg_snd_equiv h)
 
+/-! ## Uniform statement of C/M (⊥, ⊥) bijection cardinality
+
+For both C and M, the (⊥, ⊥) picture is identical. Give a single
+statement parameterized by `γ ∈ {C, M}`. -/
+
+/-- For γ ∈ {C, M} and empty shapes, the source cardinality equals
+    the target cardinality in the (0, 0) and negative-sig sectors. -/
+theorem nat_card_CM_bot_agree_zero (γ : RootType) (hγ : γ = .C ∨ γ = .M)
+    (s : ℤ × ℤ)
+    (h_sec : s = (0, 0) ∨ s.1 < 0 ∨ s.2 < 0) :
+    (match γ with
+      | .C => Nat.card (PBPSet_C_sig (⊥ : YoungDiagram) ⊥ s)
+      | .M => Nat.card (PBPSet_M_sig (⊥ : YoungDiagram) ⊥ s)
+      | _ => 0) =
+    Nat.card (MYD_sig_trim γ s) := by
+  rcases hγ with rfl | rfl
+  · simp only
+    rcases h_sec with rfl | h1 | h2
+    · exact nat_card_PBPSet_C_sig_bot_zero_eq
+    · exact nat_card_eq_C_sig_bot_neg_fst h1
+    · exact nat_card_eq_C_sig_bot_neg_snd h2
+  · simp only
+    rcases h_sec with rfl | h1 | h2
+    · exact nat_card_PBPSet_M_sig_bot_zero_eq
+    · exact nat_card_eq_M_sig_bot_neg_fst h1
+    · exact nat_card_eq_M_sig_bot_neg_snd h2
+
 /-- Phi_Bplus_sig_trim is vacuously injective on the (0, 0) sector. -/
 theorem Phi_Bplus_sig_trim_injective_zero {μP μQ : YoungDiagram}
     (h_step : DescentStepSingleton_Bplus) :
