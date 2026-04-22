@@ -279,6 +279,24 @@ Combined with the ⊥⊥ witnesses, the (0, 0) sector of
 All new theorems verified standard-axiom-only (propext, Classical.choice,
 Quot.sound). No sorryAx.
 
+### 🎯🎯 Paper §9.4 non-trivial case: single-column Q shape
+
+**First non-trivial `chainExists_C` discharge** beyond the empty base:
+
+- `chainExists_C_single_col_Q`: given `μP = ⊥` and `μQ.colLens = [k]`
+  (single column of height `k ≥ 1`), every C-PBP with these shapes
+  admits a descent chain via dp = [2k+1].
+
+Supporting witnesses:
+- `PBPIsCoherent_C_singleton_witness`: for r > 1, dp = [r] is coherent
+  with μP = ⊥ and μQ.colLens = [(r-1)/2]
+- `dpartColLensP_C_singleton`: dpartColLensP_C [r] = []
+- `dpartColLensQ_C_singleton_pos/le_one`: case-by-case Q.colLens
+
+Verified standard-axiom-only. This is the first entirely discharged
+`ChainExists_C` case for a non-empty shape family. Paper §9.4
+reconstruction algorithm case 1 (single-column Q) complete.
+
 ### 🎯 Parity + signature-symmetry sector emptiness (shape-independent)
 
 These theorems hold for ANY μP, μQ (not restricted to empty shapes):
