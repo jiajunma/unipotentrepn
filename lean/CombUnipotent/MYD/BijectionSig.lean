@@ -1261,6 +1261,16 @@ noncomputable def Phi_C_sig_trim_bot_zero_equiv
     PBPSet_C_sig (⊥ : YoungDiagram) ⊥ (0, 0) ≃ MYD_sig_trim .C (0, 0) :=
   Phi_C_sig_trim_zero_equiv h_step_D h_step_C h_chain h_sm
 
+/-- Unconditional (up to universal hypotheses) bot-zero bijection for C:
+    discharges `h_chain` via `chainExists_C_empty`. The h_step_D,
+    h_step_C, h_sm hypotheses are vacuous here (source is subsingleton). -/
+noncomputable def Phi_C_sig_trim_bot_zero_equiv_auto
+    (h_step_D : DescentStepSingleton_D)
+    (h_step_C : DescentStepSingleton_C)
+    (h_sm : DescentChainSignMatch_C) :
+    PBPSet_C_sig (⊥ : YoungDiagram) ⊥ (0, 0) ≃ MYD_sig_trim .C (0, 0) :=
+  Phi_C_sig_trim_zero_equiv h_step_D h_step_C chainExists_C_empty h_sm
+
 /-! ## M-type analogues -/
 
 /-- `Inhabited (PBPSet_M_sig ⊥ ⊥ (0, 0))` — concrete witness via emptyPBP_M. -/
@@ -1298,6 +1308,38 @@ noncomputable def Phi_M_sig_trim_bot_zero_equiv
     (h_sm : DescentChainSignMatch_M) :
     PBPSet_M_sig (⊥ : YoungDiagram) ⊥ (0, 0) ≃ MYD_sig_trim .M (0, 0) :=
   Phi_M_sig_trim_zero_equiv h_chain h_sing h_sm
+
+/-- Unconditional (up to universal hypotheses) bot-zero bijection for M:
+    discharges `h_chain` via `chainExists_M_empty`. -/
+noncomputable def Phi_M_sig_trim_bot_zero_equiv_auto
+    (h_sing : DescentChainMSingleton)
+    (h_sm : DescentChainSignMatch_M) :
+    PBPSet_M_sig (⊥ : YoungDiagram) ⊥ (0, 0) ≃ MYD_sig_trim .M (0, 0) :=
+  Phi_M_sig_trim_zero_equiv chainExists_M_empty h_sing h_sm
+
+/-! ## Truly unconditional bot-zero bijection (C/M)
+
+No paper-content hypotheses at all. The bijection is abstractly
+defined via `Equiv.ofSubsingleton`-like construction: both sides are
+singletons, so the identification is canonical. -/
+
+/-- **FULLY UNCONDITIONAL C bijection**: no hypotheses required.
+    Both sides are singletons (cardinality 1); the bijection is the
+    unique map. -/
+noncomputable def Phi_C_sig_trim_bot_zero_equiv_unconditional :
+    PBPSet_C_sig (⊥ : YoungDiagram) ⊥ (0, 0) ≃ MYD_sig_trim .C (0, 0) where
+  toFun := fun _ => MYD_sig_trim.zero
+  invFun := fun _ => default
+  left_inv := fun _ => Subsingleton.elim _ _
+  right_inv := fun _ => Subsingleton.elim _ _
+
+/-- **FULLY UNCONDITIONAL M bijection**: no hypotheses required. -/
+noncomputable def Phi_M_sig_trim_bot_zero_equiv_unconditional :
+    PBPSet_M_sig (⊥ : YoungDiagram) ⊥ (0, 0) ≃ MYD_sig_trim .M (0, 0) where
+  toFun := fun _ => MYD_sig_trim.zero
+  invFun := fun _ => default
+  left_inv := fun _ => Subsingleton.elim _ _
+  right_inv := fun _ => Subsingleton.elim _ _
 
 /-! ## PBPSet_*_sig (⊥, ⊥) s is empty for s ≠ (0, 0)
 
