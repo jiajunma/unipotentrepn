@@ -553,6 +553,50 @@ theorem chainExists_C_single_col_Q {μQ : YoungDiagram} {k : ℕ}
     exact ⟨k, by ring⟩
   exact exists_descentChain_C σ dp h_coh h_sort h_odd
 
+/-- **ChainExists_C for (single-col P, single-col Q)** via 2-element dp.
+    Given μP.colLens = [p] and μQ.colLens = [q] with p, q ≥ 1 and q ≥ p - 1,
+    the chain exists via `dp = [2q+1, 2p-1]`. Paper §9.4 multi-element case. -/
+theorem chainExists_C_single_col_both_P_Q {μP μQ : YoungDiagram} {p q : ℕ}
+    (hp : p ≥ 1) (hq : q ≥ 1) (hpq : q + 1 ≥ p)
+    (hP : μP.colLens = [p]) (hQ : μQ.colLens = [q]) :
+    ChainExists_C μP μQ := by
+  intro σ
+  let dp : DualPart := [2 * q + 1, 2 * p - 1]
+  have hq_gt : 2 * q + 1 > 1 := by omega
+  have hp_pos : 2 * p - 1 ≥ 1 := by omega
+  have hP_σ : σ.val.P.shape.colLens = [p] := by rw [σ.prop.2.1]; exact hP
+  have hQ_σ : σ.val.Q.shape.colLens = [q] := by rw [σ.prop.2.2]; exact hQ
+  have h_coh : PBPIsCoherent_C σ.val dp := by
+    refine ⟨?_, ?_⟩
+    · rw [hP_σ]
+      show [p] = dpartColLensP_C [2 * q + 1, 2 * p - 1]
+      -- dpartColLensP_C [r₁, r₂] = dpartColLensP_D [r₂] = [(r₂+1)/2]
+      show [p] = dpartColLensP_D [2 * p - 1]
+      show [p] = [(2 * p - 1 + 1) / 2]
+      congr 1
+      omega
+    · rw [hQ_σ]
+      show [q] = dpartColLensQ_C [2 * q + 1, 2 * p - 1]
+      unfold dpartColLensQ_C
+      simp [hq_gt, dpartColLensQ_D]
+  have h_sort : dp.SortedGE := by
+    rw [List.SortedGE]
+    intro i j hij
+    match i, j with
+    | ⟨0, _⟩, ⟨0, _⟩ => exact le_refl _
+    | ⟨0, _⟩, ⟨1, _⟩ =>
+      show (2 * p - 1 : ℕ) ≤ 2 * q + 1
+      omega
+    | ⟨1, _⟩, ⟨1, _⟩ => exact le_refl _
+    | ⟨1, _⟩, ⟨0, _⟩ => exact absurd hij (by simp)
+  have h_odd : ∀ r ∈ dp, Odd r := by
+    intro r hr
+    simp [dp] at hr
+    rcases hr with rfl | rfl
+    · exact ⟨q, by ring⟩
+    · refine ⟨p - 1, ?_⟩; omega
+  exact exists_descentChain_C σ dp h_coh h_sort h_odd
+
 /-- 🎯🎯 **Full `chainExists_C ⊥ μQ` discharge for ANY μQ** (paper §9.4).
     Combines:
     - μQ.colLens = [] → μQ = ⊥ → chainExists_C_empty
