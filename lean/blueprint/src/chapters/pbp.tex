@@ -296,7 +296,7 @@ Reference: \texttt{lean/docs/blueprints/M1\_3\_Phi\_D.md}.
   \leanok
   \uses{def:Phi_chain}
   If the chain is singleton-valid with witness $E_\text{final}$, then $\Phi_\gamma^{\mathrm{chain}}(c, \varepsilon) = \mathrm{some}\ (\ldots E_\text{final})$ where $\ldots$ applies the $\varepsilon$-twist.
-\end{lemma>
+\end{lemma}
 
 
 \section{PBP-level descent chain and typed $\Phi_D$ (M1.4 phase A)}
@@ -325,18 +325,31 @@ Reference: \texttt{lean/docs/blueprints/M1\_4\_PhiD\_typed.md}.
   Any valid descent chain produces a singleton $\mathrm{AC.fold}$ result. Uses paper Lemma 11.5/11.6 sign bounds. (Phase A axiom; proof in M1.4.2.)
 \end{theorem}
 
-\begin{theorem}[Extracted $L_\tau \in \MYD_D(O)$ --- Phase B]
-  \label{thm:descentChain_D_in_MYD}
-  \lean{BMSZ.descentChain_D_in_MYD}
+\begin{theorem}[Extracted chain has the target signature --- signature pivot]
+  \label{thm:descentChain_sign_match_D}
+  \lean{BMSZ.descentChain_sign_match_D}
+  \leanok
   \uses{thm:descentChain_D_singleton, def:Phi_chain}
-  The extracted $E$ satisfies $\mathrm{MYDRowValid\ .D}$ and $\mathrm{absValues}(E) = (\mathrm{dpToSYD\ .D\ dp}).\mathrm{rows}$. (Phase A axiom; proof in M1.4.3, using paper \S9.4 theta-lift structural preservation.)
+  The extracted $E$ satisfies
+  $\mathrm{ILS.sign}(E)=\mathrm{signTarget}_D(\tau)$.
+  This is the current Lean target after the pivot from orbit-indexed
+  $\MYD_\gamma(O)$ to the signature-indexed type
+  $\mathrm{MYD\_sig}\ \gamma\ s$.
 \end{theorem}
 
-\begin{definition}[Typed $\Phi_D$]
+\begin{definition}[Signature-level typed $\Phi_D$]
   \label{def:Phi_D_typed}
-  \lean{BMSZ.Phi_D}
-  \uses{thm:exists_descentChain_D, thm:descentChain_D_singleton, thm:descentChain_D_in_MYD, def:Phi_chain}
-  Given the interface theorems above, the typed map $\Phi_D : \PBP_D(\mu_P, \mu_Q) \times \mathrm{Fin}\ 2 \to \MYD_D(\mathrm{dpToSYD}\ .\mathrm{D}\ dp)$ composes \texttt{Phi\_chain} with the extracted chain. The $\varepsilon$-twist preserves MYD properties (twistBD acts by $\pm 1$ on parity-forced rows).
+  \lean{BMSZ.Phi_D_sig}
+  \leanok
+  \uses{thm:exists_descentChain_D, thm:descentChain_D_singleton, thm:descentChain_sign_match_D, def:Phi_chain}
+  Given a signature-refined PBP and $\varepsilon : \mathrm{Fin}\ 2$, the
+  map
+  \[
+    \Phi_D^{\mathrm{sig}} :
+      \PBP_D(\mu_P,\mu_Q;s) \times \mathrm{Fin}\ 2
+      \to \MYD_{\mathrm{sig}}(D,s)
+  \]
+  composes descent-chain extraction with the diagonal $\varepsilon$-twist.
 \end{definition}
 
 
@@ -344,27 +357,38 @@ Reference: \texttt{lean/docs/blueprints/M1\_4\_PhiD\_typed.md}.
 
 Reference: \texttt{lean/docs/blueprints/M1\_5\_bijection.md}.
 
-\begin{definition}[Shape-$dp$ coherence]
-  \label{def:DPCoherent_D}
-  \lean{BMSZ.DPCoherent_D}
+\begin{definition}[Signature-refined PBP sets]
+  \label{def:PBPSet_sig}
+  \lean{BMSZ.PBPSet_D_sig, BMSZ.PBPSet_Bplus_sig, BMSZ.PBPSet_Bminus_sig, BMSZ.PBPSet_C_sig, BMSZ.PBPSet_M_sig}
   \leanok
-  \uses{def:DualPart, def:dpartColLens}
-  $(\mu_P, \mu_Q)$ is coherent with $dp$ when their column-length lists match $\mathrm{dpartColLensP/Q\_D}\ dp$.
+  \uses{def:PBP}
+  The current formalization works with signature fibers
+  $\PBP_\gamma(\mu_P,\mu_Q;s)$, implemented as subtypes of
+  $\PBP_\gamma(\mu_P,\mu_Q)$ on which the type-specific
+  $\mathrm{signTarget}_\gamma$ equals the fixed signature $s$.
 \end{definition}
 
-\begin{theorem}[$\Psi_D$: constructive inverse --- Phase B]
+\begin{theorem}[$\Psi_D^{\mathrm{sig}}$: constructive inverse --- signature pivot]
   \label{thm:Psi_D}
-  \lean{BMSZ.Psi_D, BMSZ.Psi_D_Phi_D, BMSZ.Phi_D_Psi_D}
-  \uses{def:Phi_D_typed, def:DPCoherent_D}
-  Inverse map $\Psi_D : \MYD_D(O) \to \PBP_D \times \mathrm{Fin}\ 2$ plus round-trip identities. Proof plan (phase B): paper \S11.14 reverse theta-lift. Stated as \texttt{axiom}s in phase A.
+  \lean{BMSZ.Psi_D_sig, BMSZ.Psi_D_Phi_D_sig, BMSZ.Phi_D_Psi_D_sig}
+  \uses{def:Phi_D_typed, def:PBPSet_sig}
+  Inverse map
+  $\Psi_D^{\mathrm{sig}} : \MYD_{\mathrm{sig}}(D,s)
+  \to \PBP_D(\mu_P,\mu_Q;s) \times \mathrm{Fin}\ 2$ plus the two
+  round-trip identities, under the stated injectivity/surjectivity
+  hypotheses.
 \end{theorem}
 
 \begin{theorem}[$\Phi_D$ is a constructive bijection]
   \label{thm:Phi_D_equiv}
-  \lean{BMSZ.Phi_D_equiv}
+  \lean{BMSZ.Phi_D_sig_equiv}
   \leanok
   \uses{thm:Psi_D, def:Phi_D_typed}
-  From $\Phi_D$, $\Psi_D$, and the round-trips we assemble a Lean \texttt{Equiv}: $\PBP_D(\mu_P, \mu_Q) \times \mathrm{Fin}\ 2 \xrightarrow{\sim} \MYD_D(\mathrm{dpToSYD\ .D\ dp})$. This is paper's Prop~11.15 for D type, with an \emph{explicit} inverse rather than abstract existence.
+  From $\Phi_D^{\mathrm{sig}}$, $\Psi_D^{\mathrm{sig}}$, and the
+  round-trips we assemble a Lean \texttt{Equiv}:
+  $\PBP_D(\mu_P,\mu_Q;s) \times \mathrm{Fin}\ 2
+  \xrightarrow{\sim} \MYD_{\mathrm{sig}}(D,s)$.
+  This is the signature-level version of paper Prop~11.15.
 \end{theorem}
 
 
@@ -372,26 +396,36 @@ Reference: \texttt{lean/docs/blueprints/M1\_5\_bijection.md}.
 
 Reference: \texttt{lean/docs/blueprints/M1\_6\_extend\_to\_BCM.md}.
 
-\begin{definition}[Shape-$dp$ coherence, B / C / M]
-  \label{def:DPCoherent_BCM}
-  \lean{BMSZ.DPCoherent_B, BMSZ.DPCoherent_Bplus, BMSZ.DPCoherent_Bminus, BMSZ.DPCoherent_C, BMSZ.DPCoherent_M}
+\begin{definition}[Quasi-distinguished signature fibers]
+  \label{def:PBPSet_qd_sig}
+  \lean{BMSZ.PBPSet_D_qd_sig, BMSZ.PBPSet_Bplus_qd_sig, BMSZ.PBPSet_Bminus_qd_sig, BMSZ.PBPSet_C_qd_sig, BMSZ.PBPSet_M_qd_sig}
   \leanok
-  \uses{def:DualPart, def:dpartColLens}
-  Analogous to D-type coherence but using the $\gamma$-specific $\mathrm{dpartColLensP/Q\_\gamma}$.
+  \uses{def:PBPSet_sig, def:quasi_distinguished}
+  For quasi-distinguished dual partitions, the signature-refined PBP sets
+  are further restricted by the orbit-side hypotheses used by the counting
+  and QD bijection layer.
 \end{definition}
 
 \begin{theorem}[Bijection for $B^+$, $B^-$ --- paper Prop 11.15]
   \label{thm:Phi_B_equiv}
-  \lean{BMSZ.Phi_Bplus_equiv, BMSZ.Phi_Bminus_equiv}
-  \uses{def:DPCoherent_BCM, def:Phi_D_typed}
-  For $\gamma \in \{B^+, B^-\}$, $\PBP_\gamma(\mu_P, \mu_Q) \times \mathrm{Fin}\ 2 \xrightarrow{\sim} \MYD_\gamma(\mathrm{dpToSYD\ .\gamma\ dp})$. Phase A axiom; phase B follows the D template with $\mathrm{doubleDescent\_B\_PBP}$.
+  \lean{BMSZ.Phi_Bplus_sig_equiv, BMSZ.Phi_Bminus_sig_equiv}
+  \leanok
+  \uses{def:PBPSet_sig, def:Phi_D_typed}
+  For $\gamma \in \{B^+, B^-\}$, the signature-level map gives
+  $\PBP_\gamma(\mu_P,\mu_Q;s) \times \mathrm{Fin}\ 2
+  \xrightarrow{\sim} \MYD_{\mathrm{sig}}(\gamma,s)$, under the same
+  injectivity/surjectivity style hypotheses as in the D case.
 \end{theorem}
 
 \begin{theorem}[Bijection for $C$, $M$ --- paper Prop 11.17]
   \label{thm:Phi_CM_equiv}
-  \lean{BMSZ.Phi_C_equiv, BMSZ.Phi_M_equiv}
-  \uses{def:DPCoherent_BCM}
-  For $\gamma \in \{C, \tilde{C}\}$, $\PBP_\gamma(\mu_P, \mu_Q) \xrightarrow{\sim} \MYD_\gamma(\mathrm{dpToSYD\ .\gamma\ dp})$ --- \emph{no} $\mathrm{Fin}\ 2$ factor. Phase A axiom; phase B uses the alternating C$\to$D$\to$C descent structure.
+  \lean{BMSZ.Phi_C_sig_equiv, BMSZ.Phi_M_sig_equiv}
+  \leanok
+  \uses{def:PBPSet_sig}
+  For $\gamma \in \{C, \tilde{C}\}$, the signature-level map gives
+  $\PBP_\gamma(\mu_P,\mu_Q;s)
+  \xrightarrow{\sim} \MYD_{\mathrm{sig}}(\gamma,s)$ --- \emph{no}
+  $\mathrm{Fin}\ 2$ factor.
 \end{theorem}
 
 
@@ -399,23 +433,28 @@ Reference: \texttt{lean/docs/blueprints/M1\_6\_extend\_to\_BCM.md}.
 
 Reference: \texttt{lean/docs/blueprints/M1\_7\_Fintype\_MYD.md}.
 
-\begin{definition}[Fintype instance for $\MYD_\gamma(O)$]
+\begin{definition}[Fintype instance for $\MYD_{\mathrm{sig}}(\gamma,s)$]
   \label{def:fintype_MYD}
-  \lean{BMSZ.fintype_MYD_D, BMSZ.fintype_MYD_Bplus, BMSZ.fintype_MYD_Bminus, BMSZ.fintype_MYD_C, BMSZ.fintype_MYD_M}
+  \lean{BMSZ.fintype_MYD_sig_D, BMSZ.fintype_MYD_sig_Bplus, BMSZ.fintype_MYD_sig_Bminus, BMSZ.fintype_MYD_sig_C, BMSZ.fintype_MYD_sig_M}
   \leanok
   \uses{thm:Phi_D_equiv, thm:Phi_B_equiv, thm:Phi_CM_equiv}
-  For each $\gamma$ and $dp$ with coherence $h_{coh}$, $\MYD_\gamma(\mathrm{dpToSYD\ .\gamma\ dp})$ inherits a $\mathrm{Fintype}$ via $\mathrm{Fintype.ofEquiv}$ applied to $\Phi_\gamma^{\sim}$.
+  For each $\gamma$ and signature $s$, the signature-indexed MYD type
+  inherits a $\mathrm{Fintype}$ via $\mathrm{Fintype.ofEquiv}$ applied to
+  $\Phi_\gamma^{\mathrm{sig},\sim}$.
 \end{definition}
 
 \begin{theorem}[Cardinality equalities]
   \label{thm:card_PBPSet_eq_MYD}
-  \lean{BMSZ.card_PBPSet_D_Fin2_eq_MYD, BMSZ.card_PBPSet_Bplus_Fin2_eq_MYD, BMSZ.card_PBPSet_Bminus_Fin2_eq_MYD, BMSZ.card_PBPSet_C_eq_MYD, BMSZ.card_PBPSet_M_eq_MYD}
+  \lean{BMSZ.card_PBPSet_D_sig_Fin2_eq, BMSZ.card_PBPSet_Bplus_sig_Fin2_eq, BMSZ.card_PBPSet_Bminus_sig_Fin2_eq, BMSZ.card_PBPSet_C_sig_eq, BMSZ.card_PBPSet_M_sig_eq}
   \leanok
   \uses{thm:Phi_D_equiv, thm:Phi_B_equiv, thm:Phi_CM_equiv}
   Using $\mathrm{Nat.card\_congr}$ on each $\Phi_\gamma^{\sim}$, we obtain paper's card equalities as immediate corollaries:
   \begin{itemize}
-    \item B/D: $|\PBP_\gamma \times \mathrm{Fin}\ 2| = |\MYD_\gamma(O)|$.
-    \item C/M: $|\PBP_\gamma| = |\MYD_\gamma(O)|$.
+    \item B/D: $|\PBP_\gamma(\mu_P,\mu_Q;s) \times \mathrm{Fin}\ 2|
+          = |\MYD_{\mathrm{sig}}(\gamma,s)|$.
+    \item C/M: $|\PBP_\gamma(\mu_P,\mu_Q;s)|
+          = |\MYD_{\mathrm{sig}}(\gamma,s)|$.
   \end{itemize}
-  These are paper Prop 11.15 / Prop 11.17 at the cardinality level, derived from the bijections.
+  These are paper Prop 11.15 / Prop 11.17 at the signature-fiber
+  cardinality level, derived from the bijections.
 \end{theorem}
