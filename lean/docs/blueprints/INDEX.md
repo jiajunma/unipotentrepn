@@ -11,6 +11,7 @@
 | [section11_status_final.md](section11_status_final.md) | Section 11 形式化最终状态 |
 | [unconditional_PBP_theorems.md](unconditional_PBP_theorems.md) | Truly unconditional PBP 层定理路径分析 |
 | [unconditional_PBP_theorems_addendum.md](unconditional_PBP_theorems_addendum.md) | 上文 addendum：natAbs 约束使部分 hyp 不可满足 |
+| [classical_group/blueprint.md](classical_group/blueprint.md) | standalone ClassicalGroup/ClassicalSpace theorem blueprint |
 
 ## 基础定义
 
@@ -18,6 +19,7 @@
 |---|---|---|
 | [tail_definition.md](tail_definition.md) | `CombUnipotent/Tail.lean` | `PBP.tailSignature_D/B`, `tailSymbol_D/B`, `tailContrib` |
 | [firstColSign_invariant.md](firstColSign_invariant.md) | `CombUnipotent/MYD.lean` | `ILS.firstColSign`, `AC.step_firstColSign_{D,Bplus,Bminus,C,M}`, `AC.chain_firstColSign_eq_diff_sign` |
+| [classical_group/blueprint.md](classical_group/blueprint.md) | `CombUnipotent/ClassicalGroup/*.lean` | `ClassicalGroup.classical_group_theorem`, `ClassicalGroup.classical_space_existence_and_uniqueness` |
 
 ## Section 10 主定理 (counting + structural)
 

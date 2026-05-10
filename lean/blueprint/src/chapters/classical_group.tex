@@ -1,0 +1,113 @@
+\chapter{Classical Spaces and Group Identification}
+\label{chap:classical_group}
+
+This chapter records the standalone \texttt{ClassicalGroup} formalization
+ported from \texttt{inducedorbittoy}.  It is independent of the PBP/MYD
+combinatorics in the rest of this blueprint: the Lean module path is
+\texttt{CombUnipotent.ClassicalGroup}, while the Lean namespace remains
+\texttt{ClassicalGroup}.
+
+The full natural-language source is kept in
+\texttt{lean/docs/blueprints/classical\_group/blueprint.md}; the formalization
+plan and problem statement are stored in the same directory.
+
+\section{Core Structures}
+
+\begin{definition}[Classical family]
+  \label{def:classical_star}
+  \lean{ClassicalGroup.ClassicalStar}
+  \leanok
+  The six families are \(B,D,C,\widetilde C,C^*,D^*\).  Each family carries
+  signs \(\epsilon\), \(\dot\epsilon\), and \(\epsilon\dot\epsilon\) governing
+  the bilinear form, the square of \(L\), and the square of \(J\).
+\end{definition}
+
+\begin{definition}[Formed complex space]
+  \label{def:formed_space}
+  \lean{ClassicalGroup.FormedSpace}
+  \leanok
+  \uses{def:classical_star}
+  A formed space is a finite-dimensional complex vector space equipped with a
+  non-degenerate \(\epsilon\)-symmetric complex bilinear form.
+\end{definition}
+
+\begin{definition}[\(J\)- and \(L\)-structures]
+  \label{def:jl_structures}
+  \lean{ClassicalGroup.JStructure, ClassicalGroup.LStructure}
+  \leanok
+  \uses{def:formed_space}
+  A \(J\)-structure is a conjugate-linear form-preserving automorphism with the
+  prescribed square.  An \(L\)-structure is a complex-linear form-preserving
+  automorphism with the prescribed square.
+\end{definition}
+
+\section{Existence and Uniqueness}
+
+\begin{definition}[Classical-space existence package]
+  \label{def:has_classical_space}
+  \lean{ClassicalGroup.HasClassicalSpace}
+  \leanok
+  \uses{def:classical_star, def:formed_space, def:jl_structures}
+  The predicate \texttt{HasClassicalSpace star p q} asserts the existence of a
+  formed complex space with compatible \(J\) and \(L\) satisfying the dimension,
+  positivity, square, commutation, and signature conditions of the
+  classical-space theorem.
+\end{definition}
+
+\begin{theorem}[Existence of classical spaces]
+  \label{thm:exists_classical_space}
+  \lean{ClassicalGroup.exists_classical_space}
+  \leanok
+  \uses{def:has_classical_space}
+  Every legal classical signature \((\star,p,q)\) has a classical space.
+\end{theorem}
+
+\begin{definition}[Uniqueness package]
+  \label{def:unique_classical_spaces}
+  \lean{ClassicalGroup.UniqueClassicalSpacesFor}
+  \leanok
+  \uses{def:has_classical_space}
+  The uniqueness predicate states that any two classical spaces for the same
+  signature are related by a complex-linear form isomorphism intertwining both
+  \(J\) and \(L\).
+\end{definition}
+
+\begin{theorem}[Classical-space existence and uniqueness]
+  \label{thm:classical_space_existence_and_uniqueness}
+  \lean{ClassicalGroup.classical_space_existence_and_uniqueness}
+  \leanok
+  \uses{thm:exists_classical_space, def:unique_classical_spaces}
+  The core linear-algebra theorem gives existence and uniqueness for every
+  legal classical signature, before adding the group-identification layer.
+\end{theorem}
+
+\section{Group Identification Layer}
+
+\begin{definition}[Centralizer of \(J\)]
+  \label{def:complex_form_isometry_centralizer_j}
+  \lean{ClassicalGroup.ComplexFormIsometryCentralizerJ}
+  \leanok
+  \uses{def:formed_space, def:jl_structures}
+  The centralizer of \(J\) is represented as the type of complex form isometries
+  commuting with \(J\).  A subgroup version gives it an honest group object.
+\end{definition}
+
+\begin{definition}[Expected real group identification]
+  \label{def:has_expected_group_identification}
+  \lean{ClassicalGroup.HasExpectedGroupIdentification}
+  \leanok
+  \uses{def:complex_form_isometry_centralizer_j, def:classical_star}
+  This abstract predicate records property (10) of the source theorem: the
+  centralizer of \(J\) should identify with the expected real classical group.
+  The current formalization keeps the concrete real Lie group API isolated.
+\end{definition}
+
+\begin{theorem}[Full classical-group theorem]
+  \label{thm:classical_group_theorem}
+  \lean{ClassicalGroup.classical_group_theorem}
+  \leanok
+  \uses{thm:classical_space_existence_and_uniqueness, def:has_expected_group_identification}
+  For every legal classical signature, the Lean theorem packages the
+  existence/uniqueness theorem together with the abstract group-identification
+  layer.
+\end{theorem}
